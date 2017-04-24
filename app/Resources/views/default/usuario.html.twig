@@ -1,0 +1,895 @@
+{% extends 'base.html.twig' %}
+
+
+
+{% block stylesheets %}
+	{{ parent() }}
+  	{% stylesheets '@css_datatables' %}
+      	<link rel="stylesheet" href="{{ asset_url }}" /></link>
+  	{% endstylesheets %}
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+    {% javascripts '@js_datatables'%}
+        <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+{% endblock %}
+
+{% block body %}
+	<style type="text/css">
+		@media all and (max-width: 479px) {
+		    td.for-mobile{
+		        display:none;
+		        width:0;
+		        height:0;
+		        opacity:0;
+		        visibility: collapse;
+		    }
+		    th.for-mobile{
+		        display:none;
+		        width:0;
+		        height:0;
+		        opacity:0;
+		        visibility: collapse;
+		    }    
+		}
+
+		@media (min-width: 768px) {
+		  .modal-xl {
+		    width: 90%;
+		    max-width:1600px;
+		  }
+		}
+
+		.file-preview {
+			max-height: 310px;
+			max-width: 210px;
+			height: 310	px;
+			/*calc(100vh - 350px);*/
+			background-color: #fff;
+		}
+
+		.image-container{
+			padding-top: 30px;
+			min-height: 343px;
+			width:350px;
+			padding-left: 40px;
+		}
+
+		.danger-color{
+			color: #d73925 !important;
+		}
+
+		.success-color{
+			color: #00a65a !important;
+		}
+
+		.troggle.btn.btn-sm.btn-danger.off{
+			width: 150px !important;
+		}
+
+	</style>
+	<script type="text/javascript">
+
+		function cambiarEstado(id,estado){
+			$.ajax({
+
+				type:'Get',
+				dataType: 'json	',
+				url:'/api/usuario/estado/'+id+'/'+estado,
+				success: function(data){
+					toastr.succes(data);
+				},
+				error: function(jqXHR,textStatus,errorThrown ){
+					var response=JSON.parse(jqXHR.responseText)
+					toastr.error(response.throwCause);
+				}
+		     });
+		}
+
+		$(document).ready(function () {
+			
+		    var tabla=$('#registroUsuarios').DataTable({
+			  	"language": {
+	              	"infoEmpty": "Sin registros para mostrar",
+	              	"paginate": {
+			          	"last": "Ultima Página",
+			          	"first": "Primer página",
+			          	"next": "Siguiente",
+			          	"previous": "Anterior"
+			       },
+			       "emptyTable": "Sin Datos",
+			       "lengthMenu": 'Registros Listados <select class="form-control input-sm">'+
+					             '<option value="10">10</option>'+
+					             '<option value="20">20</option>'+
+					             '<option value="30">30</option>'+
+					             '<option value="40">40</option>'+
+					             '<option value="50">50</option>'+
+					             '<option value="-1">Todos</option>'+
+					             '</select>',
+					"loadingRecords": "Espere...cargando datos",
+					"processing": "Procesando...",
+					"sInfo": "Mostrando  _START_ a _END_ de _TOTAL_ registros",
+          	  	},
+		      	"processing": false,
+		      	"ajax": {
+				        "url": "api/usuario/getAll",
+            			"dataSrc": '',
+				    },
+			  	"columnDefs": [
+					            {
+					                "targets": [ 0 ],
+					                "visible": false,
+					                "searchable": false
+					            },
+					            {
+						            "targets": [ 1 ],
+						            "data": "id",
+						            "orderable":false,
+						            "render": function (data, type, row) {
+						            	var id= {{ app.user.id }};
+						            	var html="";
+						            	if(id!=data){
+						            		var html="<div class='btn-group'>"+
+						            	"<button type='button'  title='Editar datos' class='btn btn-primary btn-xs btn-editar' data-toggle='modal' data-target='#editarUsuario'><span class='glyphicon glyphicon-pencil'></span>"+
+						            	"</button>"+
+						            	"<button type='button'  class='btn btn-danger btn-xs btn-desactivar' title='Desactivar usuario'><span class='glyphicon glyphicon-ban-circle'></span>"+
+						            	"</button>"+
+						            	"<button type='button' title='Activar usuario' class='btn btn-info btn-xs btn-activar'><span class='glyphicon glyphicon-ok-circle'></span>"+
+						            	"</button></div>"
+							            }
+							            else(html="<span class='label label-success fa fa-lock' aria-hidden='true'><strong>&nbsp;Mi Cuenta</strong></span>")
+							            return html;
+							        }
+						        },
+						        {
+						        	"targets": [ 3 ],
+						            "data": "activo",
+						            "orderable":false,
+						            "render": function (data, type, row) {
+					                     return "<div>" + 
+					                     			((data==true)?"<div style='color:#359622'>Activo</div>":"<div style='color:#bc0f17'>Bloqueado</div>") + 
+					            		   		"</div>";
+					                 }
+					          
+						      }
+			  	],
+		      	"columns": [
+		      		{ "data": "id" },
+		      		{ "data": "id" ,"width":"10%" },
+		            { "data": "usuario","width":"10%" },
+		            { "data": "activo","width":"5%" },
+		            { "data": "perfil.nombre_completo", "width": "35%" },
+		            { "data": "rol.rol_como_string","width":"10%" },
+		            { "data": "perfil.tipo_perfil","className": "for-mobile","width":"10%" },
+		            { "data": "perfil.bloque.bloque", "className": "for-mobile", "defaultContent":"---","width":"25%" }
+		            
+		        ],
+		      	"autoWidth":false,
+		      	"paging": true,
+		      	"lengthChange": true,
+		      	"searching": false,
+		      	"ordering": true,
+		      	"info": true,
+		      	"autoWidth": false,
+			});
+
+			//---------------------------MOIFICAR USUARIO--------------------------------------------
+
+			$('#registroUsuarios tbody').on('click','.btn-desactivar',function(){
+
+				var data = tabla.row( $(this).parents('tr') ).data();
+				var id = data[ "id" ];
+				$.ajax({
+
+					type:'Put',
+					dataType: 'json	',
+					url:'{{ app.request.getBaseURL() }}'+'/api/usuario/estado/'+id+'/'+0,
+					success: function(data){
+						toastr.success(data);
+					},
+					complete: function(){
+						tabla.ajax.reload();
+					},
+					error: function(jqXHR,textStatus,errorThrown ){
+						var response=JSON.parse(jqXHR.responseText)
+						toastr.error(response.throwCause);
+					}
+		     	});
+			})
+
+			$('#registroUsuarios tbody').on('click','.btn-activar',function(){
+
+				var data = tabla.row( $(this).parents('tr') ).data();
+				var id = data[ "id" ];
+				$.ajax({
+
+					type:'Put',
+					dataType: 'json	',
+					url:'{{ app.request.getBaseURL() }}'+'/api/usuario/estado/'+id+'/'+1,
+					success: function(data){
+						toastr.success(data);
+						tabla.ajax.reload();;
+					},
+					error: function(jqXHR,textStatus,errorThrown ){
+						var response=JSON.parse(jqXHR.responseText)
+						toastr.error(response.throwCause);
+					}
+		     	});
+			})
+
+
+			//EVENTO BOTON DE EDITAR USUARIO
+		    $('#registroUsuarios tbody').on( 'click', '.btn-editar', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+		        $("#editarUsuario").find('input[name="id"]').val(data[ "id" ]);
+
+		    } );
+		    //EVENTO CERRAR MODAL MODIFICACION USUARIO
+			$('#editarUsuario').on('hidden.bs.modal', function () {
+				$('#input-file-mod').fileinput('destroy');
+			});
+
+		    //EVENTO ABRIR MODAL MODIFICAR USUARIO
+		    $('#editarUsuario').on('show.bs.modal', function () {
+
+		    	var id= $("#editarUsuario").find('input[name="id"]').val();
+
+		    	$.ajax({
+
+					type:'Get',
+					dataType: 'json	',
+					url:'{{ app.request.getBaseURL() }}'+'/api/usuario/getOne/'+id,
+					success: function(data){
+						var usuario=data;
+						var perfil=data.perfil;
+
+						$("#oficinaMod").val('');
+					    $("#documentoMod").val('');
+					    $("#domicilioMod").val('');
+					    $("#selBloqueMod").val(0);
+
+					    $(".div-publico").addClass("hidden");
+					    $(".div-legislador").addClass("hidden");
+
+						if (perfil.tipo_perfil=="legislador"){
+							$("#oficinaMod").val(perfil.oficina);
+							$("#selBloqueMod").val(perfil.bloque.id);
+							$(".div-legislador").removeClass("hidden");
+						}
+
+						if (perfil.tipo_perfil=="publico"){
+							$("#documentoMod").val(perfil.documento);
+							$("#domicilioMod").val(perfil.domicilio);
+							$(".div-publico").removeClass("hidden");
+						}
+
+					  	$("#apellidosMod").val(perfil.apellidos);
+					    $("#nombresMod").val(perfil.nombres);
+					    $("#eMailMod").val(perfil.correo_electronico);
+					    $("#telefonoMod").val(perfil.telefono);
+
+					    $("#selRolMod").val(usuario.rol.id);
+
+					    $("#conservaContraseña").bootstrapToggle('on');
+					    $("#mensajeMod").html('');
+
+						var rutaImagen=((perfil.ruta_web_imagen==null)?'user.jpg':perfil.ruta_web_imagen);
+						var keyImagen=((perfil.ruta_web_imagen==null)?'no-unlink-preview':perfil.ruta_web_imagen);
+
+					    $("#input-file-mod").fileinput({
+				    		language: "es",
+				    		initialPreviewAsData: true,
+				    		initialPreview: [ rutaImagen ],
+			                initialPreviewConfig: [ {type: "image", caption: "", height: "220", width:"155px", key:keyImagen } ],
+			                showUpload: false,
+			                showCaption: false,               
+			                overwriteInitial: true,
+			                previewSettings:{image: {height: "220", width:"155px"}},
+			                deleteUrl:'{{ app.request.getBaseURL() }}'+'/api/usuario/imagen/remove',
+			                maxFileSize: 10240,                
+	            });
+					},
+					error: function(jqXHR,textStatus,errorThrown ){
+						var response=JSON.parse(jqXHR.responseText)
+						toastr.error(response.throwCause);
+					}
+
+
+		      	})
+			});
+		    //GUARDAR
+		    $("#modificacion").on('submit',function(e){
+				
+				e.preventDefault();
+             	var form=$(e.target);
+              	var formData=new FormData();
+              	var controles=$(form).serializeArray();
+              	var archivos=$(form).find('[name="input-file-mod"]')[0].files;
+
+              	$.each(archivos, function(i, archivo) {
+                	
+                	formData.append('uploadedFiles-' + i, archivo);
+            	});
+
+              	var conservarClave=$("#conservaContraseña").is(':checked');
+              	var validacion='';
+
+            	$.each(controles, function(i, control) {
+
+                	formData.append(control.name, ((control.name=="conservaContraseña")
+                												  ?conservarClave:control.value));
+
+            		validacion+=((control.name=="selRolMod" && control.value==0)?
+	                			'<li>Debe especificar un rol para el usuario</li>':'');
+            		validacion+=((conservarClave==false && control.name=="claveMod" && 
+            					 control.value.replace(/ /g, '').length<8)?
+	                			'<li>La contraseña debe tener como mínimo 8 caracteres</li>':'');
+            		validacion+=((conservarClave==false && control.name=="claveMod" && 
+            					 $("#claveMod").val()!=$("#claveConfirmaMod").val())?
+            					'<li>Las contraseñas no coinciden</li>':'');
+	                validacion+=((control.name=="apellidos" && control.value.replace(/ /g, '').length==0)		 ?'<li>Debe ingresar un apellido para el usuario</li>':'');
+			     	validacion+=((control.name=="nombres" && control.value.replace(/ /g, '').length==0)?
+			     				'<li>Debe ingresar un nombre para el usuario</li>':'');
+			     	validacion+=((control.name=="eMail" && control.value.indexOf(' ')!=-1)?'<li>El correo electrónico posee espacios blancos</li>':'');
+			     	validacion+=((control.name=="eMail" && control.value.replace(/ /g, '').length>0 &&
+			     				control.value.indexOf('@')==-1)?'<li>El correo electrónico no contiene @</li>':'');
+
+			   		if ($("#selPerfil").val()==2){
+		
+			     		validacion+=((control.name=="oficina" && control.value.replace(/ /g, '').length==0)?'<li>Debe especificar ubicacion de la oficina del legislador</li>':'');
+			     		validacion+=((control.name=="selBloque" && control.value==0)?'<li>Debe especificar el bloque del legislador</li>':'');
+			     	}
+
+			     	if ($("#selPerfil").val()==3){
+						validacion+=((control.name=="documento" && control.value.replace(/ /g, '').length==0)?'<li>Debe especificar el documento de la persona</li>':'');
+						validacion+=((control.name=="domicilio" && control.value.replace(/ /g, '').length==0)?'<li>Debe especificar el domicilio de la persona</li>':'');
+					}
+	            });
+
+	            if (validacion.length>0) 
+				{
+					validacion=((validacion.length>0)?'<strong><u>Validación de Datos</u></strong><br><ul>'+
+								validacion+'</ul>':'');
+					toastr.error(validacion).attr('style', 'width: 500px !important');;
+					return false;
+				}
+				else{
+
+	            	$.ajax({
+		                sync: true,
+		                url: $(form).attr('action'),
+		                data: formData,
+		                cache: false,
+		                contentType: false,
+		                processData: false,
+		                type: $(form).attr('method'),
+	                success: function(data) {
+	                    toastr.success(data);
+						tabla.ajax.reload();
+						$('#editarUsuario').modal('hide');
+	                	},
+	                error: function(jqXHR,textStatus,errorThrown ){
+						var response=JSON.parse(jqXHR.responseText)
+						toastr.error(response.throwCause);
+						}
+	            	});
+	            }
+			});
+
+		    //---------------------------------NUEVO USUARIO---------------------------------------
+		    
+		    //EVENTO MODAL NUEVO USUARIO
+		    $('#nuevoUsuario').on('show.bs.modal', function () {
+			  	$("#selTipo").val(1);
+			  	$("#apellidos").val('');
+			    $("#nombres").val('');
+			    $("#login").val('');
+			    $("#selRol").val(0);
+			    $("#clave").val('');
+			    $("#claveConfirma").val('');
+			    $("#mensaje").html('');
+			    $("#eMail").val('');
+			    $("#telefono").val('');
+			    $("#oficina").val('');
+			    $("#documento").val('');
+			    $("#domicilio").val('');
+			    $("#selBloque").val(0);
+
+			    $(".div-legislador").addClass("hidden");
+				$(".div-publico").addClass("hidden");
+
+			    $("#input-file").fileinput({
+		    		language: "es",
+		    		initialPreviewAsData: true,
+		    		initialPreview: [
+	                    'user.jpg'
+	                ],
+	                initialPreviewConfig: [
+                    	{type: "image", caption: "sin imagen!"}
+                    ],
+	                showUpload: false,
+	                showCaption: false,               
+	                overwriteInitial: true,
+	                previewSettings:{image: {width: "auto", height: "220", width:"155px"}},
+	                maxFileSize: 10240,                
+	            });
+			});
+
+			//EVENTO CERRAR MODAL NUEVO USUARIO
+			$('#nuevoUsuario').on('hidden.bs.modal', function () {
+				$('#input-file').fileinput('destroy');
+			});
+
+		    //GUARDAR
+		    $("#alta").on('submit',function(e){
+				
+				e.preventDefault();
+             	var form=$(e.target);
+              	var formData=new FormData();
+              	var controles=$(form).serializeArray();
+              	var archivos=$(form).find('[name="input-file"]')[0].files;
+
+              	$.each(archivos, function(i, archivo) {
+                	
+                	formData.append('uploadedFiles-' + i, archivo);
+            	});
+
+              	var validacion='';
+
+            	$.each(controles, function(i, control) {
+
+                	formData.append(control.name, control.value);
+
+                	if (control.name=="login")
+                		console.log(control.value.replace(/ /g, '').length);
+
+            		validacion+=((control.name=="login" && control.value.replace(/ /g, '').length==0)?
+	                			'<li>Debe especificar un login de usuario</li>':'');
+            		validacion+=((control.name=="selRol" && control.value==0)?
+	                			'<li>Debe especificar un rol para el usuario</li>':'');
+            		validacion+=((control.name=="clave" && control.value.replace(/ /g, '').length<8)?
+	                			'<li>La contraseña debe tener como mínimo 8 caracteres</li>':'');
+            		validacion+=((control.name=="clave" && $("#clave").val()!=$("#claveConfirma").val())?
+            					'<li>Las contraseñas no coinciden</li>':'');
+	                validacion+=((control.name=="apellidos" && control.value.replace(/ /g, '').length==0)		 ?'<li>Debe ingresar un apellido para el usuario</li>':'');
+			     	validacion+=((control.name=="nombres" && control.value.replace(/ /g, '').length==0)?
+			     				'<li>Debe ingresar un nombre para el usuario</li>':'');
+			     	validacion+=((control.name=="eMail" && control.value.indexOf(' ')!=-1)?'<li>El correo electrónico posee espacios blancos</li>':'');
+			     	validacion+=((control.name=="eMail" && control.value.replace(/ /g, '').length>0 &&
+			     				control.value.indexOf('@')==-1)?'<li>El correo electrónico no contiene @</li>':'');
+			   		if ($("#selPerfil").val()==2){
+		
+			     		validacion+=((control.name=="oficina" && control.value.replace(/ /g, '').length==0)?'<li>Debe especificar ubicacion de la oficina del legislador</li>':'');
+			     		validacion+=((control.name=="selBloque" && control.value==0)?'<li>Debe especificar el bloque del legislador</li>':'');
+			     	}
+
+			     	if ($("#selPerfil").val()==3){
+						validacion+=((control.name=="documento" && control.value.replace(/ /g, '').length==0)?'<li>Debe especificar el documento de la persona</li>':'');
+						validacion+=((control.name=="domicilio" && control.value.replace(/ /g, '').length==0)?'<li>Debe especificar el domicilio de la persona</li>':'');
+					}
+	            });
+
+	            if (validacion.length>0) 
+				{
+					validacion=((validacion.length>0)?'<strong><u>Validación de Datos</u></strong><br><ul>'+
+								validacion+'</ul>':'');
+					toastr.error(validacion).attr('style', 'width: 500px !important');;
+					return false;
+				}
+				else{
+
+	            	$.ajax({
+		                sync: true,
+		                url: $(form).attr('action'),
+		                data: formData,
+		                cache: false,
+		                contentType: false,
+		                processData: false,
+		                type: $(form).attr('method'),
+	                success: function(data) {
+	                    toastr.success(data);
+						tabla.ajax.reload();
+						$('#nuevoUsuario').modal('hide');
+		                	},
+	                error: function(jqXHR,textStatus,errorThrown ){
+						var response=JSON.parse(jqXHR.responseText)
+						toastr.error(response.throwCause);
+						}
+	            	});
+	            }
+			});
+
+			//---------------------------------INICIALIZACIÓN DE CONTROLES--------------------------
+
+			$("#clave").focus(function(){
+				$(this).prop('readonly', false);
+			});
+
+			$("#clave").blur(function(){
+				$(this).prop('readonly', true);
+			});
+
+			$("#claveMod").focus(function(){
+				if(!$("#conservaContraseña").is(':checked'))
+					$(this).prop('readonly', false);
+			});
+
+			$("#claveMod").blur(function(){
+				$(this).prop('readonly', true);
+			});
+
+			$("#claveConfirmaMod").focus(function(){
+				if(!$("#conservaContraseña").is(':checked'))
+					$(this).prop('readonly', false);
+			});
+
+			$("#claveConfirmaMod").blur(function(){
+				$(this).prop('readonly', true);
+			});
+
+			$("#claveConfirma").focus(function(){
+				$(this).prop('readonly', false);
+			});
+
+			$("#claveConfirma").blur(function(){
+				$(this).prop('readonly', true);
+			});
+
+			$("#selTipo").change(function(){
+				$(".div-legislador").addClass("hidden");
+				$(".div-publico").addClass("hidden");
+				if ($(this).val()==2)
+					$(".div-legislador").removeClass("hidden");
+				if ($(this).val()==3)
+					$(".div-publico").removeClass("hidden");
+			});
+
+			$("#selTipoMod").change(function(){
+				$(".div-legislador").addClass("hidden");
+				$(".div-publico").addClass("hidden");
+				if ($(this).val()==2)
+					$(".div-legislador").removeClass("hidden");
+				if ($(this).val()==3)
+					$(".div-publico").removeClass("hidden");
+			});
+
+		    $('#conservaContraseña').bootstrapToggle({
+		      on:  'Conserva contraseña',
+		      off: 'Edita contraseña',
+		      width: "200px"
+		    });
+
+		    $('#conservaContraseña').change(function(){
+		    	if($("#conservaContraseña").is(':checked'))
+		    		$("#mensajeMod").html('');
+		    });
+
+			$("#clave").blur(function(){
+				var html;
+
+				if($(this).val().length<8)
+					html='<div class="alert alert-danger danger-color" role="alert">'+
+						 '<span class="glyphicon glyphicon-remove"></span>&nbsp&nbspla contraseña debe tener como mínimo 8 caracteres.</div>';
+				else if($(this).val()!=$("#claveConfirma").val())
+						html='<div class="alert alert-danger danger-color" role="alert">'+
+						 	 '<span class="glyphicon glyphicon-remove"></span>&nbsp&nbsplas contraseñas no coinciden.</div>';
+					 else
+					 	html='<div class="alert alert-success success-color" role="alert">'+
+						 	 '<span class="glyphicon glyphicon-ok"></span>&nbsp&nbspla clave es correcta</div>';
+
+				$("#mensaje").html(html);
+
+			});
+
+			$("#claveConfirma").blur(function(){
+				var html;
+
+				if($(this).val()!=$("#clave").val())
+					html='<div class="alert alert-danger danger-color" role="alert">'+
+						 '<span class="glyphicon glyphicon-remove"></span>&nbsp&nbsplas contraseñas no coinciden.</div>';	
+				else 
+					if ($("#clave").val()>=8)
+						html='<div class="alert alert-success success-color" role="alert">'+
+						 	 '<span class="glyphicon glyphicon-ok"></span>&nbsp&nbspla clave es correcta</div>';
+					 else
+					 	html='<div class="alert alert-danger danger-color" role="alert">'+
+						 	 '<span class="glyphicon glyphicon-remove"></span>&nbsp&nbspla contraseña debe tener como mínimo 8 caracteres.</div>';
+				
+				$("#mensaje").html(html);	 
+			});
+
+			$("#claveMod").blur(function(){
+				var html;
+
+				if($(this).val().length<8)
+					html='<div class="alert alert-danger danger-color" role="alert">'+
+						 '<span class="glyphicon glyphicon-remove"></span>&nbsp&nbspla contraseña debe tener como mínimo 8 caracteres.</div>';
+				else if($(this).val()!=$("#claveConfirmaMod").val())
+						html='<div class="alert alert-danger danger-color" role="alert">'+
+						 	 '<span class="glyphicon glyphicon-remove"></span>&nbsp&nbsplas contraseñas no coinciden.</div>';
+					 else
+					 	html='<div class="alert alert-success success-color" role="alert">'+
+						 	 '<span class="glyphicon glyphicon-ok"></span>&nbsp&nbspla clave es correcta</div>';
+
+				if(!$("#conservaContraseña").is(':checked'))
+					$("#mensajeMod").html(html);
+
+			});
+
+			$("#claveConfirmaMod").blur(function(){
+				var html;
+
+				if($(this).val()!=$("#claveMod").val())
+					html='<div class="alert alert-danger danger-color" role="alert">'+
+						 '<span class="glyphicon glyphicon-remove"></span>&nbsp&nbsplas contraseñas no coinciden.</div>';	
+				else 
+					if ($("#claveMod").val()>=8)
+						html='<div class="alert alert-success success-color" role="alert">'+
+						 	 '<span class="glyphicon glyphicon-ok"></span>&nbsp&nbspla clave es correcta</div>';
+					 else
+					 	html='<div class="alert alert-danger danger-color" role="alert">'+
+						 	 '<span class="glyphicon glyphicon-remove"></span>&nbsp&nbspla contraseña debe tener como mínimo 8 caracteres.</div>';
+				
+				if(!$("#conservaContraseña").is(':checked'))
+					$("#mensajeMod").html(html);	 
+			});
+
+			$('#input-file-mod').on('filedeleted', function(event, key) {
+			  $('#input-file-mod').fileinput('clear');
+			});
+		});
+	</script>
+	<section class="content-header">
+		<h1>
+	        Registro de Usuarios
+	    </h1>
+	    <ol class="breadcrumb">
+	        <li><a href="#"><i class="fa fa-dashboard"></i> Principal</a></li>
+	        <li class="active">Usuarios</li>
+	     </ol>
+	</section>
+	<hr>
+	<section class="content">
+	  	<div class="row">
+	    	<div class="col-xs-12">
+              	<table id="registroUsuarios" class="table table-striped" width="100%" cellspacing="0">
+	                <thead>
+	                	<tr>
+	                		<th>Id</th>
+	                		<th class="text-center">
+	                			<button type="button" title="Agregar usuario"class="btn btn-primary btn-xs pull-left" 
+						    			data-toggle='modal' data-target='#nuevoUsuario'>
+						    			<span class="glyphicon glyphicon-plus"></span>
+						    	</button>
+						    </th>
+			                <th>Usuario</th>
+			                <th>Estado</th>
+			                <th>Nombre y Apellido</th>
+			                <th>Rol</th>
+			                <th class="for-mobile">Perfil</th>
+			                <th class="for-mobile">Bloque</th>
+			                
+			                {# <th>Eliminar</th> #}
+	                	</tr>
+	                </thead>
+               	</table>
+	        </div> {# col #}
+	    </div> {# row #}
+	   	<div id="nuevoUsuario" class="modal fade" role="dialog">
+		 	<div class="modal-dialog modal-lg">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+				        <button type="button" class="close" data-dismiss="modal" >&times;</button>
+				        <h4 class="modal-title"><strong>Nuevo Usuario</strong></h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				        <form role="form" id="alta" action="api/usuario/create" method="POST">
+				        	<div class="row" style="min-height:420px">
+				        		<div class="col-md-4">
+				        			<div class="form-group">
+						        		<label for="selTipo">Perfil</label>
+						        		<select class="form-control" id="selTipo" name="selTipo">
+						        			<option value="1" selected="selected">Básico</option>
+						        			<option value="2">Legislador</option>
+						        			<option value="3">Público</option>
+						        		</select>
+						        	</div>
+						        	<div class="form-group">
+						        		<label for="login">LogIn</label>
+						        		<input type= "text" class="form-control input-sm" id="login" name="login" autocomplete="off" placeholder="nick / nombre usuario">
+						        	</div>
+						        	<div class="form-group">
+						        		<label for="selRol">Rol</label>
+						        		<select class="form-control" id="selRol" name="selRol">
+						        			<option value="0">Seleccione Rol</option>
+						        			{% for rol in roles %}
+								                <option value="{{ rol.id }}">{{ rol.rolComoString }}</option>
+								            {% endfor %}
+						        		</select>
+						        	</div>
+						        	<div class="form-group">
+						        		<label for="clave">Clave</label>
+						        		<input type="password" class="form-control input-sm" id="clave" name="clave" readOnly>
+						        	</div> 
+						        	<div class="form-group">
+						        		<label for="claveConfirma">Confirma Clave</label>
+						        		<input type="password" class="form-control input-sm" id="claveConfirma" name="claveConfirma" readOnly>
+						        	</div>	
+						        	<div id="mensaje"></div>
+								</div>
+					        	<div class="col-md-4">	
+						        	<div class="form-group">
+						        		<label for="apellidos">Apellidos</label>
+						        		<input type= "text" class="form-control input-sm" name="apellidos" id="apellidos" placeholder="apellido del usuario">
+						        	</div>
+						        	<div class="form-group">
+						        		<label for="nombres">Nombres</label>
+						        		<input type= "text" class="form-control input-sm" id="nombres" name="nombres" placeholder="nombre del usuario">
+						        	</div>
+						        	<div class="form-group">
+						        		<label for="eMail">Correo Electrónico</label>
+						        		<input type= "text" class="form-control input-sm" id="eMail" name="eMail" autocomplete="off" placeholder="dirección de correo electrónico">
+						        	</div>
+						        	<div class="form-group">
+										<label for="telefono">Telefono</label>
+										<input type= "text" class="form-control input-sm" id="telefono" name="telefono" placeholder="número de teléfono">
+									</div>
+						        	<div class="form-group div-legislador hidden">
+										<label for="oficina">Oficina</label>
+										<input type= "text" class="form-control input-sm" id="oficina" name="oficina" placeholder="oficina / despacho">
+									</div>
+								    <div class="form-group div-legislador hidden">
+						        		<label for="selBloque">Bloque</label>
+						        		<select class="form-control" id="selBloque" name="selBloque">
+						        			<option value="0">Seleccione bloque</option>
+						        			{% for bloque in bloques %}
+								                <option value="{{ bloque.id }}">{{ bloque.bloque }}</option>
+								            {% endfor %}
+						        		</select>
+						        	</div>
+						        	<div class="form-group div-publico hidden">
+										<label for="documento">Documento</label>
+										<input type= "text" class="form-control input-sm" id="documento" name="documento" placeholder="número de documento del usuario">
+									</div>
+									<div class="form-group div-publico hidden">
+										<label for="domicilio">Domicilio</label>
+										<input type= "text" class="form-control input-sm" id="domicilio" name="domicilio" placeholder="domicilio del usuario">
+									</div>
+						        </div>
+								<div class="col-md-4">
+				        			<div class="row"> 	
+					        			<div class="image-container">
+								        	<div class="form-group">
+								        		{# <h3>Imagen Perfil</h3> #}
+								        		{# <label for="input-file">Imagen Perfil</label> #}
+									        	<input id="input-file" accept="image/*" name="input-file" type="file" class="file-loading">
+								        	</div>
+							        	</div>
+							        </div>
+							        <div class="row text-center">
+							        	<label for="input-file">Imagen de Perfil</label>
+							        </div>
+				        		</div>      
+							</div>
+					        <hr>
+					        <div class="row">
+					        	<div class="text-center">
+							        <div class="btn-group">
+							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+						       			 <button type="submit" class="btn btn-primary" id="btn-guardar-nuevo">Guardar</button>
+
+						        	</div>
+						        </div>
+					        </div>	
+				        </form>
+				     </div>
+			    </div>
+		  	</div>
+		</div>
+		<div id="editarUsuario" class="modal fade" role="dialog">
+		 	<div class="modal-dialog modal-lg">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+				        <button type="button" class="close" data-dismiss="modal" >&times;</button>
+				        <h4 class="modal-title"><strong>Nuevo Usuario</strong></h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				        <form role="form" id="modificacion" action="api/usuario/perfil/update" method="POST">
+				        	<input type="hidden" id="id" name="id">
+				        	<div class="row" style="min-height:420px">
+				        		<div class="col-md-4">
+						        	<div class="form-group">
+						        		<label for="selRolMod">Rol</label>
+						        		<select class="form-control" id="selRolMod" name="selRolMod">
+						        			<option value="0">Seleccione Rol</option>
+						        			{% for rol in roles %}
+								                <option value="{{ rol.id }}">{{ rol.rolComoString }}</option>
+								            {% endfor %}
+						        		</select>
+						        	</div>
+						        	<div class="form-group text-center" style="padding-top:15px">
+										<input type="checkbox" name="conservaContraseña" id="conservaContraseña" data-size="small">
+							        </div> 
+						        	<div class="form-group">
+						        		<label for="claveMod">Clave</label>
+						        		<input type="password" class="form-control" id="claveMod" name="claveMod" readOnly>
+						        	</div> 
+						        	<div class="form-group">
+						        		<label for="claveConfirmaMod">Confirma Clave</label>
+						        		<input type="password" class="form-control input-sm" id="claveConfirmaMod" name="claveConfirmaMod" readOnly>
+						        	</div>	
+						        	<div id="mensajeMod"></div>
+								</div>
+					        	<div class="col-md-4">	
+						        	<div class="form-group">
+						        		<label for="apellidosMod">Apellidos</label>
+						        		<input type= "text" class="form-control input-sm" name="apellidosMod" id="apellidosMod" placeholder="apellido del usuario">
+						        	</div>
+						        	<div class="form-group">
+						        		<label for="nombresMod">Nombres</label>
+						        		<input type= "text" class="form-control input-sm" id="nombresMod" name="nombresMod" placeholder="nombre del usuario">
+						        	</div>
+						        	<div class="form-group">
+						        		<label for="eMailMod">Correo Electrónico</label>
+						        		<input type= "text" class="form-control input-sm" id="eMailMod" name="eMailMod" autocomplete="off" placeholder="dirección de correo electrónico">
+						        	</div>
+						        	<div class="form-group">
+										<label for="telefonoMod">Telefono</label>
+										<input type= "text" class="form-control input-sm" id="telefonoMod" name="telefonoMod" placeholder="número de teléfono">
+									</div>
+						        	<div class="form-group div-legislador hidden">
+										<label for="oficinaMod">Oficina</label>
+										<input type= "text" class="form-control input-sm" id="oficinaMod" name="oficinaMod" placeholder="oficina / despacho">
+									</div>
+								    <div class="form-group div-legislador hidden">
+						        		<label for="selBloqueMod">Bloque</label>
+						        		<select class="form-control" id="selBloqueMod" name="selBloqueMod">
+						        			<option value="0">Seleccione bloque</option>
+						        			{% for bloque in bloques %}
+								                <option value="{{ bloque.id }}">{{ bloque.bloque }}</option>
+								            {% endfor %}
+						        		</select>
+						        	</div>
+						        	<div class="form-group div-publico hidden">
+										<label for="documentoMod">Documento</label>
+										<input type= "text" class="form-control input-sm" id="documentoMod" name="documentoMod" placeholder="número de documento del usuario">
+									</div>
+									<div class="form-group div-publico hidden">
+										<label for="domicilioMod">Domicilio</label>
+										<input type= "text" class="form-control input-sm" id="domicilioMod" name="domicilioMod" placeholder="domicilio del usuario">
+									</div>
+						        </div>
+								<div class="col-md-4">
+				        			<div class="row"> 	
+					        			<div class="image-container">
+								        	<div class="form-group">
+									        	<input id="input-file-mod" accept="image/*" name="input-file-mod" type="file" class="file-loading">
+								        	</div>
+							        	</div>
+							        </div>
+							        <div class="row text-center">
+							        	<label for="input-file-mod">Imagen de Perfil</label>
+							        </div>
+				        		</div>      
+							</div>
+					        <hr>
+					        <div class="row">
+					        	<div class="text-center">
+							        <div class="btn-group">
+							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+						       			 <button type="submit" class="btn btn-primary" id="btn-guardar-modificacion">Guardar</button>
+
+						        	</div>
+						        </div>
+					        </div>		
+				        </form>
+				     </div>
+			    </div>
+		  	</div>
+		</div>
+	</section>
+{% endblock %}

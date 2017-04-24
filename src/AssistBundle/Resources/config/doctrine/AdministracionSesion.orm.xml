@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AssistBundle\Entity\AdministracionSesion" table="administracion_sesion">
+    <id name="id" type="string" length="50" column="sessionId">
+      <generator strategy="NONE"/>
+    </id>
+    <field name="sectionId" type="integer" column="sectionId" nullable="false">
+    </field>
+    <field name="elementId" type="integer" column="elementId" nullable="false">
+    </field>
+    <field name="timeId" type="integer" column="timeId" nullable="false">
+    </field>
+  </entity>
+</doctrine-mapping>

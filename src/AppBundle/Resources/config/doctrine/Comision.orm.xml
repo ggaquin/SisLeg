@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\Comision" table="comision">
+    <id name="id" type="integer" column="idComision">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="comision" type="string" column="comision" length="100" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <one-to-many field="expedientesAsignados" target-entity="ExpedienteComision" mapped-by="comision"/>
+    <many-to-many field="integrantes" target-entity="PerfilLegislador" inversed-by="comisiones" fetch="LAZY">
+      <join-table name="comisiones_legisladores">
+        <join-columns>
+          <join-column name="idComision" referenced-column-name="idComision"/>
+        </join-columns>
+        <inverse-join-columns>
+          <join-column name="idPerfil" referenced-column-name="idPerfil"/>
+        </inverse-join-columns>
+      </join-table>
+    </many-to-many>
+  </entity>
+</doctrine-mapping>

@@ -1,0 +1,915 @@
+{% extends 'base.html.twig' %}
+
+
+
+{% block stylesheets %}
+	{{ parent() }}
+  	{% stylesheets '@css_datatables' %}
+      	<link rel="stylesheet" href="{{ asset_url }}" /></link>
+  	{% endstylesheets %}
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+    {% javascripts '@js_datatables'%}
+        <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+{% endblock %}
+
+{% block body %}
+	<style type="text/css">
+		@media (min-width: 768px) {
+		  .modal-xl {
+		    width: 90%;
+		    max-width:1600px;
+		  }
+		}
+
+		.select2-selection--multiple { max-height: 10rem; overflow-y: auto }
+
+		.file-preview {
+			max-height: 470px;
+			height: 470px;
+			/*calc(100vh - 350px);*/
+			background-color: #fff;
+			display: inline-block;
+			overflow-y: scroll;
+		}
+		
+		.disabled-select {
+		   background-color:#FFF;
+		   opacity:0.2;
+		   border-radius:3px;
+		   cursor:not-allowed;
+		   position:absolute;
+		   top:0;
+		   bottom:0;
+		   right:0;
+		   left:0;
+		}
+
+		.div-Preview{
+			max-height: 194px;
+			height: 194px;
+			padding-left: 10px;
+			padding-right: 10px;
+			background-color: #fff;	
+			overflow-y: scroll;
+		}
+		
+	</style>
+	<script type="text/javascript">
+
+		function criterio(){
+			var tipo=$("#selBusqueda").val();
+			return ((tipo=="todo")?"0":$("#"+tipo).val());	
+		}
+		function tipoCriterio(){
+			return $("#selBusqueda").val();
+		}
+
+		$(document).ready(function () {
+			
+		    var tabla=$('#registroExpediente').DataTable({
+		    			  "language": {
+				              "infoEmpty": "Sin registros para mostrar",
+				              "paginate": {
+						          	"last": "Ultima Página",
+						          	"first": "Primer página",
+						          	"next": "Siguiente",
+						          	"previous": "Anterior"
+						       },
+						       "search":"Búsqueda rápida",
+						       "emptyTable": "Sin Datos",
+						       "lengthMenu": 'Registros Listados <select class="form-control input-sm">'+
+								             '<option value="10">10</option>'+
+								             '<option value="20">20</option>'+
+								             '<option value="30">30</option>'+
+								             '<option value="40">40</option>'+
+								             '<option value="50">50</option>'+
+								             '<option value="-1">Todos</option>'+
+								             '</select>',
+								"loadingRecords": "Espere...cargando datos",
+								"processing": "Procesando...",
+								"sInfo": "Mostrando  _START_ a _END_ de _TOTAL_ registros",
+
+			          	  },
+					      "processing": false,
+					      "ajax": {
+							        "url": "api/expediente/getByCriteria/"+tipoCriterio()+"/"+criterio(),
+			            			"dataSrc": '',
+							    },
+						  "columnDefs": [
+								            {
+								                "targets": [ 0 ],
+								                "visible": false,
+								                "searchable": false
+								            },
+								            {
+									            "targets": [ 1 ],
+									            "data": null,
+									            "orderable":false,
+									            "render": function(data, type, row){
+									            	var html="<button type='button'title='Editar expediente' class='btn btn-primary btn-xs btn-editar ' data-toggle='modal' data-target='#modificacionExpediente'><span class='glyphicon glyphicon-pencil'></span></button>"
+									             	html+="<button type='button' title='Ver Detalle' class='btn btn-info btn-xs btn-detalle' data-toggle='modal' data-target='#revistaExpediente'><span class='glyphicon glyphicon-eye-open'></span></button></div>"
+
+									            	return html;
+									            }
+									        }
+									       
+						  ],
+					      "columns": [
+					      		{ "data": "id" },
+					      		{ "data": "null","width":"5%"},
+					      		{ "data": "tipo_expediente.letra","width":"5%"},
+					      		{ "data": "numero_expediente","width":"10%"},
+					            { "data": "tipo_expediente.tipo_expediente","width":"10%" },
+					            { "data": "asunto_sin_html", "width": "45%" },
+					            { "data": "estado_expediente.estado_expediente","width":"10%" },
+					            { "data": "lista_autores","className": "for-mobile","width":"15%" },
+					        ],
+					      "autoWidth":false,
+					      "paging": true,
+					      "lengthChange": true,
+					      "searching": true,
+					      "ordering": true,
+					      "info": true,
+					      "autoWidth": false,
+				});
+			
+			//---------------------------MODIFICAR EXPEDIENTE--------------------------------------
+
+			$('#registroExpediente tbody').on( 'click', '.btn-detalle', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+		        $("#revistaExpediente").find('input[name="id"]').val(data[ "id" ]);
+		    } );
+
+		    //EVENTO ABRIR MODAL MODIFICAR EXPEDIENTE
+			$('#revistaExpediente').on('show.bs.modal', function () {
+
+		    	var id= $("#revistaExpediente").find('input[name="id"]').val();
+
+		    	//Obtención de los datos del select2 ----------------------------------
+
+		    	var select2_data=[];
+
+		    	$.ajax({
+					type:'get',
+					dataType: 'json	',
+					url:'{{ app.request.getBaseURL() }}'+'/api/legislador/getAll',
+					success: function(data){
+					    $.each(data, function(index,autor){
+					    	var autorAux={'id':autor.id, 'text':autor.nombre_completo};
+					    	select2_data.push(autorAux);
+					     });
+						
+					},
+					error: function(jqXHR,textStatus,errorThrown ){
+						var response=JSON.parse(jqXHR.responseText)
+						toastr.error(response.throwCause);
+					}
+				});
+
+		    	//Obtención de los datos del expediente a modificar ------------------------
+
+		    	$.ajax({
+					type:'Get',
+					dataType: 'json	',
+					url:'{{ app.request.getBaseURL() }}'+'/api/expediente/getOne/'+id,
+					success: function(data){
+
+						$("#tipoExpedientePrev").val(data.tipo_expediente.tipo_expediente +
+													 '-('+data.tipo_expediente.letra+')');
+						$("#numeroExpedientePrev").val(data.numero_expediente);
+					    $("#asuntoPrev").html(data.asunto);
+					    $("#extractoPrev").html(data.extracto);
+					 	
+					 	//selección en la grilla de los items almacenados
+
+					    var autores=data.autores;
+					    var selected=[];
+					    $("#selAutoresPrev").select2({tags: select2_data, tokenSeparators: [',']});
+					    $.each(autores, function(index,autor){
+					    	selected.push(autor.id);
+					     });
+					    $("#selAutoresPrev").val(selected).change();
+					    var select2=$("#revistaExpediente").find('.select2')
+					    select2.prepend('<div class="disabled-select"></div>');
+
+					    var config=[];
+					    $.each(data.lista_imagenes, function(index,imagen){
+					    	config.push(imagen.image_config);
+					    });
+					    
+					    //recuperacion de los archivos subidos
+					    $("#input-file-Prev").fileinput({
+				    		language: "es",
+			                initialPreview: data.rutas_web_expediente,
+			                showUpload: false,
+			                showRemove: false,
+			                showBrowse: false,
+			                initialPreviewAsData: true,
+			                initialPreviewConfig:config,
+			                overwriteInitial: false,
+			                maxFileSize: 10240,
+			                
+			                initialCaption: "Archivos Expediente " + data.numero_expediente
+			                
+			            });		    			
+					},
+					error: function(jqXHR,textStatus,errorThrown ){
+						var response=JSON.parse(jqXHR.responseText)
+						toastr.error(response.throwCause);
+					}
+		      	});
+			});
+			$('#revistaExpediente').on('hidden.bs.modal', function () {
+				$('#input-file-Prev').fileinput('destroy');
+				$("#selAutoresPrev").empty().change();
+			});
+
+			//EVENTO BOTON EDITAR EXPEDIENTE EN GRILLA
+		    $('#registroExpediente tbody').on( 'click', '.btn-editar', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+		        $("#modificacionExpediente").find('input[name="id"]').val(data[ "id" ]);
+		    } );
+
+		    //EVENTO ABRIR MODAL MODIFICAR EXPEDIENTE
+			$('#modificacionExpediente').on('show.bs.modal', function () {
+
+		    	var id= $("#modificacionExpediente").find('input[name="id"]').val();
+
+		    	//Obtención de los datos del select2 ----------------------------------
+
+		    	var select2_data=[];
+
+		    	$.ajax({
+					type:'get',
+					dataType: 'json	',
+					url:'{{ app.request.getBaseURL() }}'+'/api/legislador/getAll',
+					success: function(data){
+					    $.each(data, function(index,autor){
+					    	var autorAux={'id':autor.id, 'text':autor.nombre_completo};
+					    	select2_data.push(autorAux);
+					     });
+						
+					},
+					error: function(jqXHR,textStatus,errorThrown ){
+						var response=JSON.parse(jqXHR.responseText)
+						toastr.error(response.throwCause);
+					}
+				});
+
+		    	//Obtención de los datos del expediente a modificar ------------------------
+
+		    	$.ajax({
+					type:'Get',
+					dataType: 'json	',
+					url:'{{ app.request.getBaseURL() }}'+'/api/expediente/getOne/'+id,
+					success: function(data){
+
+						$("#selTipoExpedienteMod").val(data.tipo_expediente.id);
+						$("#numeroExpedienteMod").val(data.numero_expediente);
+					    $("#asuntoMod").data("wysihtml5").editor.setValue(data.asunto);
+					    $("#extractoMod").data("wysihtml5").editor.setValue(data.extracto);
+					 	
+					 	//selección en la grilla de los items almacenados
+
+					    var autores=data.autores;
+					    var selected=[];
+					    $("#selAutoresMod").select2({tags: select2_data, tokenSeparators: [',']});
+					    $.each(autores, function(index,autor){
+					    	selected.push(autor.id);
+					     });
+					    $("#selAutoresMod").val(selected).change();
+
+					    var config=[];
+					    $.each(data.lista_imagenes, function(index,imagen){
+					    	
+					    	config.push(imagen.image_config);
+					    });
+
+					    //recuperacion de los archivos subidos
+					    $("#input-file-Mod").fileinput({
+				    		language: "es",
+			                initialPreview: data.rutas_web_expediente,
+			                showUpload: false,
+			                initialPreviewAsData: true,
+			                initialPreviewConfig:config,			                
+			                overwriteInitial: false,
+			                deleteUrl:'{{ app.request.getBaseURL() }}'+'/api/expediente/archivo/remove',
+			                maxFileSize: 10240,
+			                
+			                initialCaption: "Archivos Expediente " + data.numero_expediente
+			                
+			            });		    			
+					},
+					error: function(jqXHR,textStatus,errorThrown ){
+						var response=JSON.parse(jqXHR.responseText)
+						toastr.error(response.throwCause);
+					}
+		      	});
+			});
+			//EVENTO CERRAR MODAL MODIFICAR EXPEDIENTE
+			$('#modificacionExpediente').on('hidden.bs.modal', function () {
+				$('#input-file-Mod').fileinput('destroy');
+				$("#selAutoresMod").empty().change();
+			});
+			//GUARDAR MODIFICACION DEL EXPEDIENTE
+			$("#modificacion").on('submit',function(e){
+				
+				e.preventDefault();
+				var id= $("#modificacionExpediente").find('input[name="id"]').val();
+             	var form=$(e.target);
+              	var formData=new FormData();
+              	var controles=$(form).serializeArray();
+              	var archivos=$(form).find('[name="input-file-Mod"]')[0].files;
+
+              	$.each(archivos, function(i, archivo) {
+                	
+                	formData.append('uploadedFiles-' + i, archivo);
+            	});
+
+              	var validacion='';
+
+            	$.each(controles, function(i, control) {
+
+                	formData.append(control.name, ((control.name=="selAutoresMod")
+                									?JSON.stringify($("#selAutoresMod").val())
+                									:control.value));
+
+	                validacion+=((control.name=="selTipoExpedienteMod" && control.value==0)?
+	                			'<li>Debe seleccionar un tipo de expediente</li>':'');
+			     	validacion+=((control.name=="numeroExpedienteMod" && control.value.replace(/ /g, '').length==0)?
+			     				'<li>El expediente debe tener un número</li>':'');
+			     	validacion+=((control.name=="asuntoMod" && control.value.replace(/ |\n/g, '').length==0)?
+			     				'<li>Debe especificar un texto para el asunto</li>':'');
+			     	validacion+=((control.name=="extractoMod" && control.value.replace(/ |\n/g, '').length==0)?
+			     				'<li>Debe especificar un texto para el exracto</li>':'');
+					validacion+=((control.name=="selAutoresMod" && 
+								($("#selAutoresMod").val()==null||$("#selAutoresMod").val().length==0))?
+								'<li>Debe especificar al menos un autor para el expediente</li>':'');
+	            	});
+
+	            if (validacion.length>0) 
+				{
+					Validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+								validacion+'</ul>':'');
+					toastr.error(validacion);
+					return false;
+				}
+				else{
+
+	            	$.ajax({
+		                sync: true,
+		                url: '{{ app.request.getBaseURL() }}'+'/api/expediente/update',
+		                data: formData,
+		                cache: false,
+		                contentType: false,
+		                processData: false,
+		                type:  $(form).attr('method'),
+	                success: function(data) {
+	                    toastr.success(data);
+						tabla.ajax.reload();
+						$('#modificacionExpediente').modal('hide');
+	                	},
+	                error: function(jqXHR,textStatus,errorThrown ){
+						var response=JSON.parse(jqXHR.responseText)
+						toastr.error(response.throwCause);
+						}
+	            	});
+	            }
+			});
+
+			//---------------------------------NUEVO PROYECTO---------------------------------------
+
+			//EVENTO ABRIR MODAL NUEVO PROYECTO
+		    $('#nuevoExpediente').on('show.bs.modal', function () {
+
+		    	$("#input-file").fileinput({
+		    		language: "es",
+	                showUpload: false,               
+	                overwriteInitial: false,
+	                maxFileSize: 10240,                
+	            });
+		    	
+			  	$("#selTipoExpediente").val(0);
+				$("#numeroExpediente").val('');
+				$("#asunto").data("wysihtml5").editor.setValue('');
+				$("#extracto").data("wysihtml5").editor.setValue('');
+				$("#selAutoresPrev").empty().change();
+
+			});
+			
+			//EVENTO CERRAR MODAL NUEVO PROYECTO
+			$('#nuevoExpediente').on('hidden.bs.modal', function () {
+				$('#input-file').fileinput('destroy');
+				$("#selAutores").empty().change();
+			});
+			
+			//GUARDAR ALTA EXPEDIENTE
+			$("#alta").on('submit',function(e){
+				
+				e.preventDefault();
+             	var form=$(e.target);
+              	var formData=new FormData();
+              	var controles=$(form).serializeArray();
+              	var archivos=$(form).find('[name="input-file"]')[0].files;
+
+              	$.each(archivos, function(i, archivo) {
+                	
+                	formData.append('uploadedFiles-' + i, archivo);
+            	});
+
+              	var validacion='';
+
+            	$.each(controles, function(i, control) {
+
+                	formData.append(control.name, ((control.name=="selAutores")
+                									?JSON.stringify($("#selAutores").val())
+                									:control.value));
+
+	                validacion+=((control.name=="selTipoExpediente" && control.value==0)?
+	                			'<li>Debe seleccionar un tipo de expediente</li>':'');
+			     	validacion+=((control.name=="numeroExpediente" && control.value.replace(/ /g, '').length==0)?
+			     				'<li>El expediente debe tener un numeo</li>':'');
+			     	validacion+=((control.name=="asunto" && control.value.replace(/ |\n/g, '').length==0)?
+			     				'<li>Debe especificar un texto para el asunto</li>':'');
+			     	validacion+=((control.name=="extracto" && control.value.replace(/ |\n/g, '').length==0)?
+			     				'<li>Debe especificar un texto para el exracto</li>':'');
+					validacion+=((control.name=="selAutores" && 
+								($("#selAutores").val()==null||$("#selAutores").val().length==0))?
+								'<li>Debe especificar al menos un autor para el expediente</li>':'');
+	            	});
+
+	            if (validacion.length>0) 
+				{
+					Validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+								validacion+'</ul>':'');
+					toastr.error(validacion);
+					return false;
+				}
+				else{
+
+	            	$.ajax({
+		                sync: true,
+		                url: $(form).attr('action'),
+		                data: formData,
+		                cache: false,
+		                contentType: false,
+		                processData: false,
+		                type: $(form).attr('method'),
+	                success: function(data) {
+	                    toastr.success(data);
+						tabla.ajax.reload();
+						$('#nuevoExpediente').modal('hide');
+	                	},
+	                error: function(jqXHR,textStatus,errorThrown ){
+						var response=JSON.parse(jqXHR.responseText)
+						toastr.error(response.throwCause);
+						}
+	            	});
+	            }
+			});
+		    
+			//---------------------------------INICIALIZACIÓN DE CONTROLES--------------------------
+
+			$('#estadoFiltro').bootstrapToggle({
+		      on:  'Activo',
+		      off: 'Inactivo',
+		      offstyle: 'primary',
+		      onstyle: 'success',
+		      width: "80px"
+		    });
+
+			$(".busqueda").addClass('hidden');
+			$("#selBusqueda").val("todo");
+			$('#estadoFiltro').bootstrapToggle('disable');
+
+			$("#selBusqueda").change(function(){
+
+				var control=$(this).val();
+				$(".busqueda").addClass('hidden');
+				if(control!="todo")
+					$("#"+control).removeClass('hidden');
+				else{
+					$("#busqueda-1").val("");
+					$("#busqueda-2").val("0");
+					$("#busqueda-3").val("");
+					$("#busqueda-4").val("0");
+				}
+			});
+
+			$("#btn-busqueda").click(function(){
+				if($("#selBusqueda").val()!="todo" && criterio()!="" && criterio()!="0")
+				{
+					tabla.ajax.url("api/expediente/getByCriteria/"+tipoCriterio()+"/"+criterio()).load();
+					$(".filtro").prop('disabled',true);
+					$('#estadoFiltro').bootstrapToggle('enable');
+					$("#estadoFiltro").bootstrapToggle('on');
+				}
+			});
+
+			$('#estadoFiltro').change(function() {
+				if(!$(this).is(':checked')){
+					$(".filtro").prop('disabled',false);
+					$("#selBusqueda").val("todo").change();
+					$(".filtro").prop('disabled',false);
+					tabla.ajax.url("api/expediente/getByCriteria/"+tipoCriterio()+"/"+criterio()).load();
+					$(this).bootstrapToggle('disable');
+					
+				}
+			});
+
+			$(".text-area").wysihtml5({
+				toolbar: {
+				    "image": false,
+					"size": "xs",
+				},
+			});
+
+			$("#selAutoresPrev").select2({
+			  language: "es",
+			  allowClear: true,
+			  minimumInputLength: -1,
+			  theme: "bootstrap",
+			});
+
+			$("#selAutoresMod").select2({
+			  language: "es",
+			  allowClear: true,
+			  minimumInputLength: 3,
+			  theme: "bootstrap",
+			});
+
+			$("#selAutores").select2({
+				ajax: {
+			    url: '{{ app.request.getBaseURL() }}'+"/api/autor/getByCriteria",
+			    dataType: 'json',
+			    delay: 250,
+			    cache: false,
+			    data: function (params) {
+			      return {
+			        q: params.term, // search term
+			        page: params.page
+			      };
+			    },
+			    processResults: function (data) {
+			       var dato=data;
+		           return {
+				        results: $.map(dato, function(item) {
+				            return { id: item.id, text: item.nombre_completo };
+				        })
+				    };
+		        },
+			  },
+			  language: "es",
+			  minimumInputLength: 3,
+			  theme: "bootstrap",
+			});
+	});
+	</script>
+	<section class="content-header">
+		<div class="row pull-right">
+			<ol class="breadcrumb">
+		        <li><a href="#"><i class="fa fa-dashboard"></i> Principal</a></li>
+		        <li class="active">Proyectos</li>
+		    </ol>
+		</div>
+		<hr>
+		<div class="row">
+			<div class="col-md-2">
+				<h2>
+			        Proyectos
+			    </h2>
+			</div>
+			<div class="col-md-6 col-md-offset-4">
+				<nav class="navbar navbar-default">
+					<div class="container-fluid">
+						<div class="navbar-header">
+							<label class="navbar-brand">Filtro</label>
+						</div>
+						<div class="collapse navbar-collapse">
+							<div class>
+								<form class="navbar-form navbar-left">
+									<div class="form-group">
+										<div class="form-group text-center">
+											<input type="checkbox" id="estadoFiltro">
+							        	</div> 
+										<button type="button" class="btn btn-primary filtro" id="btn-busqueda">Aplicar</button>
+										<select class="form-control filtro" id="selBusqueda">
+											<option value="todo">Todo</option>
+											<option value="busqueda-1">Autor</option>
+											<option value="busqueda-2">Estado</option>
+											<option value="busqueda-3">Número Expediente</option>
+											<option value="busqueda-4">Tipo de Expediente</option>
+										</select>
+										<input class="form-control busqueda hidden filtro" id="busqueda-1">
+										<select class="form-control busqueda hidden filtro" id="busqueda-2">
+											<option value="0">Seleccione Estado</option>
+											{% for estado in estados %}
+								                <option value="{{ estado.id }}">{{ estado.estadoExpediente }}
+								            {% endfor %}
+										</select>
+										<input class="form-control busqueda hidden filtro" id="busqueda-3">
+										<select class="form-control busqueda hidden filtro" id="busqueda-4">
+											<option value="0">Seleccione Tipo</option>
+											{% for tipo in tipos %}
+								                <option value="{{ tipo.id }}">{{ tipo.tipoExpediente }} - ({{ tipo.letra }})</option>
+								            {% endfor %}
+										</select>
+										
+									<div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</nav>
+				
+			</div>
+	    </div>
+	   
+	</section>
+	<section class="content">
+	  	<div class="row">
+	    	<div class="col-xs-12">
+{# 	     		<div class="box">
+		            <div class="box-body"> #}
+		              	<table id="registroExpediente" class="table table table-striped">
+			                <thead>
+			                	<tr>
+			                		<th>id</th>
+    		                		<th class="text-center">
+    		                			<button type="button" title="Agregar expediente"class="btn btn-primary btn-xs pull-left"
+    							    			data-toggle="modal" data-target="#nuevoExpediente">
+    							    			<span class="glyphicon glyphicon-plus"></span>
+    							    	</button>
+    							    </th>
+    							    <th>Letra</th>
+    							    <th>Numero</th>
+					                <th>Tipo</th>
+					                <th>Asunto</th>
+					                <th>Estado</th>
+					                <th>Autores</th>
+			                	</tr>
+			                </thead>
+			                <tbody>
+			                </tbody>
+		               	</table>
+		            {# </div> #} {# box-body #}
+		        {# </div> #} {# box #}
+	        </div> {# col #}
+	    </div> {# row #}
+
+	   	<div id="nuevoExpediente" class="modal fade" role="dialog">
+		 	<div class="modal-dialog modal-xl">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Nuevo Expediente</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				        <form id="alta" action="api/expediente/create" method="POST">
+				        	<div class="row">
+				        		<div class="col-md-6">
+				        			<div class="row">
+				        				<div class="col-md-6">
+								        	<div class="form-group">
+								        		<label for="selTipoExpediente">Tipo</label>
+								        		<select class="form-control" id="selTipoExpediente" 
+								        				name="selTipoExpediente">
+								        			<option value="0">Seleccione Tipo</option>
+								        			{% for tipo in tipos %}
+										                <option value="{{ tipo.id }}">{{ tipo.tipoExpediente }} - ({{ tipo.letra }})</option>
+										            {% endfor %}
+								        		</select>
+								        	</div>
+								        </div>
+							        	<div class="col-md-6">
+								        	<div class="form-group">
+								        		<label for="numeroExpediente">Número Expediente</label>
+								        		<input type="text" class="form-control" id="numeroExpediente"
+								        			   name="numeroExpediente" placeholder="N° Expediente">
+								        	</div>
+								        </div>	
+								    </div>
+								    <div class="row">
+								    	<div class="col-md-12">
+							        		<div class="form-group">
+								        		<label for="asunto">Asunto</label>
+								        		<textarea class="form-control text-area" 
+								        		id="asunto" name="asunto" placeholder="Descripción Expediente"></textarea>
+								        	</div>
+								        </div>
+						        	</div>
+						        	<div class="row">
+							        	<div class="col-md-12">
+							        		<div class="form-group">
+								        		<label for="extracto">Extracto</label>
+									        	<textarea class="form-control text-area" 
+									        	id="extracto" name="extracto" placeholder="Extracto"></textarea>
+									        </div>
+									    </div>
+							        </div>
+						        </div>
+						        <div class="col-md-6">
+						        	<div class="row">
+						        		<div class="col-md-12">
+								        	<div class="form-group">
+								        		<label for="input-file">Archivos</label>
+									        	<input id="input-file" accept="image/*,application/pdf" name="input-file" type="file"
+									        		   multiple class="file-loading">
+								        	</div>
+								        </div>
+							        </div>
+						        </div>
+					        </div>
+					        <div class="row">
+					        	<div class="col-md-12">
+									<div class="form-group">
+							        	<label for="selAutores">Autores</label>
+							        	<select class="form-control" data-width="100%" multiple="multiple" id="selAutores" name="selAutores"></select>
+							        </div>
+						        </div>
+					        </div>
+					        <div class="row">
+					        	<div class="col-md-12">
+					        		<div class="text-center">
+						    			<div class="btn-group">
+								        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+							       			 <button type="submit" class="btn btn-primary">Guardar</button>
+								        </div>
+							        </div>
+							    </div>
+				    		</div>
+				        </form>
+				     </div>
+			    </div>
+		  	</div>
+		</div>
+		<div id="modificacionExpediente" class="modal fade" role="dialog">
+		 	<div class="modal-dialog modal-xl">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Modificación Expediente</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				        <form id="modificacion" action="/api/expediente/update" method="POST">
+				        	<input type="hidden" id="id" name="id">
+				        	<div class="row">
+				        		<div class="col-md-6">
+				        			<div class="row">
+				        				<div class="col-md-6">
+								        	<div class="form-group">
+								        		<label for="selTipoExpedienteMod">Tipo</label>
+								        		<select class="form-control" id="selTipoExpedienteMod" 
+								        				name="selTipoExpedienteMod">
+								        			<option value="0">Seleccione Tipo</option>
+								        			{% for tipo in tipos %}
+										                <option value="{{ tipo.id }}">{{ tipo.tipoExpediente }} - ({{ tipo.letra }})</option>
+										            {% endfor %}
+								        		</select>
+								        	</div>
+								        </div>
+							        	<div class="col-md-6">
+								        	<div class="form-group">
+								        		<label for="numeroExpedienteMod">Número Expediente</label>
+								        		<input type="text" class="form-control" id="numeroExpedienteMod"
+								        			   name="numeroExpedienteMod" placeholder="N° Expediente">
+								        	</div>
+								        </div>	
+								    </div>
+								    <div class="row">
+								    	<div class="col-md-12">
+							        		<div class="form-group">
+								        		<label for="asuntoMod">Asunto</label>
+								        		<textarea class="form-control text-area" 
+								        		id="asuntoMod" name="asuntoMod" placeholder="Descripción Expediente"></textarea>
+								        	</div>
+								        </div>
+						        	</div>
+						        	<div class="row">
+							        	<div class="col-md-12">
+							        		<div class="form-group">
+								        		<label for="extractoMod">Extracto</label>
+									        	<textarea class="form-control text-area" 
+									        	id="extractoMod" name="extractoMod" placeholder="Extracto"></textarea>
+									        </div>
+									    </div>
+							        </div>
+						        </div>
+						        <div class="col-md-6">
+						        	<div class="row">
+						        		<div class="col-md-12">
+								        	<div class="form-group">
+								        		<label for="input-file-Mod">Archivos</label>
+									        	<input id="input-file-Mod" accept="image/*,application/pdf" name="input-file-Mod" type="file" multiple class="file-loading">
+								        	</div>
+								        </div>
+							        </div>
+						        </div>
+					        </div>
+					        <div class="row">
+					        	<div class="col-md-12">
+									<div class="form-group">
+							        	<label for="selAutoresMod">Autores</label>
+							        	<select class="form-control" data-width="100%" multiple="multiple" id="selAutoresMod" name="selAutoresMod"></select>
+							        </div>
+						        </div>
+					        </div>
+					        <div class="row">
+					        	<div class="col-md-12">
+					        		<div class="text-center">
+						    			<div class="btn-group">
+								        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+				       			 			<button type="submit" class="btn btn-primary" id="btn-Modificacion-expediente">Modificar</button>
+								        </div>
+							        </div>
+							    </div>
+				    		</div>
+				        </form>
+				     </div>
+			    </div>
+		  	</div>
+		</div>
+		<div id="revistaExpediente" class="modal fade" role="dialog">
+		 	<div class="modal-dialog modal-xl">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Revista Expediente</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				    	<input type="hidden" id="id" name="id">
+			        	<div class="row">
+			        		<div class="col-md-6">
+			        			<div class="row">
+			        				<div class="col-md-6">
+							        	<div class="form-group">
+							        		<label for="selTipoExpedientePrev">Tipo</label>
+							        		<input class="form-control" readonly id="tipoExpedientePrev" 
+							        				name="tipoExpedienteMod">
+							        	</div>
+							        </div>
+						        	<div class="col-md-6">
+							        	<div class="form-group">
+							        		<label for="numeroExpedientePrev">Número Expediente</label>
+							        		<input type="text" readOnly class="form-control" id="numeroExpedientePrev" name="numeroExpedientePrev" >
+							        	</div>
+							        </div>	
+							    </div>
+							    <div class="row">
+							    	<div class="col-md-12">
+						        		<div class="form-group">
+							        		<label for="asuntoPrev">Asunto</label>
+							        		<div class="div-Preview" id="asuntoPrev" name="asuntoPrev"></div>
+							        	</div>
+							        </div>
+					        	</div>
+					        	<div class="row">
+						        	<div class="col-md-12">
+						        		<div class="form-group">
+							        		<label for="extractoPrev">Extracto</label>
+								        	<div class="div-Preview" id="extractoPrev" name="extractoPrev"></div>
+								        </div>
+								    </div>
+						        </div>
+					        </div>
+					        <div class="col-md-6">
+					        	<div class="row">
+					        		<div class="col-md-12">
+							        	<div class="form-group">
+							        		<label for="input-file-Prev">Archivos</label>
+								        	<input id="input-file-Prev" name="input-file-Prev" type="file" multiple class="file-loading">
+							        	</div>
+							        </div>
+						        </div>
+					        </div>
+				        </div>
+				        <div class="row">
+				        	<div class="col-md-12">
+								<div class="form-group">
+						        	<label for="selAutoresPrev">Autores</label>
+						        	<select class="form-control" data-width="100%" readOnly multiple="multiple" id="selAutoresPrev" name="selAutoresPrev"></select>
+						        </div>
+					        </div>
+				        </div>
+				        <div class="row">
+				        	<div class="col-md-12">
+				        		<div class="text-center">
+					    			<div class="btn-group">
+							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cerrar</button>
+							        </div>
+						        </div>
+						    </div>
+			    		</div>
+				     </div>
+			    </div>
+		  	</div>
+		</div>
+	</section>
+{% endblock %}

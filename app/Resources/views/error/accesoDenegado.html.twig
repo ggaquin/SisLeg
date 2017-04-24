@@ -1,0 +1,95 @@
+<?php
+
+<!DOCTYPE html>
+<html class="error-page">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{% block title %}Sistema Legisativo{% endblock %}</title>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+     {% block javascripts %}
+          {% javascripts '@js_general' %}
+              <script src="{{ asset_url }}"></script>
+          {% endjavascripts %}
+      {% endblock %}
+
+    {% block stylesheets %}
+        {% stylesheets '@css_general' %}
+            <link rel="stylesheet" href="{{ asset_url }}" /></link>
+        {% endstylesheets %}
+    {% endblock %}
+
+     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
+
+  </head>
+  <body>
+  	<style type="text/css">
+		html.error-page{
+		    height: 100%;
+		    min-height: 100%;
+		    min-width: 100%;
+		    overflow: hidden;
+		    width: 100%;
+		}
+		html.error-page body{
+			background-color: #333;
+		    height: 100%;
+		    margin: 0;
+		    padding: 0;
+		    width: 100%;
+		}
+		html.error-page .container-fluid{
+		    display: table;
+		    height: 100%;
+		    padding: 0;
+		    width: 75%;
+		}
+		html.error-page .row-fluid{
+		    display: table-cell;
+		    height: 100%;
+		    vertical-align: middle;
+		}
+		html.error-page .centering{
+		    float: none;
+		    margin: 0 auto;
+		}
+		html.error-page h2.without-margin{
+		    margin-top: 0;
+		}
+		html.error-page .centering hr{
+		    width: 75%;
+		}
+		#content{
+			background: #f3f3f3;
+      		z-index: 100;
+      		height: 
+		}
+  	</style>
+  	 <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="col-lg-12">
+                <div class="centering text-center error-container" id="content">
+                    <div class="text-center">
+                        <h2 class="without-margin">Error <span class="text-warning"><big>403</big></span>. <br> Pero no se preocupe, es solo que...</h2>
+                        <h4 class="text-warning">...no tiene permisos para ver esta página</h4>
+                    </div>
+                   {#  <div class="text-center">
+                        <h3><small>¿pero que puede hacer?</small></h3>
+                    </div> #}
+                    <hr>
+                    <ul class="pager">
+                        <li><a href="#">ir a la pagina de registro ahora</a></li>	
+                    </ul>
+                    <hr>
+                </div> 
+            </div>
+        </div>
+    </div>
+  </body>
+</html>

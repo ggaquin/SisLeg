@@ -1,0 +1,30 @@
+paso 1: Generar Mapeos
+	php bin/console doctrine:mapping:import --force <nombre_de_tu_bundle> xml
+
+paso 2: Generar Entidades
+	php bin/console doctrine:mapping:convert annotation ./src
+
+paso 3: Validar Mapeo
+	php bin/console doctrine:schema:validate
+
+PASO 4: Modificaciones necesarias en la base de datos
+
+	Opcional si la validacion del esquema de base de datos muestra: 
+		[Mapping]  OK - The mapping files are correct.
+		[Database] FAIL - The database schema is not in sync with the current mapping file.
+	
+	4.1 - muestra las modificaciones
+	php bin/console doctrine:schema:update --dump-sql
+
+	4.2 - aplica las modificaciones
+	php app/console doctrine:schema:update --force
+
+
+paso 5: Generar getters y setters
+
+	Solo recomendable si la validacion del esquema de base de datos muestra:
+		[Mapping]  OK - The mapping files are correct.
+		[Database] OK - The database schema is in sync with the mapping files.
+
+	php bin/console doctrine:generate:entities <nombre_de_tu_bundle>
+

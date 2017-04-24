@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\ExpedienteComisionDictamen" table="expedienteComisionDictamen">
+    <indexes>
+      <index name="expedienteComision_idx" columns="idExpedienteComision"/>
+    </indexes>
+    <id name="id" type="integer" column="idExpedienteComisionDictamen">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <many-to-one field="expedienteComision" target-entity="ExpedienteComision" inversed-by="dictamenes" fetch="LAZY">
+      <join-columns>
+        <join-column name="idExpedienteComision" referenced-column-name="idExpedienteComision"/> 
+      </join-columns>
+    </many-to-one>
+    <field name="dictamen" type="string" column="dictamen" length="500" nullable="false">
+    </field>
+    <field name="usuarioCreacion" type="string" column="usuarioCreacion" length="70" nullable="false">
+    </field>
+    <field name="fechaCreacion" type="datetime" column="fechaCreacion" nullable="false">
+      <options>
+        <option name="default">CURRENT_TIMESTAMP</option>
+      </options>
+    </field>  
+  </entity>  
+</doctrine-mapping>

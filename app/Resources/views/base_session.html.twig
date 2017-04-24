@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <title>{% block title %}Sistema Legisativo{% endblock %}</title>
+      <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+      <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+      <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+      <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+      <![endif]-->
+       {% block javascripts %}
+            {% javascripts '@js_general' %}
+                <script src="{{ asset_url }}"></script>
+            {% endjavascripts %}
+        {% endblock %}
+
+      {% block stylesheets %}
+          {% stylesheets '@css_general' %}
+              <link rel="stylesheet" href="{{ asset_url }}" /></link>
+          {% endstylesheets %}
+      {% endblock %}
+
+    	<link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
+    </head>
+    <body class="hold-transition skin-blue sidebar-mini">
+    <script type="text/javascript">
+
+      var action;
+
+      function esSesionActiva(){
+        return (($("#validadorSesion").val()=="1")?true:false)
+      }
+
+    	function viewManager(){
+
+    		
+          $.ajax({
+
+            type:'GET',
+            dataType: 'json ',
+            url:'api/sesion/traerAccion',
+            success: function(data){
+
+              var seccion=data.section_id;
+
+              switch(true) {
+                case  seccion>0:
+
+                          for (var i = 1; i <= 3; i++) {
+                            if(data.section_id!=i)
+                              $("#seccion"+i).slideUp();
+                          };
+
+                    $("#seccion"+data.section_id).slideDown();
+
+                    break;
+
+                case  seccion==-1:
+
+                    clearInterval(action);
+
+                    break;
+
+                default:
+
+                    break;
+             }
+
+              //toastr.success(data);
+            },
+            error: function(jqXHR,textStatus,errorThrown ){
+              alert('error');
+              //$("#validadorSesion").val("0");
+              // var response=JSON.parse(jqXHR.responseText)
+              // toastr.error(response.error.throwCause);
+            }
+
+
+          }); 
+
+           var d = new Date();
+           console.log(d.getMilliseconds());   			
+
+    	}
+
+      function start(){
+
+        while(esSesionActiva()){
+
+          setInterval(viewManager, 500);
+          var d = new Date();
+          console.log(d.getMilliseconds())
+        }
+      }
+
+    	$(document).ready(function(){
+
+        $("#seccion1").slideUp();
+        $("#seccion2").slideUp();
+        $("#seccion3").slideUp();
+
+        action = setInterval(viewManager,5000);
+
+        //start();
+
+    	});
+
+    </script>
+      <input type="text" id="validadorSesion" value="1"/>
+
+      <div id="seccion1">
+        <tr>
+        <p>Sección 1</p>
+      </div>
+      <div id="seccion2">
+        <tr>
+        <p>Sección 2</p>
+      </div>
+      <div id="seccion3">
+        <tr>
+        <p>Sección 3</p>
+      </div>
+    </body>
+</html>

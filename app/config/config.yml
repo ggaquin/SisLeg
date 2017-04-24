@@ -1,0 +1,214 @@
+imports:
+    - { resource: parameters.yml }
+    - { resource: security.yml }
+    - { resource: services.yml }
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# http://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
+parameters:
+    locale: en
+
+framework:
+    #esi:             ~
+    #translator:      { fallbacks: ["%locale%"] }
+    secret:          "%secret%"
+    router:
+        resource: "%kernel.root_dir%/config/routing.yml"
+        strict_requirements: ~
+    form:            ~
+    csrf_protection: ~
+    validation:      { enable_annotations: true }
+    #serializer:      { enable_annotations: true }
+    templating:
+        engines: ['twig']
+    default_locale:  "%locale%"
+    trusted_hosts:   ~
+    trusted_proxies: ~
+    session:
+        # http://symfony.com/doc/current/reference/configuration/framework.html#handler-id
+        handler_id:  session.handler.native_file
+        save_path:   "%kernel.root_dir%/../var/sessions/%kernel.environment%"
+    fragments:       ~
+    http_method_override: true
+    assets: ~
+    php_errors:
+        log: true
+
+# Twig Configuration
+twig:
+    debug:            "%kernel.debug%"
+    strict_variables: "%kernel.debug%"
+
+# Doctrine Configuration
+doctrine:
+    dbal:
+        default_connection: principal
+        connections:
+            principal:
+                driver:   pdo_sqlite
+                host:     "%database_host%"
+                path:     "%database_name%"
+            # principal:
+            #     driver:   pdo_mysql
+            #     host:     "%database_host%"
+            #     port:     "%database_port%"
+            #     dbname:   "%database_name%"
+            #     user:     "%database_user%"
+            #     password: "%database_password%"
+            #     server_version: "%database_server_version%"
+            #     charset: utf8mb4
+            #     default_table_options:
+            #         charset: utf8mb4
+            #         collate: utf8mb4_unicode_ci
+            sqlite:
+                driver:   pdo_sqlite
+                host:     sqlite_host
+                path:     "%sqlite_path%"
+    orm:
+        # auto_generate_proxy_classes: "%kernel.debug%"
+        # naming_strategy: doctrine.orm.naming_strategy.underscore
+        # auto_mapping: true
+        default_entity_manager: principal
+        entity_managers:
+            principal:
+                connection: principal
+                mappings:
+                    AppBundle:  ~
+            sqlite:
+                connection: sqlite
+                mappings:
+                    AssistBundle: ~
+
+# Swiftmailer Configuration
+swiftmailer:
+    transport: "%mailer_transport%"
+    host:      "%mailer_host%"
+    username:  "%mailer_user%"
+    password:  "%mailer_password%"
+    spool:     { type: memory }
+
+    
+# Nelmio CORS Configuration
+nelmio_cors:
+    defaults:
+        allow_credentials: true
+        allow_origin: ['*']
+        allow_headers: ['*']
+        allow_methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+        max_age: 3600
+        hosts: []
+        origin_regex: false
+ 
+# FOSRest Configuration
+fos_rest:
+    body_listener: true
+    format_listener:
+        rules:
+            - { path: '^/api', priorities: ['json'], fallback_format: json, prefer_extension: false }
+            - { path: '^/', priorities: ~, fallback_format: html, prefer_extension: false }
+    param_fetcher_listener: true
+    view:
+        view_response_listener: 'force'
+        formats:
+            json: true
+            xml:  false
+        templating_formats:
+            html: true
+
+# Assets
+assetic:
+    debug:          '%kernel.debug%'
+    use_controller: '%kernel.debug%'
+    filters:
+        cssrewrite: ~
+    assets:
+        wysihtml5_buttons:
+            inputs:
+                - '@AppBundle/Resources/Public/css/plugins/bootstrap-wysihtml5/images/buttons.gif' 
+            output: '/css/images/buttons.gif'
+        wysihtml5_toolbar:
+            inputs:
+                - '@AppBundle/Resources/Public/css/plugins/bootstrap-wysihtml5/images/toolbar.gif'
+            output: '/css/images/toolbar.gif'
+        font_awesome_eot:
+            inputs:
+                - '@AppBundle/Resources/Public/css/font-awesome-4.7.0/fonts/fontawesome-webfont.eot' 
+            output: 'fonts/fontawesome-webfont.eot'
+        font_awesome_svg:
+            inputs:
+                - '@AppBundle/Resources/Public/css/font-awesome-4.7.0/fonts/fontawesome-webfont.svg' 
+            output: 'fonts/fontawesome-webfont.svg'
+        font_awesome_woff:
+            inputs:
+                - '@AppBundle/Resources/Public/css/font-awesome-4.7.0/fonts/fontawesome-webfont.woff' 
+            output: 'fonts/fontawesome-webfont.woff'
+        font_awesome_ttf:
+            inputs:
+                - '@AppBundle/Resources/Public/css/font-awesome-4.7.0/fonts/fontawesome-webfont.ttf' 
+            output: 'fonts/fontawesome-webfont.ttf'
+        bootstrap_glyphicons_ttf:
+            inputs:
+                - '@AppBundle/Resources/Public/css/bootstrap-3.3.7/fonts/glyphicons-halflings-regular.ttf'
+            output: "fonts/glyphicons-halflings-regular.ttf"
+        bootstrap_glyphicons_eot:
+            inputs:
+                - '@AppBundle/Resources/Public/css/bootstrap-3.3.7/fonts/glyphicons-halflings-regular.eot'
+            output: "fonts/glyphicons-halflings-regular.eot"
+        bootstrap_glyphicons_svg:
+            inputs:
+                - '@AppBundle/Resources/Public/css/bootstrap-3.3.7/fonts/glyphicons-halflings-regular.svg'
+            output: "fonts/glyphicons-halflings-regular.svg"
+        bootstrap_glyphicons_woff:
+            inputs:
+                - '@AppBundle/Resources/Public/css/bootstrap-3.3.7/fonts/glyphicons-halflings-regular.woff'
+            output: "fonts/glyphicons-halflings-regular.woff"
+        css_general:
+            inputs:
+                - '@AppBundle/Resources/Public/css/bootstrap-3.3.7/bootstrap.css'
+                - '@AppBundle/Resources/Public/css/bootstrap-3.3.7/bootstrap-theme.css'
+                - '@AppBundle/Resources/Public/css/plugins/fileinput-4.3.9/fileinput.min.css'
+                - '@AppBundle/Resources/Public/css/font-awesome-4.7.0/css/font-awesome.css'
+                - '@AppBundle/Resources/Public/css/ionicons-2.0.1/ionicons.css'
+                - '@AppBundle/Resources/Public/css/consejo.css'
+                - '@AppBundle/Resources/Public/css/skins/_all-skins.css'
+                - '@AppBundle/Resources/Public/css/plugins/iCheck/flat/blue.css'
+                - '@AppBundle/Resources/Public/css/plugins/morris/morris.css'
+                - '@AppBundle/Resources/Public/css/plugins/datepicker/datepicker3.css'
+                - '@AppBundle/Resources/Public/css/plugins/daterangepicker/daterangepicker.css'
+                - '@AppBundle/Resources/Public/css/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css'
+                # - '@AppBundle/Resources/Public/css/plugins/cleditor/jquery.cleditor.css'    
+                - '@AppBundle/Resources/Public/css/plugins/bootstrap-troggle/bootstrap-toggle.css'
+                - '@AppBundle/Resources/Public/css/plugins/select2-4.0.3/css/select2.css'
+                - '@AppBundle/Resources/Public/css/plugins/select2-4.0.3/css/select2-bootstrap.css'
+                - '@AppBundle/Resources/Public/css/plugins/toastr/toastr.css'
+        js_general:
+            inputs:
+                - '@AppBundle/Resources/Public/js/jquery-2.2.3/jquery-2.2.3.min.js'
+                - '@AppBundle/Resources/Public/js/jquery-ui-1.11.4/jquery-ui-1.11.4.min.js'
+                - '@AppBundle/Resources/Public/js/plugins/fileinput-4.3.9/plugins/canvas-to-blob.min.js'
+                - '@AppBundle/Resources/Public/js/plugins/fileinput-4.3.9/plugins/sortable.min.js'
+                - '@AppBundle/Resources/Public/js/plugins/fileinput-4.3.9/plugins/purify.min.js'
+                - '@AppBundle/Resources/Public/js/plugins/fileinput-4.3.9/fileinput.js'
+                - '@AppBundle/Resources/Public/js/plugins/fileinput-4.3.9/locales/es.js'
+                - '@AppBundle/Resources/Public/js/bootstrap-3.3.7/bootstrap.js'
+                - '@AppBundle/Resources/Public/js/plugins/raphael-2.1.0/raphael-2.1.0.min.js'
+                - '@AppBundle/Resources/Public/js/plugins/morris-0.5.0/morris-0.5.0.min.js'
+                - '@AppBundle/Resources/Public/js/plugins/knob-1.2.11/jquery.knob-1.2.11.js'
+                - '@AppBundle/Resources/Public/js/plugins/momentjs-2.11.2/moment-2.11.2.min.js'
+                - '@AppBundle/Resources/Public/js/plugins/daterangepicker-2.1.19/daterangepicker-2.1.19.js'
+                - '@AppBundle/Resources/Public/js/plugins/datepicker/bootstrap-datepicker.js'
+                - '@AppBundle/Resources/Public/js/plugins/wysihtml5-0.3.0/wysihtml5-0.3.0.min.js'
+                - '@AppBundle/Resources/Public/js/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.js'
+                # - '@AppBundle/Resources/Public/js/plugins/cleditor/jquery.cleditor.js'
+                - '@AppBundle/Resources/Public/js/plugins/slimScroll/jquery.slimscroll.min.js'
+                - '@AppBundle/Resources/Public/js/app.js'
+                - '@AppBundle/Resources/Public/js/plugins/bootstrap-troggle/bootstrap-toggle.js'
+                - '@AppBundle/Resources/Public/js/plugins/select2-4.0.3/js/select2.full.js'
+                - '@AppBundle/Resources/Public/js/plugins/toastr/toastr.min.js'
+        css_datatables:
+            inputs:
+                - '@AppBundle/Resources/Public/css/plugins/datatables/dataTables.bootstrap.css'
+        js_datatables:
+            inputs:
+                - '@AppBundle/Resources/Public/js/plugins/datatables/jquery.dataTables.js'
+                - '@AppBundle/Resources/Public/js/plugins/datatables/dataTables.bootstrap.min.js'

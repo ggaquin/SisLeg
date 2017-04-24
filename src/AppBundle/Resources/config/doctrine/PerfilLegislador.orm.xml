@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\PerfilLegislador">
+  	<indexes>
+      <index name="bloque_idx" columns="idloque"/>
+    </indexes>
+    <field name="oficina" type="string" column="oficina" length="50" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+  	<many-to-one field="bloque" target-entity="Bloque" fetch="LAZY">
+  		<join-columns>
+    		<join-column name="idBloque" referenced-column-name="idBloque"/>
+  		</join-columns>
+    </many-to-one>
+    <many-to-many field="comisiones" target-entity="Comision" mapped-by="integrantes" fetch="LAZY"/> 
+  </entity>
+</doctrine-mapping>

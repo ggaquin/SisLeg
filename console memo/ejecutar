@@ -1,0 +1,8 @@
+1.- Limpiar Caché
+	php bin/console cache:clear
+
+2.- Actualizar Assets
+	php bin/console assetic:dump
+
+3.- Arrancar Server
+	php bin/console server:run

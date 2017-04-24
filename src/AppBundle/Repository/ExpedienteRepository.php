@@ -1,0 +1,63 @@
+<?php
+
+
+namespace AppBundle\Repository;
+use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Query\ResultSetMapping;
+
+class ExpedienteRepository extends EntityRepository{
+	
+
+	public function searchByHashValue($hashValue){
+
+		$rsm = new ResultSetMapping();
+		$rsm->addScalarResult('idExpediente', 'idExpediente');
+		
+		$query = $this->getEntityManager()
+            ->createNativeQuery(
+            	 'SELECT e.idExpediente FROM expediente e WHERE e.hashId=?1'	
+            ,$rsm);
+        $query->setParameter(1,$hashValue);
+
+        return $query->getSingleResult();
+
+	}
+
+	public function findByTipoExpediente_Id($idTipoExpediente){
+
+		$qb = $this->createQueryBuilder('e')
+                   ->innerJoin('e.tipoExpediente', 't')
+                   ->where('t.id = :idTipoExpediente')
+                   ->setParameter('idTipoExpediente', $idTipoExpediente);
+
+        return $qb->getQuery()->getResult();
+
+	}
+
+	public function findByEstado_Id($idEstadoExpediente){
+
+		$qb = $this->createQueryBuilder('e')
+                   ->innerJoin('e.estadoExpediente', 'es')
+                   ->where('es.id = :idEstadoExpediente')
+                   ->setParameter('idEstadoExpediente', $idEstadoExpediente);
+
+        return $qb->getQuery()->getResult();
+
+	}
+
+	public function findByAutor_Nombres($patronBusqueda){
+
+		$qb = $this->createQueryBuilder('e');
+		$qb ->innerJoin('e.autores',
+						'a',
+						'with',$qb->expr()->orX(
+								       $qb->expr()->like('a.nombres', '?1'),
+								       $qb->expr()->like('a.apellidos','?1')
+									)
+		   		  		)
+		   ->distinct()
+  		   ->setParameter(1, '%'.$patronBusqueda.'%');
+	        return $qb->getQuery()->getResult();
+	  
+	}
+}
