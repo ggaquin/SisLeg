@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\Proyecto" table="proyecto">
+    <indexes>
+      <index name="UNIQ_proyecto_expediente_idx" columns="idExpediente"/>
+      <index name="fk_proyecto_tipoProyecto_idx" columns="idTipoProyecto"/>
+    </indexes>
+    <id name="id" type="integer" column="idProyecto">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <one-to-one field="expediente" target-entity="Expediente" inversed-by="proyecto" fetch="LAZY">
+      <join-columns>
+        <join-column name="idExpediente" referenced-column-name="idExpediente"/>
+      </join-columns>
+    </one-to-one>
+    <many-to-one field="tipoProyecto" target-entity="TipoProyecto" fetch="LAZY">
+      <join-columns>
+        <join-column name="idTipoProyecto" referenced-column-name="idTipoProyecto"/>
+      </join-columns>
+    </many-to-one>
+    <field name="asunto" type="string" length="200" column="asunto" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="visto" type="text" column="visto" nullable="false">
+    </field>
+    <field name="considerandos" type="text" column="considerandos" nullable="false">
+    </field>
+    <field name="quienSanciona" type="string" column="quienSanciona" length="130" nullable="false">
+    </field>
+    <field name="articulos" type="text" column="articulos" nullable="false">
+    </field>
+    <many-to-many field="autores" target-entity="Perfil" inversed-by="proyectos" fetch="EAGER">
+      <join-table name="autores_proyectos">
+        <join-columns>
+          <join-column name="idProyecto" referenced-column-name="idProyecto"/>
+        </join-columns>
+        <inverse-join-columns>
+          <join-column name="idPerfil" referenced-column-name="idPerfil"/>
+        </inverse-join-columns>
+      </join-table>
+    </many-to-many>
+    <field name="fechaCreacion" type="datetime" column="fechaCreacion" nullable="false">
+    </field>
+    <field name="usuarioCreacion" type="string" column="usuarioCreacion" length="70" 
+           nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="fechaModificacion" type="datetime" column="fechaModificacion" nullable="true"  >
+    </field>
+     <field name="usuarioModificacion" type="string" column="usuarioModificacion" length="70" nullable="true">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+  </entity>
+</doctrine-mapping>
