@@ -25,6 +25,10 @@
 		  }
 		}
 
+		.custom-modal{
+			height: 2000%!important;
+		}
+
 		.select2-selection--multiple { max-height: 10rem; overflow-y: auto }
 
 		.file-preview {
@@ -56,6 +60,32 @@
 			background-color: #fff;	
 			overflow-y: scroll;
 		}
+		.div-articulos{
+			height: 470px;
+			max-height: 475px;
+			overflow-y:auto;
+			overflow-x: hidden; 
+		}
+		.numero-articulo{
+			font-size: 150%;
+			font-weight: bold;
+			vertical-align: middle!important;
+		}
+		.herramientas-articulo{
+			vertical-align: middle!important;
+		}
+		.text-area-corta{
+			height: 80px!important;
+		}
+		.text-area-media{
+			height: 400px!important;
+		}
+		.text-area-larga{
+			height: 475px!important;
+		}
+		.tab{
+			height: 545px;
+		}
 		
 	</style>
 	<script type="text/javascript">
@@ -66,6 +96,37 @@
 		}
 		function tipoCriterio(){
 			return $("#selBusqueda").val();
+		}
+
+		function habilitar(nombre){
+			$(".tab").addClass("hidden");
+			$("#"+nombre).removeClass("hidden");
+		}	
+
+		function agregarArticulo(){
+			var numero=$("#articulos > tbody > tr").length+1;
+			var articulo='<tr>'+
+	        			 '<td class="numero-articulo">'+numero+'</td>' +
+	        			 '<td><textarea class="form-control text-area text-area-corta" '+
+	        			 'id="articulo-'+numero+'" name="articulo-'+numero+'" '+
+	        			 'placeholder="Articulos"></textarea>'+
+	        			 '</td>'+
+	        			 '<td class="herramientas-articulo"><div class="row text-center">'+
+	        			 '<button type="button" class="btn btn-info btn-sm"><span class="glyphicon '+
+	        			 'glyphicon-tasks"></button></div><div class="row text-center">'+
+	        			 '<button type="button" class="btn btn-danger btn-sm"><span class="glyphicon '+
+	        			 'glyphicon-remove"></button></div>'+
+	        			 '</td>'+
+	        			 '</tr>';
+
+	        $("#articulos > tbody").append(articulo);
+	        $("#articulo-"+numero).wysihtml5({
+				toolbar: {
+				    "image": false,
+					"size": "xs",
+				},
+			});
+
 		}
 
 		$(document).ready(function () {
@@ -96,7 +157,7 @@
 			          	  },
 					      "processing": false,
 					      "ajax": {
-							        "url": "api/expediente/getByCriteria/"+tipoCriterio()+"/"+criterio(),
+							        "url": "api/proyecto/getAll",//"api/expediente/getByCriteria/"+tipoCriterio()+"/"+criterio(),
 			            			"dataSrc": '',
 							    },
 						  "columnDefs": [
@@ -121,11 +182,13 @@
 					      "columns": [
 					      		{ "data": "id" },
 					      		{ "data": "null","width":"5%"},
-					      		{ "data": "numero_completo","width":"10%"},
-					            { "data": "tipo_expediente.tipo_expediente","width":"10%" },
-					            { "data": "asunto_sin_html", "width": "50%" },
-					            { "data": "estado_expediente.estado_expediente","width":"10%" },
-					            { "data": "proyecto.lista_autores","className": "for-mobile","width":"15%" },
+					      		{ "data": "numero_expediente","width":"5%"},
+					      		{ "data": "tipo_proyecto.tipo_proyecto","width":"5%"},
+					            { "data": "asunto","width":"40%" },
+					            { "data": "fecha_creacion_formateada", "width": "10%" },
+					            { "data": "fecha_entrada_formateada", "width": "10%" },
+					            { "data": "expediente.estado_expediente.estado_expediente","width":"10%" },
+					            { "data": "lista_autores","className": "for-mobile","width":"15%" },
 					        ],
 					      "autoWidth":false,
 					      "paging": true,
@@ -381,26 +444,27 @@
 			//---------------------------------NUEVO PROYECTO---------------------------------------
 
 			//EVENTO ABRIR MODAL NUEVO PROYECTO
-		    $('#nuevoExpediente').on('show.bs.modal', function () {
+		    $('#nuevoProyecto').on('show.bs.modal', function () {
+		    	agregarArticulo();
 
-		    	$("#input-file").fileinput({
-		    		language: "es",
-	                showUpload: false,               
-	                overwriteInitial: false,
-	                maxFileSize: 10240,                
-	            });
+		  //   	$("#input-file").fileinput({
+		  //   		language: "es",
+	   //              showUpload: false,               
+	   //              overwriteInitial: false,
+	   //              maxFileSize: 10240,                
+	   //          });
 		    	
-			  	$("#selTipoExpediente").val(0);
-				$("#numeroExpediente").val('');
-				$("#asunto").data("wysihtml5").editor.setValue('');
-				$("#extracto").data("wysihtml5").editor.setValue('');
+			 //  	$("#selTipoExpediente").val(0);
+				// $("#numeroExpediente").val('');
+				// $("#asunto").data("wysihtml5").editor.setValue('');
+				// $("#extracto").data("wysihtml5").editor.setValue('');
 				// $("#selAutoresPrev").empty().change();
 
 			});
 			
 			//EVENTO CERRAR MODAL NUEVO PROYECTO
-			$('#nuevoExpediente').on('hidden.bs.modal', function () {
-				$('#input-file').fileinput('destroy');
+			$('#nuevoProyecto').on('hidden.bs.modal', function () {
+				
 				// $("#selAutores").empty().change();
 			});
 			
@@ -537,45 +601,45 @@
 			//   theme: "bootstrap",
 			// });
 
-			// $("#selAutores").select2({
-			// 	ajax: {
-			//     url: '{{ app.request.getBaseURL() }}'+"/api/autor/getByCriteria",
-			//     dataType: 'json',
-			//     delay: 250,
-			//     cache: false,
-			//     data: function (params) {
-			//       return {
-			//         q: params.term, // search term
-			//         page: params.page
-			//       };
-			//     },
-			//     processResults: function (data) {
-			//        var dato=data;
-		 //           return {
-			// 	        results: $.map(dato, function(item) {
-			// 	            return { id: item.id, text: item.nombre_completo };
-			// 	        })
-			// 	    };
-		 //        },
-			//   },
-			//   language: "es",
-			//   minimumInputLength: 3,
-			//   theme: "bootstrap",
-			// });
+			$("#selAutores").select2({
+				ajax: {
+			    url: '{{ app.request.getBaseURL() }}'+"/api/autor/getByCriteria",
+			    dataType: 'json',
+			    delay: 250,
+			    cache: false,
+			    data: function (params) {
+			      return {
+			        q: params.term, // search term
+			        page: params.page
+			      };
+			    },
+			    processResults: function (data) {
+			       var dato=data;
+		           return {
+				        results: $.map(dato, function(item) {
+				            return { id: item.id, text: item.nombre_completo };
+				        })
+				    };
+		        },
+			  },
+			  language: "es",
+			  minimumInputLength: 3,
+			  theme: "bootstrap",
+			});
 	});
 	</script>
 	<section class="content-header">
 		<div class="row pull-right">
 			<ol class="breadcrumb">
 		        <li><a href="#"><i class="fa fa-dashboard"></i> Principal</a></li>
-		        <li class="active">Expedientes</li>
+		        <li class="active">Proyectos</li>
 		    </ol>
 		</div>
 		<hr>
 		<div class="row">
 			<div class="col-md-2">
 				<h2>
-			        Expedientes
+			        Proyectos
 			    </h2>
 			</div>
 			<div class="col-md-6 col-md-offset-4">
@@ -592,26 +656,27 @@
 											<input type="checkbox" id="estadoFiltro">
 							        	</div> 
 										<button type="button" class="btn btn-primary filtro" id="btn-busqueda">Aplicar</button>
+
 										<select class="form-control filtro" id="selBusqueda">
 											<option value="todo">Todo</option>
 											<option value="busqueda-1">Autor</option>
 											<option value="busqueda-2">Estado</option>
 											<option value="busqueda-3">Número Expediente</option>
-											<option value="busqueda-4">Tipo de Expediente</option>
+											<option value="busqueda-4">Tipo de Proyecto</option>
 										</select>
 										<input class="form-control busqueda hidden filtro" id="busqueda-1">
 										<select class="form-control busqueda hidden filtro" id="busqueda-2">
 											<option value="0">Seleccione Estado</option>
-											{% for estado in estados %}
+											{# {% for estado in estados %}
 								                <option value="{{ estado.id }}">{{ estado.estadoExpediente }}
-								            {% endfor %}
+								            {% endfor %} #}
 										</select>
 										<input class="form-control busqueda hidden filtro" id="busqueda-3">
 										<select class="form-control busqueda hidden filtro" id="busqueda-4">
 											<option value="0">Seleccione Tipo</option>
-											{% for tipo in tipos %}
+											{# {% for tipo in tipos %}
 								                <option value="{{ tipo.id }}">{{ tipo.tipoExpediente }} - ({{ tipo.letra }})</option>
-								            {% endfor %}
+								            {% endfor %} #}
 										</select>
 										
 									<div>
@@ -635,15 +700,17 @@
 			                	<tr>
 			                		<th>id</th>
     		                		<th class="text-center">
-    		                			<button type="button" title="Agregar expediente"class="btn btn-primary btn-xs pull-left"
-    							    			data-toggle="modal" data-target="#nuevoExpediente">
+    		                			<button type="button" title="Agregar Proyecto"class="btn btn-primary btn-xs pull-left"
+    							    			data-toggle="modal" data-target="#nuevoProyecto">
     							    			<span class="glyphicon glyphicon-plus"></span>
     							    	</button>
-    							    </th>	
-    							    <th>Numero</th>
-					                <th>Tipo</th>
+    							    </th>
+    							    <th>Expediente</th>
+    							    <th>Tipo</th>
 					                <th>Asunto</th>
-					                <th>Estado</th>
+					                <th>F. Creacion</th>
+					                <th>F. Entrada</th>
+					                <th>Estado Exp.</th>
 					                <th>Autores</th>
 			                	</tr>
 			                </thead>
@@ -655,79 +722,118 @@
 	        </div> {# col #}
 	    </div> {# row #}
 
-	   	<div id="nuevoExpediente" class="modal fade" role="dialog">
+	   	<div id="nuevoProyecto" class="modal fade custom-modal" role="dialog" data-backdrop="static" 
+   data-keyboard="false" >
 		 	<div class="modal-dialog modal-xl">
 			    <!-- Modal content-->
 			    <div class="modal-content">
 				    <div class="modal-header" style="background-color:#666	;color:#FFF">
 		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title">Nuevo Expediente</h4>
+		    			<h4 class="modal-title">Nuevo Proyecto</h4>
 				    </div>
 				    <div class="modal-body" style="background-color:#ecf0f5">
-				        <form id="alta" action="api/expediente/create" method="POST">
-				        	<div class="row">
-				        		<div class="col-md-6">
-				        			<div class="row">
-				        				<div class="col-md-6">
-								        	<div class="form-group">
-								        		<label for="selTipoExpediente">Tipo</label>
-								        		<select class="form-control" id="selTipoExpediente" 
-								        				name="selTipoExpediente">
-								        			<option value="0">Seleccione Tipo</option>
-								        			{% for tipo in tipos %}
-										                <option value="{{ tipo.id }}">{{ tipo.tipoExpediente }} - ({{ tipo.letra }})</option>
-										            {% endfor %}
-								        		</select>
-								        	</div>
-								        </div>
-							        	<div class="col-md-6">
-								        	<div class="form-group">
-								        		<label for="numeroExpediente">Número Expediente</label>
-								        		<input type="text" class="form-control" id="numeroExpediente"
-								        			   name="numeroExpediente" placeholder="N° Expediente">
-								        	</div>
-								        </div>	
-								    </div>
-								    <div class="row">
-								    	<div class="col-md-12">
-							        		<div class="form-group">
-								        		<label for="asunto">Asunto</label>
-								        		<textarea class="form-control text-area" 
-								        		id="asunto" name="asunto" placeholder="Descripción Expediente"></textarea>
-								        	</div>
-								        </div>
+				        <form id="alta" action="api/proyecto/create" method="POST">
+						    <div class="row">
+						    	<div class="col-md-2">
+						    		<div class="form-group">
+						        		<label for="selTipoProyecto">Tipo</label>
+						        		<select class="form-control" id="selTipoProyecto" 
+						        				name="selTipoProyecto">
+						        			<option value="0">Seleccione Tipo</option>
+						        			{% for tipo in tipos %}
+								                <option value="{{ tipo.id }}">{{ tipo.tipoProyecto }}</option>
+								            {% endfor %}
+						        		</select>
 						        	</div>
-						        	<div class="row">
+						    		<nav>
+									    <ul class="nav">
+										    <li><a href="#" id="link-tab-1" onclick = "habilitar('tab-1')" >Autores/Asunto</a></li>
+										    <li><a href="#" id="link-tab-2" onclick = "habilitar('tab-2')">Vistos</a></li>
+											<li><a href="#" onclick = "habilitar('tab-3')">Considerando</a></li>
+											<li><a href="#" onclick = "habilitar('tab-4')">Artículos</a></li>
+										</ul>
+									</nav>
+						    	</div>
+						    	<div class="col-md-10">
+								    <div class="row tab" id="tab-1">
+								    	<div class="col-md-12">
+								    		<div class="form-group">
+									        	<label for="selAutores">Autores</label>
+									        	<select class="form-control" multiple="multiple" data-width="100%" id="selAutores" name="selAutores"></select>
+									        </div>
+							        		<div class="form-group">
+								        		<label for="asunto">Asunto:</label>
+								        		<textarea class="form-control text-area text-area-media" 
+								        		id="asunto" name="asunto" placeholder="Descripción Expediente"></textarea>
+								        	</div> 
+								        </div> 
+						        	</div>
+						        	<div class="row tab hidden" id="tab-2">
 							        	<div class="col-md-12">
 							        		<div class="form-group">
-								        		<label for="extracto">Extracto</label>
-									        	<textarea class="form-control text-area" 
-									        	id="extracto" name="extracto" placeholder="Extracto"></textarea>
+								        		<label for="visto">Visto:</label>
+									        	<textarea class="form-control text-area text-area-larga" 
+									        	id="visto" name="visto" placeholder="Visto"></textarea>
 									        </div>
 									    </div>
 							        </div>
-						        </div>
-						        <div class="col-md-6">
-						        	<div class="row">
+							        <div class="row tab hidden" id="tab-3">
+							        	<div class="col-md-12">
+							        		<div class="form-group">
+								        		<label for="extracto">Considerando:</label>
+									        	<textarea class="form-control text-area text-area-larga" 
+									        	id="considerando" name="considerando" placeholder="Consideranto"></textarea>
+									        </div>
+									    </div>
+							        </div>
+							        <div class="row tab hidden" id="tab-4">
 						        		<div class="col-md-12">
-								        	<div class="form-group">
-								        		<label for="input-file">Archivos</label>
-									        	<input id="input-file" accept="image/*,application/pdf" name="input-file" type="file"
-									        		   multiple class="file-loading">
-								        	</div>
-								        </div>
+						        			<div class="row">
+								        		<div class="col-md-12"	
+										        	<label>Artículos:</label>
+										        	<button type="button" onclick="agregarArticulo();" class="btn btn-success btn-sm pull-right">Nuevo Artículo</button>
+										        </div>
+										    </div>
+								        	<div class="row" style="padding-top:5px">
+								        		<div class="col-md-12">
+										        	<div class="div-articulos">
+										        		<table class="table table-striped" id="articulos">
+										        			<tbody>
+											        			{# <tr>
+											        				<td class="numero-articulo">1</td>
+											        				<td>
+											        					<textarea class="form-control text-area text-area-corta" id="articulos" name="articulos" placeholder="Articulos"></textarea>
+											        					<table id="incisos" class="table">
+											        						<tbody>
+											        							<tr>
+											        								<td>a</td>
+											        								<td>
+											        									<textarea
+											        									rows="2" class="from-control"></textarea>
+											        								</td>
+											        							</tr>
+											        						</tbody>
+											        					</table>		
+											        				</td>
+											        				<td class="herramientas-articulo">
+											        					<div class="row text-center">
+											        						<button type="button" class="btn btn-info"><span class="glyphicon glyphicon-tasks"></button>
+											        					</div>
+											        					<div class="row text-center">
+											        						<button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove"></button>
+											        					</div>
+											        				</td>
+											        			</tr>
+											        		</tbody> #}
+										        		</table> 	
+											        </div>
+											    </div>
+											</div>
+									    </div>
 							        </div>
 						        </div>
-					        </div>
+						    </div>
 					        <hr>
-					        {# <div class="row">
-					        	<div class="col-md-12">
-									<div class="form-group">
-							        	<label for="selAutores">Autores</label>
-							        	<select class="form-control" data-width="100%" multiple="multiple" id="selAutores" name="selAutores"></select>
-							        </div>
-						        </div>
-					        </div> #}
 					        <div class="row">
 					        	<div class="col-md-12">
 					        		<div class="text-center">
@@ -763,9 +869,9 @@
 								        		<select class="form-control" id="selTipoExpedienteMod" 
 								        				name="selTipoExpedienteMod">
 								        			<option value="0">Seleccione Tipo</option>
-								        			{% for tipo in tipos %}
-										                <option value="{{ tipo.id }}">{{ tipo.tipoExpediente }} - ({{ tipo.letra }})</option>
-										            {% endfor %}
+								        			{# {% for tipo in tipos %}
+										                <option value="{{ tipo.id }}">{{ tipo.letra }})</option>
+										            {% endfor %} #}
 								        		</select>
 								        	</div>
 								        </div>
@@ -808,14 +914,14 @@
 						        </div>
 					        </div>
 					        <hr>
-					        {# <div class="row">
+					        <div class="row">
 					        	<div class="col-md-12">
 									<div class="form-group">
 							        	<label for="selAutoresMod">Autores</label>
 							        	<select class="form-control" data-width="100%" multiple="multiple" id="selAutoresMod" name="selAutoresMod"></select>
 							        </div>
 						        </div>
-					        </div> #}
+					        </div>
 					        <div class="row">
 					        	<div class="col-md-12">
 					        		<div class="text-center">

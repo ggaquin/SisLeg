@@ -1,0 +1,227 @@
+{% extends 'base.html.twig' %}
+
+
+
+{% block stylesheets %}
+	{{ parent() }}
+  	{% stylesheets '@css_datatables' %}
+      	<link rel="stylesheet" href="{{ asset_url }}" /></link>
+  	{% endstylesheets %}
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+    {% javascripts '@js_datatables'%}
+        <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+{% endblock %}
+
+{% block body %}
+	<script type="text/javascript">
+
+		$(document).ready(function () {
+			
+		    var tabla=$('#registroProyectos').DataTable({
+		    			  "language": {
+				              "infoEmpty": "Sin registros para mostrar",
+				              "paginate": {
+						          	"last": "Ultima Página",
+						          	"first": "Primer página",
+						          	"next": "Siguiente",
+						          	"previous": "Anterior"
+						       },
+						       "emptyTable": "Sin Datos",
+						       "lengthMenu": 'Registros Listados <select class="form-control input-sm">'+
+								             '<option value="10">10</option>'+
+								             '<option value="20">20</option>'+
+								             '<option value="30">30</option>'+
+								             '<option value="40">40</option>'+
+								             '<option value="50">50</option>'+
+								             '<option value="-1">Todos</option>'+
+								             '</select>',
+								"loadingRecords": "Espere...cargando datos",
+								"processing": "Procesando...",
+								"sInfo": "Mostrando  _START_ a _END_ de _TOTAL_ registros",
+
+			          	  },
+					      "processing": false,
+					      "ajax": {
+							        "url": "api/comision/getAll",
+			            			"dataSrc": '',
+							    },
+						  "columnDefs": [
+								            {
+								                "targets": [ 0 ],
+								                "visible": false,
+								                "searchable": false
+								            },
+								            {
+									            "targets": [ 1 ],
+									            "data": null,
+									            "orderable":false,
+									            "defaultContent": "<div class='btn-group'>"+
+									            	"<button type='button'  title='Editar comision' class='btn btn-primary btn-xs btn-editar' data-toggle='modal' data-target='#editarPerfil'><span class='glyphicon glyphicon-pencil'></span>"+
+									            	"</button>"+
+									            	"<button type='button'  class='btn btn-danger btn-xs btn-eliminar' title='Elimnar comisión'><span class='glyphicon glyphicon-erase'></span>"+
+									            	"</button></div>"+
+									            	"<button type='button' title='Ver Proyectos Asignados' class='btn btn-info btn-xs btn-detalle' ><span class='glyphicon glyphicon-eye-open'></span>"+
+									            	"</button></div>"
+									        }
+
+						  ],
+					      "columns": [
+					      		{ "data": "id" },
+					      		{ "data": "" ,"width":"10%" },
+					            { "data": "comision","width":"30%" },
+					            { "data": "lista_integrantes","className": "for-mobile","width":"60%" },
+					        ],
+					      "autoWidth":false,
+					      "paging": true,
+					      "lengthChange": true,
+					      "searching": false,
+					      "ordering": false,
+					      "info": true,
+					      "autoWidth": false,
+					    });
+
+		    $('#registroUsuarios tbody').on( 'click', '.btn-editar', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+		    } );
+		
+			$("#selIntegrantes").select2({
+				ajax: {
+			    url: "api/legislador/getAll",
+			    dataType: 'json',
+			    delay: 250,
+			    data: function (params) {
+			      return {
+			        q: params.term, // search term
+			        page: params.page
+			      };
+			    },
+			    processResults: function (data) {
+			       var dato=data;
+		           return {
+				        results: $.map(dato, function(item) {
+				            return { id: item.id, text: item.nombre_completo };
+				        })
+				    };
+		        }	,
+			    cache: true
+			  },
+			  language: "es",
+			  minimumInputLength: 1,
+			  theme: "bootstrap",
+			});
+			$('.text-area').wysihtml5({
+				toolbar: {
+				    "image": false,
+					"size": "xs",
+				}
+				
+			});
+
+			$("#btn-alta-proyecto").click(function(){
+				var data={
+					idTipoProyecto: $("#selTipoProyecto").val(),
+					titulo: $("#titulo").val(),
+					texto: $("#texto").val(),
+					resumen:$("#resumen").val(),
+					Autores: $("#selAutores").val()
+
+				};
+				$.ajax({
+					type:'POST',
+					dataType: 'application/json	',
+					url:'#',
+					data: data,
+					success: function(data){
+						toastr.success(data);
+						tabla.ajax.reload();
+					},
+					error: function(jqXHR,textStatus,errorThrown ){
+						var response=JSON.parse(jqXHR.responseText)
+						toastr.error(response.error.throwCause);
+					}
+
+				});
+				console.log(data);
+			});
+	});
+	</script>
+	<section class="content-header">
+		<div class="row pull-right">
+		    <ol class="breadcrumb">
+		        <li><a href="#"><i class="fa fa-dashboard"></i> Principal</a></li>
+	        	<li class="active">Comisiones</li>
+	        	<li class="active">Conformación Comisiones</li>
+		    </ol>
+		</div>
+		<hr>
+		<div class="row">
+			<div class="col-md-4">
+				<h2>
+			        Conformación Comisiones
+			    </h2>
+			</div>
+		</div>   
+	</section>
+	<section class="content">
+	  	<div class="row">
+	    	<div class="col-xs-12">
+	     		{# <div class="box">
+		            <div class="box-body"> #}
+		              	<table id="registroProyectos" class="table table-striped">
+			                <thead>
+			                	<tr>
+			                		<th>id</th>
+    		                		<th class="text-center">
+    		                			<button type="button" title="Agregar Comisión"class="btn btn-primary btn-xs" 
+    							    			data-toggle="modal" data-target="#nuevoProyecto">
+    							    			<span class="glyphicon glyphicon-plus"></span>
+    							    	</button>
+    							    </th>
+					                <th>Comision</th>
+					                <th>Integrantes</th>
+					            </tr>
+			                </thead>
+			                <tbody>
+			                </tbody>
+		               	</table>
+		            {# </div> #} {# box-body #}
+		        {# </div> #} {# box #}
+	        </div> {# col #}
+	    </div> {# row #}
+
+	   	<div id="nuevaComision" class="modal fade" role="dialog">
+		 	<div class="modal-dialog">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+				        <button type="button" class="close" data-dismiss="modal">&times;</button>
+				        <h4 class="modal-title">Nueva Comisión</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				        <form>
+				        	<div class="form-group">
+				        		<label for="txtDescripcion">Nombre de la comision</label>
+				        		<textarea id="txtDescripcion" class="form-control" name="txtDescripcion" placeholder="Descripcion de la comision"></textarea>
+				        	</div>
+						  
+				    		<div class="form-group">
+					        	<label for="selIntegrantes">Integrantes</label>
+					        	<select class="form-control" data-width="100%" multiple="multiple" id="selAutores"></select>
+					        </div>
+	
+					        <hr>
+					        <div class="btn-group">
+					        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+				       			 <button type="button" class="btn btn-primary" id="btn-alta-proyecto">Guardar</button>
+					        </div>
+				        </form>
+				     </div>
+			    </div>
+		  	</div>
+		</div>
+	</section>
+{% endblock %}
