@@ -121,12 +121,11 @@
 					      "columns": [
 					      		{ "data": "id" },
 					      		{ "data": "null","width":"5%"},
-					      		{ "data": "tipo_expediente.letra","width":"5%"},
-					      		{ "data": "numero_expediente","width":"10%"},
+					      		{ "data": "numero_completo","width":"10%"},
 					            { "data": "tipo_expediente.tipo_expediente","width":"10%" },
-					            { "data": "asunto_sin_html", "width": "45%" },
+					            { "data": "asunto_sin_html", "width": "50%" },
 					            { "data": "estado_expediente.estado_expediente","width":"10%" },
-					            { "data": "lista_autores","className": "for-mobile","width":"15%" },
+					            { "data": "proyecto.lista_autores","className": "for-mobile","width":"15%" },
 					        ],
 					      "autoWidth":false,
 					      "paging": true,
@@ -186,7 +185,7 @@
 					 	
 					 	//selección en la grilla de los items almacenados
 
-					    var autores=data.autores;
+					    var autores=data.proyecto.autores;
 					    var selected=[];
 					    $("#selAutoresPrev").select2({tags: select2_data, tokenSeparators: [',']});
 					    $.each(autores, function(index,autor){
@@ -241,24 +240,24 @@
 
 		    	//Obtención de los datos del select2 ----------------------------------
 
-		    	var select2_data=[];
+		  //   	var select2_data=[];
 
-		    	$.ajax({
-					type:'get',
-					dataType: 'json	',
-					url:'{{ app.request.getBaseURL() }}'+'/api/legislador/getAll',
-					success: function(data){
-					    $.each(data, function(index,autor){
-					    	var autorAux={'id':autor.id, 'text':autor.nombre_completo};
-					    	select2_data.push(autorAux);
-					     });
+		  //   	$.ajax({
+				// 	type:'get',
+				// 	dataType: 'json	',
+				// 	url:'{{ app.request.getBaseURL() }}'+'/api/legislador/getAll',
+				// 	success: function(data){
+				// 	    $.each(data, function(index,autor){
+				// 	    	var autorAux={'id':autor.id, 'text':autor.nombre_completo};
+				// 	    	select2_data.push(autorAux);
+				// 	     });
 						
-					},
-					error: function(jqXHR,textStatus,errorThrown ){
-						var response=JSON.parse(jqXHR.responseText)
-						toastr.error(response.throwCause);
-					}
-				});
+				// 	},
+				// 	error: function(jqXHR,textStatus,errorThrown ){
+				// 		var response=JSON.parse(jqXHR.responseText)
+				// 		toastr.error(response.throwCause);
+				// 	}
+				// });
 
 		    	//Obtención de los datos del expediente a modificar ------------------------
 
@@ -275,13 +274,13 @@
 					 	
 					 	//selección en la grilla de los items almacenados
 
-					    var autores=data.autores;
-					    var selected=[];
-					    $("#selAutoresMod").select2({tags: select2_data, tokenSeparators: [',']});
-					    $.each(autores, function(index,autor){
-					    	selected.push(autor.id);
-					     });
-					    $("#selAutoresMod").val(selected).change();
+					    // var autores=data.autores;
+					    // var selected=[];
+					    // $("#selAutoresMod").select2({tags: select2_data, tokenSeparators: [',']});
+					    // $.each(autores, function(index,autor){
+					    // 	selected.push(autor.id);
+					    //  });
+					    // $("#selAutoresMod").val(selected).change();
 
 					    var config=[];
 					    $.each(data.lista_imagenes, function(index,imagen){
@@ -313,7 +312,7 @@
 			//EVENTO CERRAR MODAL MODIFICAR EXPEDIENTE
 			$('#modificacionExpediente').on('hidden.bs.modal', function () {
 				$('#input-file-Mod').fileinput('destroy');
-				$("#selAutoresMod").empty().change();
+				// $("#selAutoresMod").empty().change();
 			});
 			//GUARDAR MODIFICACION DEL EXPEDIENTE
 			$("#modificacion").on('submit',function(e){
@@ -334,9 +333,7 @@
 
             	$.each(controles, function(i, control) {
 
-                	formData.append(control.name, ((control.name=="selAutoresMod")
-                									?JSON.stringify($("#selAutoresMod").val())
-                									:control.value));
+                	formData.append(control.name, control.value);
 
 	                validacion+=((control.name=="selTipoExpedienteMod" && control.value==0)?
 	                			'<li>Debe seleccionar un tipo de expediente</li>':'');
@@ -346,9 +343,9 @@
 			     				'<li>Debe especificar un texto para el asunto</li>':'');
 			     	validacion+=((control.name=="extractoMod" && control.value.replace(/ |\n/g, '').length==0)?
 			     				'<li>Debe especificar un texto para el exracto</li>':'');
-					validacion+=((control.name=="selAutoresMod" && 
-								($("#selAutoresMod").val()==null||$("#selAutoresMod").val().length==0))?
-								'<li>Debe especificar al menos un autor para el expediente</li>':'');
+					// validacion+=((control.name=="selAutoresMod" && 
+					// 			($("#selAutoresMod").val()==null||$("#selAutoresMod").val().length==0))?
+					// 			'<li>Debe especificar al menos un autor para el expediente</li>':'');
 	            	});
 
 	            if (validacion.length>0) 
@@ -397,14 +394,14 @@
 				$("#numeroExpediente").val('');
 				$("#asunto").data("wysihtml5").editor.setValue('');
 				$("#extracto").data("wysihtml5").editor.setValue('');
-				$("#selAutoresPrev").empty().change();
+				// $("#selAutoresPrev").empty().change();
 
 			});
 			
 			//EVENTO CERRAR MODAL NUEVO PROYECTO
 			$('#nuevoExpediente').on('hidden.bs.modal', function () {
 				$('#input-file').fileinput('destroy');
-				$("#selAutores").empty().change();
+				// $("#selAutores").empty().change();
 			});
 			
 			//GUARDAR ALTA EXPEDIENTE
@@ -425,9 +422,7 @@
 
             	$.each(controles, function(i, control) {
 
-                	formData.append(control.name, ((control.name=="selAutores")
-                									?JSON.stringify($("#selAutores").val())
-                									:control.value));
+                	formData.append(control.name, control.value);
 
 	                validacion+=((control.name=="selTipoExpediente" && control.value==0)?
 	                			'<li>Debe seleccionar un tipo de expediente</li>':'');
@@ -437,9 +432,9 @@
 			     				'<li>Debe especificar un texto para el asunto</li>':'');
 			     	validacion+=((control.name=="extracto" && control.value.replace(/ |\n/g, '').length==0)?
 			     				'<li>Debe especificar un texto para el exracto</li>':'');
-					validacion+=((control.name=="selAutores" && 
-								($("#selAutores").val()==null||$("#selAutores").val().length==0))?
-								'<li>Debe especificar al menos un autor para el expediente</li>':'');
+					// validacion+=((control.name=="selAutores" && 
+					// 			($("#selAutores").val()==null||$("#selAutores").val().length==0))?
+					// 			'<li>Debe especificar al menos un autor para el expediente</li>':'');
 	            	});
 
 	            if (validacion.length>0) 
@@ -535,52 +530,52 @@
 			  theme: "bootstrap",
 			});
 
-			$("#selAutoresMod").select2({
-			  language: "es",
-			  allowClear: true,
-			  minimumInputLength: 3,
-			  theme: "bootstrap",
-			});
+			// $("#selAutoresMod").select2({
+			//   language: "es",
+			//   allowClear: true,
+			//   minimumInputLength: 3,
+			//   theme: "bootstrap",
+			// });
 
-			$("#selAutores").select2({
-				ajax: {
-			    url: '{{ app.request.getBaseURL() }}'+"/api/autor/getByCriteria",
-			    dataType: 'json',
-			    delay: 250,
-			    cache: false,
-			    data: function (params) {
-			      return {
-			        q: params.term, // search term
-			        page: params.page
-			      };
-			    },
-			    processResults: function (data) {
-			       var dato=data;
-		           return {
-				        results: $.map(dato, function(item) {
-				            return { id: item.id, text: item.nombre_completo };
-				        })
-				    };
-		        },
-			  },
-			  language: "es",
-			  minimumInputLength: 3,
-			  theme: "bootstrap",
-			});
+			// $("#selAutores").select2({
+			// 	ajax: {
+			//     url: '{{ app.request.getBaseURL() }}'+"/api/autor/getByCriteria",
+			//     dataType: 'json',
+			//     delay: 250,
+			//     cache: false,
+			//     data: function (params) {
+			//       return {
+			//         q: params.term, // search term
+			//         page: params.page
+			//       };
+			//     },
+			//     processResults: function (data) {
+			//        var dato=data;
+		 //           return {
+			// 	        results: $.map(dato, function(item) {
+			// 	            return { id: item.id, text: item.nombre_completo };
+			// 	        })
+			// 	    };
+		 //        },
+			//   },
+			//   language: "es",
+			//   minimumInputLength: 3,
+			//   theme: "bootstrap",
+			// });
 	});
 	</script>
 	<section class="content-header">
 		<div class="row pull-right">
 			<ol class="breadcrumb">
 		        <li><a href="#"><i class="fa fa-dashboard"></i> Principal</a></li>
-		        <li class="active">Proyectos</li>
+		        <li class="active">Expedientes</li>
 		    </ol>
 		</div>
 		<hr>
 		<div class="row">
 			<div class="col-md-2">
 				<h2>
-			        Proyectos
+			        Expedientes
 			    </h2>
 			</div>
 			<div class="col-md-6 col-md-offset-4">
@@ -644,8 +639,7 @@
     							    			data-toggle="modal" data-target="#nuevoExpediente">
     							    			<span class="glyphicon glyphicon-plus"></span>
     							    	</button>
-    							    </th>
-    							    <th>Letra</th>
+    							    </th>	
     							    <th>Numero</th>
 					                <th>Tipo</th>
 					                <th>Asunto</th>
@@ -725,14 +719,15 @@
 							        </div>
 						        </div>
 					        </div>
-					        <div class="row">
+					        <hr>
+					        {# <div class="row">
 					        	<div class="col-md-12">
 									<div class="form-group">
 							        	<label for="selAutores">Autores</label>
 							        	<select class="form-control" data-width="100%" multiple="multiple" id="selAutores" name="selAutores"></select>
 							        </div>
 						        </div>
-					        </div>
+					        </div> #}
 					        <div class="row">
 					        	<div class="col-md-12">
 					        		<div class="text-center">
@@ -812,14 +807,15 @@
 							        </div>
 						        </div>
 					        </div>
-					        <div class="row">
+					        <hr>
+					        {# <div class="row">
 					        	<div class="col-md-12">
 									<div class="form-group">
 							        	<label for="selAutoresMod">Autores</label>
 							        	<select class="form-control" data-width="100%" multiple="multiple" id="selAutoresMod" name="selAutoresMod"></select>
 							        </div>
 						        </div>
-					        </div>
+					        </div> #}
 					        <div class="row">
 					        	<div class="col-md-12">
 					        		<div class="text-center">
@@ -898,6 +894,7 @@
 						        </div>
 					        </div>
 				        </div>
+				        <hr>
 				        <div class="row">
 				        	<div class="col-md-12">
 				        		<div class="text-center">

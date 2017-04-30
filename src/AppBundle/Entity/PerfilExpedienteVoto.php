@@ -7,9 +7,9 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * PerfilExpedienteVoto
  *
- * @ORM\Table(name="PerfilExpedienteVoto", indexes={@ORM\Index(name="perfil_idx", columns={"idPerfil"}), 
-*                                                   @ORM\Index(name="expediente_idx", columns={"idExpediente"}), 
-*                                                   @ORM\Index(name="tipoVoto_idx", columns={"idTipoVoto"})})
+ * @ORM\Table(name="PerfilExpedienteVoto", indexes={@ORM\Index(name="perfilExpedienteVoto_perfil_idx", columns={"idPerfil"}), 
+*                                                   @ORM\Index(name="perfilExpedienteVoto_expediente_idx", columns={"idExpediente"}), 
+*                                                   @ORM\Index(name="perfilExpedienteVoto_tipoVoto_idx", columns={"idTipoVoto"})})
  * @ORM\Entity
  */
 class PerfilExpedienteVoto

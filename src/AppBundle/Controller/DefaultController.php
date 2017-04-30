@@ -103,6 +103,21 @@ class DefaultController extends Controller
     }
 
     /**
+     * @Route("/proyectos", name="proyectos")
+     */
+    public function proyectoAction(Request $request)
+    {
+        $tiposProyectoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoProyecto');
+        $tiposProyecto=$tiposProyectoRepository->findBy(array(),array('tipoProyecto' => 'ASC') );;
+       
+        return $this->render('default/proyecto.html.twig', array(
+            'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
+            'tipos' => $tiposProyecto
+        ));
+         
+    }
+
+    /**
      * @Route("/expedientes", name="expedientes")
      */
     public function expedienteAction(Request $request)
@@ -124,7 +139,7 @@ class DefaultController extends Controller
      */
     public function comisionAction(Request $request)
     {
-       return $this->render('default/commission_dashboard.html.twig', array(
+       return $this->render('default/comision.html.twig', array(
             'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR
         ));
          

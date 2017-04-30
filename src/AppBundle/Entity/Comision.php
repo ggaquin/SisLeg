@@ -8,7 +8,7 @@ use JMS\Serializer\Annotation\VirtualProperty;
 /**
  * Comision
  *
- * @ORM\Table(name="Comision")
+ * @ORM\Table(name="Comision",indexes={@ORM\Index(name="comision_tipoC  omision_idx", columns={"idTipoComision"})})
  * @ORM\Entity
  */
 class Comision
@@ -45,6 +45,24 @@ class Comision
      */
     private $comision;
 
+     /**
+     * @var \AppBundle\Entity\TipoComision
+     *
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\TipoComision")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="idTipoComision", referencedColumnName="idTipoComision")
+     * })
+     */
+    private $tipoComision;
+
+      /**
+     * @var boolean
+     *
+     * @ORM\Column(name="activa", type="boolean", nullable=false)
+     */
+    private $activa;
+
+
     //------------------------------------constructor--------------------------------------------
 
      /**
@@ -52,7 +70,7 @@ class Comision
      */
     public function __construct()
     {
-        $this->ExpedienteComision = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->expedientesAsignados = new \Doctrine\Common\Collections\ArrayCollection();
         $this->integrantes = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
@@ -159,6 +177,56 @@ class Comision
     {
         return $this->comision;
     }
+
+    /**
+     * Set tipoComision
+     *
+     * @param \AppBundle\Entity\TipoComision $tipoComision
+     *
+     * @return Comision
+     */
+    public function setTipoComision(\AppBundle\Entity\TipoComision $tipoComision = null)
+    {
+        $this->tipoComision = $tipoComision;
+
+        return $this;
+    }
+
+    /**
+     * Get tipoComision
+     *
+     * @return \AppBundle\Entity\TipoComision
+     */
+    public function getTipoComision()
+    {
+        return $this->tipoComision;
+    }
+
+    /**
+     * Set activa
+     *
+     * @param boolean $activa
+     *
+     * @return Comision
+     */
+    public function setActiva($activa)
+    {
+        $this->activa = $activa;
+
+        return $this;
+    }
+
+    /**
+     * Get activa
+     *
+     * @return boolean
+     */
+    public function getActiva()
+    {
+        return $this->activa;
+    }
+
+    //------------------------------Propiedades virtuales-----------------------------------------
 
     /**
      * Get listaIntegrantes

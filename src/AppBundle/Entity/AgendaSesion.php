@@ -7,9 +7,9 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * AgendaSesion
  *
- * @ORM\Table(name="agendaSesion", indexes={@ORM\Index(name="expediente1_idx", columns={"idExpediente"}), 
- *                                          @ORM\Index(name="sesion_idx", columns={"idSesion"}), 
- *                                          @ORM\Index(name="estadoAgendaesion_idx", columns={"idEstadoAgendaSesion"})})
+ * @ORM\Table(name="agendaSesion", indexes={@ORM\Index(name="agendaSesion_expediente_idx", columns={"idExpediente"}), 
+ *                                          @ORM\Index(name="agendaSesion_sesion_idx", columns={"idSesion"}), 
+ *                                          @ORM\Index(name="agendaSesion_estadoAgendaSesion_idx", columns={"idEstadoAgendaSesion"})})
  * @ORM\Entity
  */
 class AgendaSesion

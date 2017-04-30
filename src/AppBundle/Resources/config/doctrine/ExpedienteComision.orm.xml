@@ -2,8 +2,8 @@
 <doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
   <entity name="AppBundle\Entity\ExpedienteComision" table="expedienteComision">
     <indexes>
-      <index name="expediente2_idx" columns="idExpediente"/>
-      <index name="comision_idx" columns="idComision"/>
+      <index name="expedienteComision_expediente_idx" columns="idExpediente"/>
+      <index name="expedienteComision_comision_idx" columns="idComision"/>
     </indexes>
     <id name="id" type="integer" column="idExpedienteComision">
       <generator strategy="IDENTITY"/>

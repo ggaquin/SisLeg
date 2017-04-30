@@ -5,15 +5,16 @@ namespace AppBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\VirtualProperty;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use \DateTime;
 use AppBundle\Popo\Image;
 
 /**
  * Expediente
  *
- * @ORM\Table(name="expediente", indexes={@ORM\Index(name="estadoExpediente_idx", columns={"idEstadoExpediente"}), 
- *                                        @ORM\Index(name="tipoExpediente_idx", columns={"idTipoExpediente"}),
- *                                        @ORM\Index(name="numeroExpediente_idx", columns={"numeroExpediente"})})},
- *            uniqueConstraints={@UniqueConstraint(name="numeroExpediente_idx", columns={"numeroExpediente"})})
+ * @ORM\Table(name="expediente", indexes={@ORM\Index(name="expediente_estadoExpediente_idx", columns={"idEstadoExpediente"}), 
+ *                                        @ORM\Index(name="expediente_tipoExpediente_idx", columns={"idTipoExpediente"})
+ *                                       },
+ *            uniqueConstraints={@ORM\UniqueConstraint(name="numeroExpediente_idx", columns={"numeroExpediente"})})
  * @ORM\Entity(repositoryClass="AppBundle\Repository\ExpedienteRepository")
  *
  * @ORM\HasLifecycleCallbacks
@@ -176,11 +177,11 @@ class Expediente
     private $usuarioAprobacion;
 
     /**
-     * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Perfil", mappedBy="expedientes")
+     *  @var \AppBundle\Entity\Proyecto $proyecto
+     * 
+     *  @ORM\OneToOne(targetEntity="\AppBundle\Entity\Proyecto", mappedBy="expediente")
      */
-    private $autores;
+    private $proyecto;
 
     //------------------------------------constructor---------------------------------------------
 
@@ -189,7 +190,7 @@ class Expediente
      */
     public function __construct()
     {
-        $this->autores = new \Doctrine\Common\Collections\ArrayCollection();
+       $fechaCreacion=new \DateTime("now");
     }
 
     //-------------------------------setters y getters--------------------------------------------
@@ -203,20 +204,6 @@ class Expediente
     {
         return $this->id;
     }
-
-    /*
-     * Set hashId
-     *
-     * @param string $hashId
-     *
-     * @return Expediente
-     *
-    public function setHash($hashId)
-    {
-        $this->hashId = $hashId;
-
-        return $this;
-    }*/
 
     /**
      * Get hashId
@@ -373,6 +360,31 @@ class Expediente
     }
 
     /**
+     * Set proyecto
+     *
+     * @param \AppBundle\Entity\Proyecto $proyecto
+     *
+     * @return Expediente
+     */
+    public function setProyecto(\AppBundle\Entity\Proyecto $proyecto = null)
+    {
+        $proyecto->setExpediente($this);
+        $this->proyecto=$proyecto;
+
+        return $this;
+    }
+
+    /**
+     * Get proyecto
+     *
+     * @return \AppBundle\Entity\Proyecto
+     */
+    public function getProyecto()
+    {
+        return $this->proyecto;
+    }
+
+    /**
      * Set fechaCreacion
      *
      * @param \DateTime $fechaCreacion
@@ -517,56 +529,6 @@ class Expediente
         return $this->usuarioAprobacion;
     }
 
-    /**
-     * set autores
-     *
-     * @param \Doctrine\Common\Collections\Collection $autores
-     *
-     * @return Expediente
-     */
-    public function setAutores(\Doctrine\Common\Collections\Collection $autores)
-    {
-        $this->autores = $autores;
-
-        return $this;
-    }
-
-    /**
-     * Add autor
-     *
-     * @param \AppBundle\Entity\Perfil $autor
-     *
-     * @return Expediente
-     */
-    public function addAutor(\AppBundle\Entity\Perfil $autor)
-    {
-        $autor->addExpediente($this);
-        return $this;
-    }
-
-    /**
-     * Remove autor
-     *
-     * @param \AppBundle\Entity\Perfil $autor
-     *
-     * @return Expediente
-     */
-    public function removeAutor(\AppBundle\Entity\Perfil $autor)
-    {
-        $autor->removeExpediente($this);
-        return $this;
-    }
-
-    /**
-     * Get autores
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getAutores()
-    {
-        return $this->autores;
-    }
-
     //--------------------------------propiedades protegidas---------------------------------------
 
     /**
@@ -619,21 +581,17 @@ class Expediente
 
     //------------------------------Propiedades virtuales-----------------------------------------
 
-     /**
-     * Get listaAutores
+
+    /**
+     * Get numeroCompleto
      *
      * @return string
      *
      * @VirtualProperty
      */
-    public function getListaAutores()
-    {
-        $autores=$this->autores;
-        $listaAutores="";
-        foreach ($autores as $autor) {
-            $listaAutores.=($listaAutores!=""?"-":"").$autor->getNombreCompleto();
-        }
-        return $listaAutores;
+    public function getNumeroCompleto()
+    {   $año = $this->fechaCreacion->format("Y");
+        return $this->numeroExpediente.'-'.($this->tipoExpediente->getLetra()).'-'.substr($año,2,2);
     }
 
     /**

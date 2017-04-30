@@ -11,13 +11,15 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use JMS\Serializer\SerializerBuilder;
 use FOS\RestBundle\View\View;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\File\UploadedFile;;
 
 // use twig\twig;
 
 use AppBundle\Entity\Rol;
 use AppBundle\Entity\Usuario;
 use AppBundle\Entity\Perfil;
+use AppBundle\Entity\PerfilLegislador;
+use AppBundle\Entity\PerfilPublico;
 use AppBundle\Entity\Bloque;
 use AppBundle\Entity\Expediente;
 use AssistBundle\Entity\AdministracionSesion;
@@ -47,6 +49,18 @@ class RestController extends FOSRestController{
         $usuarioRepository=$this->getDoctrine()->getRepository('AppBundle:Usuario');
         $usuario=$usuarioRepository->find($id);
         return $this->view($usuario,200);
+    }
+
+    /**
+     * @Rest\Get("/api/proyecto/getAll")
+     */
+    public function traerTodosLosProyectosAction(Request $request)
+    {
+
+        $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:proyecto');
+        $proyecto=$proyectoRepository->findAll();
+        return $this->view($proyecto,200);
+         
     }
 
     /**
@@ -126,7 +140,7 @@ class RestController extends FOSRestController{
     {
         
         $comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
-        $comisiones=$comisionRepository->findAll();
+        $comisiones=$comisionRepository->findBy(array(),array('comision' => 'ASC'));
         return $this->view($comisiones,200);
 
     }
@@ -141,7 +155,6 @@ class RestController extends FOSRestController{
             $idTipoExpediente=$request->request->get('selTipoExpediente');
             $asunto=$request->request->get('asunto');
             $extracto=$request->request->get('extracto');
-            $autores=json_decode($request->request->get('selAutores'));
             $archivos=$request->files->all();
             $usuario=$this->getUser();
 
@@ -157,13 +170,6 @@ class RestController extends FOSRestController{
             $expediente->setTipoExpediente($tipoExpediente);
             $expediente->setAsunto($asunto);
             $expediente->setExtracto($extracto);
-
-
-
-            foreach ($autores as $autor) {
-                $perfil=$perfilRepository->find($autor);
-                $expediente->addAutor($perfil); 
-            }
 
             $expediente->setUsuarioCreacion($usuario->getUsername());
             $expediente->setFechaCreacion(new \DateTime("now"));
@@ -195,7 +201,6 @@ class RestController extends FOSRestController{
             $idTipoExpediente=$request->request->get('selTipoExpedienteMod');
             $asunto=$request->request->get('asuntoMod');
             $extracto=$request->request->get('extractoMod');
-            $autores=json_decode($request->request->get('selAutoresMod'));
             $archivos=$request->files->all();
             $usuario=$this->getUser();
 
@@ -211,13 +216,6 @@ class RestController extends FOSRestController{
             $expediente->setAsunto($asunto);
             $expediente->setExtracto($extracto);
 
-            $nuevosAutores= new \Doctrine\Common\Collections\ArrayCollection();
-            foreach ($autores as $autor) {
-                $perfil=$perfilRepository->find($autor);
-                $nuevosAutores[]=$perfil; 
-            }
-
-            $expediente->setAutores($nuevosAutores);
             $expediente->setUsuarioModificacion($usuario->getUsername());
             $expediente->setFechaModificacion(new \DateTime("now"));
 
@@ -233,8 +231,6 @@ class RestController extends FOSRestController{
             throw $e;
             
         }
-
-
     }
 
     /**
@@ -277,7 +273,6 @@ class RestController extends FOSRestController{
      */
     public function crearUsuarioAction(Request $request)
     {   
-        
         try{
 
             $idTipoPerfil=$request->request->get('selTipo');
@@ -348,6 +343,9 @@ class RestController extends FOSRestController{
 
         }catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e){ 
             throw new \Exception('El nombre de usuario ya existe');
+        }
+        catch(\Exception $e){
+            throw $e;
         }
     }
 

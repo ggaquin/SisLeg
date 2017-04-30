@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
   <entity name="AppBundle\Entity\Comision" table="comision">
+     <indexes>
+      <index name="comision_tipoComision_idx" columns="idTipoComision"/>
+    </indexes>
     <id name="id" type="integer" column="idComision">
       <generator strategy="IDENTITY"/>
     </id>
@@ -20,5 +23,11 @@
         </inverse-join-columns>
       </join-table>
     </many-to-many>
+    <many-to-one field="tipoComision" target-entity="TipoComision" fetch="LAZY" nullable="false">
+      <join-columns>
+        <join-column name="idTipoComision" referenced-column-name="idTipoComision"/>
+      </join-columns>
+    </many-to-one>
+    <field name="activa" type="boolean" column="activa" nullable="false"/>
   </entity>
 </doctrine-mapping>

@@ -11,8 +11,9 @@ use JMS\Serializer\Annotation\VirtualProperty;
  * Usuario
  *
  * @ORM\Table(name="usuario",
- *            indexes={@ORM\Index(name="rol_idx", columns={"idRol"}),
- *                     @ORM\Index(name="usuario_idx", columns={"usuario"})})
+ *            indexes={@ORM\Index(name="usuario_rol_idx", columns={"idRol"}),
+ *                     @ORM\Index(name="UNIQ_usuario_idx", columns={"usuario"}),
+ *                     @ORM\Index(name="UNIQ_usuario_perfil_idx", columns={"idPerfil"})})
  * @ORM\Entity
  */
 class Usuario implements AdvancedUserInterface, \Serializable

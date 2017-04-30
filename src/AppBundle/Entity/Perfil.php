@@ -9,7 +9,7 @@ use AppBundle\Popo\Image;
 /**
  * Perfil
  *
- * @ORM\Table(name="perfil")
+ * @ORM\Table(name="perfil",indexes={@ORM\Index(name="perfil_bloque_idx", columns={"idBloque"})})
  * @ORM\Entity(repositoryClass="AppBundle\Repository\PerfilRepository")
  * @ORM\HasLifecycleCallbacks 
  * @ORM\InheritanceType("SINGLE_TABLE")
@@ -122,7 +122,7 @@ class Perfil
      */
     private $correoElectronico;
 
-    /**
+    /*
      * @var \Doctrine\Common\Collections\Collection
      *
      * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Expediente", inversedBy="autores", fetch="EAGER")
@@ -135,7 +135,12 @@ class Perfil
      *   }
      * )
      */
-    private $expedientes;
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     *
+     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Proyecto", mappedBy="autores")
+     */
+    private $proyectos;
 
     /**
      * @var \DateTime
@@ -174,7 +179,7 @@ class Perfil
      */
     public function __construct()
     {
-        $this->expedientes = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->proyectos = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     //----------------------------------getters y setters-------------------------------------------
@@ -310,39 +315,40 @@ class Perfil
     }
 
     /**
-     * Add expediente
+     * Add proyect
      *
-     * @param \AppBundle\Entity\Expediente $expediente
+     * @param \AppBundle\Entity\Proyecto $proyecto
      *
      * @return Perfil
      */
-    public function addExpediente(\AppBundle\Entity\Expediente $expediente)
+    public function addProyecto(\AppBundle\Entity\Proyecto $proyecto)
     {
-        $this->expedientes[] = $expediente;
-
+        $proyecto->addAutor($this);
+        $this->autores[]=$proyecto;
         return $this;
     }
 
     /**
-     * Remove expediente
+     * Remove proyecto
      *
-     * @param \AppBundle\Entity\Expediente $expediente
+     * @param \AppBundle\Entity\Proyecto $proyecto
      *
      * @return Perfil
      */
-    public function removeExpediente(\AppBundle\Entity\Expediente $expediente)
+    public function removeExpediente(\AppBundle\Entity\Expediente $proyecto)
     {
-        $this->proyectos->removeElement($expediente);
+        $this->proyectos->removeElement($proyecto);
+        return $this;
     }
 
     /**
-     * Get expedientes
+     * Get proyectos
      *
      * @return \Doctrine\Common\Collections\Collection
      */
     public function getExpedientes()
     {
-        return $this->expedientes;
+        return $this->proyectos;
     }
 
     /**

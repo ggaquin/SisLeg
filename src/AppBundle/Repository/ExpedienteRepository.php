@@ -15,9 +15,9 @@ class ExpedienteRepository extends EntityRepository{
 		
 		$query = $this->getEntityManager()
             ->createNativeQuery(
-            	 'SELECT e.idExpediente FROM expediente e WHERE e.hashId=?1'	
+            	 'SELECT e.idExpediente FROM expediente e WHERE e.hashId=:hashId'	
             ,$rsm);
-        $query->setParameter(1,$hashValue);
+        $query->setParameter('hashId',$hashValue);
 
         return $query->getSingleResult();
 
@@ -48,15 +48,17 @@ class ExpedienteRepository extends EntityRepository{
 	public function findByAutor_Nombres($patronBusqueda){
 
 		$qb = $this->createQueryBuilder('e');
-		$qb ->innerJoin('e.autores',
+		$qb = innerJoin('e.proyecto',
+						'p')
+		    ->innerJoin('p.autores',
 						'a',
 						'with',$qb->expr()->orX(
 								       $qb->expr()->like('a.nombres', '?1'),
 								       $qb->expr()->like('a.apellidos','?1')
 									)
 		   		  		)
-		   ->distinct()
-  		   ->setParameter(1, '%'.$patronBusqueda.'%');
+		    ->distinct()
+  		    ->setParameter(1, '%'.$patronBusqueda.'%');
 	        return $qb->getQuery()->getResult();
 	  
 	}
