@@ -48,7 +48,7 @@ class ExpedienteRepository extends EntityRepository{
 	public function findByAutor_Nombres($patronBusqueda){
 
 		$qb = $this->createQueryBuilder('e');
-		$qb = innerJoin('e.proyecto',
+		$qb -> innerJoin('e.proyecto',
 						'p')
 		    ->innerJoin('p.autores',
 						'a',

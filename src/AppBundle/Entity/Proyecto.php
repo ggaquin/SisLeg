@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table(name="proyecto", indexes={@ORM\Index(name="UNIQ_proyecto_expediente_idx", columns={"idExpediente"}), 
  *                                      @ORM\Index(name="fk_proyecto_tipoProyecto_idx", columns={"idTipoProyecto"})
  *                                     })
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="AppBundle\Repository\ProyectoRepository")
  */
 class Proyecto
 {
@@ -75,9 +75,9 @@ class Proyecto
     private $quienSanciona;
 
     /**
-     * @var text
+     * @var array
      *
-     * @ORM\Column(name="articulos", type="text", nullable=false)
+     * @ORM\Column(name="articulos", type="json_array", nullable=false)
      */
     private $articulos;
 
@@ -245,27 +245,27 @@ class Proyecto
     }
 
     /**
-     * Set considerando
+     * Set considerandos
      *
-     * @param text $considerando
+     * @param text $considerandos
      *
      * @return Proyecto
      */
-    public function setConsiderando($considerando)
+    public function setConsiderandos($considerandos)
     {
-        $this->considerando = $considerando;
+        $this->considerandos = $considerandos;
 
         return $this;
     }
 
     /**
-     * Get considerando
+     * Get considerandos
      *
      * @return text
      */
-    public function getConsiderando()
+    public function getConsiderandos()
     {
-        return $this->considerando;
+        return $this->considerandos;
     }
 
     /**
@@ -295,7 +295,7 @@ class Proyecto
     /**
      * Set articulos
      *
-     * @param text $articulos
+     * @param array $articulos
      *
      * @return Proyecto
      */
@@ -309,7 +309,7 @@ class Proyecto
     /**
      * Get articulos
      *
-     * @return text
+     * @return array
      */
     public function getArticulos()
     {
@@ -518,6 +518,20 @@ class Proyecto
     {
         return ((!is_null($this->expediente))
                     ?$this->expediente->getNumeroCompleto()
+                    :"---");
+    }
+
+    /**
+     * Get estadoExpediente
+     *
+     * @return string
+     *
+     * @VirtualProperty
+     */
+    public function getEstadoExpediente()
+    {
+        return ((!is_null($this->expediente))
+                    ?$this->expediente->getEstadoExpediente()->getEstadoExpediente()
                     :"---");
     }
 

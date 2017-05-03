@@ -18,10 +18,11 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;;
 use AppBundle\Entity\Rol;
 use AppBundle\Entity\Usuario;
 use AppBundle\Entity\Perfil;
-use AppBundle\Entity\PerfilLegislador;
+use AppBundle\Entity\PerfilLegislador;  
 use AppBundle\Entity\PerfilPublico;
 use AppBundle\Entity\Bloque;
 use AppBundle\Entity\Expediente;
+use AppBundle\Entity\Proyecto;
 use AssistBundle\Entity\AdministracionSesion;
 
 
@@ -60,6 +61,32 @@ class RestController extends FOSRestController{
         $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:proyecto');
         $proyecto=$proyectoRepository->findAll();
         return $this->view($proyecto,200);
+         
+    }
+
+    /**
+     * @Rest\Get("/api/proyecto/getByCriteria/{tipoCriterio}/{criterio}")
+     */
+    public function traerProyectosPorCriterioAction(Request $request)
+    {
+        $tipoCriterio=$request->get('tipoCriterio');
+        $criterio=$request->get('criterio');
+        $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
+        $proyectos=null;
+        if ($tipoCriterio=='todo')
+            $proyectos=$proyectoRepository->findAll();
+        if($tipoCriterio=='busqueda-1')
+            $proyectos=$proyectoRepository->findByAutor_Nombres($criterio);
+        if ($tipoCriterio=='busqueda-2')
+            $proyectos=$proyectoRepository->findByExpediente_Estado_Id($criterio);
+        if($tipoCriterio=='busqueda-3')
+            $proyectos=$proyectoRepository->findByExpediente_Numero($criterio);
+        if ($tipoCriterio=='busqueda-4')
+            $proyectos=$proyectoRepository->findByTipoProyecto_Id($criterio);
+        if ($tipoCriterio=='busqueda-5')
+            $proyectos=$proyectoRepository->findByExpediente_Null();
+
+        return $this->view($proyectos,200);
          
     }
 
@@ -145,12 +172,60 @@ class RestController extends FOSRestController{
 
     }
 
+     /**
+     *  @Rest\Post("/api/proyecto/create")
+     */
+    public function crearProyectoAction(Request $request)
+    {   
+        $idtipoProyecto=$request->request->get('idtipoProyecto');
+        $autores=json_decode($request->request->get('autores'),true);
+        $asunto=$request->request->get('asunto');
+        $visto=$request->request->get('visto');
+        $considerando=$request->request->get('considerando');
+        $quienSanciona=$request->request->get('quienSanciona');
+        $articulos=json_decode($request->request->get('articulos'));
+        $usuario=$this->getUser();
+
+        $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
+        $tipoProyectoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoProyecto');
+        $tipoProyecto=$tipoProyectoRepository->find($idtipoProyecto);
+      
+        $proyecto=new Proyecto();
+        $proyecto->setTipoProyecto($tipoProyecto);
+        $proyecto->setAsunto($asunto);
+        $proyecto->setVisto($visto);
+        $proyecto->setConsiderandos($considerando);
+        $proyecto->setQuienSanciona($quienSanciona);
+
+        if (is_array($autores)){
+            foreach ($autores as $autor) {
+                    $perfil=$perfilRepository->find($autor);
+                    $proyecto->addAutor($perfil); 
+            }
+        }
+        else {
+                $perfil=$perfilRepository->find($autores);
+                $proyecto->addAutor($perfil);
+            }
+
+        $proyecto->setArticulos($articulos);
+        $proyecto->setUsuarioCreacion($usuario->getUsername());
+        $proyecto->setFechaCreacion(new \DateTime("now"));
+
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($proyecto);
+        $em->flush();
+
+         return $this->view('El proyecto se guardó en forma exitosa',200);
+    }
+
     /**
      *  @Rest\Post("/api/expediente/create")
      */
     public function crearExpedienteAction(Request $request)
     {   
-        try{               
+        try{ 
+            $idproyecto=$request->request->get('idProyecto');              
             $numeroExpediente=$request->request->get('numeroExpediente');
             $idTipoExpediente=$request->request->get('selTipoExpediente');
             $asunto=$request->request->get('asunto');
@@ -160,17 +235,30 @@ class RestController extends FOSRestController{
 
             $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
             $tipoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
-            $tipoExpediente=$tipoExpedienteRepository->find($idTipoExpediente);
             $estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
             $estadoExpediente=$estadoExpedienteRepository->find(1);
 
             $expediente=new Expediente();
             $expediente->setArchivos($archivos);
             $expediente->setNumeroExpediente($numeroExpediente);
-            $expediente->setTipoExpediente($tipoExpediente);
             $expediente->setAsunto($asunto);
             $expediente->setExtracto($extracto);
 
+            $proyecto=null;
+            $tipoExpediente=null;
+
+            if($idproyecto!=0){
+                $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
+                $proyecto=$proyectoRepository->find($idproyecto);
+                $expediente->setProyecto($proyecto);
+            }
+
+            if($proyecto==null)
+                $tipoExpediente=$tipoExpedienteRepository->find($idTipoExpediente);
+            else
+                $tipoExpediente=$proyecto->getTipoProyecto()->getTipoExpediente();
+
+            $expediente->setTipoExpediente($tipoExpediente);
             $expediente->setUsuarioCreacion($usuario->getUsername());
             $expediente->setFechaCreacion(new \DateTime("now"));
             $expediente->setEstadoExpediente($estadoExpediente);
@@ -184,8 +272,7 @@ class RestController extends FOSRestController{
         }catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e){ 
             throw new \Exception('El expediente '.numeroExpediente.' ya existe');
         }catch(\Exception $e){
-            throw $e;
-            
+            throw $e;            
         }
 
     }
@@ -204,18 +291,26 @@ class RestController extends FOSRestController{
             $archivos=$request->files->all();
             $usuario=$this->getUser();
 
-             $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
+            $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
             $tipoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
-            $tipoExpediente=$tipoExpedienteRepository->find($idTipoExpediente); 
+           
             $expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
             $expediente=$expedienteRepository->find($id); 
 
             $expediente->setArchivos($archivos);
             $expediente->setNumeroExpediente($numeroExpediente);
-            $expediente->setTipoExpediente($tipoExpediente);
             $expediente->setAsunto($asunto);
             $expediente->setExtracto($extracto);
 
+            $proyecto=$expediente->getProyecto();
+            $tipoExpediente=null;
+
+            if($proyecto==null)
+                $tipoExpediente=$tipoExpedienteRepository->find($idTipoExpediente);
+            else
+                $tipoExpediente=$proyecto->getTipoProyecto()->getTipoExpediente();
+
+            $expediente->setTipoExpediente($tipoExpediente);
             $expediente->setUsuarioModificacion($usuario->getUsername());
             $expediente->setFechaModificacion(new \DateTime("now"));
 
@@ -265,9 +360,8 @@ class RestController extends FOSRestController{
             throw $e;
             
         }
-        
-
     }
+
     /**
      *  @Rest\Post("/api/usuario/create")
      */
@@ -529,15 +623,14 @@ class RestController extends FOSRestController{
     }
 
     /**
-     *  @Rest\Get("/api/expediente/ejemplo/{patron}")
+     *  @Rest\Get("/api/expediente/ejemplo")
      */
     public function ejemploAction(Request $request){
 
-        $patron=$request->get('patron');
-        $expedienteRepository=$this->get('doctrine')->getRepository('AppBundle:Perfil');
-        $expedientes=$expedienteRepository->findByNombre_Patron($patron);
+        $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
+        $proyectos=$proyectoRepository->find(2);
         
-        return $this->view($expedientes,200);
+        return $this->view($proyectos->getArticulos(),200);
     }
 
 

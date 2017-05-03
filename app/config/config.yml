@@ -122,6 +122,14 @@ assetic:
     filters:
         cssrewrite: ~
     assets:
+        fileinput_loading:
+            inputs:
+                - '@AppBundle/Resources/Public/css/plugins/fileinput-4.3.9/img/loading.gif'
+            output: '/css/images/loading.gif'
+        fileinput_loading_sm:
+            inputs:
+                - '@AppBundle/Resources/Public/css/plugins/fileinput-4.3.9/img/loading-sm.gif'
+            output: '/css/images/loading-sm.gif'
         wysihtml5_buttons:
             inputs:
                 - '@AppBundle/Resources/Public/css/plugins/bootstrap-wysihtml5/images/buttons.gif' 

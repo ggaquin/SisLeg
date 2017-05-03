@@ -52,30 +52,32 @@
 		   left:0;
 		}
 
-		.div-Preview{
-			max-height: 194px;
-			height: 194px;
-			padding-left: 10px;
-			padding-right: 10px;
-			background-color: #fff;	
-			overflow-y: scroll;
-		}
 		.div-articulos{
 			height: 470px;
 			max-height: 475px;
 			overflow-y:auto;
 			overflow-x: hidden; 
 		}
-		.numero-articulo{
+		.div-incisos{
+			height: 250px;
+			max-height: 260px;
+			overflow-y:scroll;
+			overflow-x: hidden; 
+		}
+		.numero-fila{
 			font-size: 150%;
 			font-weight: bold;
 			vertical-align: middle!important;
 		}
-		.herramientas-articulo{
+		.herramienta-fila{
 			vertical-align: middle!important;
 		}
-		.text-area-corta{
+		.text-area-mini{
 			height: 80px!important;
+		}
+		}
+		.text-area-corta{
+			height: 200px!important;
 		}
 		.text-area-media{
 			height: 400px!important;
@@ -86,9 +88,27 @@
 		.tab{
 			height: 545px;
 		}
+		.toggle-on.btn{
+			line-height: 22.5px!important;
+		}
+		.toggle-off.btn{
+			line-height: 22.5px!important;
+		}
 		
 	</style>
 	<script type="text/javascript">
+
+		wysihtml5.dom.getPastedHtml = function(event) {
+		  var html;
+		  if (event.clipboardData) {
+		    html = event.clipboardData.getData('text/plain');
+		  }
+		  return html;
+		};
+
+		function noImplementado(){
+			toastr.warning("NO IMPLEMENTADO");
+		}
 
 		function criterio(){
 			var tipo=$("#selBusqueda").val();
@@ -103,33 +123,61 @@
 			$("#"+nombre).removeClass("hidden");
 		}	
 
-		function agregarArticulo(){
+		function agregarArticulo(articulo){
 			var numero=$("#articulos > tbody > tr").length+1;
-			var articulo='<tr>'+
-	        			 '<td class="numero-articulo">'+numero+'</td>' +
-	        			 '<td><textarea class="form-control text-area text-area-corta" '+
-	        			 'id="articulo-'+numero+'" name="articulo-'+numero+'" '+
-	        			 'placeholder="Articulos"></textarea>'+
-	        			 '</td>'+
-	        			 '<td class="herramientas-articulo"><div class="row text-center">'+
-	        			 '<button type="button" class="btn btn-info btn-sm"><span class="glyphicon '+
-	        			 'glyphicon-tasks"></button></div><div class="row text-center">'+
-	        			 '<button type="button" class="btn btn-danger btn-sm"><span class="glyphicon '+
-	        			 'glyphicon-remove"></button></div>'+
-	        			 '</td>'+
-	        			 '</tr>';
+			var cuerpoArticulo='<div class="well well-sm">' +
+							   '<div class="btn-group pull-right">'+
+							   '<button type="button" class="btn btn-sm btn-primary" title="Editar artículo" onClick="noImplementado();" >'+
+							   		'Editar</button>'+
+							   '<button type="button" class="btn btn-sm btn-warning" title="Cambiar orden" onClick="noImplementado();">'+
+							   		'Mover</button>'+
+							   '<button type="button" class="btn btn-sm btn-danger" title="Eliminar artículo" onClick="noImplementado();">'+
+							   		'Eliminar</button></div>'+
+							   '<div>'+articulo.texto+'<br><ul class="list-unstyled">';
+			$.each(articulo.incisos,function(index,inciso){
+				cuerpoArticulo+='<li style="padding-left:30px">'+inciso.orden+' '+$(inciso.texto).text()+'</li>';
+			});
+		
+			cuerpoArticulo+='</ul></div>';
 
-	        $("#articulos > tbody").append(articulo);
-	        $("#articulo-"+numero).wysihtml5({
+			var nuevoArticulo='<tr>'+
+	        			 	  '<td class="numero-fila">'+numero+'</td>' +
+	        			 	  '<td>'+cuerpoArticulo+'</td>'+
+	        			 	  '</tr>';
+
+	        $("#articulos > tbody").append(nuevoArticulo);
+	        $("#div-articulos").animate({ scrollTop: $("#div-articulos")[0].scrollHeight}, 1000);
+	        articulo.numero=numero;
+	        return articulo;
+	        
+		}
+
+		function agregarInciso(){
+			var letra=String.fromCharCode($("#incisos > tbody > tr").length+65);
+			var inciso='<tr>'+
+	        		   '<td class="numero-fila">'+letra.toLowerCase()+') -</td>' +
+	        		   '<td><textarea class="form-control text-area text-area-mini" id="inciso-'+letra+'" '+
+	        		   'name="inciso" placeholder="Inciso"></textarea></td>'+
+	        		   '<td class="herramienta-fila"><div class="row text-center">'+
+	        		   '<button type="button" class="btn btn-info" onClick="noImplementado();"><span class="glyphicon glyphicon-tasks"></button>'+
+	        		   '</div><div class="row text-center"><button type="button" class="btn btn-danger" onClick="noImplementado();">'+
+	        		   '<span class="glyphicon glyphicon-remove"></button></div></td>'+
+	        		   '</tr>';
+
+	        $("#incisos > tbody").append(inciso);
+	        $("#inciso-"+letra).wysihtml5({
 				toolbar: {
 				    "image": false,
 					"size": "xs",
 				},
 			});
-
+			$("#div-incisos").animate({ scrollTop: $("#div-incisos")[0].scrollHeight}, 1000);
 		}
 
+
 		$(document).ready(function () {
+
+			var articulosIngresados=[];
 			
 		    var tabla=$('#registroExpediente').DataTable({
 		    			  "language": {
@@ -157,7 +205,7 @@
 			          	  },
 					      "processing": false,
 					      "ajax": {
-							        "url": "api/proyecto/getAll",//"api/expediente/getByCriteria/"+tipoCriterio()+"/"+criterio(),
+							        "url": "api/proyecto/getByCriteria/"+tipoCriterio()+"/"+criterio(),
 			            			"dataSrc": '',
 							    },
 						  "columnDefs": [
@@ -171,8 +219,9 @@
 									            "data": null,
 									            "orderable":false,
 									            "render": function(data, type, row){
-									            	var html="<button type='button'title='Editar expediente' class='btn btn-primary btn-xs btn-editar ' data-toggle='modal' data-target='#modificacionExpediente'><span class='glyphicon glyphicon-pencil'></span></button>"
-									             	html+="<button type='button' title='Ver Detalle' class='btn btn-info btn-xs btn-detalle' data-toggle='modal' data-target='#revistaExpediente'><span class='glyphicon glyphicon-eye-open'></span></button></div>"
+									            	var html="<button type='button'title='Editar Proyecto' class='btn btn-primary btn-xs btn-editar ' data-toggle='modal' data-target='#' onClick='noImplementado();'><span class='glyphicon glyphicon-pencil'></span></button>"
+									             	html+="<button type='button' title='Ver Detalle' class='btn btn-info btn-xs btn-detalle' data-toggle='modal' data-target='#' onClick='noImplementado();'><span class='glyphicon glyphicon-eye-open'></span></button>"
+									             	html+="<button type='button' title='Imprimir' class='btn btn-warning btn-xs btn-imprimir' data-toggle='modal' data-target='#' onClick='noImplementado();'><span class='glyphicon glyphicon-print'></span></button></div>"
 
 									            	return html;
 									            }
@@ -181,13 +230,13 @@
 						  ],
 					      "columns": [
 					      		{ "data": "id" },
-					      		{ "data": "null","width":"5%"},
+					      		{ "data": "null","width":"10%"},
 					      		{ "data": "numero_expediente","width":"5%"},
 					      		{ "data": "tipo_proyecto.tipo_proyecto","width":"5%"},
-					            { "data": "asunto","width":"40%" },
+					            { "data": "asunto","width":"35%" },
 					            { "data": "fecha_creacion_formateada", "width": "10%" },
 					            { "data": "fecha_entrada_formateada", "width": "10%" },
-					            { "data": "expediente.estado_expediente.estado_expediente","width":"10%" },
+					            { "data": "estado_expediente","width":"10%" },
 					            { "data": "lista_autores","className": "for-mobile","width":"15%" },
 					        ],
 					      "autoWidth":false,
@@ -199,311 +248,63 @@
 					      "autoWidth": false,
 				});
 			
-			//---------------------------MODIFICAR EXPEDIENTE--------------------------------------
-
-			$('#registroExpediente tbody').on( 'click', '.btn-detalle', function () {
-		        var data = tabla.row( $(this).parents('tr') ).data();
-		        $("#revistaExpediente").find('input[name="id"]').val(data[ "id" ]);
-		    } );
-
-		    //EVENTO ABRIR MODAL MODIFICAR EXPEDIENTE
-			$('#revistaExpediente').on('show.bs.modal', function () {
-
-		    	var id= $("#revistaExpediente").find('input[name="id"]').val();
-
-		    	//Obtención de los datos del select2 ----------------------------------
-
-		    	var select2_data=[];
-
-		    	$.ajax({
-					type:'get',
-					dataType: 'json	',
-					url:'{{ app.request.getBaseURL() }}'+'/api/legislador/getAll',
-					success: function(data){
-					    $.each(data, function(index,autor){
-					    	var autorAux={'id':autor.id, 'text':autor.nombre_completo};
-					    	select2_data.push(autorAux);
-					     });
-						
-					},
-					error: function(jqXHR,textStatus,errorThrown ){
-						var response=JSON.parse(jqXHR.responseText)
-						toastr.error(response.throwCause);
-					}
-				});
-
-		    	//Obtención de los datos del expediente a modificar ------------------------
-
-		    	$.ajax({
-					type:'Get',
-					dataType: 'json	',
-					url:'{{ app.request.getBaseURL() }}'+'/api/expediente/getOne/'+id,
-					success: function(data){
-
-						$("#tipoExpedientePrev").val(data.tipo_expediente.tipo_expediente +
-													 '-('+data.tipo_expediente.letra+')');
-						$("#numeroExpedientePrev").val(data.numero_expediente);
-					    $("#asuntoPrev").html(data.asunto);
-					    $("#extractoPrev").html(data.extracto);
-					 	
-					 	//selección en la grilla de los items almacenados
-
-					    var autores=data.proyecto.autores;
-					    var selected=[];
-					    $("#selAutoresPrev").select2({tags: select2_data, tokenSeparators: [',']});
-					    $.each(autores, function(index,autor){
-					    	selected.push(autor.id);
-					     });
-					    $("#selAutoresPrev").val(selected).change();
-					    var select2=$("#revistaExpediente").find('.select2')
-					    select2.prepend('<div class="disabled-select"></div>');
-
-					    var config=[];
-					    $.each(data.lista_imagenes, function(index,imagen){
-					    	config.push(imagen.image_config);
-					    });
-					    
-					    //recuperacion de los archivos subidos
-					    $("#input-file-Prev").fileinput({
-				    		language: "es",
-			                initialPreview: data.rutas_web_expediente,
-			                showUpload: false,
-			                showRemove: false,
-			                showBrowse: false,
-			                initialPreviewAsData: true,
-			                initialPreviewConfig:config,
-			                overwriteInitial: false,
-			                maxFileSize: 10240,
-			                
-			                initialCaption: "Archivos Expediente " + data.numero_expediente
-			                
-			            });		    			
-					},
-					error: function(jqXHR,textStatus,errorThrown ){
-						var response=JSON.parse(jqXHR.responseText)
-						toastr.error(response.throwCause);
-					}
-		      	});
-			});
-			$('#revistaExpediente').on('hidden.bs.modal', function () {
-				$('#input-file-Prev').fileinput('destroy');
-				$("#selAutoresPrev").empty().change();
-			});
-
-			//EVENTO BOTON EDITAR EXPEDIENTE EN GRILLA
-		    $('#registroExpediente tbody').on( 'click', '.btn-editar', function () {
-		        var data = tabla.row( $(this).parents('tr') ).data();
-		        $("#modificacionExpediente").find('input[name="id"]').val(data[ "id" ]);
-		    } );
-
-		    //EVENTO ABRIR MODAL MODIFICAR EXPEDIENTE
-			$('#modificacionExpediente').on('show.bs.modal', function () {
-
-		    	var id= $("#modificacionExpediente").find('input[name="id"]').val();
-
-		    	//Obtención de los datos del select2 ----------------------------------
-
-		  //   	var select2_data=[];
-
-		  //   	$.ajax({
-				// 	type:'get',
-				// 	dataType: 'json	',
-				// 	url:'{{ app.request.getBaseURL() }}'+'/api/legislador/getAll',
-				// 	success: function(data){
-				// 	    $.each(data, function(index,autor){
-				// 	    	var autorAux={'id':autor.id, 'text':autor.nombre_completo};
-				// 	    	select2_data.push(autorAux);
-				// 	     });
-						
-				// 	},
-				// 	error: function(jqXHR,textStatus,errorThrown ){
-				// 		var response=JSON.parse(jqXHR.responseText)
-				// 		toastr.error(response.throwCause);
-				// 	}
-				// });
-
-		    	//Obtención de los datos del expediente a modificar ------------------------
-
-		    	$.ajax({
-					type:'Get',
-					dataType: 'json	',
-					url:'{{ app.request.getBaseURL() }}'+'/api/expediente/getOne/'+id,
-					success: function(data){
-
-						$("#selTipoExpedienteMod").val(data.tipo_expediente.id);
-						$("#numeroExpedienteMod").val(data.numero_expediente);
-					    $("#asuntoMod").data("wysihtml5").editor.setValue(data.asunto);
-					    $("#extractoMod").data("wysihtml5").editor.setValue(data.extracto);
-					 	
-					 	//selección en la grilla de los items almacenados
-
-					    // var autores=data.autores;
-					    // var selected=[];
-					    // $("#selAutoresMod").select2({tags: select2_data, tokenSeparators: [',']});
-					    // $.each(autores, function(index,autor){
-					    // 	selected.push(autor.id);
-					    //  });
-					    // $("#selAutoresMod").val(selected).change();
-
-					    var config=[];
-					    $.each(data.lista_imagenes, function(index,imagen){
-					    	
-					    	config.push(imagen.image_config);
-					    });
-
-					    //recuperacion de los archivos subidos
-					    $("#input-file-Mod").fileinput({
-				    		language: "es",
-			                initialPreview: data.rutas_web_expediente,
-			                showUpload: false,
-			                initialPreviewAsData: true,
-			                initialPreviewConfig:config,			                
-			                overwriteInitial: false,
-			                deleteUrl:'{{ app.request.getBaseURL() }}'+'/api/expediente/archivo/remove',
-			                maxFileSize: 10240,
-			                
-			                initialCaption: "Archivos Expediente " + data.numero_expediente
-			                
-			            });		    			
-					},
-					error: function(jqXHR,textStatus,errorThrown ){
-						var response=JSON.parse(jqXHR.responseText)
-						toastr.error(response.throwCause);
-					}
-		      	});
-			});
-			//EVENTO CERRAR MODAL MODIFICAR EXPEDIENTE
-			$('#modificacionExpediente').on('hidden.bs.modal', function () {
-				$('#input-file-Mod').fileinput('destroy');
-				// $("#selAutoresMod").empty().change();
-			});
-			//GUARDAR MODIFICACION DEL EXPEDIENTE
-			$("#modificacion").on('submit',function(e){
-				
-				e.preventDefault();
-				var id= $("#modificacionExpediente").find('input[name="id"]').val();
-             	var form=$(e.target);
-              	var formData=new FormData();
-              	var controles=$(form).serializeArray();
-              	var archivos=$(form).find('[name="input-file-Mod"]')[0].files;
-
-              	$.each(archivos, function(i, archivo) {
-                	
-                	formData.append('uploadedFiles-' + i, archivo);
-            	});
-
-              	var validacion='';
-
-            	$.each(controles, function(i, control) {
-
-                	formData.append(control.name, control.value);
-
-	                validacion+=((control.name=="selTipoExpedienteMod" && control.value==0)?
-	                			'<li>Debe seleccionar un tipo de expediente</li>':'');
-			     	validacion+=((control.name=="numeroExpedienteMod" && control.value.replace(/ /g, '').length==0)?
-			     				'<li>El expediente debe tener un número</li>':'');
-			     	validacion+=((control.name=="asuntoMod" && control.value.replace(/ |\n/g, '').length==0)?
-			     				'<li>Debe especificar un texto para el asunto</li>':'');
-			     	validacion+=((control.name=="extractoMod" && control.value.replace(/ |\n/g, '').length==0)?
-			     				'<li>Debe especificar un texto para el exracto</li>':'');
-					// validacion+=((control.name=="selAutoresMod" && 
-					// 			($("#selAutoresMod").val()==null||$("#selAutoresMod").val().length==0))?
-					// 			'<li>Debe especificar al menos un autor para el expediente</li>':'');
-	            	});
-
-	            if (validacion.length>0) 
-				{
-					Validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
-								validacion+'</ul>':'');
-					toastr.error(validacion);
-					return false;
-				}
-				else{
-
-	            	$.ajax({
-		                sync: true,
-		                url: '{{ app.request.getBaseURL() }}'+'/api/expediente/update',
-		                data: formData,
-		                cache: false,
-		                contentType: false,
-		                processData: false,
-		                type:  $(form).attr('method'),
-	                success: function(data) {
-	                    toastr.success(data);
-						tabla.ajax.reload();
-						$('#modificacionExpediente').modal('hide');
-	                	},
-	                error: function(jqXHR,textStatus,errorThrown ){
-						var response=JSON.parse(jqXHR.responseText)
-						toastr.error(response.throwCause);
-						}
-	            	});
-	            }
-			});
+			
 
 			//---------------------------------NUEVO PROYECTO---------------------------------------
 
+			//EVENTO ABRIR MODAL NUEVO ARTICULO
+		    $('#nuevoArticulo').on('show.bs.modal', function () {
+				$("#incisos > tbody").html('');
+				$("#articulo").data("wysihtml5").editor.setValue('');
+		    	agregarInciso();
+			});
+
 			//EVENTO ABRIR MODAL NUEVO PROYECTO
 		    $('#nuevoProyecto').on('show.bs.modal', function () {
-		    	agregarArticulo();
-
-		  //   	$("#input-file").fileinput({
-		  //   		language: "es",
-	   //              showUpload: false,               
-	   //              overwriteInitial: false,
-	   //              maxFileSize: 10240,                
-	   //          });
-		    	
-			 //  	$("#selTipoExpediente").val(0);
-				// $("#numeroExpediente").val('');
-				// $("#asunto").data("wysihtml5").editor.setValue('');
-				// $("#extracto").data("wysihtml5").editor.setValue('');
-				// $("#selAutoresPrev").empty().change();
-
+		  		$("#selTipoProyecto").val(0);
+		    	$("#selAutores").empty().change();
+				$("#asunto").data("wysihtml5").editor.setValue('');
+				$("#visto").data("wysihtml5").editor.setValue('');
+				$("#considerando").data("wysihtml5").editor.setValue('');
+				$("#articulos > tbody").html('');
 			});
 			
 			//EVENTO CERRAR MODAL NUEVO PROYECTO
 			$('#nuevoProyecto').on('hidden.bs.modal', function () {
-				
 				// $("#selAutores").empty().change();
 			});
 			
-			//GUARDAR ALTA EXPEDIENTE
-			$("#alta").on('submit',function(e){
-				
-				e.preventDefault();
-             	var form=$(e.target);
-              	var formData=new FormData();
-              	var controles=$(form).serializeArray();
-              	var archivos=$(form).find('[name="input-file"]')[0].files;
+			//GUARDAR ALTA PROYECTO
+			$("#btn-guardar-proyecto").click(function(e){
 
-              	$.each(archivos, function(i, archivo) {
-                	
-                	formData.append('uploadedFiles-' + i, archivo);
-            	});
+				var validacion='';
+				var formData=new FormData();
+				var idtipoProyecto=$("#selTipoProyecto").val();
+				var autores=$("#selAutores").val();
+				var asunto=$("#asunto").val();
+				var visto=$("#visto").val();
+				var considerando=$("#considerando").val();
+				var quienSanciona=$("#quienSanciona").val();
 
-              	var validacion='';
+				validacion+=((idtipoProyecto==0)?'<li>Debe seleccionar un tipo de proyecto</li>':'');
+				validacion+=((autores==null||autores.length==0)
+								?'<li>Debe especificar al menos un autor para el proyecto</li>':'');
+				validacion+=((asunto.length==0)?'<li>Debe especificar un asunto</li>':'');
+				validacion+=((visto.length==0)?'<li>Debe especificar los vistos</li>':'');
+				validacion+=((considerando.length==0)?'<li>Debe especificar las consideraciones</li>':'');
 
-            	$.each(controles, function(i, control) {
+				formData.append("idtipoProyecto",idtipoProyecto);
+				formData.append("autores",autores);
+				formData.append("asunto",asunto);
+				formData.append("visto",visto);
+				formData.append("considerando",considerando);
+				formData.append("quienSanciona",quienSanciona);
+				formData.append("articulos",JSON.stringify(articulosIngresados));
 
-                	formData.append(control.name, control.value);
-
-	                validacion+=((control.name=="selTipoExpediente" && control.value==0)?
-	                			'<li>Debe seleccionar un tipo de expediente</li>':'');
-			     	validacion+=((control.name=="numeroExpediente" && control.value.replace(/ /g, '').length==0)?
-			     				'<li>El expediente debe tener un numeo</li>':'');
-			     	validacion+=((control.name=="asunto" && control.value.replace(/ |\n/g, '').length==0)?
-			     				'<li>Debe especificar un texto para el asunto</li>':'');
-			     	validacion+=((control.name=="extracto" && control.value.replace(/ |\n/g, '').length==0)?
-			     				'<li>Debe especificar un texto para el exracto</li>':'');
-					// validacion+=((control.name=="selAutores" && 
-					// 			($("#selAutores").val()==null||$("#selAutores").val().length==0))?
-					// 			'<li>Debe especificar al menos un autor para el expediente</li>':'');
-	            	});
 
 	            if (validacion.length>0) 
 				{
-					Validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
 								validacion+'</ul>':'');
 					toastr.error(validacion);
 					return false;
@@ -511,17 +312,18 @@
 				else{
 
 	            	$.ajax({
-		                sync: true,
-		                url: $(form).attr('action'),
+		                async: true,
+		                url: '{{ app.request.getBaseURL() }}'+'/api/proyecto/create',
 		                data: formData,
+		                type: 'post',
 		                cache: false,
 		                contentType: false,
 		                processData: false,
-		                type: $(form).attr('method'),
 	                success: function(data) {
+	                	articulosIngresados=[];
 	                    toastr.success(data);
 						tabla.ajax.reload();
-						$('#nuevoExpediente').modal('hide');
+						$('#nuevoProyecto').modal('hide');
 	                	},
 	                error: function(jqXHR,textStatus,errorThrown ){
 						var response=JSON.parse(jqXHR.responseText)
@@ -533,12 +335,65 @@
 		    
 			//---------------------------------INICIALIZACIÓN DE CONTROLES--------------------------
 
+			$("#btn-agregar-articulo").click(function(){
+
+				var validacion='';
+				var incisos=[];
+
+				$("#incisos > tbody > tr").each(function(i,row){
+					var textarea=$(row).find("textarea");
+					var	orden=$(row).find("td:first").text();
+					var texto=$(textarea).val();
+
+					if(texto.length==0)
+						validacion+='<li>El inciso '+ orden +' no posee texto</li>';
+
+					if (validacion.length==0){
+						inciso={
+							orden: orden,
+							texto: texto
+						}
+						incisos.push(inciso);
+					}
+					else{
+						if (incisos.length>0)
+							incisos=[];
+					}
+				});
+
+				if($("#articulo").val().length==0){
+					validacion='<li>El artículo no posee texto</li>'+validacion;
+
+				}
+
+				if (validacion.length>0) 
+				{
+					Validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+								validacion+'</ul>':'');
+					toastr.error(validacion);
+					return false;
+				}
+				else{
+					var texto=$("#articulo").val();
+
+					var articuloActual={
+						texto: texto,
+						incisos:incisos
+					}
+
+					articuloActual=agregarArticulo(articuloActual);
+					articulosIngresados.push(articuloActual);
+					$('#nuevoArticulo').modal('hide');
+				}
+			});
+
 			$('#estadoFiltro').bootstrapToggle({
 		      on:  'Activo',
 		      off: 'Inactivo',
 		      offstyle: 'primary',
 		      onstyle: 'success',
-		      width: "80px"
+		      width: "80px",
+		      height: "35px"
 		    });
 
 			$(".busqueda").addClass('hidden');
@@ -556,13 +411,14 @@
 					$("#busqueda-2").val("0");
 					$("#busqueda-3").val("");
 					$("#busqueda-4").val("0");
+					$("#busqueda-5").val("---");
 				}
 			});
 
 			$("#btn-busqueda").click(function(){
 				if($("#selBusqueda").val()!="todo" && criterio()!="" && criterio()!="0")
 				{
-					tabla.ajax.url("api/expediente/getByCriteria/"+tipoCriterio()+"/"+criterio()).load();
+					tabla.ajax.url("api/proyecto/getByCriteria/"+tipoCriterio()+"/"+criterio()).load();
 					$(".filtro").prop('disabled',true);
 					$('#estadoFiltro').bootstrapToggle('enable');
 					$("#estadoFiltro").bootstrapToggle('on');
@@ -574,7 +430,7 @@
 					$(".filtro").prop('disabled',false);
 					$("#selBusqueda").val("todo").change();
 					$(".filtro").prop('disabled',false);
-					tabla.ajax.url("api/expediente/getByCriteria/"+tipoCriterio()+"/"+criterio()).load();
+					tabla.ajax.url("api/proyecto/getByCriteria/"+tipoCriterio()+"/"+criterio()).load();
 					$(this).bootstrapToggle('disable');
 					
 				}
@@ -586,20 +442,6 @@
 					"size": "xs",
 				},
 			});
-
-			$("#selAutoresPrev").select2({
-			  language: "es",
-			  allowClear: true,
-			  minimumInputLength: -1,
-			  theme: "bootstrap",
-			});
-
-			// $("#selAutoresMod").select2({
-			//   language: "es",
-			//   allowClear: true,
-			//   minimumInputLength: 3,
-			//   theme: "bootstrap",
-			// });
 
 			$("#selAutores").select2({
 				ajax: {
@@ -653,32 +495,33 @@
 								<form class="navbar-form navbar-left">
 									<div class="form-group">
 										<div class="form-group text-center">
-											<input type="checkbox" id="estadoFiltro">
+											<input type="checkbox" id="estadoFiltro" data-size="normal">
 							        	</div> 
 										<button type="button" class="btn btn-primary filtro" id="btn-busqueda">Aplicar</button>
 
 										<select class="form-control filtro" id="selBusqueda">
 											<option value="todo">Todo</option>
 											<option value="busqueda-1">Autor</option>
-											<option value="busqueda-2">Estado</option>
+											<option value="busqueda-2">Estado Expediente</option>
 											<option value="busqueda-3">Número Expediente</option>
 											<option value="busqueda-4">Tipo de Proyecto</option>
+											<option value="busqueda-5">Sin Expediente</option>
 										</select>
 										<input class="form-control busqueda hidden filtro" id="busqueda-1">
 										<select class="form-control busqueda hidden filtro" id="busqueda-2">
 											<option value="0">Seleccione Estado</option>
-											{# {% for estado in estados %}
+											{% for estado in estados %}
 								                <option value="{{ estado.id }}">{{ estado.estadoExpediente }}
-								            {% endfor %} #}
+								            {% endfor %}
 										</select>
 										<input class="form-control busqueda hidden filtro" id="busqueda-3">
 										<select class="form-control busqueda hidden filtro" id="busqueda-4">
 											<option value="0">Seleccione Tipo</option>
-											{# {% for tipo in tipos %}
-								                <option value="{{ tipo.id }}">{{ tipo.tipoExpediente }} - ({{ tipo.letra }})</option>
-								            {% endfor %} #}
+											{% for tipo in tipos %}
+								                <option value="{{ tipo.id }}">{{ tipo.tipoProyecto }}</option>
+								            {% endfor %}
 										</select>
-										
+										<input class="form-control busqueda hidden filtro" id="busqueda-5" readonly value="---">
 									<div>
 								</form>
 							</div>
@@ -693,36 +536,32 @@
 	<section class="content">
 	  	<div class="row">
 	    	<div class="col-xs-12">
-{# 	     		<div class="box">
-		            <div class="box-body"> #}
-		              	<table id="registroExpediente" class="table table table-striped">
-			                <thead>
-			                	<tr>
-			                		<th>id</th>
-    		                		<th class="text-center">
-    		                			<button type="button" title="Agregar Proyecto"class="btn btn-primary btn-xs pull-left"
-    							    			data-toggle="modal" data-target="#nuevoProyecto">
-    							    			<span class="glyphicon glyphicon-plus"></span>
-    							    	</button>
-    							    </th>
-    							    <th>Expediente</th>
-    							    <th>Tipo</th>
-					                <th>Asunto</th>
-					                <th>F. Creacion</th>
-					                <th>F. Entrada</th>
-					                <th>Estado Exp.</th>
-					                <th>Autores</th>
-			                	</tr>
-			                </thead>
-			                <tbody>
-			                </tbody>
-		               	</table>
-		            {# </div> #} {# box-body #}
-		        {# </div> #} {# box #}
+              	<table id="registroExpediente" class="table table table-striped">
+	                <thead>
+	                	<tr>
+	                		<th>id</th>
+	                		<th class="text-center">
+	                			<button type="button" title="Agregar Proyecto"class="btn btn-primary btn-xs pull-left"
+						    			data-toggle="modal" data-target="#nuevoProyecto">
+						    			<span class="glyphicon glyphicon-plus"></span>
+						    	</button>
+						    </th>
+						    <th>Expediente</th>
+						    <th>Tipo</th>
+			                <th>Asunto</th>
+			                <th>F. Creacion</th>
+			                <th>F. Entrada</th>
+			                <th>Estado Exp.</th>
+			                <th>Autores</th>
+	                	</tr>
+	                </thead>
+	                <tbody>
+	                </tbody>
+               	</table>    
 	        </div> {# col #}
 	    </div> {# row #}
 
-	   	<div id="nuevoProyecto" class="modal fade custom-modal" role="dialog" data-backdrop="static" 
+		<div id="nuevoProyecto" class="modal fade custom-modal" role="dialog" data-backdrop="static" 
    data-keyboard="false" >
 		 	<div class="modal-dialog modal-xl">
 			    <!-- Modal content-->
@@ -732,7 +571,7 @@
 		    			<h4 class="modal-title">Nuevo Proyecto</h4>
 				    </div>
 				    <div class="modal-body" style="background-color:#ecf0f5">
-				        <form id="alta" action="api/proyecto/create" method="POST">
+				       {#  <form id="alta" action="api/proyecto/create" method="POST"> #}
 						    <div class="row">
 						    	<div class="col-md-2">
 						    		<div class="form-group">
@@ -758,7 +597,7 @@
 								    <div class="row tab" id="tab-1">
 								    	<div class="col-md-12">
 								    		<div class="form-group">
-									        	<label for="selAutores">Autores</label>
+									        	<label for="selAutores">Autores:</label>
 									        	<select class="form-control" multiple="multiple" data-width="100%" id="selAutores" name="selAutores"></select>
 									        </div>
 							        		<div class="form-group">
@@ -780,7 +619,7 @@
 							        <div class="row tab hidden" id="tab-3">
 							        	<div class="col-md-12">
 							        		<div class="form-group">
-								        		<label for="extracto">Considerando:</label>
+								        		<label for="considerando">Considerando:</label>
 									        	<textarea class="form-control text-area text-area-larga" 
 									        	id="considerando" name="considerando" placeholder="Consideranto"></textarea>
 									        </div>
@@ -789,42 +628,24 @@
 							        <div class="row tab hidden" id="tab-4">
 						        		<div class="col-md-12">
 						        			<div class="row">
-								        		<div class="col-md-12"	
+								        		<div class="col-md-12">	
 										        	<label>Artículos:</label>
-										        	<button type="button" onclick="agregarArticulo();" class="btn btn-success btn-sm pull-right">Nuevo Artículo</button>
+										        	<div class="form-inline pull-right">
+										        		<label for="quienSanciona">Sanciona a Nombre de:</label>
+										        		<select class="form-control input-sm" id="quienSanciona" name="quienSanciona">
+										        			<option value="1">Consejo</option>
+										        			<option value="2">Presidente</option>
+										        		</select>
+										        		<button type="button" data-toggle='modal' data-target='#nuevoArticulo'class="btn btn-primary btn-sm">Nuevo Artículo</button>
+										        	</div>
 										        </div>
 										    </div>
 								        	<div class="row" style="padding-top:5px">
 								        		<div class="col-md-12">
-										        	<div class="div-articulos">
+										        	<div class="div-articulos" id="div-articulos">
 										        		<table class="table table-striped" id="articulos">
 										        			<tbody>
-											        			{# <tr>
-											        				<td class="numero-articulo">1</td>
-											        				<td>
-											        					<textarea class="form-control text-area text-area-corta" id="articulos" name="articulos" placeholder="Articulos"></textarea>
-											        					<table id="incisos" class="table">
-											        						<tbody>
-											        							<tr>
-											        								<td>a</td>
-											        								<td>
-											        									<textarea
-											        									rows="2" class="from-control"></textarea>
-											        								</td>
-											        							</tr>
-											        						</tbody>
-											        					</table>		
-											        				</td>
-											        				<td class="herramientas-articulo">
-											        					<div class="row text-center">
-											        						<button type="button" class="btn btn-info"><span class="glyphicon glyphicon-tasks"></button>
-											        					</div>
-											        					<div class="row text-center">
-											        						<button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove"></button>
-											        					</div>
-											        				</td>
-											        			</tr>
-											        		</tbody> #}
+											        		</tbody> 
 										        		</table> 	
 											        </div>
 											    </div>
@@ -839,173 +660,63 @@
 					        		<div class="text-center">
 						    			<div class="btn-group">
 								        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
-							       			 <button type="submit" class="btn btn-primary">Guardar</button>
+							       			 <button type="submit" class="btn btn-primary" id="btn-guardar-proyecto">Guardar</button>
 								        </div>
 							        </div>
 							    </div>
 				    		</div>
-				        </form>
+				        {# </form> #}
 				     </div>
 			    </div>
 		  	</div>
 		</div>
-		<div id="modificacionExpediente" class="modal fade" role="dialog">
+
+		<div id="nuevoArticulo" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
 		 	<div class="modal-dialog modal-xl">
 			    <!-- Modal content-->
 			    <div class="modal-content">
 				    <div class="modal-header" style="background-color:#666	;color:#FFF">
 		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title">Modificación Expediente</h4>
+		    			<h4 class="modal-title">Nuevo Artículo</h4>
 				    </div>
 				    <div class="modal-body" style="background-color:#ecf0f5">
-				        <form id="modificacion" action="/api/expediente/update" method="POST">
-				        	<input type="hidden" id="id" name="id">
-				        	<div class="row">
-				        		<div class="col-md-6">
-				        			<div class="row">
-				        				<div class="col-md-6">
-								        	<div class="form-group">
-								        		<label for="selTipoExpedienteMod">Tipo</label>
-								        		<select class="form-control" id="selTipoExpedienteMod" 
-								        				name="selTipoExpedienteMod">
-								        			<option value="0">Seleccione Tipo</option>
-								        			{# {% for tipo in tipos %}
-										                <option value="{{ tipo.id }}">{{ tipo.letra }})</option>
-										            {% endfor %} #}
-								        		</select>
-								        	</div>
-								        </div>
-							        	<div class="col-md-6">
-								        	<div class="form-group">
-								        		<label for="numeroExpedienteMod">Número Expediente</label>
-								        		<input type="text" class="form-control" id="numeroExpedienteMod"
-								        			   name="numeroExpedienteMod" placeholder="N° Expediente">
-								        	</div>
-								        </div>	
-								    </div>
-								    <div class="row">
-								    	<div class="col-md-12">
-							        		<div class="form-group">
-								        		<label for="asuntoMod">Asunto</label>
-								        		<textarea class="form-control text-area" 
-								        		id="asuntoMod" name="asuntoMod" placeholder="Descripción Expediente"></textarea>
-								        	</div>
-								        </div>
-						        	</div>
-						        	<div class="row">
-							        	<div class="col-md-12">
-							        		<div class="form-group">
-								        		<label for="extractoMod">Extracto</label>
-									        	<textarea class="form-control text-area" 
-									        	id="extractoMod" name="extractoMod" placeholder="Extracto"></textarea>
-									        </div>
-									    </div>
-							        </div>
-						        </div>
-						        <div class="col-md-6">
-						        	<div class="row">
-						        		<div class="col-md-12">
-								        	<div class="form-group">
-								        		<label for="input-file-Mod">Archivos</label>
-									        	<input id="input-file-Mod" accept="image/*,application/pdf" name="input-file-Mod" type="file" multiple class="file-loading">
-								        	</div>
-								        </div>
-							        </div>
-						        </div>
-					        </div>
-					        <hr>
-					        <div class="row">
-					        	<div class="col-md-12">
-									<div class="form-group">
-							        	<label for="selAutoresMod">Autores</label>
-							        	<select class="form-control" data-width="100%" multiple="multiple" id="selAutoresMod" name="selAutoresMod"></select>
-							        </div>
-						        </div>
-					        </div>
-					        <div class="row">
-					        	<div class="col-md-12">
-					        		<div class="text-center">
-						    			<div class="btn-group">
-								        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
-				       			 			<button type="submit" class="btn btn-primary" id="btn-Modificacion-expediente">Modificar</button>
-								        </div>
-							        </div>
-							    </div>
-				    		</div>
-				        </form>
-				     </div>
-			    </div>
-		  	</div>
-		</div>
-		<div id="revistaExpediente" class="modal fade" role="dialog">
-		 	<div class="modal-dialog modal-xl">
-			    <!-- Modal content-->
-			    <div class="modal-content">
-				    <div class="modal-header" style="background-color:#666	;color:#FFF">
-		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title">Revista Expediente</h4>
-				    </div>
-				    <div class="modal-body" style="background-color:#ecf0f5">
-				    	<input type="hidden" id="id" name="id">
+			        	<input type="hidden" id="id" name="id">
 			        	<div class="row">
-			        		<div class="col-md-6">
-			        			<div class="row">
-			        				<div class="col-md-6">
-							        	<div class="form-group">
-							        		<label for="selTipoExpedientePrev">Tipo</label>
-							        		<input class="form-control" readonly id="tipoExpedientePrev" 
-							        				name="tipoExpedienteMod">
-							        	</div>
-							        </div>
-						        	<div class="col-md-6">
-							        	<div class="form-group">
-							        		<label for="numeroExpedientePrev">Número Expediente</label>
-							        		<input type="text" readOnly class="form-control" id="numeroExpedientePrev" name="numeroExpedientePrev" >
-							        	</div>
-							        </div>	
-							    </div>
-							    <div class="row">
-							    	<div class="col-md-12">
-						        		<div class="form-group">
-							        		<label for="asuntoPrev">Asunto</label>
-							        		<div class="div-Preview" id="asuntoPrev" name="asuntoPrev"></div>
-							        	</div>
-							        </div>
+			        		<div class="col-md-12">
+			        			<div class="form-group">
+					        		<label for="asunto">Articulo:</label>
+					        		<textarea class="form-control text-area text-area-corta" 
+					        		id="articulo" name="articulo" placeholder="articulo"></textarea>
 					        	</div>
-					        	<div class="row">
-						        	<div class="col-md-12">
-						        		<div class="form-group">
-							        		<label for="extractoPrev">Extracto</label>
-								        	<div class="div-Preview" id="extractoPrev" name="extractoPrev"></div>
+					        </div>
+					    </div>
+					    <div class="row">
+			        		<div class="col-md-12">
+			        			<div class="row">
+			        				<div class="col-md-12">
+								        <label>Incisos:</label>
+								        <button type="button" onClick="agregarInciso();" class="btn btn-primary btn-sm pull-right">Agregar Inciso</button>
+								    </div>
+								</div>
+								<div class="row" style="padding-top:5px">
+									<div class="col-md-12">
+								        <div class="div-incisos" id="div-incisos">
+							        		<table class="table table-striped" id="incisos">
+							        			<tbody>
+								        		</tbody> 
+							        		</table> 	
 								        </div>
 								    </div>
-						        </div>
-					        </div>
-					        <div class="col-md-6">
-					        	<div class="row">
-					        		<div class="col-md-12">
-							        	<div class="form-group">
-							        		<label for="input-file-Prev">Archivos</label>
-								        	<input id="input-file-Prev" name="input-file-Prev" type="file" multiple class="file-loading">
-							        	</div>
-							        </div>
-						        </div>
-					        </div>
-				        </div>
-				        <div class="row">
-				        	<div class="col-md-12">
-								<div class="form-group">
-						        	<label for="selAutoresPrev">Autores</label>
-						        	<select class="form-control" data-width="100%" readOnly multiple="multiple" id="selAutoresPrev" name="selAutoresPrev"></select>
-						        </div>
-					        </div>
-				        </div>
+								<div>		
+					        </div> 
+					    </div>
 				        <hr>
 				        <div class="row">
 				        	<div class="col-md-12">
 				        		<div class="text-center">
 					    			<div class="btn-group">
-							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cerrar</button>
+							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+			       			 			<button type="submit" class="btn btn-primary" id="btn-agregar-articulo">Agregar</button>
 							        </div>
 						        </div>
 						    </div>
@@ -1013,6 +724,7 @@
 				     </div>
 			    </div>
 		  	</div>
-		</div>
+		</div
+
 	</section>
 {% endblock %}

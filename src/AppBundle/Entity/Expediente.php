@@ -34,7 +34,7 @@ class Expediente
     *
     * @var string
     */
-    private $archivoBorrado = '';
+    private $archivoBorrado;
 
     /**
      * Set archivos
@@ -191,6 +191,7 @@ class Expediente
     public function __construct()
     {
        $fechaCreacion=new \DateTime("now");
+       $archivoBorrado="";
     }
 
     //-------------------------------setters y getters--------------------------------------------
@@ -635,6 +636,22 @@ class Expediente
         return $rutasWeb;
     }
 
+    /**
+     * Get listaAutores
+     *
+     * @return string
+     *
+     * @VirtualProperty
+     */
+    public function getListaAutores()
+    {
+        return ((!is_null($this->proyecto))
+                ?$this->getProyecto()->getListaAutores()
+                :'---');
+    }
+
+
+
     //----------------------------administracion de carga de archivos-------------------------------
 
     /**
@@ -643,24 +660,25 @@ class Expediente
      */
     public function listarImagenes(){
 
+        $nuevaListaImagenes=[];
+        $imagenes=$this->listaImagenes;
+
         if(!is_null($this->id)){
 
             /* se cambio el numero de expediente */
 
             if (md5($this->numeroExpediente)!=$this->hashId){
 
-                $nuevaListamagenes=[];
-
                 //Valor hash anterior
                 $hashAnterior=$this->hashId;  
 
                 //actualiza valor hash        
                 $this->hashId=md5($this->numeroExpediente);
-
+            
                 //actualiza ubicacion archivos
-                $imagenes=$this->listaImagenes;
                 foreach ($imagenes as $imagen) {
                     $keyAnterior=$imagen->getImageConfig()->getKey();
+                    throw new \Exception($keyAnterior);
                     $componentesKey=explode("/",$keyAnterior);
                     //throw new \Exception($this->getNombreCarpeta().'///'.$componentesKey[0].'///'.$componentesKey[1].'///'.$this->hashId);
                     
@@ -685,16 +703,25 @@ class Expediente
         }
         else $this->hashId=md5($this->numeroExpediente);
 
-        //agrega nuevos archivos
+        //agrega nuevos setArchivos
         $archivos=$this->archivos;
         foreach ($archivos as $archivo) {
-            $this->listaImagenes[]=new Image(md5($archivo->getClientOriginalName()).'.'.$archivo->guessExtension(),
-                                                   $archivo->getClientOriginalName(),
-                                                   $archivo->getClientSize(),
-                                                   '120px',
-                                                   $this->getNombreCarpeta().md5($archivo->getClientOriginalName()).'.'.$archivo->guessExtension(),
-                                                   ((strtolower($archivo->guessExtension())=='pdf')?'pdf':'image')
-                                                   );
+
+            $existe=false;
+
+            foreach ($imagenes as $imagen) {
+                if ($imagen->getImageConfig()->getCaption()==$archivo->getClientOriginalName())
+                    $existe=true;
+                    break;
+            }
+            if($existe==false)
+                $this->listaImagenes[]=new Image(md5($archivo->getClientOriginalName()).'.'.$archivo->guessExtension(),
+                                                       $archivo->getClientOriginalName(),
+                                                       $archivo->getClientSize(),
+                                                       '120px',
+                                                       $this->getNombreCarpeta().md5($archivo->getClientOriginalName()).'.'.$archivo->guessExtension(),
+                                                       ((strtolower($archivo->guessExtension())=='pdf')?'pdf':'image')
+                                                       );
         }
     }
 
@@ -703,21 +730,23 @@ class Expediente
      */
     public function removeSingleImage(){
         $nombreArchivo=$this->archivoBorrado;
-        if(!is_null($nombreArchivo)){
+        $nuevaListaImagenes=[];
+        if($nombreArchivo!=""){
             $imagenes=$this->listaImagenes;
+            //throw new \Exception($imagenes[3]->getFileName());
             for ($i = 0; $i < count($imagenes); $i++) {
+                //throw new \Exception($imagenes[2]->getFileName());
                 if ($imagenes[$i]->getFileName()==$nombreArchivo){
-                    unset($imagenes[$i]);
-                    $this->listaImagenes=$imagenes;
                      $ruta=realpath(__DIR__.'/../../../web').DIRECTORY_SEPARATOR.
                             $this->getRutaRelativaExpedientes().DIRECTORY_SEPARATOR.
                             md5($this->getNumeroExpediente()).DIRECTORY_SEPARATOR.
                             $nombreArchivo;
+
                     unlink($ruta);
-                    break;
                 }
+                else $nuevaListaImagenes[]=$imagenes[$i];
             } 
-           
+            $this->listaImagenes=$nuevaListaImagenes;
         }
     }
 

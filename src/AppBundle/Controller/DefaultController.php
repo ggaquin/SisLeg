@@ -108,11 +108,13 @@ class DefaultController extends Controller
     public function proyectoAction(Request $request)
     {
         $tiposProyectoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoProyecto');
-        $tiposProyecto=$tiposProyectoRepository->findBy(array(),array('tipoProyecto' => 'ASC') );;
+        $tiposProyecto=$tiposProyectoRepository->findBy(array(),array('tipoProyecto' => 'ASC') );
+         $estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
+        $estadosExpediente=$estadoExpedienteRepository->findBy(array(),array('estadoExpediente' => 'ASC') );
        
         return $this->render('default/proyecto.html.twig', array(
             'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
-            'tipos' => $tiposProyecto
+            'tipos' => $tiposProyecto,'estados'=>$estadosExpediente
         ));
          
     }

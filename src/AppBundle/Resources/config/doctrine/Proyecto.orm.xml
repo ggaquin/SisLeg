@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
-  <entity name="AppBundle\Entity\Proyecto" table="proyecto">
+  <entity name="AppBundle\Entity\Proyecto" table="proyecto" repository-class="AppBundle\Repository\ProyectoRepository">
     <indexes>
       <index name="UNIQ_proyecto_expediente_idx" columns="idExpediente"/>
       <index name="fk_proyecto_tipoProyecto_idx" columns="idTipoProyecto"/>
@@ -29,7 +29,7 @@
     </field>
     <field name="quienSanciona" type="string" column="quienSanciona" length="130" nullable="false">
     </field>
-    <field name="articulos" type="text" column="articulos" nullable="false">
+    <field name="articulos" type="json_array" column="articulos" nullable="false">
     </field>
     <many-to-many field="autores" target-entity="Perfil" inversed-by="proyectos" fetch="EAGER">
       <join-table name="autores_proyectos">
