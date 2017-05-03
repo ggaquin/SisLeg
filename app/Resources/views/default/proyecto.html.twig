@@ -256,7 +256,7 @@
 		    $('#nuevoArticulo').on('show.bs.modal', function () {
 				$("#incisos > tbody").html('');
 				$("#articulo").data("wysihtml5").editor.setValue('');
-		    	agregarInciso();
+		    	//agregarInciso();
 			});
 
 			//EVENTO ABRIR MODAL NUEVO PROYECTO
@@ -277,6 +277,7 @@
 			//GUARDAR ALTA PROYECTO
 			$("#btn-guardar-proyecto").click(function(e){
 
+				$(this).prop("disabled",true);
 				var validacion='';
 				var formData=new FormData();
 				var idtipoProyecto=$("#selTipoProyecto").val();
@@ -325,6 +326,9 @@
 						tabla.ajax.reload();
 						$('#nuevoProyecto').modal('hide');
 	                	},
+	                complete: function(){
+	                	$('#btn-guardar-proyecto').prop("disabled",false);
+	                }
 	                error: function(jqXHR,textStatus,errorThrown ){
 						var response=JSON.parse(jqXHR.responseText)
 						toastr.error(response.throwCause);
