@@ -123,11 +123,11 @@
 			$("#"+nombre).removeClass("hidden");
 		}	
 
-		function agregarArticulo(articulo){
-			var numero=$("#articulos > tbody > tr").length+1;
+		function agregarArticulo(articulo,modalTabla){
+			var numero=((articulo.hasOwnProperty(numero))?articulo.name:$("#"+modalTabla+" > tbody > tr").length+1);
 			var cuerpoArticulo='<div class="well well-sm">' +
 							   '<div class="btn-group pull-right">'+
-							   '<button type="button" class="btn btn-sm btn-primary" title="Editar artículo" onClick="noImplementado();" >'+
+							   '<button type="button" class="btn btn-sm btn-primary btn-editar-articulo" title="Editar artículo" >'+
 							   		'Editar</button>'+
 							   '<button type="button" class="btn btn-sm btn-warning" title="Cambiar orden" onClick="noImplementado();">'+
 							   		'Mover</button>'+
@@ -145,7 +145,7 @@
 	        			 	  '<td>'+cuerpoArticulo+'</td>'+
 	        			 	  '</tr>';
 
-	        $("#articulos > tbody").append(nuevoArticulo);
+	        $("#"+modalTabla+" > tbody").append(nuevoArticulo);
 	        $("#div-articulos").animate({ scrollTop: $("#div-articulos")[0].scrollHeight}, 1000);
 	        articulo.numero=numero;
 	        return articulo;
@@ -179,7 +179,7 @@
 
 			var articulosIngresados=[];
 			
-		    var tabla=$('#registroExpediente').DataTable({
+		    var tabla=$('#registroProyectos').DataTable({
 		    			  "language": {
 				              "infoEmpty": "Sin registros para mostrar",
 				              "paginate": {
@@ -219,7 +219,8 @@
 									            "data": null,
 									            "orderable":false,
 									            "render": function(data, type, row){
-									            	var html="<button type='button'title='Editar Proyecto' class='btn btn-primary btn-xs btn-editar ' data-toggle='modal' data-target='#' onClick='noImplementado();'><span class='glyphicon glyphicon-pencil'></span></button>"
+									            	// var html="<button type='button'title='Editar Proyecto' class='btn btn-primary btn-xs btn-editar-proyecto' data-toggle='modal' data-target='#editarProyecto'><span class='glyphicon glyphicon-pencil'></span></button>"
+									            	var html="<button type='button'title='Editar Proyecto' class='btn btn-primary btn-xs' data-toggle='modal' data-target='#' onClick='noImplementado();'><span class='glyphicon glyphicon-pencil'></span></button>"
 									             	html+="<button type='button' title='Ver Detalle' class='btn btn-info btn-xs btn-detalle' data-toggle='modal' data-target='#' onClick='noImplementado();'><span class='glyphicon glyphicon-eye-open'></span></button>"
 									             	html+="<button type='button' title='Imprimir' class='btn btn-warning btn-xs btn-imprimir' data-toggle='modal' data-target='#' onClick='noImplementado();'><span class='glyphicon glyphicon-print'></span></button></div>"
 
@@ -252,6 +253,85 @@
 
 			//---------------------------------NUEVO PROYECTO---------------------------------------
 
+			// $("#articulosMod > tbody").on('click','.btn-editar-articulo',function(){
+			// 	var numero=$(this).parents("tr").find('td:first').text();
+			// 	 $("#editarArticulo").find('input[name="id"]').val(numero);
+			// });
+
+			// $("#editarArticulo"),on('show.bs.modal', function () {
+			// 	//find article and show modal
+			// });
+			
+			$('#registroProyectos > tbody').on( 'click', '.btn-editar-proyecto', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+		        $("#editarProyecto").find('input[name="id"]').val(data[ "id" ]);
+		    } );
+
+		    //EVENTO ABRIR MODAL MODIFICAR EXPEDIENTE
+			$('#editarProyecto').on('show.bs.modal', function () {
+
+		    	var id= $("#editarProyecto").find('input[name="id"]').val();
+
+		    	//Obtención de los datos del select2 ----------------------------------
+
+		    	var select2_data=[];
+
+		    	$.ajax({
+					type:'get',
+					dataType: 'json	',
+					url:'{{ app.request.getBaseURL() }}'+'/api/legislador/getAll',
+					success: function(data){
+					    $.each(data, function(index,autor){
+					    	var autorAux={'id':autor.id, 'text':autor.nombre_completo};
+					    	select2_data.push(autorAux);
+					     });
+						
+					},
+					error: function(jqXHR,textStatus,errorThrown ){
+						var response=JSON.parse(jqXHR.responseText)
+						toastr.error(response.throwCause);
+					}
+				});
+
+		    	//Obtención de los datos del expediente a modificar ------------------------
+
+		    	$.ajax({
+					type:'Get',
+					dataType: 'json	',
+					url:'{{ app.request.getBaseURL() }}'+'/api/proyecto/getOne/'+id,
+					success: function(data){
+
+						$("#selTipoProyectoMod").val(data.tipo_proyecto.id);
+						$("#vistoMod").data("wysihtml5").editor.setValue(data.visto);
+						$("#asuntoMod").data("wysihtml5").editor.setValue(data.asunto);
+						$("#considerandoMod").data("wysihtml5").editor.setValue(data.considerandos);
+						$("#quienSancionaMod").val(data.quien_sanciona);
+
+					 	//selección en la grilla de los items almacenados
+
+					    var autores=data.autores;
+					    var selected=[];
+					    $("#selAutoresMod").select2({tags: select2_data, tokenSeparators: [',']});
+					    $.each(autores, function(index,autor){
+					    	selected.push(autor.id);
+					     });
+					    $("#selAutoresMod").val(selected).change();
+					    
+					    $.each(data.articulos,function(index,articulo){
+							agregarArticulo(articulo,'articulosMod');
+						});
+
+					    articulos=data.articulos;
+						habilitar('tab-1-mod');
+					    
+					},
+					error: function(jqXHR,textStatus,errorThrown ){
+						var response=JSON.parse(jqXHR.responseText)
+						toastr.error(response.throwCause);
+					}
+		      	});
+			});
+			
 			//EVENTO ABRIR MODAL NUEVO ARTICULO
 		    $('#nuevoArticulo').on('show.bs.modal', function () {
 				$("#incisos > tbody").html('');
@@ -267,6 +347,7 @@
 				$("#visto").data("wysihtml5").editor.setValue('');
 				$("#considerando").data("wysihtml5").editor.setValue('');
 				$("#articulos > tbody").html('');
+				habilitar('tab-1');
 			});
 			
 			//EVENTO CERRAR MODAL NUEVO PROYECTO
@@ -328,7 +409,7 @@
 	                	},
 	                complete: function(){
 	                	$('#btn-guardar-proyecto').prop("disabled",false);
-	                }
+	                	},
 	                error: function(jqXHR,textStatus,errorThrown ){
 						var response=JSON.parse(jqXHR.responseText)
 						toastr.error(response.throwCause);
@@ -385,7 +466,7 @@
 						incisos:incisos
 					}
 
-					articuloActual=agregarArticulo(articuloActual);
+					articuloActual=agregarArticulo(articuloActual,'articulos');
 					articulosIngresados.push(articuloActual);
 					$('#nuevoArticulo').modal('hide');
 				}
@@ -445,6 +526,13 @@
 				    "image": false,
 					"size": "xs",
 				},
+			});
+
+			$("#selAutoresMod").select2({
+			  language: "es",
+			  allowClear: true,
+			  minimumInputLength: 3,
+			  theme: "bootstrap",
 			});
 
 			$("#selAutores").select2({
@@ -540,7 +628,7 @@
 	<section class="content">
 	  	<div class="row">
 	    	<div class="col-xs-12">
-              	<table id="registroExpediente" class="table table table-striped">
+              	<table id="registroProyectos" class="table table table-striped">
 	                <thead>
 	                	<tr>
 	                		<th>id</th>
@@ -711,7 +799,173 @@
 							        		</table> 	
 								        </div>
 								    </div>
-								<div>		
+								</div>		
+					        </div> 
+					    </div>
+				        <hr>
+				        <div class="row">
+				        	<div class="col-md-12">
+				        		<div class="text-center">
+					    			<div class="btn-group">
+							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+			       			 			<button type="submit" class="btn btn-primary" id="btn-agregar-articulo">Agregar</button>
+							        </div>
+						        </div>
+						    </div>
+			    		</div>
+				     </div>
+			    </div>
+		  	</div>
+		</div>
+		<div id="editarProyecto" class="modal fade custom-modal" role="dialog" data-backdrop="static" 
+   data-keyboard="false" >
+		 	<div class="modal-dialog modal-xl">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Nuevo Proyecto</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				       {#  <form id="alta" action="api/proyecto/create" method="POST"> #}
+				       		<input type="hidden" id="id" name="id">
+				       		<input type="hidden" id="id" name="id">
+						    <div class="row">
+						    	<div class="col-md-2">
+						    		<div class="form-group">
+						        		<label for="selTipoProyectoMod">Tipo</label>
+						        		<select class="form-control" id="selTipoProyectoMod" 
+						        				name="selTipoProyectoMod">
+						        			<option value="0">Seleccione Tipo</option>
+						        			{% for tipo in tipos %}
+								                <option value="{{ tipo.id }}">{{ tipo.tipoProyecto }}</option>
+								            {% endfor %}
+						        		</select>
+						        	</div>
+						    		<nav>
+									    <ul class="nav">
+										    <li><a href="#" id="link-tab-1" onclick = "habilitar('tab-1-mod')" >Autores/Asunto</a></li>
+										    <li><a href="#" id="link-tab-2" onclick = "habilitar('tab-2-mod')">Vistos</a></li>
+											<li><a href="#" onclick = "habilitar('tab-3-mod')">Considerando</a></li>
+											<li><a href="#" onclick = "habilitar('tab-4-mod')">Artículos</a></li>
+										</ul>
+									</nav>
+						    	</div>
+						    	<div class="col-md-10">
+								    <div class="row tab" id="tab-1-mod">
+								    	<div class="col-md-12">
+								    		<div class="form-group">
+									        	<label for="selAutoresMod">Autores:</label>
+									        	<select class="form-control" multiple="multiple" data-width="100%" id="selAutoresMod" name="selAutoresMod"></select>
+									        </div>
+							        		<div class="form-group">
+								        		<label for="asuntoMod">Asunto:</label>
+								        		<textarea class="form-control text-area text-area-media" 
+								        		id="asuntoMod" name="asuntoMod" placeholder="Descripción Expediente"></textarea>
+								        	</div> 
+								        </div> 
+						        	</div>
+						        	<div class="row tab hidden" id="tab-2-mod">
+							        	<div class="col-md-12">
+							        		<div class="form-group">
+								        		<label for="vistoMod">Visto:</label>
+									        	<textarea class="form-control text-area text-area-larga" 
+									        	id="vistoMod" name="vistoMod" placeholder="Visto"></textarea>
+									        </div>
+									    </div>
+							        </div>
+							        <div class="row tab hidden" id="tab-3-mod">
+							        	<div class="col-md-12">
+							        		<div class="form-group">
+								        		<label for="considerandoMod">Considerando:</label>
+									        	<textarea class="form-control text-area text-area-larga" 
+									        	id="considerandoMod" name="considerandoMod" placeholder="Consideranto"></textarea>
+									        </div>
+									    </div>
+							        </div>
+							        <div class="row tab hidden" id="tab-4-mod">
+						        		<div class="col-md-12">
+						        			<div class="row">
+								        		<div class="col-md-12">	
+										        	<label>Artículos:</label>
+										        	<div class="form-inline pull-right">
+										        		<label for="quienSancionaMod">Sanciona a Nombre de:</label>
+										        		<select class="form-control input-sm" id="quienSancionaMod" name="quienSancionaMod">
+										        			<option value="1">Consejo</option>
+										        			<option value="2">Presidente</option>
+										        		</select>
+										        		<button type="button" data-toggle='modal' data-target='#editarArticulo'class="btn btn-primary btn-sm">Nuevo Artículo</button>
+										        	</div>
+										        </div>
+										    </div>
+								        	<div class="row" style="padding-top:5px">
+								        		<div class="col-md-12">
+										        	<div class="div-articulos" id="div-articulosMod">
+										        		<table class="table table-striped" id="articulosMod">
+										        			<tbody>
+											        		</tbody> 
+										        		</table> 	
+											        </div>
+											    </div>
+											</div>
+									    </div>
+							        </div>
+						        </div>
+						    </div>
+					        <hr>
+					        <div class="row">
+					        	<div class="col-md-12">
+					        		<div class="text-center">
+						    			<div class="btn-group">
+								        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+							       			 <button type="submit" class="btn btn-primary" id="btn-editar-proyecto">Guardar</button>
+								        </div>
+							        </div>
+							    </div>
+				    		</div>
+				        {# </form> #}
+				     </div>
+			    </div>
+		  	</div>
+		</div>
+
+		<div id="editarArticulo" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
+		 	<div class="modal-dialog modal-xl">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Nuevo Artículo</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+			        	<input type="hidden" id="id" name="id">
+			        	<div class="row">
+			        		<div class="col-md-12">
+			        			<div class="form-group">
+					        		<label for="asunto">Articulo:</label>
+					        		<textarea class="form-control text-area text-area-corta" 
+					        		id="articulo" name="articulo" placeholder="articulo"></textarea>
+					        	</div>
+					        </div>
+					    </div>
+					    <div class="row">
+			        		<div class="col-md-12">
+			        			<div class="row">
+			        				<div class="col-md-12">
+								        <label>Incisos:</label>
+								        <button type="button" onClick="agregarInciso();" class="btn btn-primary btn-sm pull-right">Agregar Inciso</button>
+								    </div>
+								</div>
+								<div class="row" style="padding-top:5px">
+									<div class="col-md-12">
+								        <div class="div-incisos" id="div-incisos">
+							        		<table class="table table-striped" id="incisos">
+							        			<tbody>
+								        		</tbody> 
+							        		</table> 	
+								        </div>
+								    </div>
+								</div>		
 					        </div> 
 					    </div>
 				        <hr>

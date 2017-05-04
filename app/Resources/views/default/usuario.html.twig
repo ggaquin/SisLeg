@@ -443,9 +443,6 @@
 
                 	formData.append(control.name, control.value);
 
-                	if (control.name=="login")
-                		console.log(control.value.replace(/ /g, '').length);
-
             		validacion+=((control.name=="login" && control.value.replace(/ /g, '').length==0)?
 	                			'<li>Debe especificar un login de usuario</li>':'');
             		validacion+=((control.name=="selRol" && control.value==0)?

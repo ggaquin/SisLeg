@@ -45,7 +45,6 @@ class RestController extends FOSRestController{
      */
     public function traerUsuarioPorIdAction(Request $request)
     {
-        //$id=$request->query->get('id');
         $id=$request->get('id');
         $usuarioRepository=$this->getDoctrine()->getRepository('AppBundle:Usuario');
         $usuario=$usuarioRepository->find($id);
@@ -99,6 +98,18 @@ class RestController extends FOSRestController{
         $expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
         $expedientes=$expedienteRepository->findAll();
         return $this->view($expedientes,200);
+         
+    }
+
+    /**
+     * @Rest\Get("/api/proyecto/getOne/{id}")
+     */
+    public function traerProyectoPorIdAction(Request $request)
+    {
+        $id=$request->get('id');
+        $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
+        $proyecto=$proyectoRepository->find($id);
+        return $this->view($proyecto,200);
          
     }
 
@@ -380,7 +391,7 @@ class RestController extends FOSRestController{
             $oficina=$request->request->get('oficina');
             $domicilio=$request->request->get('domicilio');
             $documento=$request->request->get('documento');
-            $idBloque=$request->request->get('idBloque');
+            $idBloque=$request->request->get('selBloque');
             $archivos=$request->files->all();
             $usuarioSesion=$this->getUser();
 
@@ -448,73 +459,78 @@ class RestController extends FOSRestController{
      */
      public function actualizarPerfilAction(Request $request)
     {   
-        $id=$request->request->get('id');
-        $apellidos=$request->request->get('apellidosMod');
-        $nombres=$request->request->get('nombresMod');
-        $idRol=$request->request->get('selRolMod');
-        $conservarClave=$request->request->get('conservaContraseña');
-        $clave=$request->request->get('claveMod');
-        $eMail=$request->request->get('eMailMod');
-        $telefono=$request->request->get('telefonoMod');
-        $oficina=$request->request->get('oficinaMod');
-        $domicilio=$request->request->get('domicilioMOd');
-        $documento=$request->request->get('documentoMod');
-        $idBloque=$request->request->get('idBloqueMod');
-        $archivos=$request->files->all();
-        $usuarioSesion=$this->getUser();
+        try {
+                $id=$request->request->get('id');
+                $apellidos=$request->request->get('apellidosMod');
+                $nombres=$request->request->get('nombresMod');
+                $idRol=$request->request->get('selRolMod');
+                $conservarClave=$request->request->get('conservaContraseña');
+                $clave=$request->request->get('claveMod');
+                $eMail=$request->request->get('eMailMod');
+                $telefono=$request->request->get('telefonoMod');
+                $oficina=$request->request->get('oficinaMod');
+                $domicilio=$request->request->get('domicilioMOd');
+                $documento=$request->request->get('documentoMod');
+                $idBloque=$request->request->get('selBloqueMod');
+                $archivos=$request->files->all();
+                $usuarioSesion=$this->getUser();
 
-        $em = $this->getDoctrine()->getManager();
-     
-        $usuarioRepository=$this->getDoctrine()->getRepository('AppBundle:Usuario');
-        $usuario=$usuarioRepository->find($id);
-        $rolRepository=$this->getDoctrine()->getRepository('AppBundle:Rol');
-        $rol=$rolRepository->find($idRol);
+                $em = $this->getDoctrine()->getManager();
+             
+                $usuarioRepository=$this->getDoctrine()->getRepository('AppBundle:Usuario');
+                $usuario=$usuarioRepository->find($id);
+                $rolRepository=$this->getDoctrine()->getRepository('AppBundle:Rol');
+                $rol=$rolRepository->find($idRol);
 
 
 
-        $perfil=$usuario->getPerfil();
+                $perfil=$usuario->getPerfil();
 
-        if($perfil instanceof PerfilLegislador){
+                if($perfil instanceof PerfilLegislador){
 
-            $bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
-            $bloque=$bloqueRepository->find($idBloque);
-            $perfil->setBloque($bloque);
-            $perfil->setOficina($oficina);
-        }
-        if($perfil instanceof PerfilPublico){
+                    $bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
+                    $bloque=$bloqueRepository->find($idBloque);
+                    $perfil->setBloque($bloque);
+                    $perfil->setOficina($oficina);
+                }
+                if($perfil instanceof PerfilPublico){
 
-            $perfil->setDocumento($documento);
-            $perfil->setDomcilio($domicilio);
-        }
+                    $perfil->setDocumento($documento);
+                    $perfil->setDomcilio($domicilio);
+                }
 
-        $perfil->setApellidos($apellidos);
-        $perfil->setNombres($nombres);
-        $perfil->setTelefono($telefono);
-        $perfil->setCorreoElectronico($eMail);
-        $perfil->setUsuarioModificacion($usuarioSesion->getUsername());
-        $perfil->setFechaModificacion(new \DateTime("now"));
+                $perfil->setApellidos($apellidos);
+                $perfil->setNombres($nombres);
+                $perfil->setTelefono($telefono);
+                $perfil->setCorreoElectronico($eMail);
+                $perfil->setUsuarioModificacion($usuarioSesion->getUsername());
+                $perfil->setFechaModificacion(new \DateTime("now"));
 
-        if(count($archivos)>0){
-            $perfil->setArchivo($archivos["uploadedFiles-0"]);
-            $perfil->setPrefijo($usuario->getUsuario());
-        }
-         
-        if($conservarClave==false){
-            $encoder = $this->container->get('security.password_encoder');
-            $encoded = $encoder->encodePassword($usuario, $clave);
-            $usuario->setClave($encoded);
-        }
+                if(count($archivos)>0){
+                    $perfil->setArchivo($archivos["uploadedFiles-0"]);
+                    $perfil->setPrefijo($usuario->getUsuario());
+                }
+                 
+                if($conservarClave==false){
+                    $encoder = $this->container->get('security.password_encoder');
+                    $encoded = $encoder->encodePassword($usuario, $clave);
+                    $usuario->setClave($encoded);
+                }
 
-        $usuario->setRol($rol);
-        $usuario->setPerfil($perfil);
-        $usuario->setUsuarioModificacion($usuarioSesion->getUsername());
-        $usuario->setFechaModificacion(new \DateTime("now"));
+                $usuario->setRol($rol);
+                $usuario->setPerfil($perfil);
+                $usuario->setUsuarioModificacion($usuarioSesion->getUsername());
+                $usuario->setFechaModificacion(new \DateTime("now"));
 
-        $em = $this->getDoctrine()->getManager();
-        $em->persist($usuario);
-        $em->flush();
+                $em = $this->getDoctrine()->getManager();
+                $em->persist($usuario);
+                $em->flush();
 
-        return $this->view('La modificacion del usuario se realizó con éxito',200);
+                return $this->view('La modificacion del usuario se realizó con éxito',200);
+            }
+            catch(\Exception $e){
+                throw $e;
+            }
     }
 
     /**
@@ -523,26 +539,26 @@ class RestController extends FOSRestController{
     public function borrarImagenAction(Request $request)
     {
         $key=$request->request->get("key");
-        if($key=="no-unlink-preview")
-            throw new \Exception("No se puede remover la imagen por defecto");
+        if($key!="no-unlink-preview"){
 
-        $stripPath=explode("/",$key);
-        $claveBorrado=$stripPath[2];
-        $usuarioSesion=$this->getUser();
+            $stripPath=explode("/",$key);
+            $claveBorrado=$stripPath[2];
+            $usuarioSesion=$this->getUser();
 
+            
+
+            $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
+            $perfil=$perfilRepository->findOneBy(array('imagen'=>$claveBorrado));
+            $perfil->setBorrarImagen();
+
+            $perfil->setUsuarioModificacion($usuarioSesion->getUsername());
+            $perfil->setFechaModificacion(new \DateTime("now"));
         
 
-        $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
-        $perfil=$perfilRepository->findOneBy(array('imagen'=>$claveBorrado));
-        $perfil->setBorrarImagen();
-
-        $perfil->setUsuarioModificacion($usuarioSesion->getUsername());
-        $perfil->setFechaModificacion(new \DateTime("now"));
-    
-
-        $em = $this->getDoctrine()->getManager();
-        $em->persist($perfil);
-        $em->flush();
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($perfil);
+            $em->flush();
+        }
     }
 
     /**

@@ -233,7 +233,7 @@
               {% if app.user.rol.rol=="ROLE_ADMINISTRADOR" %}
               <li><a href='usuarios'><i class="fa fa-user-circle"></i><span>Usuarios</span></a></li>
               {% endif %}
-              {# <li class="treeview">
+              <li class="treeview">
                 <a href="#">
                   <i class="fa fa-users"></i>
                   <span>Comisiones</span>
@@ -246,7 +246,7 @@
                   <li><a href="comisiones"><i class="fa fa-minus"></i>Conformación Comisiones</a></li>
                   <li><a href="#"><i class="fa fa-minus"></i>Expedientes</a></li>
                 </ul>
-              </li> #}
+              </li>
               {% if app.user.rol.rol=="ROLE_MESA_ENTRADA" or app.user.rol.rol=="ROLE_ADMINISTRADOR" %}
               <li><a href="expedientes"><i class="fa fa-book"></i><span>Expedientes</span></a></li>
               {% endif %}
