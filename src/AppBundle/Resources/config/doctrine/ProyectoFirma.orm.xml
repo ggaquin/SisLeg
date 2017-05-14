@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\ProyectoFirma" table="proyectoFirma">
+    <indexes>
+      <index name="proyectoFirma_perfil_idx" columns="idPerfil"/>
+      <index name="proyectoFirma_proyecto_idx" columns="idProyecto"/>
+    </indexes>
+    <id name="id" type="integer" column="idProyectoFirma">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <many-to-one field="autor" target-entity="Perfil" fetch="LAZY">
+      <join-columns>
+        <join-column name="idPerfil" referenced-column-name="idPerfil"/>
+      </join-columns>
+    </many-to-one>
+    <many-to-one field="proyecto" target-entity="Proyecto" fetch="LAZY" inversed-by="firmas">
+      <join-columns>
+        <join-column name="idProyecto" referenced-column-name="idProyecto"/>
+      </join-columns>
+    </many-to-one>
+    <field name="confirmado" type="boolean" column="confirmado" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="fechaConfirmacion" type="datetime" column="fechaConfirmacion" nullable="true">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+  </entity>
+</doctrine-mapping>
