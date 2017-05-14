@@ -116,16 +116,30 @@ class Expediente
     /**
      * @var string
      *
-     * @ORM\Column(name="asunto", type="string", length=200, nullable=false)
+     * @ORM\Column(name="caratula", type="string", length=500, nullable=false)
      */
-    private $asunto;
+    private $caratula;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="extracto", type="string", length=500, nullable=false)
+     * @ORM\Column(name="folios", type="string", length=4, nullable=false)
      */
-    private $extracto;
+    private $folios;
+
+     /**
+     * @var string
+     *
+     * @ORM\Column(name="apellidosSiParticular", type="string", length=80, nullable=true)
+     */
+    private $apellidosSiParticular;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="nombresSiParticular", type="string", length=80, nullable=true)
+     */
+    private $nombresSiParticular;
 
     /**
      * @var array
@@ -289,51 +303,99 @@ class Expediente
     }
 
     /**
-     * Set asunto
+     * Set caratula
      *
-     * @param string $asunto
+     * @param string $caratula
      *
      * @return Expediente
      */
-    public function setAsunto($asunto)
+    public function setCaratula($caratula)
     {
-        $this->asunto = $asunto;
+        $this->caratula = $caratula;
 
         return $this;
     }
 
     /**
-     * Get asunto
+     * Get caratula
      *
      * @return string
      */
-    public function getAsunto()
+    public function getCaratula()
     {
-        return $this->asunto;
+        return $this->caratula;
     }
 
     /**
-     * Set extracto
+     * Set folios
      *
-     * @param string $extracto
+     * @param string $folios
      *
      * @return Expediente
      */
-    public function setExtracto($extracto)
+    public function setFolios($folios)
     {
-        $this->extracto = $extracto;
+        $this->folios = $folios;
 
         return $this;
     }
 
     /**
-     * Get extracto
+     * Get folios
      *
      * @return string
      */
-    public function getExtracto()
+    public function getFolios()
     {
-        return $this->extracto;
+        return $this->folios;
+    }
+
+    /**
+     * Set apellidosSiParticular
+     *
+     * @param string $apellidos
+     *
+     * @return Expediente
+     */
+    public function setApellidosSiParticular($apellidos)
+    {
+        $this->apellidosSiParticular = $apellidos;
+
+        return $this;
+    }
+
+    /**
+     * Get apellidosSiParticular
+     *
+     * @return string
+     */
+    public function getApellidosSiParticular()
+    {
+        return $this->apellidosSiParticular;
+    }
+
+    /**
+     * Set nombresSiParticular
+     *
+     * @param string $nombres
+     *
+     * @return Expediente
+     */
+    public function setNombresSiParticular($nombres)
+    {
+        $this->nombresSiParticular = $nombres;
+
+        return $this;
+    }
+
+    /**
+     * Get nombresSiParticular
+     *
+     * @return string
+     */
+    public function geNombresSiParticular()
+    {
+        return $this->nombresSiParticular;
     }
 
     /**
@@ -596,27 +658,15 @@ class Expediente
     }
 
     /**
-     * Get resumenSinHtml
+     * Get caratulaSinHtml
      *
      * @return string
      *
      * @VirtualProperty
      */
-    public function getResumenSinHtml()
+    public function getCaratulaSinHtml()
     {
-        return strip_tags($this->extracto);
-    }
-
-    /**
-     * Get asuntoSinHtml
-     *
-     * @return string
-     *
-     * @VirtualProperty
-     */
-    public function getAsuntoSinHtml()
-    {
-        return strip_tags($this->asunto);
+        return strip_tags($this->caratula);
     }
 
     /**
@@ -648,6 +698,30 @@ class Expediente
         return ((!is_null($this->proyecto))
                 ?$this->getProyecto()->getListaAutores()
                 :'---');
+    }
+
+    /**
+     * Get fechaCreacionFormateada
+     *
+     * @return string
+     *
+     * @VirtualProperty
+     */
+    public function getFechaCreacionFormateada()
+    {
+        return $this->getFechaCreacion()->format('d-m-Y');
+    }
+
+    /**
+     * Get fechaModificacionFormateada
+     *
+     * @return string
+     *
+     * @VirtualProperty
+     */
+    public function getFechaModificacionFormateada()
+    {
+        return $this->fechaModificacion->format('d-m-Y');
     }
 
 

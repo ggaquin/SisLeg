@@ -18,11 +18,11 @@
         <join-column name="idTipoProyecto" referenced-column-name="idTipoProyecto"/>
       </join-columns>
     </many-to-one>
-    <field name="asunto" type="string" length="200" column="asunto" nullable="false">
-      <options>
-        <option name="fixed"/>
-      </options>
-    </field>
+     <many-to-one field="bloque" target-entity="Bloque" fetch="LAZY">
+      <join-columns>
+        <join-column name="idBloque" referenced-column-name="idBloque"/>
+      </join-columns>
+    </many-to-one>
     <field name="visto" type="text" column="visto" nullable="false">
     </field>
     <field name="considerandos" type="text" column="considerandos" nullable="false">
@@ -41,6 +41,11 @@
         </inverse-join-columns>
       </join-table>
     </many-to-many>
+    <one-to-many field="firmas" target-entity="ProyectoFirma" mapped-by="proyecto">
+      <cascade>
+        <cascade-persist/>
+      </cascade>
+    </one-to-many>
     <field name="fechaCreacion" type="datetime" column="fechaCreacion" nullable="false">
     </field>
     <field name="usuarioCreacion" type="string" column="usuarioCreacion" length="70" 

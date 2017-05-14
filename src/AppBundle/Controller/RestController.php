@@ -23,6 +23,7 @@ use AppBundle\Entity\PerfilPublico;
 use AppBundle\Entity\Bloque;
 use AppBundle\Entity\Expediente;
 use AppBundle\Entity\Proyecto;
+use AppBundle\Entity\ProyectoFirma;
 use AssistBundle\Entity\AdministracionSesion;
 
 
@@ -180,7 +181,64 @@ class RestController extends FOSRestController{
         $comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
         $comisiones=$comisionRepository->findBy(array(),array('comision' => 'ASC'));
         return $this->view($comisiones,200);
+    }
 
+    /**
+     *  @Rest\Get("/api/proyecto/enviarMail/{idProyecto}")
+     */
+    public function enviarMailProyectoAction(Request $request)
+    {
+        $idProyecto=$request->get("idProyecto");
+        // $idProyecto=$request->request->get("idProyecto");
+        $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
+        $proyecto=$proyectoRepository->find($idProyecto);
+
+
+        $subject=$proyecto->getTipoProyecto()->getTipoProyecto().' - '.substr($proyecto->getAsuntoSinHtml(),0,20).'...';
+            $articulos=$proyecto->getArticulos();
+            $destinatarios=[];
+            foreach ($proyecto->getFirmas() as $firma) 
+               $destinatarios[]=$firma->getAutor()->getCorreoElectronico();
+
+            $quienSanciona=(($proyecto->getQuienSanciona()==1)
+                ?'<p class="ident"><strong>EL HONORABLE CONCEJO DELIBERANTE EN USO DE LAS FACULTADES QUE LE SON PROPIAS SANCIONA LA SIGUIENTE:</strong></p>'
+                :'<p class="ident"><strong>EL SR. PRESIDENTE DE ESTE HONORABLE CONCEJO DELIBERANTE, EN USO DE ATRIBUCIONES QUE LE SON PROPIAS, SANCIONA LA SIGUIENTE:</strong></p>');
+
+            $htmlArticulos='';
+            
+            foreach ($articulos as $articulo) {
+                 $htmlArticulos.='<strong><u>Artículo '.$articulo->numero.'°</u>.- </strong>'.str_replace('</p>', '<br>',strip_tags($articulo->texto,'</p>'));
+                if(count($articulo->incisos)>0){
+                    //recordar setear ul{list-style-type: none;}
+                    $htmlArticulos.='<ul style="list-style-type: none;">';
+                    foreach ($articulo->incisos as $inciso) {
+                        $htmlArticulos.='<li>'.$inciso->orden.' '.strip_tags($inciso->texto,'<br>').'</li>';
+                    }
+                    $htmlArticulos.='</ul>';
+                }
+            }
+
+            $htmlArticulos.='</ul>';
+
+            $message = \Swift_Message::newInstance()
+            ->setSubject($subject)
+            ->setFrom('send@example.com')
+            ->setTo($destinatarios)
+            ->setBody(
+                $this->renderView(
+                    'documento/modeloProyecto.html.twig', array(
+                    'asunto' => strip_tags($proyecto->getAsunto(),'<p>'),
+                    'visto'=>str_replace('<p>','<p class="ident">',strip_tags($proyecto->getVisto(),'<p>')),
+                    'considerando'=>str_replace('<p>','<p class="ident">',strip_tags($proyecto->getConsiderandos(),'<p>')),
+                    'articulos'=>$htmlArticulos,
+                    'tipo'=>$proyecto->getTipoProyecto()->getTipoProyecto(),
+                    'quienSanciona'=>$quienSanciona
+                )),
+                'text/html'
+            );
+
+            $this->get('mailer')->send($message);
+         
     }
 
      /**
@@ -189,21 +247,35 @@ class RestController extends FOSRestController{
     public function crearProyectoAction(Request $request)
     {   
         $idtipoProyecto=$request->request->get('idtipoProyecto');
-        $autores=json_decode($request->request->get('autores'),true);
-        $asunto=$request->request->get('asunto');
+        $idBloque=$request->request->get('idBloque');
+        $listaAutores=$request->request->get('autores');
         $visto=$request->request->get('visto');
+        
         $considerando=$request->request->get('considerando');
         $quienSanciona=$request->request->get('quienSanciona');
         $articulos=json_decode($request->request->get('articulos'));
+        /*
+          ---------------------------------------------
+          descomentar si se acuerda mail de notifcacion
+          ---------------------------------------------
+
+          $notificar=$request->request->get('notificar');
+
+          ------------------------------------------------
+        */
         $usuario=$this->getUser();
+
+        $autores=explode(',',$listaAutores);
 
         $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
         $tipoProyectoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoProyecto');
         $tipoProyecto=$tipoProyectoRepository->find($idtipoProyecto);
+        $bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
+        $bloque=$bloqueRepository->find($idBloque);
       
         $proyecto=new Proyecto();
         $proyecto->setTipoProyecto($tipoProyecto);
-        $proyecto->setAsunto($asunto);
+        $proyecto->setBloque($bloque);
         $proyecto->setVisto($visto);
         $proyecto->setConsiderandos($considerando);
         $proyecto->setQuienSanciona($quienSanciona);
@@ -211,12 +283,19 @@ class RestController extends FOSRestController{
         if (is_array($autores)){
             foreach ($autores as $autor) {
                     $perfil=$perfilRepository->find($autor);
-                    $proyecto->addAutor($perfil); 
+                    $proyecto->addAutor($perfil);
+                    $firma= new ProyectoFirma();
+                    $firma->setAutor($perfil);
+                    $proyecto->addFirma($firma);
+
             }
         }
         else {
                 $perfil=$perfilRepository->find($autores);
                 $proyecto->addAutor($perfil);
+                $firma= new ProyectoFirma();
+                $firma->setAutor($perfil);
+                $proyecto->addFirma($firma);
             }
 
         $proyecto->setArticulos($articulos);
@@ -227,7 +306,64 @@ class RestController extends FOSRestController{
         $em->persist($proyecto);
         $em->flush();
 
-         return $this->view('El proyecto se guardó en forma exitosa',200);
+        /*
+            ---------------------------------------------
+            descomentar si se acuerda mail de notifcacion
+            ----------------------------------------------
+                  esto debe ser pasado a in servicio
+            ----------------------------------------------
+
+        if($notificar==true){
+            $subject=$proyecto->getTipoProyecto()->getTipoProyecto().' - '.substr($proyecto->getAsuntoSinHtml(),0,20).'...';
+            $articulos=$proyecto->getArticulos();
+            $destinatarios=[];
+            foreach ($proyecto->getFirmas() as $firma) 
+               $destinatarios[]=$firma->getAutor()->getCorreoElectronico();
+
+            $quienSanciona=(($proyecto->getQuienSanciona()==1)
+                ?'<p class="ident"><strong>EL HONORABLE CONCEJO DELIBERANTE EN USO DE LAS FACULTADES QUE LE SON PROPIAS SANCIONA LA SIGUIENTE:</strong></p>'
+                :'<p class="ident"><strong>EL SR. PRESIDENTE DE ESTE HONORABLE CONCEJO DELIBERANTE, EN USO DE ATRIBUCIONES QUE LE SON PROPIAS, SANCIONA LA SIGUIENTE:</strong></p>');
+
+            $htmlArticulos='';
+            
+            foreach ($articulos as $articulo) {
+                 $htmlArticulos.='<strong><u>Artículo '.$articulo->numero.'°</u>.- </strong>'.str_replace('</p>', '<br>',strip_tags($articulo->texto,'</p>'));
+                if(count($articulo->incisos)>0){
+                    //recordar setear ul{list-style-type: none;}
+                    $htmlArticulos.='<ul style="list-style-type: none;">';
+                    foreach ($articulo->incisos as $inciso) {
+                        $htmlArticulos.='<li>'.$inciso->orden.' '.strip_tags($inciso->texto,'<br>').'</li>';
+                    }
+                    $htmlArticulos.='</ul>';
+                }
+            }
+
+            $htmlArticulos.='</ul>';
+
+            $message = \Swift_Message::newInstance()
+            ->setSubject($subject)
+            ->setFrom('send@example.com')
+            ->setTo($destinatarios)
+            ->setBody(
+                $this->renderView(
+                    'emails/notificacionProyecto.html.twig', array(
+                    'asunto' => strip_tags($proyecto->getAsunto(),'<p>'),
+                    'visto'=>str_replace('<p>','<p class="ident">',strip_tags($proyecto->getVisto(),'<p>')),
+                    'considerando'=>str_replace('<p>','<p class="ident">',strip_tags($proyecto->getConsiderandos(),'<p>')),
+                    'articulos'=>$htmlArticulos,
+                    'tipo'=>$proyecto->getTipoProyecto()->getTipoProyecto(),
+                    'quienSanciona'=>$quienSanciona
+                )),
+                'text/html'
+            );
+
+            $this->get('mailer')->send($message);
+                
+            
+        }
+        */
+
+        return $this->view('El proyecto se guardó en forma exitosa',200);
     }
 
     /**
@@ -236,11 +372,14 @@ class RestController extends FOSRestController{
     public function crearExpedienteAction(Request $request)
     {   
         try{ 
-            $idproyecto=$request->request->get('idProyecto');              
+            $idproyecto=$request->request->get('idProyecto'); 
+            $folios=$request->request->get('folios');  
+            $origen=$request->request->get('origen');
+            $apellidosSiParticular=$request->request->get('apellidosSiParticular');
+            $nombresSiParticular=$request->request->get('nombresSiParticular');           
             $numeroExpediente=$request->request->get('numeroExpediente');
             $idTipoExpediente=$request->request->get('selTipoExpediente');
-            $asunto=$request->request->get('asunto');
-            $extracto=$request->request->get('extracto');
+            $caratula=$request->request->get('caratula');
             $archivos=$request->files->all();
             $usuario=$this->getUser();
 
@@ -250,10 +389,10 @@ class RestController extends FOSRestController{
             $estadoExpediente=$estadoExpedienteRepository->find(1);
 
             $expediente=new Expediente();
+            $expediente->setFolios($folios);
             $expediente->setArchivos($archivos);
             $expediente->setNumeroExpediente($numeroExpediente);
-            $expediente->setAsunto($asunto);
-            $expediente->setExtracto($extracto);
+            $expediente->setCaratula($caratula);
 
             $proyecto=null;
             $tipoExpediente=null;
@@ -268,6 +407,11 @@ class RestController extends FOSRestController{
                 $tipoExpediente=$tipoExpedienteRepository->find($idTipoExpediente);
             else
                 $tipoExpediente=$proyecto->getTipoProyecto()->getTipoExpediente();
+
+            if ($origen==2){
+                $expediente->setApellidosSiParticular($apellidosSiParticular);
+                $expediente->setNombresSiParticular($nombresSiParticular);
+            }
 
             $expediente->setTipoExpediente($tipoExpediente);
             $expediente->setUsuarioCreacion($usuario->getUsername());
@@ -295,10 +439,17 @@ class RestController extends FOSRestController{
     {   
         try{
             $id=$request->request->get('id');
+            $folios=$request->request->get('foliosMod'); 
+            $origen=$request->request->get('origen');
+            $apellidosSiParticular=$request->request->get('apellidosSiParticular-mod');
+            $nombresSiParticular=$request->request->get('nombresSiParticular-mod');
             $numeroExpediente=$request->request->get('numeroExpedienteMod');
             $idTipoExpediente=$request->request->get('selTipoExpedienteMod');
-            $asunto=$request->request->get('asuntoMod');
-            $extracto=$request->request->get('extractoMod');
+            $caratula=$request->request->get('caratulaMod');
+
+            // var_dump($request->request->all());
+            // die();
+
             $archivos=$request->files->all();
             $usuario=$this->getUser();
 
@@ -308,10 +459,10 @@ class RestController extends FOSRestController{
             $expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
             $expediente=$expedienteRepository->find($id); 
 
+            $expediente->setFolios($folios);
             $expediente->setArchivos($archivos);
             $expediente->setNumeroExpediente($numeroExpediente);
-            $expediente->setAsunto($asunto);
-            $expediente->setExtracto($extracto);
+            $expediente->setCaratula($caratula);
 
             $proyecto=$expediente->getProyecto();
             $tipoExpediente=null;
@@ -320,6 +471,11 @@ class RestController extends FOSRestController{
                 $tipoExpediente=$tipoExpedienteRepository->find($idTipoExpediente);
             else
                 $tipoExpediente=$proyecto->getTipoProyecto()->getTipoExpediente();
+
+            if ($origen==2){
+                $expediente->setApellidosSiParticular($apellidosSiParticular);
+                $expediente->setNombresSiParticular($nombresSiParticular);
+            }
 
             $expediente->setTipoExpediente($tipoExpediente);
             $expediente->setUsuarioModificacion($usuario->getUsername());
@@ -605,6 +761,7 @@ class RestController extends FOSRestController{
 
     }
 
+
     /**
      *  @Rest\Get("/api/sesion/traerAccion")
      */
@@ -644,9 +801,9 @@ class RestController extends FOSRestController{
     public function ejemploAction(Request $request){
 
         $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
-        $proyectos=$proyectoRepository->find(2);
+        $proyectos=$proyectoRepository->find(15);
         
-        return $this->view($proyectos->getArticulos(),200);
+        return $this->view($proyectos,200);
     }
 
 

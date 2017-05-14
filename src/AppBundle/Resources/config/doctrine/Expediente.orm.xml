@@ -40,12 +40,22 @@
         <join-column name="idTipoExpediente" referenced-column-name="idTipoExpediente"/>
       </join-columns>
     </many-to-one>
-    <field name="asunto" type="string" column="asunto" length="200" nullable="false">
+    <field name="caratula" type="string" column="caratula" length="500" nullable="false">
       <options>
         <option name="fixed"/>
       </options>
     </field>
-    <field name="extracto" type="string" column="extracto" length="500" nullable="false">
+    <field name="folios" type="string" column="folios" length="4" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="apellidosSiParticular" type="string" column="apellidosSiParticular" length="80" nullable="true">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="nombresSiParticular" type="string" column="nombresSiParticular" length="80" nullable="true">
       <options>
         <option name="fixed"/>
       </options>

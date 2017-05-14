@@ -153,7 +153,7 @@
 		}
 
 		function agregarInciso(){
-			var letra=String.fromCharCode($("#incisos > tbody > tr").length+65);
+			var letra=String.fromCharCode($("#incisos").find('tr').length+65);
 			var inciso='<tr>'+
 	        		   '<td class="numero-fila">'+letra.toLowerCase()+') -</td>' +
 	        		   '<td><textarea class="form-control text-area text-area-mini" id="inciso-'+letra+'" '+
@@ -220,8 +220,15 @@
 									            "orderable":false,
 									            "render": function(data, type, row){
 									            	// var html="<button type='button'title='Editar Proyecto' class='btn btn-primary btn-xs btn-editar-proyecto' data-toggle='modal' data-target='#editarProyecto'><span class='glyphicon glyphicon-pencil'></span></button>"
-									            	var html="<button type='button'title='Editar Proyecto' class='btn btn-primary btn-xs' data-toggle='modal' data-target='#' onClick='noImplementado();'><span class='glyphicon glyphicon-pencil'></span></button>"
-									             	html+="<button type='button' title='Ver Detalle' class='btn btn-info btn-xs btn-detalle' data-toggle='modal' data-target='#' onClick='noImplementado();'><span class='glyphicon glyphicon-eye-open'></span></button>"
+									            	var html="";
+
+									            	if("{{app.user.rol.rol}}"=="ROLE_ADMINISTRADOR" || row.numero_expediente=="---")
+
+									            		html="<button type='button'title='Editar Proyecto' class='btn btn-primary btn-xs' data-toggle='modal' data-target='#' onClick='noImplementado();'><span class='glyphicon glyphicon-pencil'></span></button>";
+									            	else
+									            		html="<button type='button'title='Editar Proyecto' class='btn btn-danger btn-xs' disabled><span class='glyphicon glyphicon-lock'></span></button>";
+									            	"<span class='glyphicon glyphicon-lock' title='Editar Proyecto' ></span>";
+									             	html+="<button type='button' title='Ver Detalle' class='btn btn-info btn-xs btn-detalle' data-toggle='modal' data-target='#' onClick='noImplementado();'><span class='glyphicon glyphicon-eye-open'></span></button>";
 									             	html+="<button type='button' title='Imprimir' class='btn btn-warning btn-xs btn-imprimir' data-toggle='modal' data-target='#' onClick='noImplementado();'><span class='glyphicon glyphicon-print'></span></button></div>"
 
 									            	return html;
@@ -234,11 +241,10 @@
 					      		{ "data": "null","width":"10%"},
 					      		{ "data": "numero_expediente","width":"5%"},
 					      		{ "data": "tipo_proyecto.tipo_proyecto","width":"5%"},
-					            { "data": "asunto","width":"35%" },
-					            { "data": "fecha_creacion_formateada", "width": "10%" },
-					            { "data": "fecha_entrada_formateada", "width": "10%" },
+					            { "data": "fecha_creacion_formateada", "width": "15%" },
+					            { "data": "fecha_entrada_formateada", "width": "15%" },
 					            { "data": "estado_expediente","width":"10%" },
-					            { "data": "lista_autores","className": "for-mobile","width":"15%" },
+					            { "data": "lista_autores","className": "for-mobile","width":"40%" },
 					        ],
 					      "autoWidth":false,
 					      "paging": true,
@@ -303,7 +309,6 @@
 
 						$("#selTipoProyectoMod").val(data.tipo_proyecto.id);
 						$("#vistoMod").data("wysihtml5").editor.setValue(data.visto);
-						$("#asuntoMod").data("wysihtml5").editor.setValue(data.asunto);
 						$("#considerandoMod").data("wysihtml5").editor.setValue(data.considerandos);
 						$("#quienSancionaMod").val(data.quien_sanciona);
 
@@ -336,18 +341,22 @@
 		    $('#nuevoArticulo').on('show.bs.modal', function () {
 				$("#incisos > tbody").html('');
 				$("#articulo").data("wysihtml5").editor.setValue('');
-		    	//agregarInciso();
+		    	
 			});
 
 			//EVENTO ABRIR MODAL NUEVO PROYECTO
 		    $('#nuevoProyecto').on('show.bs.modal', function () {
 		  		$("#selTipoProyecto").val(0);
 		    	$("#selAutores").empty().change();
-				$("#asunto").data("wysihtml5").editor.setValue('');
 				$("#visto").data("wysihtml5").editor.setValue('');
 				$("#considerando").data("wysihtml5").editor.setValue('');
 				$("#articulos > tbody").html('');
 				habilitar('tab-1');
+
+				/* descomentar si se acuerda notificacion */
+				/*
+				$("#notificarProyecto").bootstrapToggle('on');
+				*/
 			});
 			
 			//EVENTO CERRAR MODAL NUEVO PROYECTO
@@ -362,32 +371,42 @@
 				var validacion='';
 				var formData=new FormData();
 				var idtipoProyecto=$("#selTipoProyecto").val();
-				var autores=$("#selAutores").val();
-				var asunto=$("#asunto").val();
+				var idBloque=$("#selBloque").val();
+				var Autores=$("#selAutores").val();
 				var visto=$("#visto").val();
 				var considerando=$("#considerando").val();
 				var quienSanciona=$("#quienSanciona").val();
 
+				/* descomentar si se acuerda notificacion */
+				/*
+				var notificar=$('#notificarProyecto').is(':checked');
+				*/
+
 				validacion+=((idtipoProyecto==0)?'<li>Debe seleccionar un tipo de proyecto</li>':'');
+				validacion+=((idBloque==0)?'<li>Debe seleccionar un bloque</li>':'');
 				validacion+=((autores==null||autores.length==0)
 								?'<li>Debe especificar al menos un autor para el proyecto</li>':'');
-				validacion+=((asunto.length==0)?'<li>Debe especificar un asunto</li>':'');
 				validacion+=((visto.length==0)?'<li>Debe especificar los vistos</li>':'');
 				validacion+=((considerando.length==0)?'<li>Debe especificar las consideraciones</li>':'');
 
 				formData.append("idtipoProyecto",idtipoProyecto);
+				formData.append("idBloque",idBloque);
 				formData.append("autores",autores);
-				formData.append("asunto",asunto);
 				formData.append("visto",visto);
 				formData.append("considerando",considerando);
 				formData.append("quienSanciona",quienSanciona);
 				formData.append("articulos",JSON.stringify(articulosIngresados));
 
+				/* descomentar si se acuerda notificacion */
+				/*
+				formData.append("notificar",notificar);
+				*/
 
 	            if (validacion.length>0) 
 				{
 					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
 								validacion+'</ul>':'');
+					$('#btn-guardar-proyecto').prop("disabled",false);
 					toastr.error(validacion);
 					return false;
 				}
@@ -425,7 +444,7 @@
 				var validacion='';
 				var incisos=[];
 
-				$("#incisos > tbody > tr").each(function(i,row){
+				$("#incisos").find('tr').each(function(i,row){
 					var textarea=$(row).find("textarea");
 					var	orden=$(row).find("td:first").text();
 					var texto=$(textarea).val();
@@ -520,6 +539,15 @@
 					
 				}
 			});
+
+			/* Descomentar si se acuerda notificacion */
+			/*
+			$('#notificarProyecto').bootstrapToggle({
+		      on:  'Activado',
+		      off: 'Desactivado',
+		      width: "100px"
+		    });
+			*/
 
 			$(".text-area").wysihtml5({
 				toolbar: {
@@ -640,7 +668,6 @@
 						    </th>
 						    <th>Expediente</th>
 						    <th>Tipo</th>
-			                <th>Asunto</th>
 			                <th>F. Creacion</th>
 			                <th>F. Entrada</th>
 			                <th>Estado Exp.</th>
@@ -676,12 +703,28 @@
 								            {% endfor %}
 						        		</select>
 						        	</div>
+						        	<div class="form-group">
+						        		<label for="selBloque">Bloque</label>
+						        		<select class="form-control" id="selBloque" 
+						        				name="selBloque">
+						        			<option value="0">Seleccione Bloque</option>
+						        			{% for bloque in bloques %}
+								                <option value="{{ bloque.id }}">{{ bloque.bloque }}</option>
+								            {% endfor %}
+						        		</select>
+						        	</div>
+						        	{# Descomentar si se acuerda notificacion #}
+						        	{# 
+						        	<div class="form-group text-center" style="padding-top:15px">
+						        		<label for="notificarProyecto">Notificar</label>
+										<input type="checkbox" name="notificarProyecto" id="notificarProyecto" data-size="small">
+							        </div>
+							        #} 
 						    		<nav>
 									    <ul class="nav">
-										    <li><a href="#" id="link-tab-1" onclick = "habilitar('tab-1')" >Autores/Asunto</a></li>
-										    <li><a href="#" id="link-tab-2" onclick = "habilitar('tab-2')">Vistos</a></li>
-											<li><a href="#" onclick = "habilitar('tab-3')">Considerando</a></li>
-											<li><a href="#" onclick = "habilitar('tab-4')">Artículos</a></li>
+										    <li><a href="#" id="link-tab-1" onclick = "habilitar('tab-1')" >Autores/Visto</a></li>
+											<li><a href="#" onclick = "habilitar('tab-2')">Considerando</a></li>
+											<li><a href="#" onclick = "habilitar('tab-3')">Artículos</a></li>
 										</ul>
 									</nav>
 						    	</div>
@@ -693,22 +736,13 @@
 									        	<select class="form-control" multiple="multiple" data-width="100%" id="selAutores" name="selAutores"></select>
 									        </div>
 							        		<div class="form-group">
-								        		<label for="asunto">Asunto:</label>
+								        		<label for="visto">Visto:</label>
 								        		<textarea class="form-control text-area text-area-media" 
-								        		id="asunto" name="asunto" placeholder="Descripción Expediente"></textarea>
+								        		id="visto" name="visto" placeholder="Descripción Expediente"></textarea>
 								        	</div> 
 								        </div> 
 						        	</div>
-						        	<div class="row tab hidden" id="tab-2">
-							        	<div class="col-md-12">
-							        		<div class="form-group">
-								        		<label for="visto">Visto:</label>
-									        	<textarea class="form-control text-area text-area-larga" 
-									        	id="visto" name="visto" placeholder="Visto"></textarea>
-									        </div>
-									    </div>
-							        </div>
-							        <div class="row tab hidden" id="tab-3">
+							        <div class="row tab hidden" id="tab-2">
 							        	<div class="col-md-12">
 							        		<div class="form-group">
 								        		<label for="considerando">Considerando:</label>
@@ -717,7 +751,7 @@
 									        </div>
 									    </div>
 							        </div>
-							        <div class="row tab hidden" id="tab-4">
+							        <div class="row tab hidden" id="tab-3">
 						        		<div class="col-md-12">
 						        			<div class="row">
 								        		<div class="col-md-12">	
@@ -776,7 +810,7 @@
 			        	<div class="row">
 			        		<div class="col-md-12">
 			        			<div class="form-group">
-					        		<label for="asunto">Articulo:</label>
+					        		<label for="articulo">Articulo:</label>
 					        		<textarea class="form-control text-area text-area-corta" 
 					        		id="articulo" name="articulo" placeholder="articulo"></textarea>
 					        	</div>
@@ -942,7 +976,7 @@
 			        	<div class="row">
 			        		<div class="col-md-12">
 			        			<div class="form-group">
-					        		<label for="asunto">Articulo:</label>
+					        		<label for="articulo">Articulo:</label>
 					        		<textarea class="form-control text-area text-area-corta" 
 					        		id="articulo" name="articulo" placeholder="articulo"></textarea>
 					        	</div>

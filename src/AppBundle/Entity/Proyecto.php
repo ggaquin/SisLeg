@@ -46,17 +46,20 @@ class Proyecto
      */
      private $tipoProyecto;
 
-    /**
-     * @var string
+     /**
+     * @var \AppBundle\Entity\Bloque
      *
-     * @ORM\Column(name="asunto", type="string", length=200, nullable=false)
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Bloque", fetch="EAGER" )
+     * @ORM\JoinColumns({
+     *  @ORM\JoinColumn(name="idBloque", referencedColumnName="idBloque")
+     * })
      */
-    private $asunto;
+     private $bloque;
 
     /**
      * @var text
      *
-     * @ORM\Column(name="asunto", type="text", nullable=false)
+     * @ORM\Column(name="visto", type="text", nullable=false)
      */
     private $visto;
 
@@ -97,6 +100,13 @@ class Proyecto
     private $autores;
 
     /**
+     * @var \Doctrine\Common\Collections\Collection
+     *
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\ProyectoFirma", cascade={"persist"}, mappedBy="proyecto")
+     */
+    private $firmas;
+
+    /**
      * @var \DateTime
      *
      * @ORM\Column(name="fechaCreacion", type="datetime", nullable=false)
@@ -134,6 +144,7 @@ class Proyecto
     public function __construct()
     {
         $this->autores = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->firmas = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     //-------------------------------------setters y getters--------------------------------------
@@ -175,7 +186,7 @@ class Proyecto
     /**
      * Set tipoProyecto
      *
-     * @param string $tipoProyecto
+     * @param \AppBundle\Entity\TipoProyecto $tipoProyecto
      *
      * @return Proyecto
      */
@@ -189,7 +200,7 @@ class Proyecto
     /**
      * Get tipoProyecto
      *
-     * @return string
+     * @return \AppBundle\Entity\TipoProyecto
      */
     public function getTipoProyecto()
     {
@@ -197,27 +208,27 @@ class Proyecto
     }
 
     /**
-     * Set asunto
+     * Set bloque
      *
-     * @param string $asunto
+     * @param \AppBundle\Entity\Bloque $bloque
      *
      * @return Proyecto
      */
-    public function setAsunto($asunto)
+    public function setBloque($bloque)
     {
-        $this->asunto = $asunto;
+        $this->bloque = $bloque;
 
         return $this;
     }
 
     /**
-     * Get asunto
+     * Get bloque
      *
-     * @return string
+     * @return \AppBundle\Entity\Bloque
      */
-    public function getAsunto()
+    public function getBloque()
     {
-        return $this->asunto;
+        return $this->bloque;
     }
 
     /**
@@ -364,6 +375,44 @@ class Proyecto
     public function getAutores()
     {
         return $this->autores;
+    }
+
+    /**
+     * Add firma
+     *
+     * @param \AppBundle\Entity\ProyectoFirma $firma
+     *
+     * @return Proyecto
+     */
+    public function addFirma(\AppBundle\Entity\ProyectoFirma $firma)
+    {
+        $firma->setProyecto($this);
+
+        $this->firmas[] = $firma;
+
+        return $this;
+    }
+
+    /**
+     * Remove firma
+     *
+     * @param \AppBundle\Entity\ProyectoFirma $firma
+     *
+     * @return Proyecto
+     */
+    public function removeFirma(\AppBundle\Entity\ProyectoFirma $firma)
+    {
+        $this->firmas->removeElement($firma);
+    }
+
+    /**
+     * Get firmas
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getFirmas()
+    {
+        return $this->firmas;
     }
 
     /**
@@ -534,5 +583,4 @@ class Proyecto
                     ?$this->expediente->getEstadoExpediente()->getEstadoExpediente()
                     :"---");
     }
-
 }

@@ -109,12 +109,14 @@ class DefaultController extends Controller
     {
         $tiposProyectoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoProyecto');
         $tiposProyecto=$tiposProyectoRepository->findBy(array(),array('tipoProyecto' => 'ASC') );
-         $estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
+        $bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
+        $bloques=$bloqueRepository->findBy(array(),array('bloque' => 'ASC') );
+        $estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
         $estadosExpediente=$estadoExpedienteRepository->findBy(array(),array('estadoExpediente' => 'ASC') );
        
         return $this->render('default/proyecto.html.twig', array(
             'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
-            'tipos' => $tiposProyecto,'estados'=>$estadosExpediente
+            'tipos' => $tiposProyecto,'estados'=>$estadosExpediente,'bloques'=>$bloques
         ));
          
     }
@@ -137,6 +139,55 @@ class DefaultController extends Controller
     }
 
      /**
+     *  @Route("/mail")
+     */
+    public function traerMailAction(Request $request)
+    {
+        $idProyecto=$request->query->get("idProyecto");
+        // $idProyecto=$request->request->get("idProyecto");
+        $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
+        $proyecto=$proyectoRepository->find($idProyecto);
+
+
+        $subject=$proyecto->getTipoProyecto()->getTipoProyecto().' - '.substr($proyecto->getAsuntoSinHtml(),0,20).'...';
+        $articulos=$proyecto->getArticulos();
+
+        var_dump($articulos);
+        die();
+
+        $quienSanciona=($proyecto->getQuienSanciona()==1)
+            ?'<p class="ident"><strong>EL HONORABLE CONCEJO DELIBERANTE EN USO DE LAS FACULTADES QUE LE SON PROPIAS SANCIONA LA SIGUIENTE:</strong></p>'
+            :'<p class="ident"><strong>EL SR. PRESIDENTE DE ESTE HONORABLE CONCEJO DELIBERANTE, EN USO DE ATRIBUCIONES QUE LE SON PROPIAS, SANCIONA LA SIGUIENTE:</strong></p>';
+
+        $htmlArticulos='';//<ul style="list-style-type: none;">';
+        
+        foreach ($articulos as $articulo) {
+             $htmlArticulos.='<strong><u>Artículo '.$articulo['numero'].'°</u>.- </strong>'.str_replace('</p>', '<br>',strip_tags($articulo['texto'],'</p>'));
+            if(count($articulo['incisos'])>0){
+                //recordar setear ul{list-style-type: none;}
+                $htmlArticulos.='<ul style="list-style-type: none;">';
+                foreach ($articulo['incisos'] as $inciso) {
+                    $htmlArticulos.='<li>'.$inciso['orden'].' '.strip_tags($inciso['texto'],'<br>').'</li>';
+                }
+                $htmlArticulos.='</ul>';
+            }
+            //$htmlArticulos.='</li>';
+        }
+
+        $htmlArticulos.='</ul>';
+
+        return $this->render('emails/notificacionProyecto.html.twig', array(
+            'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
+            'asunto' => strip_tags($proyecto->getAsunto(),'<p>'),
+            'visto'=>str_replace('<p>','<p class="ident">',strip_tags($proyecto->getVisto(),'<p>')),
+            'considerando'=>str_replace('<p>','<p class="ident">',strip_tags($proyecto->getConsiderandos(),'<p>')),
+            'articulos'=>$htmlArticulos,
+            'tipo'=>$proyecto->getTipoProyecto()->getTipoProyecto(),
+            'quienSanciona'=>$quienSanciona
+        ));
+    }
+
+     /**
      * @Route("/comisiones", name="Comisiones")
      */
     public function comisionAction(Request $request)
@@ -155,6 +206,38 @@ class DefaultController extends Controller
         return $this->render('base_session.html.twig', array(
             'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR
         ));
+
+    }
+
+     /**
+     * @Route("/pruebaVistas")
+     */
+    public function pruebaAction(Request $request){
+
+        $html = $this->renderView('documento/portada.html.twig', array(
+            'base_dir' => realpath($this->getParameter('kernel.root_dir').'/../web').DIRECTORY_SEPARATOR));
+
+        $filename = sprintf('test-%s.pdf', date('Y-m-d'));
+
+        return new Response(
+            $this->get('knp_snappy.pdf')->getOutputFromHtml($html,array(
+                'lowquality' => true,
+                'encoding' => 'utf-8',
+                'images' => true,
+
+                )),
+            200,
+            [
+                'Content-Type'        => 'application/pdf',
+                'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
+                'lowquality' => true,
+                'encoding' => 'utf-8',
+                'images' => true,
+            ]
+        );
+        // return $this->render('documento/portada.html.twig', array(
+        //     'base_dir' => realpath($this->getParameter('kernel.root_dir').'/../web')
+        // ));
 
     }
 
