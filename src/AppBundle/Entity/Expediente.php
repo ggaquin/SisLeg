@@ -657,6 +657,18 @@ class Expediente
         return $this->numeroExpediente.'-'.($this->tipoExpediente->getLetra()).'-'.substr($año,2,2);
     }
 
+     /**
+     * Get ejercicio
+     *
+     * @return string
+     *
+     * @VirtualProperty
+     */
+    public function getEjercicio()
+    {   $año=$this->fechaCreacion->format("Y");
+        return substr($año,2,2);
+    }
+
     /**
      * Get caratulaSinHtml
      *
@@ -721,7 +733,7 @@ class Expediente
      */
     public function getFechaModificacionFormateada()
     {
-        return $this->fechaModificacion->format('d-m-Y');
+        return (!is_null($this->fechaModificacion)?$this->fechaModificacion->format('d-m-Y'):'');
     }
 
 

@@ -138,9 +138,9 @@ class DefaultController extends Controller
          
     }
 
-     /**
+    /*
      *  @Route("/mail")
-     */
+     *
     public function traerMailAction(Request $request)
     {
         $idProyecto=$request->query->get("idProyecto");
@@ -185,7 +185,7 @@ class DefaultController extends Controller
             'tipo'=>$proyecto->getTipoProyecto()->getTipoProyecto(),
             'quienSanciona'=>$quienSanciona
         ));
-    }
+    }*/
 
      /**
      * @Route("/comisiones", name="Comisiones")
@@ -209,36 +209,56 @@ class DefaultController extends Controller
 
     }
 
-     /**
-     * @Route("/pruebaVistas")
+    /**
+     * @Route("/imprimir")
      */
-    public function pruebaAction(Request $request){
+    public function impresionAction(Request $request)
+    {
+        $tipoDocumento = $request->query->get('tipoDocumento');
+        $id = $request->query->get('id');
 
-        $html = $this->renderView('documento/portada.html.twig', array(
-            'base_dir' => realpath($this->getParameter('kernel.root_dir').'/../web').DIRECTORY_SEPARATOR));
+        $parametros;
 
-        $filename = sprintf('test-%s.pdf', date('Y-m-d'));
+        if ($tipoDocumento=='expediente')
+            $parametros=$this->get('impresion_servicio')->traerParametrosImpresionExpediente($id);
 
+        if ($tipoDocumento=='proyecto')
+            $parametros=$this->get('impresion_servicio')->traerParametrosImpresionProyecto($id);
+       
+        $header=$this->renderView('documento/encabezado.html.twig', $parametros['encabezado']);
+        
+        $html= $this->renderView('documento/pdf.html.twig', $parametros['documento']);
+
+        $nombre = $parametros['nombreArchivo'];
+        
         return new Response(
             $this->get('knp_snappy.pdf')->getOutputFromHtml($html,array(
                 'lowquality' => true,
                 'encoding' => 'utf-8',
                 'images' => true,
-
+                'header-html'=>$header
                 )),
             200,
             [
                 'Content-Type'        => 'application/pdf',
-                'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
+                'Content-Disposition' => sprintf('attachment; filename="%s"', $nombre),
                 'lowquality' => true,
                 'encoding' => 'utf-8',
-                'images' => true,
+                'images' => true
             ]
         );
-        // return $this->render('documento/portada.html.twig', array(
-        //     'base_dir' => realpath($this->getParameter('kernel.root_dir').'/../web')
-        // ));
+    }
 
+     /**
+     * @Route("/pruebaVistas")
+     */
+    public function pruebaAction(Request $request){
+         $id=$request->get('id');
+        
+        $r=$this->get('impresion_servicio')->traerParametrosImpresionExpediente($id);
+
+        return $this->render('documento/pdf.html.twig', $r['documento']);
+        
     }
 
 }

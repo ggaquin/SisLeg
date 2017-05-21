@@ -134,8 +134,7 @@ class RestController extends FOSRestController{
         if ($tipoCriterio=='busqueda-4')
             $expedientes=$expedienteRepository->findByTipoExpediente_Id($criterio);
 
-        return $this->view($expedientes,200);
-         
+        return $this->view($expedientes,200);   
     }
 
     /**
@@ -157,7 +156,6 @@ class RestController extends FOSRestController{
         $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
         $perfiles=$perfilRepository->findAll();
         return $this->view($perfiles,200);
-
     }
 
      /**
@@ -169,7 +167,6 @@ class RestController extends FOSRestController{
         $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
         $perfiles=$perfilRepository->findByNombre_Patron($term);
         return $this->view($perfiles,200);
-
     }
 
     /**
@@ -284,10 +281,15 @@ class RestController extends FOSRestController{
             foreach ($autores as $autor) {
                     $perfil=$perfilRepository->find($autor);
                     $proyecto->addAutor($perfil);
+                    /*
+                        ---------------------------------------------
+                        descomentar si se acuerda mail de notifcacion
+                        ---------------------------------------------
+
                     $firma= new ProyectoFirma();
                     $firma->setAutor($perfil);
                     $proyecto->addFirma($firma);
-
+                    */
             }
         }
         else {
@@ -367,6 +369,80 @@ class RestController extends FOSRestController{
     }
 
     /**
+     *  @Rest\Post("/api/proyecto/update")
+     */
+    public function actualizarProyectoAction(Request $request)
+    {   
+        $idProyecto=$request->request->get('idProyecto');
+        $idtipoProyecto=$request->request->get('idtipoProyecto');
+        $idBloque=$request->request->get('idBloque');
+        $listaAutores=$request->request->get('autores');
+        $visto=$request->request->get('visto');
+        $considerando=$request->request->get('considerando');
+        $quienSanciona=$request->request->get('quienSanciona');
+        $articulos=json_decode($request->request->get('articulos'));
+     
+        $usuario=$this->getUser();
+
+        $autores=explode(',',$listaAutores);
+
+        $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
+        $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
+        $tipoProyectoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoProyecto');
+        $tipoProyecto=$tipoProyectoRepository->find($idtipoProyecto);
+        $bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
+        $bloque=$bloqueRepository->find($idBloque);
+      
+        $proyecto=$proyectoRepository->find($idProyecto);
+        $proyecto->setTipoProyecto($tipoProyecto);
+        $proyecto->setBloque($bloque);
+        $proyecto->setVisto($visto);
+        $proyecto->setConsiderandos($considerando);
+        $proyecto->setQuienSanciona($quienSanciona);
+
+        $nuevosAutores=[];
+        if (is_array($autores)){
+            foreach ($autores as $autor) {
+                    $perfil=$perfilRepository->find($autor);
+                    $nuevosAutores[]=$perfil;
+                   
+                    /*
+                        ---------------------------------------------
+                        descomentar si se acuerda mail de notifcacion
+                        ---------------------------------------------
+                    $firma= new ProyectoFirma();
+                    $firma->setAutor($perfil);
+                    $proyecto->addFirma($firma);
+                    */
+            }
+        }
+        else {
+                $perfil=$perfilRepository->find($autores);
+                $nuevosAutores[]=$perfil;
+                
+                /*
+                        ---------------------------------------------
+                        descomentar si se acuerda mail de notifcacion
+                        ---------------------------------------------
+
+                $firma= new ProyectoFirma();
+                $proyecto->addFirma($firma);
+                */
+            }
+         $proyecto->setAutores($nuevosAutores);
+
+        $proyecto->setArticulos($articulos);
+        $proyecto->setUsuarioModificacion($usuario->getUsername());
+        $proyecto->setFechaModificacion(new \DateTime("now"));
+
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($proyecto);
+        $em->flush();
+
+        return $this->view('El proyecto se modificó en forma exitosa',200);
+    }
+
+    /**
      *  @Rest\Post("/api/expediente/create")
      */
     public function crearExpedienteAction(Request $request)
@@ -435,7 +511,7 @@ class RestController extends FOSRestController{
     /**
      *  @Rest\Post("/api/expediente/update")
      */
-    public function actualizarProyectoAction(Request $request)
+    public function actualizarExpedienteAction(Request $request)
     {   
         try{
             $id=$request->request->get('id');
@@ -796,14 +872,23 @@ class RestController extends FOSRestController{
     }
 
     /**
-     *  @Rest\Get("/api/expediente/ejemplo")
+     *  @Rest\Get("/api/ejemplo/{id}")
      */
     public function ejemploAction(Request $request){
 
-        $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
-        $proyectos=$proyectoRepository->find(15);
-        
-        return $this->view($proyectos,200);
+        $id=$request->get('id');
+        try {
+            $r=$this->get('impresion_servicio')->traerParametrosImpresionExpediente($id);
+
+            $this->render('documento/pdf.html.twig', $r['documento']);
+        } catch (Exception $e) {
+           throw $e;
+             
+        }
+
+        return $this->view($r,200);
+
+    
     }
 
 

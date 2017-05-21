@@ -103,11 +103,7 @@
 			$(".expediente-origen").addClass('hidden');
 
 			switch(parseInt(mostrar)){
-				case 1:
-				case 2:
-						$("#div-autores").removeClass('hidden');
-						$("#div-bloque").removeClass('hidden');
-						break;
+			
 				case 3:
 						$(".pedido-particular").removeClass('hidden');
 						$("#apellidosSiParticular").val('');
@@ -123,6 +119,10 @@
 						$("#div-origen").removeClass('hidden');
 						$("#origen").val(3);
 						break;
+				default:
+						$("#div-autores").removeClass('hidden');
+						$("#div-bloque").removeClass('hidden');
+						break;
 			};
 		}
 		function mostrarOrigenParaEdicion(mostrar){
@@ -130,11 +130,7 @@
 			$(".expediente-origen").addClass('hidden');
 
 			switch(parseInt(mostrar)){
-				case 1:
-				case 2:
-						$("#div-autores-mod").removeClass('hidden');
-						$("#div-bloque-mod").removeClass('hidden');
-						break;
+										
 				case 3:
 						$(".pedido-particular").removeClass('hidden');
 						$("#apellidosSiParticular-mod").val('');
@@ -149,6 +145,10 @@
 				case 5:
 						$("#div-origen-mod").removeClass('hidden');
 						$("#origen-mod").val(3);
+						break;
+				default:
+						$("#div-autores-mod").removeClass('hidden');
+						$("#div-bloque-mod").removeClass('hidden');
 						break;
 			};
 		}
@@ -229,7 +229,7 @@
 									            "orderable":false,
 									            "render": function(data, type, row){
 									            	var html="<button type='button'title='Editar expediente' class='btn btn-primary btn-xs btn-editar ' data-toggle='modal' data-target='#modificacionExpediente'><span class='glyphicon glyphicon-pencil'></span></button>"
-									             	html+="<button type='button' title='Ver Detalle' class='btn btn-info btn-xs btn-detalle' data-toggle='modal' data-target='#revistaExpediente'><span class='glyphicon glyphicon-eye-open'></span></button></div>"
+									             	html+="<button type='button' title='Descargar Documento' class='btn btn-info btn-xs btn-descargar'><span class='glyphicon glyphicon-save-file'></span></button></div>"
 
 									            	return html;
 									            }
@@ -253,7 +253,14 @@
 					      "info": true,
 					      "autoWidth": false,
 				});
-			
+		    
+		    $('#registroExpediente tbody').on( 'click', '.btn-descargar', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+		        window.location.href='{{ app.request.getBaseURL() }}'+
+		        					 '/imprimir?tipoDocumento=expediente&id='+
+		        					  data[ "id" ];
+		    } );
+			/*
 			//MODIFICAR EXPEDIENTE
 				$('#registroExpediente tbody').on( 'click', '.btn-detalle', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
@@ -342,8 +349,8 @@
 			$('#revistaExpediente').on('hidden.bs.modal', function () {
 				$('#input-file-Prev').fileinput('destroy');
 				$("#selAutoresPrev").empty().change();
-			});
-
+			});	
+			*/
 			//---------------------------------------------------------------------------------------------------------------
 			//---------------------------------------EDICIÓN DEL EXPEDIENTE--------------------------------------------------
 			//---------------------------------------------------------------------------------------------------------------
@@ -877,7 +884,7 @@
 	        </div> {# col #}
 	    </div> {# row #}
 
-	   	<div id="nuevoExpediente" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" z-index=10000>
+	   	<div id="nuevoExpediente" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
 		 	<div class="modal-dialog modal-xl">
 			    <!-- Modal content-->
 			    <div class="modal-content">
@@ -1114,7 +1121,7 @@
 			    </div>
 		  	</div>
 		</div>
-		<div id="revistaExpediente" class="modal fade" role="dialog">
+	{# 	<div id="revistaExpediente" class="modal fade" role="dialog">
 		 	<div class="modal-dialog modal-xl">
 			    <!-- Modal content-->
 			    <div class="modal-content">
@@ -1182,7 +1189,7 @@
 				     </div>
 			    </div>
 		  	</div>
-		</div>
+		</div> #}
 		<div id="proyectosBusqueda" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false"> 
 		 	<div class="modal-dialog modal-dialog">
 			    <!-- Modal content-->

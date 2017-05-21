@@ -87,7 +87,7 @@ class Proyecto
     /**
      * @var \Doctrine\Common\Collections\Collection
      *
-     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Perfil", inversedBy="proyectos", fetch="EAGER")
+     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Perfil", inversedBy="proyectos", fetch="EAGER", orphanRemoval=true )
      * @ORM\JoinTable(name="autores_proyectos",
      *   joinColumns={
      *     @ORM\JoinColumn(name="idProyecto", referencedColumnName="idProyecto")
@@ -330,13 +330,17 @@ class Proyecto
     /**
      * set autores
      *
-     * @param \Doctrine\Common\Collections\Collection $autores
+     * @param array $nuevosAutores
      *
      * @return Proyecto
      */
-    public function setAutores(\Doctrine\Common\Collections\Collection $autores)
+    public function setAutores($nuevosAutores)
     {
-        $this->autores = $autores;
+        $collection= new \Doctrine\Common\Collections\ArrayCollection();
+        foreach ($nuevosAutores as $autor) {
+            $collection[]=$autor;
+        }
+        $this->autores = $collection;
 
         return $this;
     }

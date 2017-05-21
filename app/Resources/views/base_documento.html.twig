@@ -12,16 +12,19 @@
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
       <![endif]-->
   
-       {#  {% block stylesheets %}
+        {% block stylesheets %}
               <link href="{{ app.request.scheme ~'://'~ app.request.httpHost ~asset('document_bootstrap/bootstrap.min.css') }}" rel="stylesheet" type="text/css">
               <link href="{{ app.request.scheme ~'://'~ app.request.httpHost ~asset('document_bootstrap/bootstrap-theme.min.css') }}" rel="stylesheet" type="text/css">
-        {% endblock %} #}
+        {% endblock %}
 
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
     </head>
     <body>
+      <div class="container">
+        <br>
         {% block body %}
               
         {% endblock %}
+      </div>
     </body>
 </html>

@@ -13,3 +13,6 @@ services:
     consejo_authentication_provider:
         class:     AppBundle\Services\Security\AuthenticationProvider
         arguments: ["@security.password_encoder"]
+    impresion_servicio:
+        class: AppBundle\Services\ImpresionServicio
+        arguments: ["@doctrine.orm.entity_manager"]
