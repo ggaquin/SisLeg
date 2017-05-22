@@ -8,7 +8,10 @@ use JMS\Serializer\Annotation\VirtualProperty;
 /**
  * Comision
  *
- * @ORM\Table(name="Comision",indexes={@ORM\Index(name="comision_tipoC  omision_idx", columns={"idTipoComision"})})
+ * @ORM\Table(name="Comision",indexes={@ORM\Index(name="comision_tipoComision_idx", columns={"idTipoComision"}),
+                                       @ORM\Index(name="comision_perfilPresidente_idx", columns={"idPerfilPresidente"}),
+                                       @ORM\Index(name="comision_perfilVicePresidente_idx", columns={"idPerfilVicePresidente"})
+                                       })
  * @ORM\Entity
  */
 class Comision
@@ -25,11 +28,42 @@ class Comision
     private $id;
 
     /**
-     * @var \Doctrine\Common\Collections\Collection
+     * @var \AppBundle\Entity\PerfilLegislador
      *
-     * @ORM\OneToMany(targetEntity="AppBundle\Entity\PerfilLegislador", mappedBy="comisiones")
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\PerfilLegislador",fetch="EAGER" )
+     * @ORM\JoinColumns({
+     *  @ORM\JoinColumn(name="idPerfilPresidente", referencedColumnName="idPerfil")
+     * })
      */
-	private $integrantes;
+    private $presidente;
+
+    /**
+     * @var \AppBundle\Entity\PerfilLegislador
+     *
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\PerfilLegislador",fetch="EAGER" )
+     * @ORM\JoinColumns({
+     *  @ORM\JoinColumn(name="idPerfilVicePresidente", referencedColumnName="idPerfil")
+     * })
+     */
+    private $vicePresidente;
+
+    /**
+     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\PerfilLegislador",orphanRemoval=true)
+     * @ORM\JoinTable(name="comision_legisladorTitular",
+     *      joinColumns={@ORM\JoinColumn(name="idComision", referencedColumnName="idComision")},
+     *      inverseJoinColumns={@ORM\JoinColumn(name="idPerfil", referencedColumnName="idPerfil")}
+     *      )
+     */
+	private $titulares;
+
+    /**
+     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\PerfilLegislador",orphanRemoval=true)
+     * @ORM\JoinTable(name="comision_legisladorSuplente",
+     *      joinColumns={@ORM\JoinColumn(name="idComision", referencedColumnName="idComision")},
+     *      inverseJoinColumns={@ORM\JoinColumn(name="idPerfil", referencedColumnName="idPerfil")}
+     *      )
+     */
+    private $suplentes;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
@@ -87,37 +121,151 @@ class Comision
     }
 
     /**
-     * Add integrante
+     * Set presidente
      *
-     * @param \AppBundle\Entity\PerfilLegislador $integrante
+     * @param \AppBundle\Entity\PerfilLegislador $presidente
      *
      * @return Comision
      */
-    public function addIntegrante(\AppBundle\Entity\PerfilLegislador $integrante)
+    public function setPresidente(\AppBundle\Entity\PerfilLegislador $presidente = null)
     {
-        $this->integrantes[] = $integrante;
+        $this->presidente = $presidente;
 
         return $this;
     }
 
     /**
-     * Remove integrante
+     * Get presidente
      *
-     * @param \AppBundle\Entity\PerfilLegislador $integrante
+     * @return \AppBundle\Entity\PerfilLegislador
      */
-    public function removeIntegrante(\AppBundle\Entity\PerfilLegislador $integrante)
+    public function getPresidente()
     {
-        $this->integrantes->removeElement($integrante);
+        return $this->presidente;
     }
 
     /**
-     * Get integrantes
+     * Set vicePresidente
+     *
+     * @param \AppBundle\Entity\PerfilLegislador $vicePresidente
+     *
+     * @return Comision
+     */
+    public function setVicePresidente(\AppBundle\Entity\PerfilLegislador $vicePresidente = null)
+    {
+        $this->vicePresidente = $vicePresidente;
+
+        return $this;
+    }
+
+    /**
+     * Get vicePresidente
+     *
+     * @return \AppBundle\Entity\PerfilLegislador
+     */
+    public function getVicePresidente()
+    {
+        return $this->vicePresidente;
+    }
+
+    /**
+     * Add titular
+     *
+     * @param \AppBundle\Entity\PerfilLegislador $titular
+     *
+     * @return Comision
+     */
+    public function addTitular(\AppBundle\Entity\PerfilLegislador $titular)
+    {
+        $this->titulares[] = $titular;
+
+        return $this;
+    }
+
+    /**
+     * Remove titular
+     *
+     * @param \AppBundle\Entity\PerfilLegislador $titular
+     */
+    public function removeTitular(\AppBundle\Entity\PerfilLegislador $titular)
+    {
+        $this->titulares->removeElement($titular);
+    }
+
+    /**
+     * Get Titulares
      *
      * @return \Doctrine\Common\Collections\Collection
      */
-    public function getIntegrantes()
+    public function getTitulares()
     {
-        return $this->integrantes;
+        return $this->titulares;
+    }
+
+    /**
+     * Set Titulares
+     *
+     * @param array $titulares
+     *
+     * @return Comision
+     */
+    public function setTitulares($titulares)
+    {
+        $collection= new \Doctrine\Common\Collections\ArrayCollection();
+        foreach ($nuevosTitulares as $titular) {
+            $collection[]=$titular;
+        }
+        $this->titulares = $collection;
+    }
+
+    /**
+     * Add suplente
+     *
+     * @param \AppBundle\Entity\PerfilLegislador $suplente
+     *
+     * @return Comision
+     */
+    public function addSuplente(\AppBundle\Entity\PerfilLegislador $suplente)
+    {
+        $this->suplentes[] = $suplente;
+
+        return $this;
+    }
+
+    /**
+     * Remove suplente
+     *
+     * @param \AppBundle\Entity\PerfilLegislador $suplente
+     */
+    public function removeSuplente(\AppBundle\Entity\PerfilLegislador $suplente)
+    {
+        $this->suplentes->removeElement($suplente);
+    }
+
+    /**
+     * Get suplentes
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getSuplentes()
+    {
+        return $this->suplentes;
+    }
+
+    /**
+     * Set suplentes
+     *
+     * @param array $suplentes
+     *
+     * @return Comision
+     */
+    public function setSuplentes($suplentes)
+    {
+        $collection= new \Doctrine\Common\Collections\ArrayCollection();
+        foreach ($nuevosSuplentes as $suplente) {
+            $collection[]=$suplente;
+        }
+        $this->suplentes = $collection;
     }
 
     /**
@@ -229,19 +377,36 @@ class Comision
     //------------------------------Propiedades virtuales-----------------------------------------
 
     /**
-     * Get listaIntegrantes
+     * Get listaTitulares
      *
      * @return string
      *
      * @VirtualProperty
      */
-    public function getListaIntegrantes()
+    public function getListaTitulares()
     {
-        $integrantes=$this->integrantes;
-        $listaIntegrantes="";
-        foreach ($integrantes as $integrante) {
-            $listaIntegrantes.=($listaIntegrantes!=""?"-":"").$integrante->getNombreCompleto();
+        $titulares=$this->titulares;
+        $listaTitulares="";
+        foreach ($titulares as $titular) {
+            $listaTitulares.=($listaTitulares!=""?"-":"").$titular->getNombreCompleto();
         }
-        return $listaIntegrantes;
+        return $listaTitulares;
+    }
+
+     /**
+     * Get listaSuplentes
+     *
+     * @return string
+     *
+     * @VirtualProperty
+     */
+    public function getListaSuplentes()
+    {
+        $suplentes=$this->suplentes;
+        $listaSuplentes="";
+        foreach ($suplentes as $suplente) {
+            $listaSuplentes.=($listaSuplentes!=""?"-":"").$suplente->getNombreCompleto();
+        }
+        return $listaSuplentes;
     }
 }

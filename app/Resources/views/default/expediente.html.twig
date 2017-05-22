@@ -808,11 +808,11 @@
 							<label class="navbar-brand">Filtro</label>
 						</div>
 						<div class="collapse navbar-collapse">
-							<div class>
+							<div>
 								<form class="navbar-form navbar-left">
 									<div class="form-group">
 										<div class="form-group text-center">
-											<input type="checkbox" id="estadoFiltro" data-size="normal">
+											<input type="checkbox" id="estadoFiltro" data-size="normal"/>
 							        	</div> 
 										<button type="button" class="btn btn-primary filtro" id="btn-busqueda">Aplicar</button>
 										<select class="form-control filtro" id="selBusqueda">
@@ -822,14 +822,14 @@
 											<option value="busqueda-3">Número Expediente</option>
 											<option value="busqueda-4">Tipo de Expediente</option>
 										</select>
-										<input class="form-control busqueda hidden filtro" id="busqueda-1">
+										<input class="form-control busqueda hidden filtro" id="busqueda-1"/>
 										<select class="form-control busqueda hidden filtro" id="busqueda-2">
 											<option value="0">Seleccione Estado</option>
 											{% for estado in estados %}
-								                <option value="{{ estado.id }}">{{ estado.estadoExpediente }}
+								                <option value="{{ estado.id }}">{{ estado.estadoExpediente }}</option>
 								            {% endfor %}
 										</select>
-										<input class="form-control busqueda hidden filtro" id="busqueda-3">
+										<input class="form-control busqueda hidden filtro" id="busqueda-3"/>
 										<select class="form-control busqueda hidden filtro" id="busqueda-4">
 											<option value="0">Seleccione Tipo</option>
 											{% for tipo in tipos %}
@@ -837,7 +837,7 @@
 								            {% endfor %}
 										</select>
 										
-									<div>
+									</div>
 								</form>
 							</div>
 						</div>
@@ -851,38 +851,80 @@
 	<section class="content">
 	  	<div class="row">
 	    	<div class="col-xs-12">
-{# 	     		<div class="box">
-		            <div class="box-body"> #}
-		              	<table id="registroExpediente" class="table table-striped">
-			                <thead>
-			                	<tr>
-			                		<th>id</th>
-    		                		<th >
-    		                			<div class="btn-group">
-	    		                			<button type="button" title="Agregar expediente"class="btn btn-primary btn-xs"
-	    							    			data-toggle="modal" data-target="#nuevoExpediente">
-	    							    			<span class="glyphicon glyphicon-plus"></span>
-	    							    	</button>
-	    							    	<button type="button" title="Ingresar proyecto"class="btn btn-primary btn-xs"
-	    							    			data-toggle="modal" data-target="#proyectosBusqueda">
-	    							    			<span class="glyphicon glyphicon-download-alt"></span>
-	    							    	</button>
-	    							    </div>
-    							    </th>	
-    							    <th>Numero</th>
-					                <th>Tipo</th>
-					                <th>F. Ing</th>
-					                <th>F. Mod</th>
-					                <th>Caratula</th>
-			                	</tr>
-			                </thead>
-			                <tbody>
-			                </tbody>
-		               	</table>
-		            {# </div> #} {# box-body #}
-		        {# </div> #} {# box #}
+              	<table id="registroExpediente" class="table table-striped">
+	                <thead>
+	                	<tr>
+	                		<th>id</th>
+	                		<th >
+	                			<div class="btn-group">
+		                			<button type="button" title="Agregar expediente"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#nuevoExpediente">
+							    			<span class="glyphicon glyphicon-plus"></span>
+							    	</button>
+							    	<button type="button" title="Ingresar proyecto"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#proyectosBusqueda">
+							    			<span class="glyphicon glyphicon-download-alt"></span>
+							    	</button>
+							    </div>
+						    </th>	
+						    <th>Numero</th>
+			                <th>Tipo</th>
+			                <th>F. Ing</th>
+			                <th>F. Mod</th>
+			                <th>Caratula</th>
+	                	</tr>
+	                </thead>
+	                <tbody>
+	                </tbody>
+               	</table>     
 	        </div> {# col #}
 	    </div> {# row #}
+
+	    <div id="proyectosBusqueda" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false"> 
+		 	<div class="modal-dialog">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Proyectos no entrados</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				  
+			        	<div class="row">
+			        		<div class="col-md-12">
+					        	<div class="form-group">
+					        		<table class="table " id="proyectos">
+					        			<thead>
+						                	<tr>
+						                		<th>id</th>
+						                		<th>idTipoProyecto</th>
+						                		<th>Ingresar</th>
+								                <th>Tipo</th>
+								                <th>Bloque</th>
+								                <th>Autores</th>
+						                	</tr>
+						                </thead>
+						                <tbody>
+						                </tbody>
+						            </table>
+					        	</div>
+					        </div>
+					    </div>
+						
+					</div>
+					<div class="modal-footer" style="background-color:#ecf0f5">  	
+				        <hr>
+				        <div class="row">
+				        	<div class="col-md-12">
+				        		<div class="text-center">
+					    			<div class="btn-group">
+							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cerrar</button>
+							        </div>
+						        </div>
+						    </div>
+			    		</div>
+				     </div>
+			    </div>
+		  	</div>
+		</div>
 
 	   	<div id="nuevoExpediente" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
 		 	<div class="modal-dialog modal-xl">
@@ -1190,51 +1232,6 @@
 			    </div>
 		  	</div>
 		</div> #}
-		<div id="proyectosBusqueda" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false"> 
-		 	<div class="modal-dialog modal-dialog">
-			    <!-- Modal content-->
-			    <div class="modal-content">
-				    <div class="modal-header" style="background-color:#666	;color:#FFF">
-		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title">Proyectos no entrados</h4>
-				    </div>
-				    <div class="modal-body" style="background-color:#ecf0f5">
-			        	<div class="row">
-			        		<div class="col-md-12">
-			        			
-					        	<div class="form-group">
-					        		<table class="table table-striped" id="proyectos">
-					        			 <thead>
-						                	<tr>
-						                		<th>id</th>
-						                		<th>idTipoProyecto</th>
-						                		<th>Ingresar</th>
-								                <th>Tipo</th>
-								                <th>Bloque</th>
-								                <th>Autores</th>
-						                	</tr>
-						                </thead>
-						                <tbody>
-						                </tbody>
-						            </table>
-					        	</div>
-					        </div>
-					    </div> 
-					</div>
-					<div class="modal-footer" style="background-color:#ecf0f5">  	
-				        <hr>
-				        <div class="row">
-				        	<div class="col-md-12">
-				        		<div class="text-center">
-					    			<div class="btn-group">
-							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cerrar</button>
-							        </div>
-						        </div>
-						    </div>
-			    		</div>
-				     </div>
-			    </div>
-		  	</div>
-		</div>
+	
 	</section>
 {% endblock %}

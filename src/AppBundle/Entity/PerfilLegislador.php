@@ -30,23 +30,6 @@ class PerfilLegislador extends Perfil
      */
     private $oficina;
 
-    /**
-     * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Comision", mappedBy="integrantes")
-     */
-    private $comisiones;
-
-    //-------------------------------------constructor-------------------------------------------
-
-    /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        $this->comisiones = new \Doctrine\Common\Collections\ArrayCollection();
-    }
-
     //--------------------------------------getters y setters-------------------------------------
     
     /**
@@ -95,40 +78,6 @@ class PerfilLegislador extends Perfil
     public function getOficina()
     {
         return $this->oficina;
-    }
-
-    /**
-     * Add comision
-     *
-     * @param \AppBundle\Entity\Comision $comision
-     *
-     * @return PerfilLegislador
-     */
-    public function addComision(\AppBundle\Entity\Comision $comision)
-    {
-        $comision->addIntegrante($this);
-        return $this;
-    }
-
-    /**
-     * Remove comision
-     *
-     * @param \AppBundle\Entity\Comision $comision
-     */
-    public function removeComision(\AppBundle\Entity\Comision $comision)
-    {
-        $comision->removeIntegrante($this);
-        return $this;
-    }
-
-    /**
-     * Get Comisiones
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getComisiones()
-    {
-        return $this->comisiones;
     }
 
     //-------------------------------propiedades virtuales-----------------------------------------

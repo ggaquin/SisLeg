@@ -3,9 +3,11 @@
   <entity name="AppBundle\Entity\Usuario" table="usuario">
     <indexes>
       <index name="usuario_rol_idx" columns="idRol"/>
-      <index name="UNIQ_usuario_idx" columns="usuario"/>
-      <index name="UNIQ_usuario_perfil_idx" columns="idPerfil"/>
     </indexes>
+    <unique-constraints>
+      <unique-constraint columns="usuario" name="UNIQ_usuario_idx" />
+      <unique-constraint columns="idPerfil" name="UNIQ_usuario_perfil_idx" />
+    </unique-constraints>
     <id name="id" type="integer" column="idUsuario">
       <generator strategy="IDENTITY"/>
     </id>

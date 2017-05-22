@@ -121,7 +121,7 @@ knp_snappy:
         options:    
             - { name: 'viewport-size', value: ‘1024x768’ }
             - { name: 'page-size', value: 'legal' }
-
+    temporary_folder: %kernel.cache_dir%/snappy
 # Assets
 assetic:
     debug:          '%kernel.debug%'
@@ -190,8 +190,7 @@ assetic:
                 - '@AppBundle/Resources/Public/css/plugins/morris/morris.css'
                 - '@AppBundle/Resources/Public/css/plugins/datepicker/datepicker3.css'
                 - '@AppBundle/Resources/Public/css/plugins/daterangepicker/daterangepicker.css'
-                - '@AppBundle/Resources/Public/css/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css'
-                # - '@AppBundle/Resources/Public/css/plugins/cleditor/jquery.cleditor.css'    
+                - '@AppBundle/Resources/Public/css/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css'   
                 - '@AppBundle/Resources/Public/css/plugins/bootstrap-troggle/bootstrap-toggle.css'
                 - '@AppBundle/Resources/Public/css/plugins/select2-4.0.3/css/select2.css'
                 - '@AppBundle/Resources/Public/css/plugins/select2-4.0.3/css/select2-bootstrap.css'
@@ -215,7 +214,6 @@ assetic:
                 - '@AppBundle/Resources/Public/js/plugins/datepicker/bootstrap-datepicker.js'
                 - '@AppBundle/Resources/Public/js/plugins/wysihtml5-0.3.0/wysihtml5-0.3.0.min.js'
                 - '@AppBundle/Resources/Public/js/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.js'
-                # - '@AppBundle/Resources/Public/js/plugins/cleditor/jquery.cleditor.js'
                 - '@AppBundle/Resources/Public/js/plugins/slimScroll/jquery.slimscroll.min.js'
                 - '@AppBundle/Resources/Public/js/app.js'
                 - '@AppBundle/Resources/Public/js/plugins/bootstrap-troggle/bootstrap-toggle.js'

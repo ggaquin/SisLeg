@@ -11,6 +11,5 @@
     		<join-column name="idBloque" referenced-column-name="idBloque"/>
   		</join-columns>
     </many-to-one>
-    <many-to-many field="comisiones" target-entity="Comision" mapped-by="integrantes" fetch="LAZY"/> 
   </entity>
 </doctrine-mapping>
