@@ -28,7 +28,7 @@
     <body class="hold-transition skin-blue sidebar-mini">
       <script type="text/javascript">
         function noImplementado(){
-          toastr.warning("NO IMPLEMENTADO");
+          toastr.warning("NO IMPLEMENTADO EN ESTA VERSIÓN");
         }
       </script>
       <div class="wrapper">
@@ -249,7 +249,7 @@
                 <ul class="treeview-menu">
                   <li class="divider"></li>
                   <li><a href="comisiones"><i class="fa fa-minus"></i>Conformación Comisiones</a></li>
-                  <li><a href="#"><i class="fa fa-minus"></i>Expedientes</a></li>
+                  <li><a href="#" onclick="noImplementado();"><i class="fa fa-minus"></i>Expedientes</a></li>
                 </ul>
               </li>
               {% if app.user.rol.rol=="ROLE_MESA_ENTRADA" or app.user.rol.rol=="ROLE_ADMINISTRADOR" %}
