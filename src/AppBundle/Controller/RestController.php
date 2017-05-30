@@ -69,24 +69,30 @@ class RestController extends FOSRestController{
      */
     public function traerProyectosPorCriterioAction(Request $request)
     {
-        $tipoCriterio=$request->get('tipoCriterio');
-        $criterio=$request->get('criterio');
-        $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
-        $proyectos=null;
-        if ($tipoCriterio=='todo')
-            $proyectos=$proyectoRepository->findAll();
-        if($tipoCriterio=='busqueda-1')
-            $proyectos=$proyectoRepository->findByAutor_Nombres($criterio);
-        if ($tipoCriterio=='busqueda-2')
-            $proyectos=$proyectoRepository->findByExpediente_Estado_Id($criterio);
-        if($tipoCriterio=='busqueda-3')
-            $proyectos=$proyectoRepository->findByExpediente_Numero($criterio);
-        if ($tipoCriterio=='busqueda-4')
-            $proyectos=$proyectoRepository->findByTipoProyecto_Id($criterio);
-        if ($tipoCriterio=='busqueda-5')
-            $proyectos=$proyectoRepository->findByExpediente_Null();
+        try{
+            $tipoCriterio=$request->get('tipoCriterio');
+            $criterio=$request->get('criterio');
+            $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
+            $proyectos=null;
+            if ($tipoCriterio=='todo')
+                $proyectos=$proyectoRepository->findAll();
+            if($tipoCriterio=='busqueda-1')
+                $proyectos=$proyectoRepository->findByAutor_Nombres($criterio);
+            if ($tipoCriterio=='busqueda-2')
+                $proyectos=$proyectoRepository->findByExpediente_Estado_Id($criterio);
+            if($tipoCriterio=='busqueda-3')
+                $proyectos=$proyectoRepository->findByExpediente_Numero($criterio);
+            if ($tipoCriterio=='busqueda-4')
+                $proyectos=$proyectoRepository->findByTipoProyecto_Id($criterio);
+            if ($tipoCriterio=='busqueda-5')
+                $proyectos=$proyectoRepository->findByExpediente_Null();
 
-        return $this->view($proyectos,200);
+            return $this->view($proyectos,200);
+
+        }catch(\Exception $e) {
+
+            return $this->view($e->getMessage(),500);
+        } 
          
     }
 
@@ -119,22 +125,28 @@ class RestController extends FOSRestController{
      */
     public function traerExpedientesPorCriterioAction(Request $request)
     {
-        $tipoCriterio=$request->get('tipoCriterio');
-        $criterio=$request->get('criterio');
-        $expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
-        $expedientes=null;
-        if ($tipoCriterio=='todo')
-            $expedientes=$expedienteRepository->findAll();
-        if($tipoCriterio=='busqueda-1')
-            $expedientes=$expedienteRepository->findByAutor_Nombres($criterio);
-        if ($tipoCriterio=='busqueda-2')
-            $expedientes=$expedienteRepository->findByEstado_Id($criterio);
-        if($tipoCriterio=='busqueda-3')
-            $expedientes=$expedienteRepository->findBy(array('numeroExpediente'=>$criterio));
-        if ($tipoCriterio=='busqueda-4')
-            $expedientes=$expedienteRepository->findByTipoExpediente_Id($criterio);
+        try{
 
-        return $this->view($expedientes,200);   
+            $tipoCriterio=$request->get('tipoCriterio');
+            $criterio=$request->get('criterio');
+            $expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+            $expedientes=null;
+            if ($tipoCriterio=='todo')
+                $expedientes=$expedienteRepository->findAll();
+            if($tipoCriterio=='busqueda-1')
+                $expedientes=$expedienteRepository->findByAutor_Nombres($criterio);
+            if ($tipoCriterio=='busqueda-2')
+                $expedientes=$expedienteRepository->findByEstado_Id($criterio);
+            if($tipoCriterio=='busqueda-3')
+                $expedientes=$expedienteRepository->findBy(array('numeroExpediente'=>$criterio));
+            if ($tipoCriterio=='busqueda-4')
+                $expedientes=$expedienteRepository->findByTipoExpediente_Id($criterio);
+
+            return $this->view($expedientes,200);
+
+        }catch(\Exception $e)   {
+            return $this->view($e->getMessage(),500);
+        }
     }
 
     /**
@@ -153,19 +165,42 @@ class RestController extends FOSRestController{
      */
     public function traerTodosLosLegisladoresAction(Request $request)
     {
-        $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
+        $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:PerfilLegislador');
         $perfiles=$perfilRepository->findAll();
         return $this->view($perfiles,200);
     }
 
-     /**
-     * @Rest\Get("/api/autor/getByCriteria")
+    /**
+     * @Rest\Get("/api/legislador/getOne/{id}")
      */
-    public function traerAutorPorCriterioAction(Request $request)
+    public function traerLegisladorIdAction(Request $request)
+    {
+        $id=$request->get('id');
+        $legisladorRepository=$this->getDoctrine()->getRepository('AppBundle:PerfilLegislador');
+        $legislador=$legisladorRepository->find($id);
+        return $this->view($legislador,200);
+    }
+
+    /**
+     * @Rest\Get("/api/legislador/nombre/getByCriteria")
+     */
+    public function traerLegisladorNombrePorCriterioAction(Request $request)
     {   
         $term=$request->query->get('q');
         $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
-        $perfiles=$perfilRepository->findByNombre_Patron($term);
+        $perfiles=$perfilRepository->findLegisladorByNombre_Patron($term);
+        return $this->view($perfiles,200);
+    }
+
+
+    /**
+     * @Rest\Get("/api/legislador/descripcion/getByCriteria")
+     */
+    public function traerLegisladorDescripcionPorCriterioAction(Request $request)
+    {   
+        $term=$request->query->get('q');
+        $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
+        $perfiles=$perfilRepository->findLegisladorByDescripcion_Patron($term);
         return $this->view($perfiles,200);
     }
 
@@ -501,9 +536,10 @@ class RestController extends FOSRestController{
             return $this->view('El expediente '.$numeroExpediente.' se guardó en forma exitosa',200);
 
         }catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e){ 
-            throw new \Exception('El expediente '.numeroExpediente.' ya existe');
+            return $this->view('El expediente '.$numeroExpediente.' ya existe');
+        
         }catch(\Exception $e){
-            throw $e;            
+            return $this->view($e->getMessage());            
         }
 
     }
@@ -564,9 +600,10 @@ class RestController extends FOSRestController{
             return $this->view('El expediente '.$numeroExpediente.' se modificó en forma exitosa',200);
 
          }catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e){ 
-            throw new \Exception('El expediente '.numeroExpediente.' ya existe');
+            return $this->view('El expediente '.$numeroExpediente.' ya existe');
+
         }catch(\Exception $e){
-            throw $e;
+            return $this->view($e->getMessage());
             
         }
     }
@@ -600,7 +637,7 @@ class RestController extends FOSRestController{
             return $this->view('La imagen se eliminó en forma exitosa',200);   
             
         } catch (Exception $e) {
-            throw $e;
+            return $this->view($e->getMessage());
             
         }
     }
@@ -610,7 +647,7 @@ class RestController extends FOSRestController{
      */
     public function crearUsuarioAction(Request $request)
     {   
-        try{
+        
 
             $idTipoPerfil=$request->request->get('selTipo');
             $apellidos=$request->request->get('apellidos');
@@ -624,41 +661,46 @@ class RestController extends FOSRestController{
             $domicilio=$request->request->get('domicilio');
             $documento=$request->request->get('documento');
             $idBloque=$request->request->get('selBloque');
+            $idPerfil=$request->request->get('selLegislador');
             $archivos=$request->files->all();
             $usuarioSesion=$this->getUser();
 
+        try{
+
             $perfil=null;
 
-            if($idTipoPerfil==1){
-                $perfil=new Perfil();
+            if ($idTipoPerfil==2){
+                $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
+                $perfil=$perfilRepository->find($idPerfil);
             }
-            if($idTipoPerfil==2){
-                $perfil=new PerfilLegislador();
+            else {
+                    if($idTipoPerfil==1){
+                        $perfil=new Perfil();
+                    }
+                    if($idTipoPerfil==2){
+                        $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
+                        $perfil=$perfilRepository->find($idBloque);
+                    }
+                    if($idTipoPerfil==3){
+                        $perfil=new PerfilPublico();
+                        $perfil->setDocumento($documento);
+                        $perfil->setDomcilio($domicilio);
+                    }
 
-                $bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
-                $bloque=$bloqueRepository->find($idBloque);
-
-                $perfil->setBloque($bloque);
-                $perfil->setOficina($oficina);
-            }
-            if($idTipoPerfil==3){
-                $perfil=new PerfilPublico();
-                $perfil->setDocumento($documento);
-                $perfil->setDomcilio($domicilio);
-            }
-
-            $perfil->setApellidos($apellidos);
-            $perfil->setNombres($nombres);
-            $perfil->setTelefono($telefono);
-            $perfil->setCorreoElectronico($eMail);
-            $perfil->setUsuarioCreacion($usuarioSesion->getUsername());
-            $perfil->setFechaCreacion(new \DateTime("now"));
+                    $perfil->setApellidos($apellidos);
+                    $perfil->setNombres($nombres);
+                    $perfil->setTelefono($telefono);
+                    $perfil->setCorreoElectronico($eMail);
+                    $perfil->setUsuarioCreacion($usuarioSesion->getUsername());
+                    $perfil->setFechaCreacion(new \DateTime("now"));
 
 
-            if(count($archivos)>0){
-                $perfil->setArchivo($archivos["uploadedFiles-0"]);
-                $perfil->setPrefijo($login);
-            }
+                    if(count($archivos)>0){
+                        $perfil->setArchivo($archivos["uploadedFiles-0"]);
+                        $perfil->setPrefijo($usuarioSesion->getUsername());
+                    }
+                }
+
             $rolRepository=$this->getDoctrine()->getRepository('AppBundle:Rol');
             $rol=$rolRepository->find($idRol);
 
@@ -679,12 +721,34 @@ class RestController extends FOSRestController{
             return $this->view('El usuario se guardo en forma exitosa',200);
 
         }catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e){ 
-            throw new \Exception('El nombre de usuario ya existe');
+                $mensaje='';
+                $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
+                if ($idTipoPerfil==2 && !is_null($idPerfil) &&
+                    $perfilRepository->perfilPoseeUsuario($idPerfil))
+        
+                    $mensaje='El legislador ya posee un usuario';
+                else
+                     $mensaje='El nombre de usuario ya existe';
+
+                return $this->view($mensaje,500);
         }
         catch(\Exception $e){
-            throw $e;
+             return $this->view($e->getMessage());
         }
     }
+
+     /**
+     *  @Rest\get("/api/roles/getByTipoPerfil/{idTipoPerfil}")
+     */
+     public function traerRolesPorPerfilAction(Request $request)
+     {
+
+         $idTipoPerfil=$request->get('idTipoPerfil');
+         $tipoPerfilRepository=$this->getDoctrine()->getRepository('AppBundle:TipoPerfil');
+         $tipoPerfil=$tipoPerfilRepository->find($idTipoPerfil);
+
+         return $this->view($tipoPerfil,200);
+     }
 
     /**
      *  @Rest\Post("/api/usuario/perfil/update")
@@ -720,27 +784,23 @@ class RestController extends FOSRestController{
 
                 if($perfil instanceof PerfilLegislador){
 
-                    $bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
-                    $bloque=$bloqueRepository->find($idBloque);
-                    $perfil->setBloque($bloque);
-                    $perfil->setOficina($oficina);
-                }
-                if($perfil instanceof PerfilPublico){
+                    if($perfil instanceof PerfilPublico){
 
-                    $perfil->setDocumento($documento);
-                    $perfil->setDomcilio($domicilio);
-                }
+                        $perfil->setDocumento($documento);
+                        $perfil->setDomcilio($domicilio);
+                    }
 
-                $perfil->setApellidos($apellidos);
-                $perfil->setNombres($nombres);
-                $perfil->setTelefono($telefono);
-                $perfil->setCorreoElectronico($eMail);
-                $perfil->setUsuarioModificacion($usuarioSesion->getUsername());
-                $perfil->setFechaModificacion(new \DateTime("now"));
+                    $perfil->setApellidos($apellidos);
+                    $perfil->setNombres($nombres);
+                    $perfil->setTelefono($telefono);
+                    $perfil->setCorreoElectronico($eMail);
+                    $perfil->setUsuarioModificacion($usuarioSesion->getUsername());
+                    $perfil->setFechaModificacion(new \DateTime("now"));
 
-                if(count($archivos)>0){
-                    $perfil->setArchivo($archivos["uploadedFiles-0"]);
-                    $perfil->setPrefijo($usuario->getUsuario());
+                    if(count($archivos)>0){
+                        $perfil->setArchivo($archivos["uploadedFiles-0"]);
+                        $perfil->setPrefijo($usuarioSesion->getUsername());
+                    }
                 }
                  
                 if($conservarClave==false){
@@ -761,12 +821,115 @@ class RestController extends FOSRestController{
                 return $this->view('La modificacion del usuario se realizó con éxito',200);
             }
             catch(\Exception $e){
-                throw $e;
+                return $this->view($e->getMessage());
             }
     }
 
     /**
-     * @Rest\Post("/api/usuario/imagen/remove")
+     *  @Rest\Post("/api/perfilLegislador/create")
+     */
+    public function crearLegisladorAction(Request $request)
+    {   
+        try{
+
+            $apellidos=$request->request->get('apellidos');
+            $nombres=$request->request->get('nombres');
+            $eMail=$request->request->get('eMail');
+            $telefono=$request->request->get('telefono');
+            $oficina=$request->request->get('oficina');
+            $idBloque=$request->request->get('selBloque');
+            $desde=$request->request->get('desde');
+            $hasta=$request->request->get('hasta');
+            $archivos=$request->files->all();
+            $usuarioSesion=$this->getUser();
+
+            $legislador=new PerfilLegislador();
+            $bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
+            $bloque=$bloqueRepository->find($idBloque);
+            $legislador->setBloque($bloque);
+            $legislador->setOficina($oficina);
+            $legislador->setApellidos($apellidos);
+            $legislador->setNombres($nombres);
+            $legislador->setTelefono($telefono);
+            $legislador->setCorreoElectronico($eMail);
+            $fechaDesde=\DateTime::createFromFormat('d/m/Y', $desde);
+            $legislador->setDesde($fechaDesde);
+            $fechaHasta=\DateTime::createFromFormat('d/m/Y', $hasta);
+            $legislador->setHasta($fechaHasta);
+            $legislador->setUsuarioCreacion($usuarioSesion->getUsername());
+            $legislador->setFechaCreacion(new \DateTime("now"));
+
+            if(count($archivos)>0){
+                $legislador->setArchivo($archivos["uploadedFiles-0"]);
+                $legislador->setPrefijo($usuarioSesion->getUsername());
+            }
+
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($legislador);
+            $em->flush();
+
+            return $this->view('El legislador: '.$legislador->getNombreCompleto().', se guardo en forma exitosa',200);
+        }
+        catch(\Exception $e){
+             return $this->view($e->getMessage());
+        }
+    }
+
+    /**
+     *  @Rest\Post("/api/perfilLegislador/update")
+     */     
+     public function actualizarLegisladorAction(Request $request)
+    {   
+        try {
+                $id=$request->request->get('id');
+                $apellidos=$request->request->get('apellidos');
+                $nombres=$request->request->get('nombres');
+                $eMail=$request->request->get('eMail');
+                $telefono=$request->request->get('telefono');
+                $oficina=$request->request->get('oficina');
+                $idBloque=$request->request->get('selBloque');
+                $desde=$request->request->get('desde');
+                $hasta=$request->request->get('hasta');
+                $archivos=$request->files->all();
+                $usuarioSesion=$this->getUser();
+
+                $em = $this->getDoctrine()->getManager();
+             
+                $legisladorRepository=$this->getDoctrine()->getRepository('AppBundle:PerfilLegislador');
+                $legislador=$legisladorRepository->find($id);
+                $bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
+                $bloque=$bloqueRepository->find($idBloque);
+                $legislador->setBloque($bloque);
+                $legislador->setOficina($oficina);
+                $legislador->setApellidos($apellidos);
+                $legislador->setNombres($nombres);
+                $legislador->setTelefono($telefono);
+                $legislador->setCorreoElectronico($eMail);
+                $fechaDesde=\DateTime::createFromFormat('d/m/Y', $desde);
+                $legislador->setDesde($fechaDesde);
+                $fechaHasta=\DateTime::createFromFormat('d/m/Y', $hasta);
+                $legislador->setHasta($fechaHasta);
+                $legislador->setUsuarioModificacion($usuarioSesion->getUsername());
+                $legislador->setFechaModificacion(new \DateTime("now"));
+
+                if(count($archivos)>0){
+                    $legislador->setArchivo($archivos["uploadedFiles-0"]);
+                    $legislador->setPrefijo($usuarioSesion->getUsername());
+                }
+                 
+                $em = $this->getDoctrine()->getManager();
+                $em->persist($legislador);
+                $em->flush();
+
+                return $this->view('La modificacion del usuario: '.$legislador->getNombreCompleto().' se realizó con éxito',200);
+            }
+            catch(\Exception $e){
+                return $this->view($e->getMessage());
+            }   
+    }
+
+    /**
+     * @Rest\Post("/api/perfil/imagen/remove")
      */
     public function borrarImagenAction(Request $request)
     {
@@ -798,20 +961,25 @@ class RestController extends FOSRestController{
      */
     public function cambiarEstadoAction(Request $request){
 
-        $id=$request->get('id');
-        $estado=$request->get('estado');
+        try{
+            $id=$request->get('id');
+            $estado=$request->get('estado');
 
-        $usuarioRepository=$this->getDoctrine()->getRepository('AppBundle:Usuario');
-        $usuario=$usuarioRepository->find($id);
-        $mensaje='El usuario '.$usuario->getUsuario().' se '.(($estado==0)?'desactivó':'activó').' con exito';
+            $usuarioRepository=$this->getDoctrine()->getRepository('AppBundle:Usuario');
+            $usuario=$usuarioRepository->find($id);
+            $mensaje='El usuario '.$usuario->getUsuario().' se '.(($estado==0)?'desactivó':'activó').' con exito';
 
-        $usuario->setActivo($estado);
+            $usuario->setActivo($estado);
 
-        $em = $this->getDoctrine()->getManager();
-        $em->persist($usuario);
-        $em->flush();
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($usuario);
+            $em->flush();
 
-        return $this->view($mensaje,200);
+            return $this->view($mensaje,200);
+        }
+        catch(\Exception $e){
+            return $this->view($e->getMessage());
+        }
     }
 
     /**
@@ -877,16 +1045,12 @@ class RestController extends FOSRestController{
     public function ejemploAction(Request $request){
 
         $id=$request->get('id');
-        try {
-            $r=$this->get('impresion_servicio')->traerParametrosImpresionExpediente($id);
+        $usuarioRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
+        $usuario=$usuarioRepository->perfilPoseeUsuario($id);
 
-            $this->render('documento/pdf.html.twig', $r['documento']);
-        } catch (Exception $e) {
-           throw $e;
-             
-        }
 
-        return $this->view($r,200);
+
+        return $this->view($usuario,200);
 
     
     }

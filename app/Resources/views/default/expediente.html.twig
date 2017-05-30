@@ -416,8 +416,9 @@
 			            });		    			
 					},
 					error: function(jqXHR,textStatus,errorThrown ){
-						var response=JSON.parse(jqXHR.responseText)
-						toastr.error(response.throwCause);
+						// var response=JSON.parse(jqXHR.responseText)
+						// toastr.error(response.throwCause);
+						toastr.error(qXHR.responseText);
 					}
 		      	});
 			});
@@ -493,8 +494,9 @@
 	                	$('#btn-Modificacion-expediente').prop("disabled", false);
 	                },
 	                error: function(jqXHR,textStatus,errorThrown ){
-						var response=JSON.parse(jqXHR.responseText)
-						toastr.error(response.throwCause);
+						// var response=JSON.parse(jqXHR.responseText)
+						// toastr.error(response.throwCause);
+						toastr.error(qXHR.responseText);
 						}
 	            	});
 	            }
@@ -603,8 +605,8 @@
 	                	$('#btn-nuevo-expediente').prop("disabled", false);
 	                },
 	                error: function(jqXHR,textStatus,errorThrown ){
-						var response=JSON.parse(jqXHR.responseText)
-						toastr.error(response.throwCause);
+						//var response=JSON.parse(jqXHR.responseText)
+						toastr.error(qXHR.responseText);
 						}
 	            	});
 	            }

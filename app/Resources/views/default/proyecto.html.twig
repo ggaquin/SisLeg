@@ -489,8 +489,8 @@
 						
 					},
 					error: function(jqXHR,textStatus,errorThrown ){
-						var response=JSON.parse(jqXHR.responseText)
-						toastr.error(response.throwCause);
+						//var response=JSON.parse(jqXHR.responseText)
+						toastr.error(qXHR.responseText);
 					}
 				});
 
@@ -528,8 +528,8 @@
 					    
 					},
 					error: function(jqXHR,textStatus,errorThrown ){
-						var response=JSON.parse(jqXHR.responseText)
-						toastr.error(response.throwCause);
+						//var response=JSON.parse(jqXHR.responseText)
+						toastr.error(qXHR.responseText);
 					}
 		      	});
 			});
@@ -606,8 +606,8 @@
 	                	$(this).prop("disabled",false);
 	                	},
 	                error: function(jqXHR,textStatus,errorThrown ){
-						var response=JSON.parse(jqXHR.responseText)
-						toastr.error(response.throwCause);
+						//var response=JSON.parse(jqXHR.responseText)
+						toastr.error(qXHR.responseText);
 						}
 	            	});
 	            }
@@ -710,8 +710,8 @@
 	                	$('#btn-guardar-proyecto').prop("disabled",false);
 	                	},
 	                error: function(jqXHR,textStatus,errorThrown ){
-						var response=JSON.parse(jqXHR.responseText)
-						toastr.error(response.throwCause);
+						//var response=JSON.parse(jqXHR.responseText)
+						toastr.error(qXHR.responseText);
 						}
 	            	});
 	            }
@@ -903,7 +903,7 @@
 
 			$("#selAutores").select2({
 				ajax: {
-			    url: '{{ app.request.getBaseURL() }}'+"/api/autor/getByCriteria",
+			    url: '{{ app.request.getBaseURL() }}'+"/api/legislador/nombre/getByCriteria",
 			    dataType: 'json',
 			    delay: 250,
 			    cache: false,
@@ -917,7 +917,7 @@
 			       var dato=data;
 		           return {
 				        results: $.map(dato, function(item) {
-				            return { id: item.id, text: item.nombre_completo };
+				            return { id: item.id, text: item.descripcion };
 				        })
 				    };
 		        },

@@ -101,6 +101,8 @@ nelmio_cors:
  
 # FOSRest Configuration
 fos_rest:
+    serializer:
+        serialize_null: true
     body_listener: true
     format_listener:
         rules:
@@ -188,8 +190,9 @@ assetic:
                 - '@AppBundle/Resources/Public/css/skins/_all-skins.css'
                 - '@AppBundle/Resources/Public/css/plugins/iCheck/flat/blue.css'
                 - '@AppBundle/Resources/Public/css/plugins/morris/morris.css'
-                - '@AppBundle/Resources/Public/css/plugins/datepicker/datepicker3.css'
-                - '@AppBundle/Resources/Public/css/plugins/daterangepicker/daterangepicker.css'
+                - '@AppBundle/Resources/Public/css/plugins/bootstrap3-datepicker/bootstrap-datetimepicker.css'
+                #- '@AppBundle/Resources/Public/css/plugins/datepicker/datepicker3.css'
+                #- '@AppBundle/Resources/Public/css/plugins/daterangepicker/daterangepicker.css'
                 - '@AppBundle/Resources/Public/css/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css'   
                 - '@AppBundle/Resources/Public/css/plugins/bootstrap-troggle/bootstrap-toggle.css'
                 - '@AppBundle/Resources/Public/css/plugins/select2-4.0.3/css/select2.css'
@@ -210,8 +213,10 @@ assetic:
                 - '@AppBundle/Resources/Public/js/plugins/morris-0.5.0/morris-0.5.0.min.js'
                 - '@AppBundle/Resources/Public/js/plugins/knob-1.2.11/jquery.knob-1.2.11.js'
                 - '@AppBundle/Resources/Public/js/plugins/momentjs-2.11.2/moment-2.11.2.min.js'
-                - '@AppBundle/Resources/Public/js/plugins/daterangepicker-2.1.19/daterangepicker-2.1.19.js'
-                - '@AppBundle/Resources/Public/js/plugins/datepicker/bootstrap-datepicker.js'
+                - '@AppBundle/Resources/Public/js/plugins/momentjs-2.11.2/moment-with-locales.js'
+                - '@AppBundle/Resources/Public/js/plugins/bootstrap3-datepicker/bootstrap-datetimepicker.min.js'
+                #- '@AppBundle/Resources/Public/js/plugins/daterangepicker-2.1.19/daterangepicker-2.1.19.js'
+                #- '@AppBundle/Resources/Public/js/plugins/datepicker/bootstrap-datepicker.js'
                 - '@AppBundle/Resources/Public/js/plugins/wysihtml5-0.3.0/wysihtml5-0.3.0.min.js'
                 - '@AppBundle/Resources/Public/js/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.js'
                 - '@AppBundle/Resources/Public/js/plugins/slimScroll/jquery.slimscroll.min.js'
