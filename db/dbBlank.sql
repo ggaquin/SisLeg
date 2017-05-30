@@ -580,6 +580,58 @@ INSERT INTO `tipoExpediente` VALUES (1,'Comunicacion','P'),(2,'Ordenanza','P'),(
 UNLOCK TABLES;
 
 --
+-- Table structure for table `tipoPerfil`
+--
+
+DROP TABLE IF EXISTS `tipoPerfil`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tipoPerfil` (
+  `idTipoPerfil` smallint(6) NOT NULL AUTO_INCREMENT,
+  `tipoPerfil` varchar(50) NOT NULL,
+  PRIMARY KEY (`idTipoPerfil`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `tipoPerfil`
+--
+
+LOCK TABLES `tipoPerfil` WRITE;
+/*!40000 ALTER TABLE `tipoPerfil` DISABLE KEYS */;
+INSERT INTO `tipoPerfil` VALUES (1,'Básico'),(2,'Legislador'),(3,'Público');
+/*!40000 ALTER TABLE `tipoPerfil` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `tipoPerfil_rol`
+--
+
+DROP TABLE IF EXISTS `tipoPerfil_rol`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tipoPerfil_rol` (
+  `idTipoPerfil` smallint(6) NOT NULL,
+  `idRol` smallint(6) NOT NULL,
+  PRIMARY KEY (`idTipoPerfil`,`idRol`),
+  KEY `tipoPerfil_rol_rol_idx` (`idRol`),
+  KEY `tipoPerfil_rol_tipoPerfil` (`idTipoPerfil`),
+  CONSTRAINT `fk_tipoPerfil_rol_rol` FOREIGN KEY (`idRol`) REFERENCES `rol` (`idRol`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_tipoPerfil_rol_tipoPerfil` FOREIGN KEY (`idTipoPerfil`) REFERENCES `tipoPerfil` (`idTipoPerfil`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `tipoPerfil_rol`
+--
+
+LOCK TABLES `tipoPerfil_rol` WRITE;
+/*!40000 ALTER TABLE `tipoPerfil_rol` DISABLE KEYS */;
+INSERT INTO `tipoPerfil_rol` VALUES (2,1),(1,2),(2,2),(2,3),(1,4);
+/*!40000 ALTER TABLE `tipoPerfil_rol` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `tipoProyecto`
 --
 
@@ -676,4 +728,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-05-27 12:12:14
+-- Dump completed on 2017-05-30 13:28:47
