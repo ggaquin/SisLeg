@@ -1,0 +1,441 @@
+{% extends 'base.html.twig' %}
+
+
+
+{% block stylesheets %}
+	{{ parent() }}
+  	{% stylesheets '@css_datatables' %}
+      	<link rel="stylesheet" href="{{ asset_url }}" /></link>
+  	{% endstylesheets %}
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+    {% javascripts '@js_datatables'%}
+        <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+{% endblock %}
+
+{% block body %}
+	<style type="text/css">
+		.image-container{
+			padding-top: 30px;
+			min-height: 343px;
+			width:350px;
+			padding-left: 40px;
+		}
+		.file-preview {
+			max-height: 310px;
+			max-width: 210px;
+			height: 310	px;
+			/*calc(100vh - 350px);*/
+			background-color: #fff;
+		}
+
+	</style>
+	<script type="text/javascript">
+
+		$(document).ready(function () {
+			
+		    var tabla=$('#registroLegisladores').DataTable({
+		    			  "language": {
+				              "infoEmpty": "Sin registros para mostrar",
+				              "paginate": {
+						          	"last": "Ultima Página",
+						          	"first": "Primer página",
+						          	"next": "Siguiente",
+						          	"previous": "Anterior"
+						       },
+						       "emptyTable": "Sin Datos",
+						       "lengthMenu": 'Registros Listados <select class="form-control input-sm">'+
+								             '<option value="10">10</option>'+
+								             '<option value="20">20</option>'+
+								             '<option value="30">30</option>'+
+								             '<option value="40">40</option>'+
+								             '<option value="50">50</option>'+
+								             '<option value="-1">Todos</option>'+
+								             '</select>',
+								"loadingRecords": "Espere...cargando datos",
+								"processing": "Procesando...",
+								"sInfo": "Mostrando  _START_ a _END_ de _TOTAL_ registros",
+
+			          	  },
+					      "processing": false,
+					      "ajax": {
+							        "url": "/api/legislador/getAll",
+			            			"dataSrc": '',
+							    },
+						  "columnDefs": [
+								            {
+								                "targets": [ 0 ],
+								                "visible": false,
+								                "searchable": false
+								            },
+								            {
+									            "targets": [ 1 ],
+									            "data": null,
+									            "orderable":false,
+									            "defaultContent": "<div class='btn-group'>"+
+									            	"<button type='button'  title='Editar Legislador' class='btn btn-primary btn-xs btn-editar' data-toggle='modal' data-target='#modalLegislador'><span class='glyphicon glyphicon-pencil'></span>"+
+									            	"</button>"+
+									            	"<button type='button'  class='btn btn-danger btn-xs btn-eliminar' title='Licencia' onclick='noImplementado();'><span class='glyphicon glyphicon-erase'></span>"+
+									            	"</button></div>"
+									        }
+
+						  ],
+					      "columns": [
+					      		{ "data": "id" },
+					      		{ "data": "" ,"width":"10%" },
+					            { "data": "nombre_completo","width":"20%" },
+					            { "data": "oficina","width":"10%"},
+					            { "data": "telefono","width":"10%"},
+					            { "data": "correo_electronico","className": "for-mobile","width":"20%" },
+					            { "data": "bloque.bloque","className": "for-mobile","width":"20%" },
+					        ],
+					      "autoWidth":false,
+					      "paging": true,
+					      "lengthChange": true,
+					      "searching": false,
+					      "ordering": false,
+					      "info": true,
+					      "autoWidth": false,
+					    });
+
+		    $('#registroLegisladores tbody').on( 'click', '.btn-editar', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+		 		$("#modalLegislador").find('input[name="id"]').val(data[ "id" ]);
+		 		$("#modalLegislador").find('input[name="modo"]').val("EDICION");
+		 		$("#tituloModal").text("Modificacion Legislador");
+				
+		    } );
+
+		    $('#registroLegisladores thead').on( 'click', '.btn-alta', function () {
+		 		$("#modalLegislador").find('input[name="id"]').val("0");
+		 		$("#modalLegislador").find('input[name="modo"]').val("ALTA");
+		 		$("#tituloModal").text("Alta Legislador");
+		    } );
+
+		    $('#modalLegislador').on('show.bs.modal',function(){
+
+		    	var modo= $("#modalLegislador").find('input[name="modo"]').val()
+
+		    	if (modo=="ALTA"){
+
+		    		$("#apellidos").val('');
+			    	$("#nombres").val('');
+			    	$("#eMail").val('');
+			    	$("#telefono").val('');
+			    	$("#oficina").val('');
+			    	$("#selBloque").val(0);
+			    	$("#desde").val('');
+			    	$("#hasta").val('');
+
+			    	$("#input-file").fileinput({
+			    		language: "es",
+			    		initialPreviewAsData: true,
+			    		initialPreview: [
+		                    'user.jpg'
+		                ],
+		                initialPreviewConfig: [
+	                    	{type: "image", caption: "sin imagen!"}
+	                    ],
+		                showUpload: false,
+		                showCaption: false,               
+		                overwriteInitial: true,
+		                previewSettings:{image: {width: "auto", height: "220", width:"155px"}},
+		                maxFileSize: 10240,                
+		            });
+		    	}
+		    	else{
+
+		    		var id= $("#modalLegislador").find('input[name="id"]').val();
+
+			    	$.ajax({
+
+						type:'Get',
+						dataType: 'json	',
+						url:'{{ app.request.getBaseURL() }}'+'/api/legislador/getOne/'+id,
+						success: function(data){
+							var usuario=data;
+							var perfil=data.perfil;
+
+							$("#apellidos").val(data.apellidos);
+						    $("#nombres").val(data.nombres);
+						    $("#eMail").val(data.correo_electronico);
+						    $("#telefono").val(data.telefono);
+							$("#oficina").val(data.oficina);
+							$("#selBloque").val(data.bloque.id);
+							$("#desde").val(data.fecha_desde_formateada);
+							$("#hasta").val(data.fecha_hasta_formateada);
+
+							var rutaImagen=((data.ruta_web_imagen==null)?'user.jpg':data.ruta_web_imagen);
+							var keyImagen=((data.ruta_web_imagen==null)?'no-unlink-preview':data.ruta_web_imagen);
+
+						    $("#input-file").fileinput({
+					    		language: "es",
+					    		initialPreviewAsData: true,
+					    		initialPreview: [ rutaImagen ],
+				                initialPreviewConfig: [ {type: "image", caption: "", height: "220", width:"155px", key:keyImagen } ],
+				                showUpload: false,
+				                showCaption: false,               
+				                overwriteInitial: true,
+				                previewSettings:{image: {height: "220", width:"155px"}},
+				                deleteUrl:'{{ app.request.getBaseURL() }}'+'/api/legislador/imagen/remove',
+				                maxFileSize: 10240,                
+		            });
+						},
+						error: function(jqXHR,textStatus,errorThrown ){
+							toastr.error(qXHR.responseText);
+						}
+
+
+			      	});
+			    }
+
+		    });
+
+		    $('#modalLegislador').on('hidden.bs.modal',function(){
+		    	$('#input-file').fileinput('destroy');
+		    });
+
+		    //GUARDAR
+		    $("#form-legislador").on('submit',function(e){
+
+				e.preventDefault();
+             	var form=$(e.target);
+              	var formData=new FormData();
+              	var controles=$(form).serializeArray();
+              	var archivos=$(form).find('[name="input-file"]')[0].files;
+
+              	$.each(archivos, function(i, archivo) {
+                	
+                	formData.append('uploadedFiles-' + i, archivo);
+            	});
+
+              	var validacion='';
+
+            	$.each(controles, function(i, control) {
+
+                	formData.append(control.name,control.value);
+	                validacion+=((control.name=="apellidos" && control.value.replace(/ /g, '').length==0)
+	                	?'<li>Debe ingresar un apellido para el legislador</li>':'');
+			     	validacion+=((control.name=="nombres" && control.value.replace(/ /g, '').length==0)
+			     		?'<li>Debe ingresar un nombre para el Legislador</li>':'');
+			     	validacion+=((control.name=="eMail" && control.value.indexOf(' ')!=-1)
+			     		?'<li>El correo electrónico posee espacios blancos</li>':'');
+			     	validacion+=((control.name=="eMail" && control.value.replace(/ /g, '').length>0 &&
+			     				control.value.indexOf('@')==-1)
+			     		?'<li>El correo electrónico no contiene @</li>':'');
+			     	validacion+=((control.name=="oficina" && control.value.replace(/ /g, '').length==0)
+			     		?'<li>Debe especificar ubicacion de la oficina del legislador</li>':'');
+			     	validacion+=((control.name=="selBloque" && control.value==0)
+			     		?'<li>Debe especificar el bloque del legislador</li>':'');
+			     	validacion+=((control.name=="desde" && control.value.replace(/ /g, '').length==0)
+			     		?'<li>Debe especificar la fecha de inicio del mandato</li>':'');
+			     	validacion+=((control.hasta=="hasta" && control.value.replace(/ /g, '').length==0)
+			     		?'<li>Debe especificar la fecha de fin del mandato</li>':'');
+			     	});
+
+	            if (validacion.length>0) 
+				{
+					validacion=((validacion.length>0)?'<strong><u>Validación de Datos</u></strong><br><ul>'+
+								validacion+'</ul>':'');
+					toastr.error(validacion).attr('style', 'width: 500px !important');;
+					return false;
+				}
+				else{
+
+					var modo= $("#modalLegislador").find('input[name="modo"]').val()
+
+			    	if (modo=="ALTA")
+			    		urlAction='{{ app.request.getBaseURL() }}'+'api/perfilLegislador/create';
+			    	else {
+			    		var id= $("#modalLegislador").find('input[name="id"]').val();
+						urlAction='{{ app.request.getBaseURL() }}'+'api/perfilLegislador/update';
+			    	}
+
+	            	$.ajax({
+		                async: true,
+		                url: urlAction,
+		                data: formData,
+		                cache: false,
+		                contentType: false,
+		                processData: false,
+		                type: $(form).attr('method'),
+	                success: function(data) {
+	                    toastr.success(data);
+						tabla.ajax.reload();
+						$('#modalLegislador').modal('hide');
+	                	},
+	                error: function(jqXHR,textStatus,errorThrown ){
+						toastr.error(jqXHR.responseText);
+						}
+	            	});
+	            }
+			});
+
+		    //-------------------------------INICIALIZACION DE CONTROLES-------------------------------------
+
+		    $('#datepicker1').datetimepicker({
+		    	locale: 'es',
+		    	format:'DD/MM/YYYY'
+		    });
+
+		    $('#datepicker2').datetimepicker({
+		    	locale: 'es',
+		    	format:'DD/MM/YYYY'
+		    });
+
+		    $('.datetimepicker').datetimepicker().on('dp.change', function(e){
+			    $(this).data('DateTimePicker').hide();
+			});
+
+		    $('#input-file').on('filedeleted', function(event, key) {
+		    	var modo = $("#modalLegislador").find('input[name="modo"]').val();
+				if (modo=="EDICION")
+			  		$('#input-file').fileinput('clear');
+			});
+	});
+	</script>
+	<section class="content-header">
+		<div class="row pull-right">
+		    <ol class="breadcrumb">
+		        <li><a href="#"><i class="fa fa-dashboard"></i> Principal</a></li>
+	        	<li class="active">Legisladores</li>
+		    </ol>
+		</div>
+		<hr>
+		<div class="row">
+			<div class="col-md-4">
+				<h2>
+			        Legisladores
+			    </h2>
+			</div>
+		</div>   
+	</section>
+	<section class="content">
+	  	<div class="row">
+	    	<div class="col-xs-12">
+	     		{# <div class="box">
+		            <div class="box-body"> #}
+		              	<table id="registroLegisladores" class="table table-striped">
+			                <thead>
+			                	<tr>
+			                		<th>id</th>
+    		                		<th class="text-center">
+    		                			<button type="button" title="Agregar Consejal"class="btn btn-primary btn-xs 
+    		                					btn-alta" data-toggle="modal" data-target="#modalLegislador">
+    							    			<span class="glyphicon glyphicon-plus"></span>
+    							    	</button>
+    							    </th>
+					                <th>Nombre Completo</th>
+					                <th>Oficina</th>
+					                <th>Teléfono</th>
+					                <th>Correo Electrónico</th>
+					                <th>Bloque</th>
+					            </tr>
+			                </thead>
+			                <tbody>
+			                </tbody>
+		               	</table>
+		            {# </div> #} {# box-body #}
+		        {# </div> #} {# box #}
+	        </div> {# col #}
+	    </div> {# row #}
+	    <div id="modalLegislador" class="modal fade" role="dialog">
+		 	<div class="modal-dialog modal-lg">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666;color:#FFF">
+				        <button type="button" class="close" data-dismiss="modal" >&times;</button>
+				        <h4 class="modal-title" id="tituloModal"><strong></strong></h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				        <form role="form" id="form-legislador" action="#" method="POST">
+				        	<input type="hidden" name="id" id="id">
+				        	<input type="hidden" name="modo" id="modo">
+				        	<div class="row" style="min-height:420px">
+					        	<div class="col-md-4">	
+						        	<div class="form-group">
+						        		<label for="apellidos">Apellidos</label>
+						        		<input type= "text" class="form-control input-sm" name="apellidos" id="apellidos" placeholder="apellido del usuario">
+						        	</div>
+						        	<div class="form-group">
+						        		<label for="nombres">Nombres</label>
+						        		<input type= "text" class="form-control input-sm" id="nombres" name="nombres" placeholder="nombre del usuario">
+						        	</div>
+						        	<div class="form-group">
+						        		<label for="eMail">Correo Electrónico</label>
+						        		<input type= "text" class="form-control input-sm" id="eMail" name="eMail" autocomplete="off" placeholder="dirección de correo electrónico">
+						        	</div>
+						        	<div class="form-group">
+										<label for="telefono">Telefono</label>
+										<input type= "text" class="form-control input-sm" id="telefono" name="telefono" placeholder="número de teléfono">
+									</div>
+						        	<div class="form-group">
+										<label for="oficina">Oficina</label>
+										<input type= "text" class="form-control input-sm" id="oficina" name="oficina" placeholder="oficina / despacho">
+									</div>
+						        </div>
+						        <div class="col-md-4">
+						        	<div class="form-group">
+						        		<label for="selBloque">Bloque</label>
+						        		<select class="form-control" id="selBloque" name="selBloque">
+						        			<option value="0">Seleccione bloque</option>
+						        			{% for bloque in bloques %}
+								                <option value="{{ bloque.id }}">{{ bloque.bloque }}</option>
+								            {% endfor %}
+						        		</select>
+						        	</div>
+						        	<div class="form-group">
+						        		<label for="datepicker1">Desde</label>
+										<div class="input-group date" id="datepicker1">
+							                <input type="text" class="form-control" id="desde" name="desde" data-provide="datepicker">
+							                 <div class="input-group-addon">
+							                    <i class="fa fa-calendar"></i>
+							                </div>
+							             </div>
+									</div>	
+									<div class="form-group">
+										<label for="datepicker2">Hasta</label>
+										<div class="input-group date" id="datepicker2">
+										    <input type="text" class="form-control" id="hasta" name="hasta">
+										    <div class="input-group-addon">
+										        <span class="fa fa-calendar"></span>
+										    </div>
+										</div>
+									</div>
+						        </div>
+								<div class="col-md-4">
+				        			<div class="row"> 	
+					        			<div class="image-container">
+								        	<div class="form-group">
+									        	<input id="input-file" accept="image/*" name="input-file" type="file" class="file-loading">
+								        	</div>
+							        	</div>
+							        </div>
+							        <div class="row text-center">
+							        	<label for="input-file">Imagen</label>
+							        </div>
+				        		</div>      
+							</div>
+					        <hr>
+					        <div class="row">
+					        	<div class="text-center">
+							        <div class="btn-group">
+							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+						       			 <button type="submit" class="btn btn-primary" id="btn-guardar-nuevo">Guardar</button>
+
+						        	</div>
+						        </div>
+					        </div>	
+				        </form>
+				     </div>
+			    </div>
+		  	</div>
+		</div> 
+	</section>
+{% endblock %}
+
+
+		

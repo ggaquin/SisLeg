@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
   <entity name="AppBundle\Entity\PerfilLegislador">
-    <field name="oficina" type="string" column="oficina" length="50" nullable="false">
+    <field name="oficina" type="string" column="oficina" length="50" nullable="true">
       <options>
         <option name="fixed"/>
       </options>
@@ -11,5 +11,9 @@
     		<join-column name="idBloque" referenced-column-name="idBloque"/>
   		</join-columns>
     </many-to-one>
+    <field name="desde" type="datetime" column="desde" nullable="true">
+    </field>
+    <field name="hasta" type="datetime" column="hasta" nullable="true">
+    </field>
   </entity>
 </doctrine-mapping>

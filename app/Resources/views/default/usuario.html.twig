@@ -69,6 +69,10 @@
 			width: 150px !important;
 		}
 
+		.locked{
+  			pointer-events: none;
+		}
+
 	</style>
 	<script type="text/javascript">
 
@@ -82,13 +86,94 @@
 					toastr.succes(data);
 				},
 				error: function(jqXHR,textStatus,errorThrown ){
-					var response=JSON.parse(jqXHR.responseText)
-					toastr.error(response.throwCause);
+					// var response=JSON.parse(jqXHR.responseText)
+					// toastr.error(response.throwCause);
+					toastr.error(jqXHR.responseText)
 				}
 		     });
 		}
 
+		function traerUsuario(id){
+
+			var usuario;
+
+			$.ajax({
+				async:false,
+				type:'Get',
+				dataType: 'json	',
+				url:'{{ app.request.getBaseURL() }}'+'/api/usuario/getOne/'+id,
+				success: function(data){
+					usuario=data;
+				},
+				error: function(jqXHR,textStatus,errorThrown ){
+					usuario=false;
+					toastr.error(jqXHR.responseText);
+				}
+	      	});
+			
+			return usuario;
+		}
+
+		function actualizarRoles(idTipoPerfil,control){
+			$.ajax({
+				async:false,
+				type:'Get',
+				dataType: 'json	',
+				url:'{{ app.request.getBaseURL() }}'+'/api/roles/getByTipoPerfil/'+idTipoPerfil,
+				success: function(data){
+					var roles=data.roles;
+					var html='<option value=0>Selecciones Rol</option>';
+					$.each(roles,function(i,rol){
+						html+='<option value="'+rol.id+'">'+rol.rol_como_string+'</option>';
+					});
+					$("#"+control).html('');
+					$("#"+control).html(html);
+				},
+				error: function(jqXHR,textStatus,errorThrown ){
+					toastr.error(jqXHR.responseText);
+				}
+	      	});
+		}
+
+		function inicializarAlta(){
+
+		  	$("#apellidos").val('');
+		    $("#nombres").val('');
+		    $("#login").val('');
+		    $("#selRol").val(0);
+		    $("#clave").val('');
+		    $("#claveConfirma").val('');
+		    $("#mensaje").html('');
+		    $("#eMail").val('');
+		    $("#telefono").val('');
+		    $("#oficina").val('');
+		    $("#documento").val('');
+		    $("#domicilio").val('');
+		    $("#bloque").val('');
+		    $("#selLegislador").empty().change();
+
+			$("#input-file").fileinput('destroy');
+
+		    $("#input-file").fileinput({
+	    		language: "es",
+	    		initialPreviewAsData: true,
+	    		initialPreview: [
+                    'user.jpg'
+                ],
+                initialPreviewConfig: [
+                	{type: "image", caption: "sin imagen!"}
+                ],
+                showUpload: false,
+                showCaption: false,               
+                overwriteInitial: true,
+                previewSettings:{image: {width: "auto", height: "220", width:"155px"}},
+                maxFileSize: 10240,                
+            });
+		}
+
 		$(document).ready(function () {
+
+			$.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 			
 		    var tabla=$('#registroUsuarios').DataTable({
 			  	"language": {
@@ -194,8 +279,8 @@
 						tabla.ajax.reload();
 					},
 					error: function(jqXHR,textStatus,errorThrown ){
-						var response=JSON.parse(jqXHR.responseText)
-						toastr.error(response.throwCause);
+						//var response=JSON.parse(jqXHR.responseText)
+						toastr.error(jqXHR.responseText);
 					}
 		     	});
 			})
@@ -214,8 +299,8 @@
 						tabla.ajax.reload();;
 					},
 					error: function(jqXHR,textStatus,errorThrown ){
-						var response=JSON.parse(jqXHR.responseText)
-						toastr.error(response.throwCause);
+						//var response=JSON.parse(jqXHR.responseText)
+						toastr.error(jqXHR.responseText);
 					}
 		     	});
 			})
@@ -236,70 +321,70 @@
 		    $('#editarUsuario').on('show.bs.modal', function () {
 
 		    	var id= $("#editarUsuario").find('input[name="id"]').val();
+		    	var usuario=traerUsuario(id);
+				var perfil=usuario.perfil;
 
-		    	$.ajax({
+				$("#oficinaMod").val('');
+			    $("#documentoMod").val('');
+			    $("#domicilioMod").val('');
+			    $("#bloqueMod").val();
 
-					type:'Get',
-					dataType: 'json	',
-					url:'{{ app.request.getBaseURL() }}'+'/api/usuario/getOne/'+id,
-					success: function(data){
-						var usuario=data;
-						var perfil=data.perfil;
+			    $(".div-publico").addClass("hidden");
+			    $(".div-legislador").addClass("hidden");
+			    $(".es-nombre").removeClass("hidden");
+			    $(".control-comun").prop("readonly",false);
+			    $("#file-container-mod").removeClass("locked");
+			 
+			 	if(perfil.tipo_perfil=="basico")
+					actualizarRoles(1,'selRolMod');
 
-						$("#oficinaMod").val('');
-					    $("#documentoMod").val('');
-					    $("#domicilioMod").val('');
-					    $("#selBloqueMod").val(0);
+				if (perfil.tipo_perfil=="legislador"){
 
-					    $(".div-publico").addClass("hidden");
-					    $(".div-legislador").addClass("hidden");
+					actualizarRoles(2,'selRolMod');
+					$("#legisladorMod").val(perfil.nombre_completo);
+					
+					$("#oficinaMod").val(perfil.oficina);
+					$("#bloqueMod").val(perfil.bloque.bloque);
+					$(".div-legislador").removeClass("hidden");	
+					$(".es-nombre").addClass("hidden");
+					$(".control-comun").prop("readonly",true);
+					$("#file-container-mod").addClass("locked");
+				}
 
-						if (perfil.tipo_perfil=="legislador"){
-							$("#oficinaMod").val(perfil.oficina);
-							$("#selBloqueMod").val(perfil.bloque.id);
-							$(".div-legislador").removeClass("hidden");
-						}
+				if (perfil.tipo_perfil=="publico"){
+					$("#documentoMod").val(perfil.documento);
+					$("#domicilioMod").val(perfil.domicilio);
+					$(".div-publico").removeClass("hidden");
+				}
 
-						if (perfil.tipo_perfil=="publico"){
-							$("#documentoMod").val(perfil.documento);
-							$("#domicilioMod").val(perfil.domicilio);
-							$(".div-publico").removeClass("hidden");
-						}
+			  	$("#apellidosMod").val(perfil.apellidos);
+			    $("#nombresMod").val(perfil.nombres);
+			    $("#eMailMod").val(perfil.correo_electronico);
+			    $("#telefonoMod").val(perfil.telefono);
 
-					  	$("#apellidosMod").val(perfil.apellidos);
-					    $("#nombresMod").val(perfil.nombres);
-					    $("#eMailMod").val(perfil.correo_electronico);
-					    $("#telefonoMod").val(perfil.telefono);
+			    $("#selRolMod").val(usuario.rol.id);
 
-					    $("#selRolMod").val(usuario.rol.id);
+			    $("#conservaContraseña").bootstrapToggle('on');
+			    $("#mensajeMod").html('');
 
-					    $("#conservaContraseña").bootstrapToggle('on');
-					    $("#mensajeMod").html('');
+				var rutaImagen=((perfil.ruta_web_imagen==null)?'user.jpg':perfil.ruta_web_imagen);
+				var keyImagen=((perfil.ruta_web_imagen==null)?'no-unlink-preview':perfil.ruta_web_imagen);
 
-						var rutaImagen=((perfil.ruta_web_imagen==null)?'user.jpg':perfil.ruta_web_imagen);
-						var keyImagen=((perfil.ruta_web_imagen==null)?'no-unlink-preview':perfil.ruta_web_imagen);
-
-					    $("#input-file-mod").fileinput({
-				    		language: "es",
-				    		initialPreviewAsData: true,
-				    		initialPreview: [ rutaImagen ],
-			                initialPreviewConfig: [ {type: "image", caption: "", height: "220", width:"155px", key:keyImagen } ],
-			                showUpload: false,
-			                showCaption: false,               
-			                overwriteInitial: true,
-			                previewSettings:{image: {height: "220", width:"155px"}},
-			                deleteUrl:'{{ app.request.getBaseURL() }}'+'/api/usuario/imagen/remove',
-			                maxFileSize: 10240,                
-	            });
-					},
-					error: function(jqXHR,textStatus,errorThrown ){
-						var response=JSON.parse(jqXHR.responseText)
-						toastr.error(response.throwCause);
-					}
-
-
-		      	})
+			    $("#input-file-mod").fileinput({
+		    		language: "es",
+		    		initialPreviewAsData: true,
+		    		initialPreview: [ rutaImagen ],
+	                initialPreviewConfig: [ {type: "image", caption: "", height: "220", width:"155px", key:keyImagen } ],
+	                showUpload: false,
+	                showCaption: false,               
+	                overwriteInitial: true,
+	                previewSettings:{image: {height: "220", width:"155px"}},
+	                deleteUrl:'{{ app.request.getBaseURL() }}'+'/api/perfil/imagen/remove',
+	                maxFileSize: 10240,                
+        		});
+				
 			});
+
 		    //GUARDAR
 		    $("#modificacion").on('submit',function(e){
 				
@@ -372,8 +457,8 @@
 						$('#editarUsuario').modal('hide');
 	                	},
 	                error: function(jqXHR,textStatus,errorThrown ){
-						var response=JSON.parse(jqXHR.responseText)
-						toastr.error(response.throwCause);
+						//var response=JSON.parse(jqXHR.responseText)
+						toastr.error(jqXHR.responseText);
 						}
 	            	});
 	            }
@@ -383,39 +468,16 @@
 		    
 		    //EVENTO MODAL NUEVO USUARIO
 		    $('#nuevoUsuario').on('show.bs.modal', function () {
-			  	$("#selTipo").val(1);
-			  	$("#apellidos").val('');
-			    $("#nombres").val('');
-			    $("#login").val('');
-			    $("#selRol").val(0);
-			    $("#clave").val('');
-			    $("#claveConfirma").val('');
-			    $("#mensaje").html('');
-			    $("#eMail").val('');
-			    $("#telefono").val('');
-			    $("#oficina").val('');
-			    $("#documento").val('');
-			    $("#domicilio").val('');
-			    $("#selBloque").val(0);
-
-			    $(".div-legislador").addClass("hidden");
+			  	
+		    	inicializarAlta();
+		    	$("#selTipo").val(1);
+		    	$("#selTipo").change();
+		    	$(".div-legislador").addClass("hidden");
 				$(".div-publico").addClass("hidden");
-
-			    $("#input-file").fileinput({
-		    		language: "es",
-		    		initialPreviewAsData: true,
-		    		initialPreview: [
-	                    'user.jpg'
-	                ],
-	                initialPreviewConfig: [
-                    	{type: "image", caption: "sin imagen!"}
-                    ],
-	                showUpload: false,
-	                showCaption: false,               
-	                overwriteInitial: true,
-	                previewSettings:{image: {width: "auto", height: "220", width:"155px"}},
-	                maxFileSize: 10240,                
-	            });
+				$(".control-comun").prop('readonly', false);
+				$(".es-nombre").removeClass("hidden");
+				$("#file-container").removeClass("locked");
+			 
 			});
 
 			//EVENTO CERRAR MODAL NUEVO USUARIO
@@ -445,29 +507,29 @@
 
             		validacion+=((control.name=="login" && control.value.replace(/ /g, '').length==0)?
 	                			'<li>Debe especificar un login de usuario</li>':'');
+            		validacion+=((control.name=="login" && control.value.indexOf(' ')!=-1)?
+	                			'<li>El login no debe poseer espacios</li>':'');
             		validacion+=((control.name=="selRol" && control.value==0)?
 	                			'<li>Debe especificar un rol para el usuario</li>':'');
             		validacion+=((control.name=="clave" && control.value.replace(/ /g, '').length<8)?
 	                			'<li>La contraseña debe tener como mínimo 8 caracteres</li>':'');
-            		validacion+=((control.name=="clave" && $("#clave").val()!=$("#claveConfirma").val())?
-            					'<li>Las contraseñas no coinciden</li>':'');
-	                validacion+=((control.name=="apellidos" && control.value.replace(/ /g, '').length==0)		 ?'<li>Debe ingresar un apellido para el usuario</li>':'');
-			     	validacion+=((control.name=="nombres" && control.value.replace(/ /g, '').length==0)?
-			     				'<li>Debe ingresar un nombre para el usuario</li>':'');
-			     	validacion+=((control.name=="eMail" && control.value.indexOf(' ')!=-1)?'<li>El correo electrónico posee espacios blancos</li>':'');
-			     	validacion+=((control.name=="eMail" && control.value.replace(/ /g, '').length>0 &&
-			     				control.value.indexOf('@')==-1)?'<li>El correo electrónico no contiene @</li>':'');
-			   		if ($("#selPerfil").val()==2){
-		
-			     		validacion+=((control.name=="oficina" && control.value.replace(/ /g, '').length==0)?'<li>Debe especificar ubicacion de la oficina del legislador</li>':'');
-			     		validacion+=((control.name=="selBloque" && control.value==0)?'<li>Debe especificar el bloque del legislador</li>':'');
-			     	}
+            		validacion+=((control.name=="clave" && $("#clave").val()!=$("#claveConfirma").val())?'<li>Las contraseñas no coinciden</li>':'');
 
-			     	if ($("#selPerfil").val()==3){
+            		if ($("#selTipo").val()!=2){
+		                validacion+=((control.name=="apellidos" && control.value.replace(/ /g, '').length==0)?'<li>Debe ingresar un apellido para el usuario</li>':'');
+				     	validacion+=((control.name=="nombres" && control.value.replace(/ /g, '').length==0)?'<li>Debe ingresar un nombre para el usuario</li>':'');
+				     	validacion+=((control.name=="eMail" && control.value.indexOf(' ')!=-1)?'<li>El correo electrónico posee espacios blancos</li>':'');
+				     	validacion+=((control.name=="eMail" && control.value.replace(/ /g, '').length>0 && control.value.indexOf('@')==-1)?'<li>El correo electrónico no contiene @</li>':'');
+				     }
+
+			     	if ($("#selTipo").val()==3){
 						validacion+=((control.name=="documento" && control.value.replace(/ /g, '').length==0)?'<li>Debe especificar el documento de la persona</li>':'');
 						validacion+=((control.name=="domicilio" && control.value.replace(/ /g, '').length==0)?'<li>Debe especificar el domicilio de la persona</li>':'');
 					}
 	            });
+
+	            if($("#selTipo").val()==2 && $("#selLegislador").val()==null)
+						validacion+='<li>Debe especificar un legislador</li>';
 
 	            if (validacion.length>0) 
 				{
@@ -492,8 +554,9 @@
 						$('#nuevoUsuario').modal('hide');
 		                	},
 	                error: function(jqXHR,textStatus,errorThrown ){
-						var response=JSON.parse(jqXHR.responseText)
-						toastr.error(response.throwCause);
+						// var response=JSON.parse(jqXHR.responseText)
+						// toastr.error(response.throwCause);
+						toastr.error(jqXHR.responseText);
 						}
 	            	});
 	            }
@@ -536,21 +599,31 @@
 			});
 
 			$("#selTipo").change(function(){
-				$(".div-legislador").addClass("hidden");
-				$(".div-publico").addClass("hidden");
-				if ($(this).val()==2)
-					$(".div-legislador").removeClass("hidden");
-				if ($(this).val()==3)
-					$(".div-publico").removeClass("hidden");
-			});
 
-			$("#selTipoMod").change(function(){
-				$(".div-legislador").addClass("hidden");
-				$(".div-publico").addClass("hidden");
-				if ($(this).val()==2)
+				inicializarAlta();
+				actualizarRoles($(this).val(),'selRol');
+
+				if ($(this).val()==1){
+					$(".div-legislador").addClass("hidden");
+					$(".control-comun").prop('readonly', false);
+					$(".div-publico").addClass("hidden");
+					$(".es-nombre").removeClass("hidden");
+					$("#file-container").removeClass("locked");
+				}
+				if ($(this).val()==2){
 					$(".div-legislador").removeClass("hidden");
-				if ($(this).val()==3)
+					$(".control-comun").prop('readonly', true);
+					$(".div-publico").addClass("hidden");
+					$(".es-nombre").addClass("hidden");
+					$("#file-container").addClass("locked");
+				}
+				if ($(this).val()==3){
 					$(".div-publico").removeClass("hidden");
+					$(".div-legislador").addClass("hidden");
+					$(".control-comun").prop('readonly', false);
+					$(".es-nombre").removeClass("hidden");
+					$("#file-container").removeClass("locked");
+				}
 			});
 
 		    $('#conservaContraseña').bootstrapToggle({
@@ -634,6 +707,76 @@
 					$("#mensajeMod").html(html);	 
 			});
 
+			$("#selLegislador").select2({
+				ajax: {
+			    url: '{{ app.request.getBaseURL() }}'+"/api/legislador/descripcion/getByCriteria",
+			    dataType: 'json',
+			    delay: 250,
+			    cache: true,
+			    data: function (params) {
+			      return {
+			        q: params.term, // search term
+			        page: params.page
+			      };
+			    },
+			    processResults: function (data) {
+			       var dato=data;
+		           return {
+				        results: $.map(dato, function(item) {
+				            return { id: item.id, text: item.nombre_completo };
+				        })
+				    };
+		        },
+			  },
+			  placeholder:"Seleccione Legislador",	
+			  language: "es",
+			  minimumInputLength: 3,
+			  theme: "bootstrap",
+			}).on("change",function(){
+				
+				var id=$("#selLegislador").val();
+				if (id!=null){
+
+					$("#input-file").fileinput('destroy');
+
+					$.ajax({
+						type:'Get',
+						dataType: 'json	',
+						url:'{{ app.request.getBaseURL() }}'+'/api/legislador/getOne/'+id,
+						success: function(data){
+							
+							var perfil=data;
+
+							$("#apellidos").val(perfil.apellidos);
+						    $("#nombres").val(perfil.nombres);
+						    $("#eMail").val(perfil.correo_electronico);
+						    $("#telefono").val(perfil.telefono);
+						    $("#oficina").val(perfil.oficina);
+						    $("#bloque").val(perfil.bloque.bloque);
+
+							var rutaImagen=((perfil.ruta_web_imagen==null)?'user.jpg':perfil.ruta_web_imagen);
+							var keyImagen=((perfil.ruta_web_imagen==null)?'no-unlink-preview':perfil.ruta_web_imagen);
+
+						    $("#input-file").fileinput({
+					    		language: "es",
+					    		initialPreviewAsData: true,
+					    		initialPreview: [ rutaImagen ],
+				                initialPreviewConfig: [ {type: "image", caption: "", height: "220", width:"155px", key:keyImagen } ],
+				                showUpload: false,
+				                showCaption: false,               
+				                overwriteInitial: true,
+				                previewSettings:{image: {height: "220", width:"155px"}},
+				                deleteUrl:'{{ app.request.getBaseURL() }}'+'/api/perfil/imagen/remove',
+				                maxFileSize: 10240,                
+			        		});
+						},
+						error: function(jqXHR,textStatus,errorThrown ){
+							toastr.error(jqXHR.responseText);
+						}
+		      		});
+				}		
+			});
+
 			$('#input-file-mod').on('filedeleted', function(event, key) {
 			  $('#input-file-mod').fileinput('clear');
 			});
@@ -699,7 +842,7 @@
 						        		<select class="form-control" id="selTipo" name="selTipo">
 						        			<option value="1" selected="selected">Básico</option>
 						        			<option value="2">Legislador</option>
-						        			<option value="3">Público</option>
+						        			{# <option value="3">Público</option> #}
 						        		</select>
 						        	</div>
 						        	<div class="form-group">
@@ -709,10 +852,10 @@
 						        	<div class="form-group">
 						        		<label for="selRol">Rol</label>
 						        		<select class="form-control" id="selRol" name="selRol">
-						        			<option value="0">Seleccione Rol</option>
+						        			{# <option value="0">Seleccione Rol</option>
 						        			{% for rol in roles %}
 								                <option value="{{ rol.id }}">{{ rol.rolComoString }}</option>
-								            {% endfor %}
+								            {% endfor %} #}
 						        		</select>
 						        	</div>
 						        	<div class="form-group">
@@ -726,34 +869,33 @@
 						        	<div id="mensaje"></div>
 								</div>
 					        	<div class="col-md-4">	
-						        	<div class="form-group">
-						        		<label for="apellidos">Apellidos</label>
-						        		<input type= "text" class="form-control input-sm" name="apellidos" id="apellidos" placeholder="apellido del usuario">
+					        		<div class="form-group div-legislador hidden">
+										<label for="selLegislador">Legislador:</label>
+									    <select class="form-control" data-width="100%" id="selLegislador" name="selLegislador"></select>
 						        	</div>
 						        	<div class="form-group">
-						        		<label for="nombres">Nombres</label>
-						        		<input type= "text" class="form-control input-sm" id="nombres" name="nombres" placeholder="nombre del usuario">
+						        		<label class="es-nombre" for="apellidos">Apellidos</label>
+						        		<input type= "text" class="form-control input-sm control-comun es-nombre" name="apellidos" id="apellidos" placeholder="apellido del usuario">
+						        	</div>
+						        	<div class="form-group">
+						        		<label class="es-nombre" for="nombres">Nombres</label>
+						        		<input type= "text" class="form-control input-sm control-comun es-nombre" id="nombres" name="nombres" placeholder="nombre del usuario">
 						        	</div>
 						        	<div class="form-group">
 						        		<label for="eMail">Correo Electrónico</label>
-						        		<input type= "text" class="form-control input-sm" id="eMail" name="eMail" autocomplete="off" placeholder="dirección de correo electrónico">
+						        		<input type= "text" class="form-control input-sm control-comun" id="eMail" name="eMail" autocomplete="off" placeholder="dirección de correo electrónico">
 						        	</div>
 						        	<div class="form-group">
 										<label for="telefono">Telefono</label>
-										<input type= "text" class="form-control input-sm" id="telefono" name="telefono" placeholder="número de teléfono">
+										<input type= "text" class="form-control input-sm control-comun" id="telefono" name="telefono" placeholder="número de teléfono">
 									</div>
-						        	<div class="form-group div-legislador hidden">
+									<div class="form-group div-legislador hidden">
 										<label for="oficina">Oficina</label>
-										<input type= "text" class="form-control input-sm" id="oficina" name="oficina" placeholder="oficina / despacho">
+										<input type= "text" class="form-control input-sm" id="oficinaMod" name="oficinaMod" placeholder="oficina / despacho" readonly>
 									</div>
 								    <div class="form-group div-legislador hidden">
-						        		<label for="selBloque">Bloque</label>
-						        		<select class="form-control" id="selBloque" name="selBloque">
-						        			<option value="0">Seleccione bloque</option>
-						        			{% for bloque in bloques %}
-								                <option value="{{ bloque.id }}">{{ bloque.bloque }}</option>
-								            {% endfor %}
-						        		</select>
+						        		<label for="bloque">Bloque</label>
+						        		<input type= "text" class="form-control input-sm" id="bloque" name="bloque" placeholder="bloque" readonly>
 						        	</div>
 						        	<div class="form-group div-publico hidden">
 										<label for="documento">Documento</label>
@@ -766,7 +908,7 @@
 						        </div>
 								<div class="col-md-4">
 				        			<div class="row"> 	
-					        			<div class="image-container">
+					        			<div class="image-container" id="file-container">
 								        	<div class="form-group">
 								        		{# <h3>Imagen Perfil</h3> #}
 								        		{# <label for="input-file">Imagen Perfil</label> #}
@@ -810,10 +952,10 @@
 						        	<div class="form-group">
 						        		<label for="selRolMod">Rol</label>
 						        		<select class="form-control" id="selRolMod" name="selRolMod">
-						        			<option value="0">Seleccione Rol</option>
+						        			{# <option value="0">Seleccione Rol</option>
 						        			{% for rol in roles %}
 								                <option value="{{ rol.id }}">{{ rol.rolComoString }}</option>
-								            {% endfor %}
+								            {% endfor %} #}
 						        		</select>
 						        	</div>
 						        	<div class="form-group text-center" style="padding-top:15px">
@@ -830,34 +972,33 @@
 						        	<div id="mensajeMod"></div>
 								</div>
 					        	<div class="col-md-4">	
-						        	<div class="form-group">
-						        		<label for="apellidosMod">Apellidos</label>
-						        		<input type= "text" class="form-control input-sm" name="apellidosMod" id="apellidosMod" placeholder="apellido del usuario">
+					        		<div class="form-group div-legislador hidden">
+										<label for="legisladorMod">Legislador:</label>
+										<input class="form-control" type="text" name="legisladorMod" id="legisladorMod" readonly>
 						        	</div>
 						        	<div class="form-group">
-						        		<label for="nombresMod">Nombres</label>
-						        		<input type= "text" class="form-control input-sm" id="nombresMod" name="nombresMod" placeholder="nombre del usuario">
+						        		<label class="es-nombre" for="apellidosMod">Apellidos</label>
+						        		<input type= "text" class="form-control input-sm control-comun es-nombre" name="apellidosMod" id="apellidosMod" placeholder="apellido del usuario">
+						        	</div>
+						        	<div class="form-group">
+						        		<label class="es-nombre" for="nombresMod">Nombres</label>
+						        		<input type= "text" class="form-control input-sm control-comun es-nombre" id="nombresMod" name="nombresMod" placeholder="nombre del usuario">
 						        	</div>
 						        	<div class="form-group">
 						        		<label for="eMailMod">Correo Electrónico</label>
-						        		<input type= "text" class="form-control input-sm" id="eMailMod" name="eMailMod" autocomplete="off" placeholder="dirección de correo electrónico">
+						        		<input type= "text" class="form-control input-sm control-comun" id="eMailMod" name="eMailMod" autocomplete="off" placeholder="dirección de correo electrónico">
 						        	</div>
 						        	<div class="form-group">
 										<label for="telefonoMod">Telefono</label>
-										<input type= "text" class="form-control input-sm" id="telefonoMod" name="telefonoMod" placeholder="número de teléfono">
+										<input type= "text" class="form-control input-sm control-comun" id="telefonoMod" name="telefonoMod" placeholder="número de teléfono">
 									</div>
-						        	<div class="form-group div-legislador hidden">
+									<div class="form-group div-legislador hidden">
 										<label for="oficinaMod">Oficina</label>
-										<input type= "text" class="form-control input-sm" id="oficinaMod" name="oficinaMod" placeholder="oficina / despacho">
+										<input type= "text" class="form-control input-sm" id="oficina" name="oficina" placeholder="oficina / despacho" readonly>
 									</div>
 								    <div class="form-group div-legislador hidden">
-						        		<label for="selBloqueMod">Bloque</label>
-						        		<select class="form-control" id="selBloqueMod" name="selBloqueMod">
-						        			<option value="0">Seleccione bloque</option>
-						        			{% for bloque in bloques %}
-								                <option value="{{ bloque.id }}">{{ bloque.bloque }}</option>
-								            {% endfor %}
-						        		</select>
+						        		<label for="bloqueMod">Bloque</label>
+						        		<input type= "text" class="form-control input-sm" id="bloqueMod" name="bloque" placeholder="bloqueMod" readonly>
 						        	</div>
 						        	<div class="form-group div-publico hidden">
 										<label for="documentoMod">Documento</label>
@@ -870,7 +1011,7 @@
 						        </div>
 								<div class="col-md-4">
 				        			<div class="row"> 	
-					        			<div class="image-container">
+					        			<div class="image-container" id="file-container-mod">
 								        	<div class="form-group">
 									        	<input id="input-file-mod" accept="image/*" name="input-file-mod" type="file" class="file-loading">
 								        	</div>

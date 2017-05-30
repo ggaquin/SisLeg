@@ -721,7 +721,7 @@ class Expediente
      */
     public function getFechaCreacionFormateada()
     {
-        return $this->getFechaCreacion()->format('d-m-Y');
+        return $this->getFechaCreacion()->format('d/m/Y');
     }
 
     /**
@@ -733,7 +733,7 @@ class Expediente
      */
     public function getFechaModificacionFormateada()
     {
-        return (!is_null($this->fechaModificacion)?$this->fechaModificacion->format('d-m-Y'):'');
+        return (!is_null($this->fechaModificacion)?$this->fechaModificacion->format('d/m/Y'):'');
     }
 
 

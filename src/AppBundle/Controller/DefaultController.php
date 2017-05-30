@@ -34,9 +34,12 @@ class DefaultController extends Controller
         // last username entered by the user
         $lastUsername = $authenticationUtils->getLastUsername();
 
+        $version=$this->getParameter('project_version');
+
         return $this->render('security/login.html.twig', array(
             'last_username' => $lastUsername,
             'error'         => $error,
+            'version'       =>$version
         ));
     }
 
@@ -99,6 +102,19 @@ class DefaultController extends Controller
             'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
             'roles'  => $roles,'usuarios' => $usuarios,'bloques' => $bloques, 'status' => 'render'
         ));
+         
+    }
+
+    /**
+     * @Route("/legisladores", name="legisladores")
+     */
+    public function legisladoresAction(Request $request)
+    {
+        $bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
+        $bloques=$bloqueRepository->findBy(array(), array('bloque' => 'ASC'));
+        return $this->render('default/legisladores.html.twig', array(
+            'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
+            'bloques' => $bloques));
          
     }
 

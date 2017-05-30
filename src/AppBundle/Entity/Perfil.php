@@ -536,8 +536,9 @@ class Perfil
         if (!is_null($this->archivo)){
             if(!is_null($this->imagen))
                 unlink($this->getRutaInternaImagen($this->imagen));
+            $this->prefijo=md5($this->prefijo.uniqid());
             $this->imagen=md5($this->prefijo).'_'.md5($this->archivo->getClientOriginalName()).'.'.
-                                    $this->archivo->guessExtension();
+                              $this->archivo->guessExtension();  
         }   
     }
 
@@ -560,10 +561,11 @@ class Perfil
      */
     public function upload()
     {
-        if (!is_null($this->archivo))
+        if (!is_null($this->archivo)){
             $this->archivo->move($this->getRutaAbsolutaImagen(),
-                                md5($this->prefijo).'_'.md5($this->archivo->getClientOriginalName()).'.'.
-                                $this->archivo->guessExtension());
+                                 md5($this->prefijo).'_'.md5($this->archivo->getClientOriginalName()).'.'.
+                                 $this->archivo->guessExtension());
+        }
     }
 
 }

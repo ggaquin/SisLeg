@@ -32,8 +32,8 @@ CREATE TABLE `AgendaSesion` (
   `abstenciones` smallint(6) NOT NULL DEFAULT '0',
   PRIMARY KEY (`idAgendaSesion`),
   KEY `agendaSesion_estadoAgendaSesion_idx` (`idEstadoAgendaSesion`),
-  KEY `agendaSesion_expediente_idx` (`idExpediente`),
   KEY `agendaSesion_sesion_idx` (`idSesion`),
+  KEY `agendaSesion_expediente_idx` (`idExpediente`),
   CONSTRAINT `fk_agendaSesion_estadoAgendaSesion` FOREIGN KEY (`idEstadoAgendaSesion`) REFERENCES `estadoAgendaSesion` (`idEstadoAgendaSesion`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_agendaSesion_expediente` FOREIGN KEY (`idExpediente`) REFERENCES `expediente` (`idExpediente`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_agendaSesion_sesion` FOREIGN KEY (`idSesion`) REFERENCES `sesion` (`idSesion`) ON DELETE NO ACTION ON UPDATE NO ACTION
@@ -47,33 +47,6 @@ CREATE TABLE `AgendaSesion` (
 LOCK TABLES `AgendaSesion` WRITE;
 /*!40000 ALTER TABLE `AgendaSesion` DISABLE KEYS */;
 /*!40000 ALTER TABLE `AgendaSesion` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `autores_expedientesBorrador`
---
-
-DROP TABLE IF EXISTS `autores_expedientesBorrador`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `autores_expedientesBorrador` (
-  `idExpedienteBorrador` int(11) NOT NULL,
-  `idPerfil` int(11) NOT NULL,
-  PRIMARY KEY (`idExpedienteBorrador`,`idPerfil`),
-  KEY `perfil_idx` (`idPerfil`),
-  KEY `expedienteBorrador_ix` (`idExpedienteBorrador`),
-  CONSTRAINT `fk_autores_expedienteBorrador_expedienteBorrador` FOREIGN KEY (`idExpedienteBorrador`) REFERENCES `expedienteBorrador` (`idExpedienteBorrador`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_autores_expedienteBorrador_perfil` FOREIGN KEY (`idPerfil`) REFERENCES `perfil` (`idPerfil`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `autores_expedientesBorrador`
---
-
-LOCK TABLES `autores_expedientesBorrador` WRITE;
-/*!40000 ALTER TABLE `autores_expedientesBorrador` DISABLE KEYS */;
-/*!40000 ALTER TABLE `autores_expedientesBorrador` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -100,7 +73,6 @@ CREATE TABLE `autores_proyectos` (
 
 LOCK TABLES `autores_proyectos` WRITE;
 /*!40000 ALTER TABLE `autores_proyectos` DISABLE KEYS */;
-INSERT INTO `autores_proyectos` VALUES (1,3),(2,3),(3,3),(4,3),(5,3),(6,3),(7,3),(8,3),(9,3),(11,3),(12,3),(13,3),(14,3),(15,3),(16,3),(17,3),(18,3),(19,3),(20,3),(21,3),(22,3),(11,5),(12,5),(13,5),(14,5),(15,5),(16,5),(17,5),(18,5),(19,5),(20,5),(21,5),(22,5);
 /*!40000 ALTER TABLE `autores_proyectos` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -115,7 +87,7 @@ CREATE TABLE `bloque` (
   `idBloque` smallint(6) NOT NULL AUTO_INCREMENT,
   `bloque` varchar(100) NOT NULL,
   PRIMARY KEY (`idBloque`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -124,7 +96,7 @@ CREATE TABLE `bloque` (
 
 LOCK TABLES `bloque` WRITE;
 /*!40000 ALTER TABLE `bloque` DISABLE KEYS */;
-INSERT INTO `bloque` VALUES (1,'Frente Renovador'),(2,'Frente Para la Victoria'),(3,'Partido Justicialista');
+INSERT INTO `bloque` VALUES (1,'Frente Renovador'),(2,'Frente Para la Victoria'),(3,'UNA'),(4,'UCR'),(5,'GEN'),(6,'Cambiemos');
 /*!40000 ALTER TABLE `bloque` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -137,13 +109,19 @@ DROP TABLE IF EXISTS `comision`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `comision` (
   `idComision` int(11) NOT NULL AUTO_INCREMENT,
-  `comision` varchar(100) NOT NULL,
+  `idPerfilPresidente` int(11) DEFAULT NULL,
+  `idPerfilVicePresidente` int(11) DEFAULT NULL,
   `idTipoComision` smallint(6) DEFAULT NULL,
+  `comision` varchar(100) NOT NULL,
   `activa` tinyint(1) NOT NULL,
   PRIMARY KEY (`idComision`),
   KEY `comision_tipoComision_idx` (`idTipoComision`),
+  KEY `comision_perfilPresidente_idx` (`idPerfilPresidente`),
+  KEY `comision_perfilVicePresidente_idx` (`idPerfilVicePresidente`),
+  CONSTRAINT `fk_comision_perfilPresidente` FOREIGN KEY (`idPerfilPresidente`) REFERENCES `perfil` (`idPerfil`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_comision_perfilVicePresidente` FOREIGN KEY (`idPerfilVicePresidente`) REFERENCES `perfil` (`idPerfil`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_comision_tipoComision` FOREIGN KEY (`idTipoComision`) REFERENCES `tipoComision` (`idTipoComision`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -152,35 +130,64 @@ CREATE TABLE `comision` (
 
 LOCK TABLES `comision` WRITE;
 /*!40000 ALTER TABLE `comision` DISABLE KEYS */;
-INSERT INTO `comision` VALUES (1,'Salud Pública',2,1),(2,'Obras Públicas y Urbanismo',2,1),(3,'Servicios Públicos',2,1),(4,'Interpretación y Reglamento',2,1),(5,'Presupuesto y Hacienda',2,1),(6,'Cultura y Educación',2,1),(7,'Industria y Comercio Interior y Exterior',2,1),(8,'Planeamiento',2,1),(9,'Seguridad',2,1),(10,'Promoción de la Comunidad',2,1),(11,'Defensa del Usuario',2,1),(12,'Medios de Comunicación Social',2,1),(13,'Ecología y Protección del Medio Ambiente',2,1),(14,'Tierra y Viviendas',2,1),(15,'Labor Legislativa',2,1),(16,'Derechos y Garantías',2,1),(17,'Asistencia Social',2,1);
+INSERT INTO `comision` VALUES (1,2,3,2,'Defensa del Usuario',1),(2,19,5,2,'Promoción de la Comunidad',1),(3,14,3,2,'Seguridad y Justicia',1),(4,5,22,2,'Mujeres y Equidad de Género',1),(5,11,9,2,'Presupuesto y Hacienda',1),(6,18,15,2,'Derechos y Garantías',1),(7,6,19,2,'Interpretación y Reglamento',1),(8,16,13,2,'Asistencia Social',1),(9,22,5,2,'Planeamiento',1),(10,16,13,2,'Ecología y Protección del Medio Ambiente',1),(11,8,3,2,'Obras Públicas y Urbanismo',1),(12,14,15,2,'Servicios Públicos',1),(13,13,4,2,'Salud Publica',1),(14,15,23,2,'Cultura y Educación',1),(15,9,4,2,'Industria y Comercio Interior y Exterior',1),(16,16,5,2,'Medios de Comunicación Social',1);
 /*!40000 ALTER TABLE `comision` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Table structure for table `comisiones_legisladores`
+-- Table structure for table `comision_legisladorSuplente`
 --
 
-DROP TABLE IF EXISTS `comisiones_legisladores`;
+DROP TABLE IF EXISTS `comision_legisladorSuplente`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `comisiones_legisladores` (
+CREATE TABLE `comision_legisladorSuplente` (
   `idComision` int(11) NOT NULL,
   `idPerfil` int(11) NOT NULL,
   PRIMARY KEY (`idComision`,`idPerfil`),
-  KEY `IDX_CB9D57FBF574DEDD` (`idPerfil`),
-  KEY `IDX_CB9D57FB43B0A334` (`idComision`),
-  CONSTRAINT `fk_comisiones_legisladores_comision` FOREIGN KEY (`idComision`) REFERENCES `comision` (`idComision`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_comisiones_legisladores_perfil` FOREIGN KEY (`idPerfil`) REFERENCES `perfil` (`idPerfil`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  KEY `IDX_32E07B8EF574DEDD` (`idPerfil`),
+  KEY `IDX_32E07B8E43B0A334` (`idComision`),
+  CONSTRAINT `fk_comision_legisladorSuplente_comision` FOREIGN KEY (`idComision`) REFERENCES `comision` (`idComision`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_comision_legisladorSuplente_perfil` FOREIGN KEY (`idPerfil`) REFERENCES `perfil` (`idPerfil`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `comisiones_legisladores`
+-- Dumping data for table `comision_legisladorSuplente`
 --
 
-LOCK TABLES `comisiones_legisladores` WRITE;
-/*!40000 ALTER TABLE `comisiones_legisladores` DISABLE KEYS */;
-/*!40000 ALTER TABLE `comisiones_legisladores` ENABLE KEYS */;
+LOCK TABLES `comision_legisladorSuplente` WRITE;
+/*!40000 ALTER TABLE `comision_legisladorSuplente` DISABLE KEYS */;
+INSERT INTO `comision_legisladorSuplente` VALUES (2,2),(3,2),(4,2),(5,2),(6,2),(7,2),(8,2),(9,2),(10,2),(11,2),(12,2),(13,2),(14,2),(16,2),(2,3),(5,3),(14,3),(2,4),(7,4),(8,4),(9,4),(10,4),(12,4),(16,4),(3,5),(5,5),(6,5),(7,5),(11,5),(12,5),(15,5),(3,6),(11,6),(13,6),(14,6),(15,6),(9,7),(4,8),(5,8),(7,8),(16,8),(2,9),(3,9),(4,9),(6,9),(8,9),(9,9),(12,9),(13,9),(14,9),(1,11),(3,11),(4,11),(6,11),(8,11),(13,11),(15,11),(16,11),(1,12),(3,12),(4,12),(6,12),(8,12),(9,12),(10,12),(12,12),(13,12),(15,12),(1,13),(4,13),(5,13),(7,13),(9,13),(11,13),(12,13),(1,14),(2,14),(4,14),(5,14),(7,14),(10,14),(11,14),(14,14),(16,14),(1,15),(13,15),(1,16),(4,16),(11,16),(12,16),(14,16),(15,16),(1,17),(6,17),(9,17),(11,17),(1,18),(5,18),(7,18),(11,18),(15,18),(16,18),(2,19),(3,19),(8,19),(10,19),(12,19),(13,19),(14,19),(15,19),(7,20),(8,20),(10,20),(2,22),(5,22),(6,22),(8,22),(14,22),(16,22),(2,23),(3,23),(4,23),(6,23),(9,23),(10,23),(13,23),(16,23);
+/*!40000 ALTER TABLE `comision_legisladorSuplente` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `comision_legisladorTitular`
+--
+
+DROP TABLE IF EXISTS `comision_legisladorTitular`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `comision_legisladorTitular` (
+  `idComision` int(11) NOT NULL,
+  `idPerfil` int(11) NOT NULL,
+  PRIMARY KEY (`idComision`,`idPerfil`),
+  KEY `IDX_3F75DDA1F574DEDD` (`idPerfil`),
+  KEY `IDX_3F75DDA143B0A334` (`idComision`),
+  CONSTRAINT `fk_comision_legisladorTitular_comision` FOREIGN KEY (`idComision`) REFERENCES `comision` (`idComision`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_comision_legisladorTitular_perfil` FOREIGN KEY (`idPerfil`) REFERENCES `perfil` (`idPerfil`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `comision_legisladorTitular`
+--
+
+LOCK TABLES `comision_legisladorTitular` WRITE;
+/*!40000 ALTER TABLE `comision_legisladorTitular` DISABLE KEYS */;
+INSERT INTO `comision_legisladorTitular` VALUES (15,2),(4,3),(6,3),(7,3),(9,3),(10,3),(12,3),(13,3),(15,3),(16,3),(1,4),(3,4),(4,4),(5,4),(6,4),(11,4),(1,5),(8,5),(13,5),(14,5),(2,6),(4,6),(5,6),(6,6),(8,6),(9,6),(10,6),(12,6),(1,7),(3,7),(5,7),(7,7),(10,7),(11,7),(13,7),(14,7),(16,7),(1,8),(8,8),(12,8),(15,8),(1,9),(7,9),(11,9),(16,9),(1,10),(9,10),(10,10),(12,10),(15,10),(7,11),(11,11),(12,11),(14,11),(5,12),(7,12),(11,12),(2,13),(3,13),(14,13),(16,13),(13,14),(2,15),(3,15),(4,15),(5,15),(7,15),(8,15),(9,15),(10,15),(11,15),(15,15),(16,15),(2,16),(6,16),(9,16),(3,17),(4,17),(10,17),(13,17),(14,17),(16,17),(2,18),(3,18),(4,18),(8,18),(9,18),(12,18),(13,18),(14,18),(5,19),(6,19),(9,19),(2,20),(4,20),(6,20),(12,20),(2,21),(8,21),(10,21),(14,21),(15,21),(16,21),(9,22),(15,22),(8,23),(3,24),(5,24),(6,24),(7,24),(11,24),(13,24);
+/*!40000 ALTER TABLE `comision_legisladorTitular` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -245,7 +252,7 @@ CREATE TABLE `expediente` (
   `numeroExpediente` varchar(50) NOT NULL,
   `idTipoExpediente` smallint(6) DEFAULT NULL,
   `caratula` varchar(500) NOT NULL,
-  `folios` varchar(4) NOT NULL DEFAULT '0',
+  `folios` varchar(4) NOT NULL,
   `apellidosSiParticular` varchar(80) DEFAULT NULL,
   `nombresSiParticular` varchar(80) DEFAULT NULL,
   `listaImagenes` longtext COMMENT '(DC2Type:object)',
@@ -261,7 +268,7 @@ CREATE TABLE `expediente` (
   KEY `expediente_tipoExpediente_idx` (`idTipoExpediente`),
   CONSTRAINT `fk_expediente_estadoExpediente` FOREIGN KEY (`idEstadoExpediente`) REFERENCES `estadoExpediente` (`idEstadoExpediente`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_expediente_tipoExpediente` FOREIGN KEY (`idTipoExpediente`) REFERENCES `tipoExpediente` (`idTipoExpediente`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -270,7 +277,6 @@ CREATE TABLE `expediente` (
 
 LOCK TABLES `expediente` WRITE;
 /*!40000 ALTER TABLE `expediente` DISABLE KEYS */;
-INSERT INTO `expediente` VALUES (1,'c4ca4238a0b923820dcc509a6f75849b',1,'1',2,'<p>algun estracto</p>','0',NULL,NULL,'a:0:{}  ','2017-04-26 00:54:08','2017-05-02 21:48:51',NULL,'primero','primero',NULL),(2,'c81e728d9d4c2f636f067f89cc14862c',1,'2',5,'<p>&nbsp;nbvnbv</p>','0',NULL,NULL,'a:3:{i:0;O:20:\"AppBundle\\Popo\\Image\":2:{s:30:\"\0AppBundle\\Popo\\Image\0fileName\";s:37:\"b43fd6167dba3b44a5bd785d364b0949.jpeg\";s:33:\"\0AppBundle\\Popo\\Image\0imageConfig\";O:26:\"AppBundle\\Popo\\ImageConfig\":5:{s:35:\"\0AppBundle\\Popo\\ImageConfig\0caption\";s:13:\"foja 1-20.jpg\";s:32:\"\0AppBundle\\Popo\\ImageConfig\0size\";i:211411;s:33:\"\0AppBundle\\Popo\\ImageConfig\0width\";s:5:\"120px\";s:31:\"\0AppBundle\\Popo\\ImageConfig\0key\";s:70:\"c81e728d9d4c2f636f067f89cc14862c/b43fd6167dba3b44a5bd785d364b0949.jpeg\";s:32:\"\0AppBundle\\Popo\\ImageConfig\0type\";s:5:\"image\";}}i:1;O:20:\"AppBundle\\Popo\\Image\":2:{s:30:\"\0AppBundle\\Popo\\Image\0fileName\";s:36:\"f84bebc97ff21d5e0858fb174f021a84.pdf\";s:33:\"\0AppBundle\\Popo\\Image\0imageConfig\";O:26:\"AppBundle\\Popo\\ImageConfig\":5:{s:35:\"\0AppBundle\\Popo\\ImageConfig\0caption\";s:34:\"scoring_terminos_y_condiciones.pdf\";s:32:\"\0AppBundle\\Popo\\ImageConfig\0size\";i:214315;s:33:\"\0AppBundle\\Popo\\ImageConfig\0width\";s:5:\"120px\";s:31:\"\0AppBundle\\Popo\\ImageConfig\0key\";s:69:\"c81e728d9d4c2f636f067f89cc14862c/f84bebc97ff21d5e0858fb174f021a84.pdf\";s:32:\"\0AppBundle\\Popo\\ImageConfig\0type\";s:3:\"pdf\";}}i:2;O:20:\"AppBundle\\Popo\\Image\":2:{s:30:\"\0AppBundle\\Popo\\Image\0fileName\";s:36:\"ceeba1d2ce85a7d30c91169f4bfcc7b6.pdf\";s:33:\"\0AppBundle\\Popo\\Image\0imageConfig\";O:26:\"AppBundle\\Popo\\ImageConfig\":5:{s:35:\"\0AppBundle\\Popo\\ImageConfig\0caption\";s:18:\"Orden_del_Día.pdf\";s:32:\"\0AppBundle\\Popo\\ImageConfig\0size\";i:702898;s:33:\"\0AppBundle\\Popo\\ImageConfig\0width\";s:5:\"120px\";s:31:\"\0AppBundle\\Popo\\ImageConfig\0key\";s:69:\"c81e728d9d4c2f636f067f89cc14862c/ceeba1d2ce85a7d30c91169f4bfcc7b6.pdf\";s:32:\"\0AppBundle\\Popo\\ImageConfig\0type\";s:3:\"pdf\";}}}','2017-05-01 02:14:16','2017-05-03 03:09:03',NULL,'primero','primero',NULL),(3,'eccbc87e4b5ce2fe28308fd9f2a7baf3',1,'3',2,'<p>ddshkjhdkjshhadkjdhas</p>','0',NULL,NULL,'a:2:{i:2;O:20:\"AppBundle\\Popo\\Image\":2:{s:30:\"\0AppBundle\\Popo\\Image\0fileName\";s:37:\"fab40d3deda3b92d54425a52f30b6351.jpeg\";s:33:\"\0AppBundle\\Popo\\Image\0imageConfig\";O:26:\"AppBundle\\Popo\\ImageConfig\":5:{s:35:\"\0AppBundle\\Popo\\ImageConfig\0caption\";s:23:\"IMG-20161108-WA0001.jpg\";s:32:\"\0AppBundle\\Popo\\ImageConfig\0size\";i:163954;s:33:\"\0AppBundle\\Popo\\ImageConfig\0width\";s:5:\"120px\";s:31:\"\0AppBundle\\Popo\\ImageConfig\0key\";s:70:\"eccbc87e4b5ce2fe28308fd9f2a7baf3/fab40d3deda3b92d54425a52f30b6351.jpeg\";s:32:\"\0AppBundle\\Popo\\ImageConfig\0type\";s:5:\"image\";}}i:3;O:20:\"AppBundle\\Popo\\Image\":2:{s:30:\"\0AppBundle\\Popo\\Image\0fileName\";s:37:\"bd9479dc8c3e8b58a59cde19b8fe721d.jpeg\";s:33:\"\0AppBundle\\Popo\\Image\0imageConfig\";O:26:\"AppBundle\\Popo\\ImageConfig\":5:{s:35:\"\0AppBundle\\Popo\\ImageConfig\0caption\";s:23:\"IMG-20161107-WA0009.jpg\";s:32:\"\0AppBundle\\Popo\\ImageConfig\0size\";i:104920;s:33:\"\0AppBundle\\Popo\\ImageConfig\0width\";s:5:\"120px\";s:31:\"\0AppBundle\\Popo\\ImageConfig\0key\";s:70:\"eccbc87e4b5ce2fe28308fd9f2a7baf3/bd9479dc8c3e8b58a59cde19b8fe721d.jpeg\";s:32:\"\0AppBundle\\Popo\\ImageConfig\0type\";s:5:\"image\";}}}','2017-05-01 16:52:34','2017-05-02 21:28:40',NULL,'primero','primero',NULL),(4,'a87ff679a2f3e71d9181a67b7542122c',1,'4',1,'<p>ghfhgfhfhfhgffhfh</p>','0',NULL,NULL,'a:1:{i:0;O:20:\"AppBundle\\Popo\\Image\":2:{s:30:\"\0AppBundle\\Popo\\Image\0fileName\";s:37:\"2f464afd4e1da93ad9382df58b452a19.jpeg\";s:33:\"\0AppBundle\\Popo\\Image\0imageConfig\";O:26:\"AppBundle\\Popo\\ImageConfig\":5:{s:35:\"\0AppBundle\\Popo\\ImageConfig\0caption\";s:30:\"IMG_20160606_104128-perfil.jpg\";s:32:\"\0AppBundle\\Popo\\ImageConfig\0size\";i:526762;s:33:\"\0AppBundle\\Popo\\ImageConfig\0width\";s:5:\"120px\";s:31:\"\0AppBundle\\Popo\\ImageConfig\0key\";s:70:\"a87ff679a2f3e71d9181a67b7542122c/2f464afd4e1da93ad9382df58b452a19.jpeg\";s:32:\"\0AppBundle\\Popo\\ImageConfig\0type\";s:5:\"image\";}}}','2017-05-01 19:36:36','2017-05-01 22:38:06',NULL,'primero','primero',NULL),(5,'6be79387cf426fe3b783ad30bf234677',1,'12145',3,'<p>dsdsd</p>','3','11111111111','22222222222','a:0:{}','2017-05-06 03:50:21','2017-05-06 15:14:25',NULL,'primero','primero',NULL);
 /*!40000 ALTER TABLE `expediente` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -350,6 +356,8 @@ CREATE TABLE `perfil` (
   `correoElectronico` varchar(70) DEFAULT NULL,
   `idBloque` smallint(6) DEFAULT NULL,
   `oficina` varchar(50) DEFAULT NULL,
+  `desde` datetime DEFAULT NULL,
+  `hasta` datetime DEFAULT NULL,
   `numeroDocumento` int(11) DEFAULT NULL,
   `domicilio` varchar(100) DEFAULT NULL,
   `fechaCreacion` datetime NOT NULL,
@@ -359,7 +367,7 @@ CREATE TABLE `perfil` (
   PRIMARY KEY (`idPerfil`),
   KEY `perfil_bloque_idx` (`idBloque`),
   CONSTRAINT `fk_perfil_bloque` FOREIGN KEY (`idBloque`) REFERENCES `bloque` (`idBloque`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -368,7 +376,7 @@ CREATE TABLE `perfil` (
 
 LOCK TABLES `perfil` WRITE;
 /*!40000 ALTER TABLE `perfil` DISABLE KEYS */;
-INSERT INTO `perfil` VALUES (3,'legislador',NULL,'primer','legislador','','gustavo_aquin@yahoo.com.ar',2,NULL,NULL,NULL,'2017-04-11 01:42:06','administrador','2017-04-19 23:32:01','primero'),(4,'basico','d41d8cd98f00b204e9800998ecf8427e_2f464afd4e1da93ad9382df58b452a19.jpeg','sasasa','asas','','',NULL,NULL,NULL,NULL,'2017-04-28 21:16:35','primero','2017-05-02 20:57:25','primero'),(5,'legislador',NULL,'SASAS','SASASAS','','ggaquin@hotmail.com',2,'',NULL,NULL,'2017-05-03 23:06:33','primero','2017-05-03 23:10:51','primero'),(6,'basico',NULL,'adasd','dadsad','','',NULL,NULL,NULL,NULL,'2017-05-03 23:14:50','primero','2017-05-03 23:15:27','primero');
+INSERT INTO `perfil` VALUES (1,'basico',NULL,'Administrador','Sistema',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL),(2,'legislador',NULL,'Fuente Buena','Hector',NULL,NULL,2,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL),(3,'legislador',NULL,'Font','Miguel',NULL,NULL,2,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL),(4,'legislador',NULL,'Guirliddo','Gabriel',NULL,NULL,2,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL),(5,'legislador',NULL,'Vilar','Daniela',NULL,NULL,2,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL),(6,'legislador',NULL,'Tranfo','Ana ',NULL,NULL,2,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL),(7,'legislador',NULL,'Mercuri','Gabriel',NULL,NULL,6,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL),(8,'legislador',NULL,'Castagnini','Juan Manuel',NULL,NULL,3,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL),(9,'legislador',NULL,'Veliz','Juan Carlos',NULL,NULL,1,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL),(10,'legislador',NULL,'Figuerón','Luis',NULL,NULL,5,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL),(11,'legislador',NULL,'Menéndez','Claudio',NULL,NULL,2,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL),(12,'legislador',NULL,'Oyhaburu','Sergio',NULL,NULL,2,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL),(13,'legislador',NULL,'Llambi','Alvaro',NULL,NULL,2,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL),(14,'legislador',NULL,'Baloira','Emilano',NULL,NULL,2,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL),(15,'legislador',NULL,'Lopez','Vanesa',NULL,NULL,2,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL),(16,'legislador',NULL,'Coba','José',NULL,NULL,6,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL),(17,'legislador',NULL,'Vázquez','María Fernanda',NULL,NULL,3,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL),(18,'legislador',NULL,'Herrera','Maria Elena ',NULL,NULL,1,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL),(19,'legislador',NULL,'Trezza Silva','Ramiro',NULL,NULL,3,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL),(20,'legislador',NULL,'Cordera','Diego',NULL,NULL,6,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL),(21,'legislador',NULL,'Rivero','Julio',NULL,NULL,2,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL),(22,'legislador',NULL,'Sierra','Silvia',NULL,NULL,6,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL),(23,'legislador',NULL,'Denuchi','Fabio',NULL,NULL,6,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL),(24,'legislador',NULL,'Pellegrini','Marcelo',NULL,NULL,4,NULL,NULL,NULL,NULL,NULL,'2017-05-21 19:23:20','administrador',NULL,NULL);
 /*!40000 ALTER TABLE `perfil` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -385,9 +393,9 @@ CREATE TABLE `perfilExpedienteVoto` (
   `idExpediente` int(11) DEFAULT NULL,
   `idTipoVoto` smallint(6) DEFAULT NULL,
   PRIMARY KEY (`idPerfilExpedienteVoto`),
+  KEY `perfilExpedienteVoto_tipoVoto_idx` (`idTipoVoto`),
   KEY `perfilExpedienteVoto_perfil_idx` (`idPerfil`),
   KEY `perfilExpedienteVoto_expediente_idx` (`idExpediente`),
-  KEY `perfilExpedienteVoto_tipoVoto_idx` (`idTipoVoto`),
   CONSTRAINT `fk_perfilExpedienteVoto_expediente` FOREIGN KEY (`idExpediente`) REFERENCES `expediente` (`idExpediente`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_perfilExpedienteVoto_perfil` FOREIGN KEY (`idPerfil`) REFERENCES `perfil` (`idPerfil`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_perfilExpedienteVoto_tipoVoto` FOREIGN KEY (`idTipoVoto`) REFERENCES `tipoVoto` (`idTipoVoto`) ON DELETE NO ACTION ON UPDATE NO ACTION
@@ -411,25 +419,26 @@ DROP TABLE IF EXISTS `proyecto`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `proyecto` (
+  `visto` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `considerandos` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `quienSanciona` varchar(130) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `articulos` longtext COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '(DC2Type:json_array)',
+  `fechaCreacion` datetime NOT NULL,
+  `usuarioCreacion` varchar(70) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `fechaModificacion` datetime DEFAULT NULL,
+  `usuarioModificacion` varchar(70) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `idProyecto` int(11) NOT NULL AUTO_INCREMENT,
   `idExpediente` int(11) DEFAULT NULL,
   `idTipoProyecto` smallint(6) DEFAULT NULL,
-  `idBloque` smallint(6) NOT NULL,
-  `visto` text NOT NULL,
-  `considerandos` longtext NOT NULL,
-  `quienSanciona` varchar(130) NOT NULL,
-  `articulos` longtext NOT NULL,
-  `fechaCreacion` datetime NOT NULL,
-  `usuarioCreacion` varchar(70) NOT NULL,
-  `fechaModificacion` datetime DEFAULT NULL,
-  `usuarioModificacion` varchar(70) DEFAULT NULL,
+  `idBloque` smallint(6) DEFAULT NULL,
   PRIMARY KEY (`idProyecto`),
   UNIQUE KEY `UNIQ_proyecto_expediente_idx` (`idExpediente`),
-  UNIQUE KEY `UNIQ_6FD202B95768BAF9` (`idExpediente`),
-  KEY `fk_proyecto_tipoproyecto_idx` (`idTipoProyecto`),
+  KEY `proyecto_tipoProyecto_idx` (`idTipoProyecto`),
+  KEY `proyecto_bloque_idx` (`idBloque`),
+  CONSTRAINT `fk_proyecto_bloque` FOREIGN KEY (`idBloque`) REFERENCES `bloque` (`idBloque`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_proyecto_expediente` FOREIGN KEY (`idExpediente`) REFERENCES `expediente` (`idExpediente`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_proyecto_tipoproyecto` FOREIGN KEY (`idTipoProyecto`) REFERENCES `tipoProyecto` (`idTipoProyecto`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4;
+  CONSTRAINT `fk_proyecto_tipoProyecto` FOREIGN KEY (`idTipoProyecto`) REFERENCES `tipoProyecto` (`idTipoProyecto`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -438,7 +447,6 @@ CREATE TABLE `proyecto` (
 
 LOCK TABLES `proyecto` WRITE;
 /*!40000 ALTER TABLE `proyecto` DISABLE KEYS */;
-INSERT INTO `proyecto` VALUES (1,1,2,1,'GHGHJGHJGJH','DGFHFHFLLH','FFFGLDFLGKJDFLK','DLFKGDFLKG','2017-04-27 22:19:32','PEPE',NULL,NULL),(2,3,2,1,'<p>gdsgdshdgshgd</p>','<p>shagshagshagshags</p>','1','[{\"texto\":\"<p>hdjkshdkhsdksdhs<\\/p>\",\"incisos\":[{\"orden\":\"a) -\",\"texto\":\"<p>gjhgjhgjgjhgh<\\/p>\"},{\"orden\":\"b) -\",\"texto\":\"<p>dhdsjdgsgdjshdg<\\/p>\"}]},{\"texto\":\"<p>sahkjhakshaksjhaskj<\\/p>\",\"incisos\":[{\"orden\":\"a) -\",\"texto\":\"<p>saksjalkjsalsk<\\/p>\"}]}]','2017-05-01 05:32:38','primero',NULL,NULL),(3,4,1,1,'<p>visto que ...</p>','<p>considerando el...</p>','1','[{\"texto\":\"<p>articulo 1<\\/p>\",\"incisos\":[{\"orden\":\"a) -\",\"texto\":\"<p>inciso cualquiera<\\/p>\"}],\"numero\":1}]','2017-05-01 19:32:36','primero',NULL,NULL),(4,NULL,1,1,'<p>sasasasas</p>','<p>sasasasa</p>','1','[{\"texto\":\"<p>ssedwweweew<\\/p>\",\"incisos\":[],\"numero\":1}]','2017-05-05 22:22:05','primero',NULL,NULL),(5,NULL,1,1,'<p>dasdasdsad</p>','<p>dadsadsdsa</p>','1','[{\"texto\":\"<p>daaslkas\\u00f1lk\\u00f1lasd<\\/p><p>laskdjadjlaskjd<\\/p>\",\"incisos\":[],\"numero\":1}]','2017-05-05 22:59:51','primero',NULL,NULL),(6,NULL,2,1,'<p>dsdsds</p>','<p>dsdssdsd</p>','1','[{\"texto\":\"<p>dshgdgsdjhsgdhgsd<\\/p><p>dskdlsdk<\\/p>\",\"incisos\":[],\"numero\":1}]','2017-05-05 23:05:50','primero',NULL,NULL),(7,NULL,1,2,'<p>dsdshdjshdkshdk</p>','<p>sdsdkjshdjksd</p>','1','[{\"texto\":\"<p>sds\\u00f1dk\\u00f1lsdk7k<\\/p><p>kdsjhdskjdhksjd<\\/p>\",\"incisos\":[],\"numero\":1}]','2017-05-05 23:09:06','primero',NULL,NULL),(8,NULL,1,3,'<p>Esto agrega una sangría solamente a la primera línea de aquellos párrafos que están después de otros párrafos. Además, elimina el espacio debajo de todos los párrafos y encima de los que tienen sangría. Pero en la práctica observará que todavía hacen falta excepciones.Por ejemplo, en esta página hay elementos P que se usan como leyendas de imágenes (ver el ejemplo \"Figuras y leyendas\"). Puesto que hemos centrado esos párrafos, no deberían tener sangría. Una sencilla regla basta para lograr lo que deseamos. Puede ver que de hecho hemos usado esa regla en el ejemplo</p><p>Veamos algo muy sencillo: ponerle sangría a la primera línea de cada párrafo. A muchas personas esto les facilita la lectura más que si se agregan líneas vacías entre los párrafos (especialmente cuando el texto es largo) y además permite reservar las líneas vacías para indicar cortes más importantes.\nEl truco consiste en poner sangría solamente a los párrafos que siguen a otros párrafos. El primer párrafo de la página no necesita sangría, ni tampoco los que siguen a un diagrama, un encabezado o cualquier otra cosa que esté separada del texto. Las reglas son verdaderamente muy sencillas</p>','<p>adhakjhdkjashdkjashdjkas</p><p>lldjkjsda</p><p>ñkdlñask</p>','1','[{\"texto\":\"<p>hdgsdhjgsdjsgds<\\/p><p>dsdshds<\\/p><p>lsdjdlksdj<\\/p>\",\"incisos\":[{\"orden\":\"a) -\",\"texto\":\"<p>\\u00f1lskd\\u00f1sdkl\\u00f1skd<\\/p>\"},{\"orden\":\"b) -\",\"texto\":\"<p>mdnmsndnms,dnm,s<\\/p>\"}],\"numero\":1},{\"texto\":\"<p>dkajdlakjdsldkjalk<\\/p>\",\"incisos\":[],\"numero\":2}]','2017-05-08 10:13:21','primero',NULL,NULL),(9,NULL,2,1,'<p>jkhdkjhdfkjhsdkjfhsdkjfksfsd</p><p>fdsfsdfhjskhfjkshfkjsdhkjfsfhskdjhfkjsdhfksjdhfksdjf</p><p>fhdfkjshfksd</p>','<p><small>kjfhsdkfkjdsfjsdhfkjsdhfjsd</small><br></p><p><small>fhdjfkdshdkjfhksdj</small></p>','1','[{\"texto\":\"<p>lfdfjsdfshfjskdf<\\/p><p><br><\\/p><p>fdjsljflkdjflkdsjfklsjdlfkjs<\\/p>\",\"incisos\":[{\"orden\":\"a) -\",\"texto\":\"<p>fdhsfkjsfjsd<\\/p>\"},{\"orden\":\"b) -\",\"texto\":\"<p>dlsahajhdjksakda<\\/p>\"}],\"numero\":1}]','2017-05-09 01:34:21','primero',NULL,NULL),(11,NULL,1,2,'<p>ddladakjsjas</p>','<p>jasdlksajdlaksjdlksa</p>','1','[{\"texto\":\"<p>skdaslkdjlasjdlkasjdlaksjda<\\/p>\",\"incisos\":[{\"orden\":\"a) -\",\"texto\":\"<p>d{al{s\\u00f1ld{as<\\/p>\"},{\"orden\":\"b) -\",\"texto\":\"<p>daskdlaksd\\u00f1laskd<\\/p>\"}],\"numero\":1}]','2017-05-09 02:34:26','primero',NULL,NULL),(12,NULL,1,2,'<p>dkshdhskdhskjh</p>','<p>sdsdhsdkjshd</p>','1','[{\"texto\":\"<p>dksjdksljdlksjdlksjdlsk<\\/p>\",\"incisos\":[{\"orden\":\"a) -\",\"texto\":\"<p>\\u00f1kds\\u00f1dk\\u00f1sdks<\\/p>\"},{\"orden\":\"b) -\",\"texto\":\"<p>kds\\u00f1ldk\\u00f1sldk\\u00f1dslk<\\/p>\"}],\"numero\":1}]','2017-05-09 02:46:48','primero',NULL,NULL),(13,NULL,1,2,'<p>dkshdhskdhskjh</p>','<p>sdsdhsdkjshd</p>','1','[{\"texto\":\"<p>dksjdksljdlksjdlksjdlsk<\\/p>\",\"incisos\":[{\"orden\":\"a) -\",\"texto\":\"<p>\\u00f1kds\\u00f1dk\\u00f1sdks<\\/p>\"},{\"orden\":\"b) -\",\"texto\":\"<p>kds\\u00f1ldk\\u00f1sldk\\u00f1dslk<\\/p>\"}],\"numero\":1}]','2017-05-09 02:52:13','primero',NULL,NULL),(14,NULL,1,2,'<p>dkshdhskdhskjh</p>','<p>sdsdhsdkjshd</p>','1','[{\"texto\":\"<p>dksjdksljdlksjdlksjdlsk<\\/p>\",\"incisos\":[{\"orden\":\"a) -\",\"texto\":\"<p>\\u00f1kds\\u00f1dk\\u00f1sdks<\\/p>\"},{\"orden\":\"b) -\",\"texto\":\"<p>kds\\u00f1ldk\\u00f1sldk\\u00f1dslk<\\/p>\"}],\"numero\":1}]','2017-05-09 02:54:30','primero',NULL,NULL),(15,NULL,1,2,'<p>fsfsdfs</p>','<p>fsfsdfsdf</p>','1','[{\"texto\":\"<p>fdfsdfsdfsdfsfs<\\/p>\",\"incisos\":[{\"orden\":\"a) -\",\"texto\":\"<p>dffsfsd<\\/p>\"},{\"orden\":\"b) -\",\"texto\":\"<p>gfdgfdgfdgd<\\/p>\"}],\"numero\":1}]','2017-05-09 03:31:06','primero',NULL,NULL),(16,NULL,1,2,'<p>sadkasdñkñasdlkas</p>','<p>askdjalskjdlkas</p>','1','[{\"texto\":\"<p>dsldkl\\u00f1aksd\\u00f1lakd<\\/p>\",\"incisos\":[{\"orden\":\"a) -\",\"texto\":\"<p>sakjdalsjlkasjd<\\/p>\"}],\"numero\":1}]','2017-05-10 22:49:49','primero',NULL,NULL),(17,NULL,1,1,'<p>dñksakdlñaskdñlakd</p>','<p>111111111111111111</p>','1','[{\"texto\":\"<p>777777777777777<\\/p>\",\"incisos\":[{\"orden\":\"a) -\",\"texto\":\"<p>77777777777<\\/p>\"}],\"numero\":1},{\"texto\":\"<p>888888888888888888<\\/p>\",\"incisos\":[{\"orden\":\"a) -\",\"texto\":\"<p>888888888888888<\\/p>\"}],\"numero\":2}]','2017-05-10 23:15:22','primero',NULL,NULL),(18,NULL,1,2,'<p>99999999999999999999</p>','<p>9999999999999999999</p>','1','[{\"texto\":\"<p>999999999999999<\\/p>\",\"incisos\":[{\"orden\":\"a) -\",\"texto\":\"<p>9999999999999999999999<\\/p>\"},{\"orden\":\"b) -\",\"texto\":\"<p>9999999999999999<\\/p>\"}],\"numero\":1},{\"texto\":\"<p>333333333333333333333<\\/p>\",\"incisos\":[{\"orden\":\"a) -\",\"texto\":\"<p>333333333333333<\\/p>\"}],\"numero\":2}]','2017-05-10 23:17:58','primero',NULL,NULL),(19,NULL,1,1,'<p>shkahskajhsjak</p>','<p>asjjakshkasjhakj</p>','1','[{\"texto\":\"<p>ajsajshkjash<\\/p>\",\"incisos\":[],\"numero\":1}]','2017-05-10 23:21:29','primero',NULL,NULL),(20,NULL,1,2,'<p>dsadgasgdjag</p>','<p>dkjashdkjashdkj</p>','1','[{\"texto\":\"<p>dsldjalsdjasldjdlskajdaklsj<\\/p>\",\"incisos\":[],\"numero\":1}]','2017-05-10 23:24:47','primero',NULL,NULL),(21,NULL,1,2,'<p>sakskakjs</p>','<p>shakjshakjh</p>','1','[{\"texto\":\"<p>aks\\u00f1aks\\u00f1lask<\\/p>\",\"incisos\":[],\"numero\":1}]','2017-05-10 23:27:10','primero',NULL,NULL),(22,NULL,1,2,'<p>sakskakjs</p>','<p>shakjshakjh</p>','1','[{\"texto\":\"<p>aks\\u00f1aks\\u00f1lask<\\/p>\",\"incisos\":[],\"numero\":1}]','2017-05-10 23:27:41','primero',NULL,NULL);
 /*!40000 ALTER TABLE `proyecto` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -460,7 +468,7 @@ CREATE TABLE `proyectoFirma` (
   KEY `proyectoFirma_proyecto_idx` (`idProyecto`),
   CONSTRAINT `fk_proyectoFirma_perfil` FOREIGN KEY (`idPerfil`) REFERENCES `perfil` (`idPerfil`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_proyectoFirma_proyecto` FOREIGN KEY (`idProyecto`) REFERENCES `proyecto` (`idProyecto`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -469,7 +477,6 @@ CREATE TABLE `proyectoFirma` (
 
 LOCK TABLES `proyectoFirma` WRITE;
 /*!40000 ALTER TABLE `proyectoFirma` DISABLE KEYS */;
-INSERT INTO `proyectoFirma` VALUES (1,3,11,0,NULL),(2,5,11,0,NULL),(3,3,12,0,NULL),(4,5,12,0,NULL),(5,3,13,0,NULL),(6,5,13,0,NULL),(7,3,14,0,NULL),(8,5,14,0,NULL),(9,5,15,0,NULL),(10,3,15,0,NULL),(11,3,16,0,NULL),(12,5,16,0,NULL),(13,3,17,0,NULL),(14,5,17,0,NULL),(15,3,18,0,NULL),(16,5,18,0,NULL),(17,3,19,0,NULL),(18,5,19,0,NULL),(19,3,20,0,NULL),(20,5,20,0,NULL),(21,3,21,0,NULL),(22,5,21,0,NULL),(23,3,22,0,NULL),(24,5,22,0,NULL);
 /*!40000 ALTER TABLE `proyectoFirma` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -642,12 +649,12 @@ CREATE TABLE `usuario` (
   `fechaModificacion` datetime DEFAULT NULL,
   `usuarioModificacion` varchar(70) DEFAULT NULL,
   PRIMARY KEY (`idUsuario`),
-  UNIQUE KEY `UNIQ_usuario_idx` (`usuario`),
   UNIQUE KEY `UNIQ_usuario_perfil_idx` (`idPerfil`),
+  UNIQUE KEY `UNIQ_usuario_idx` (`usuario`),
   KEY `usuario_rol_idx` (`idRol`),
   CONSTRAINT `fk_usuario_perfil` FOREIGN KEY (`idPerfil`) REFERENCES `perfil` (`idPerfil`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_usuario_rol` FOREIGN KEY (`idRol`) REFERENCES `rol` (`idRol`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -656,13 +663,9 @@ CREATE TABLE `usuario` (
 
 LOCK TABLES `usuario` WRITE;
 /*!40000 ALTER TABLE `usuario` DISABLE KEYS */;
-INSERT INTO `usuario` VALUES (1,'primero','$2y$13$RNuGUqpo1u/Qq7PEM26pBe3vNxGJwMMFaAvzCR4WxfrwS0CugfXCG',3,2,1,'2017-03-08 23:10:05','administrador','2017-04-19 23:32:01','primero'),(2,'consejal','$2y$13$MMvsLpfs50WmzC60TdV.p.q7Kw/60sTlB/.mpkGMMupyV2.K50yXG',4,1,1,'2017-04-28 21:16:35','primero','2017-05-02 20:57:25','primero'),(3,'SADADAS','$2y$13$1laAOrMg44Ma3oXjjPiG8.f38bD52ka.nDBXRv7d//yX9a/wKHLyS',5,2,1,'2017-05-03 23:06:33','primero','2017-05-03 23:10:51','primero'),(4,'fdfdfdf','$2y$13$wSdKTWpH7pmHXPWpW0sFiOcgE5slXuvThRQhtMJsiRlah6iVv0w2q',6,4,1,'2017-05-03 23:14:50','primero','2017-05-03 23:15:27','primero');
+INSERT INTO `usuario` VALUES (1,'administrador','$2y$13$PV2vHlAy.LwjXtLetaUM3uJcDmduhPQ2Zpz2rj.Em1I/atyLxiiTW',1,2,1,'2017-05-21 21:27:30','administrador',NULL,NULL);
 /*!40000 ALTER TABLE `usuario` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Dumping routines for database 'sistema_legislativo'
---
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -673,4 +676,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-05-14 12:26:52
+-- Dump completed on 2017-05-27 12:12:14

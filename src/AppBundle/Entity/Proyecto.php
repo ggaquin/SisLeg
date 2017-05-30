@@ -5,15 +5,15 @@ namespace AppBundle\Entity;
 use JMS\Serializer\Annotation\VirtualProperty;
 use Doctrine\ORM\Mapping as ORM;
 
+
 /**
  * Proyecto
- *
- * @ORM\Table(name="proyecto", indexes={@ORM\Index(name="proyecto_tipoProyecto_idx", columns={"idTipoProyecto"})
+ * @ORM\Table(name="proyecto", uniqueConstraints={@ORM\UniqueConstraint(name="UNIQ_proyecto_expediente_idx",
+ *                                                 columns={"idExpediente"})},
+ *                             indexes={@ORM\Index(name="proyecto_tipoProyecto_idx", columns={"idTipoProyecto"}),
  *                                      @ORM\Index(name="proyecto_bloque_idx", columns={"idBloque"})
- *                                     },
- *                              uniqueConstraints={@ORM\UniqueConstraint(name="UNIQ_proyecto_expediente_idx",
- *                                                 columns={"idExpediente"})}
- *           )
+ *                                     }
+ *                              )
  * @ORM\Entity(repositoryClass="AppBundle\Repository\ProyectoRepository")
  */
 class Proyecto
@@ -372,6 +372,7 @@ class Proyecto
     public function removeAutor(\AppBundle\Entity\Perfil $autor)
     {
         $this->autores->removeElement($autor);
+        return $this;
     }
 
     /**
