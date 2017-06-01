@@ -43,7 +43,7 @@ class ImpresionServicio
                     $documento["origen"]='Secretaría Administrativa';
                     break;
                 default: //proyecto
-                    $documento["origen"]=$proyecto->getBloque()->getBloque();
+                    $documento["origen"]=$proyecto->getListaAutores();
                     break;
             }
 
@@ -76,7 +76,7 @@ class ImpresionServicio
         $documento["ejercicio"] = '';
         $documento["entrada"] = '';
         $documento["origen"] = '';
-        $documento["origen"]=$proyecto->getBloque()->getBloque();      
+        $documento["origen"]=$proyecto->getListaAutores();     
 
         $tipo = $proyecto->getTipoProyecto()->getTipoProyecto();
         $numeroCompleto = $proyecto->getId();
