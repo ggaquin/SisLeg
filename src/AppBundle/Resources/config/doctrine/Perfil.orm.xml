@@ -45,7 +45,7 @@
         <option name="fixed"/>
       </options>
     </field>
-    <many-to-many field="proyectos" target-entity="Proyecto" mapped-by="autores"/>
+    <!-- <many-to-many field="proyectos" target-entity="Proyecto" mapped-by="autores"/> -->
     <field name="fechaCreacion" type="datetime" column="fechaCreacion" nullable="false">
     </field>
     <field name="usuarioCreacion" type="string" column="usuarioCreacion" length="70" nullable="false">

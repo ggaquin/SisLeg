@@ -50,33 +50,6 @@ LOCK TABLES `AgendaSesion` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `autores_proyectos`
---
-
-DROP TABLE IF EXISTS `autores_proyectos`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `autores_proyectos` (
-  `idProyecto` int(11) NOT NULL,
-  `idPerfil` int(11) NOT NULL,
-  PRIMARY KEY (`idProyecto`,`idPerfil`),
-  KEY `IDX_C4A9BE80F574DEDD` (`idPerfil`),
-  KEY `IDX_C4A9BE803C7128E2` (`idProyecto`),
-  CONSTRAINT `fk_autores_proyectos_perfil` FOREIGN KEY (`idPerfil`) REFERENCES `perfil` (`idPerfil`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_autores_proyectos_proyectos` FOREIGN KEY (`idProyecto`) REFERENCES `proyecto` (`idProyecto`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `autores_proyectos`
---
-
-LOCK TABLES `autores_proyectos` WRITE;
-/*!40000 ALTER TABLE `autores_proyectos` DISABLE KEYS */;
-/*!40000 ALTER TABLE `autores_proyectos` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `bloque`
 --
 
@@ -98,6 +71,33 @@ LOCK TABLES `bloque` WRITE;
 /*!40000 ALTER TABLE `bloque` DISABLE KEYS */;
 INSERT INTO `bloque` VALUES (1,'Frente Renovador'),(2,'Frente Para la Victoria'),(3,'UNA'),(4,'UCR'),(5,'GEN'),(6,'Cambiemos');
 /*!40000 ALTER TABLE `bloque` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `bloques_proyectos`
+--
+
+DROP TABLE IF EXISTS `bloques_proyectos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `bloques_proyectos` (
+  `idProyecto` int(11) NOT NULL,
+  `idBloque` smallint(6) NOT NULL,
+  PRIMARY KEY (`idProyecto`,`idBloque`),
+  KEY `IDX_E6A383413C7128E2` (`idProyecto`),
+  KEY `IDX_E6A3834192CBC072` (`idBloque`),
+  CONSTRAINT `FK_E6A383413C7128E2` FOREIGN KEY (`idProyecto`) REFERENCES `proyecto` (`idProyecto`),
+  CONSTRAINT `FK_E6A3834192CBC072` FOREIGN KEY (`idBloque`) REFERENCES `bloque` (`idBloque`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `bloques_proyectos`
+--
+
+LOCK TABLES `bloques_proyectos` WRITE;
+/*!40000 ALTER TABLE `bloques_proyectos` DISABLE KEYS */;
+/*!40000 ALTER TABLE `bloques_proyectos` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -340,6 +340,33 @@ LOCK TABLES `expedienteComisionDictamen` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `legisladores_proyectos`
+--
+
+DROP TABLE IF EXISTS `legisladores_proyectos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `legisladores_proyectos` (
+  `idProyecto` int(11) NOT NULL,
+  `idPerfil` int(11) NOT NULL,
+  PRIMARY KEY (`idProyecto`,`idPerfil`),
+  KEY `IDX_D0FD43D4F574DEDD` (`idPerfil`),
+  KEY `IDX_D0FD43D43C7128E2` (`idProyecto`),
+  CONSTRAINT `fk_autores_proyectos_perfil` FOREIGN KEY (`idPerfil`) REFERENCES `perfil` (`idPerfil`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_autores_proyectos_proyectos` FOREIGN KEY (`idProyecto`) REFERENCES `proyecto` (`idProyecto`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `legisladores_proyectos`
+--
+
+LOCK TABLES `legisladores_proyectos` WRITE;
+/*!40000 ALTER TABLE `legisladores_proyectos` DISABLE KEYS */;
+/*!40000 ALTER TABLE `legisladores_proyectos` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `perfil`
 --
 
@@ -430,12 +457,9 @@ CREATE TABLE `proyecto` (
   `idProyecto` int(11) NOT NULL AUTO_INCREMENT,
   `idExpediente` int(11) DEFAULT NULL,
   `idTipoProyecto` smallint(6) DEFAULT NULL,
-  `idBloque` smallint(6) DEFAULT NULL,
   PRIMARY KEY (`idProyecto`),
   UNIQUE KEY `UNIQ_proyecto_expediente_idx` (`idExpediente`),
   KEY `proyecto_tipoProyecto_idx` (`idTipoProyecto`),
-  KEY `proyecto_bloque_idx` (`idBloque`),
-  CONSTRAINT `fk_proyecto_bloque` FOREIGN KEY (`idBloque`) REFERENCES `bloque` (`idBloque`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_proyecto_expediente` FOREIGN KEY (`idExpediente`) REFERENCES `expediente` (`idExpediente`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_proyecto_tipoProyecto` FOREIGN KEY (`idTipoProyecto`) REFERENCES `tipoProyecto` (`idTipoProyecto`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -614,8 +638,8 @@ CREATE TABLE `tipoPerfil_rol` (
   `idTipoPerfil` smallint(6) NOT NULL,
   `idRol` smallint(6) NOT NULL,
   PRIMARY KEY (`idTipoPerfil`,`idRol`),
-  KEY `tipoPerfil_rol_rol_idx` (`idRol`),
-  KEY `tipoPerfil_rol_tipoPerfil` (`idTipoPerfil`),
+  KEY `IDX_F4C8E6BB2F1D22B0` (`idRol`),
+  KEY `IDX_F4C8E6BB9FB91BCF` (`idTipoPerfil`),
   CONSTRAINT `fk_tipoPerfil_rol_rol` FOREIGN KEY (`idRol`) REFERENCES `rol` (`idRol`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_tipoPerfil_rol_tipoPerfil` FOREIGN KEY (`idTipoPerfil`) REFERENCES `tipoPerfil` (`idTipoPerfil`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -728,4 +752,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-05-30 13:28:47
+-- Dump completed on 2017-05-31 23:55:59

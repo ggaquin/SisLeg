@@ -135,12 +135,14 @@ class Perfil
      *   }
      * )
      */
-    /**
+
+    /*
      * @var \Doctrine\Common\Collections\Collection
      *
      * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Proyecto", mappedBy="autores")
+     *
+     *   private $proyectos;
      */
-    private $proyectos;
 
     /**
      * @var \DateTime

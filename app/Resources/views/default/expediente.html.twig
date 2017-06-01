@@ -48,6 +48,14 @@
 		   left:0;
 		}
 
+		.scrollable-div{
+			min-height: 39px;
+			max-height: 40px;
+			overflow-y: auto;
+			/*background: #fff;*/
+			border: 1px solid #ccc;
+		}
+
 		.div-Preview{
 			max-height: 194px;
 			height: 194px;
@@ -120,8 +128,8 @@
 						$("#origen").val(3);
 						break;
 				default:
-						$("#div-autores").removeClass('hidden');
-						$("#div-bloque").removeClass('hidden');
+						$("#div-concejales").removeClass('hidden');
+						$("#div-bloques").removeClass('hidden');
 						break;
 			};
 		}
@@ -147,8 +155,8 @@
 						$("#origen-mod").val(3);
 						break;
 				default:
-						$("#div-autores-mod").removeClass('hidden');
-						$("#div-bloque-mod").removeClass('hidden');
+						$("#div-concejales-mod").removeClass('hidden');
+						$("#div-bloques-mod").removeClass('hidden');
 						break;
 			};
 		}
@@ -380,8 +388,8 @@
 
 						if(data.hasOwnProperty('proyecto')){
 							$("#selTipoExpedienteMod").prop( "disabled", true );
-							$("#autores-mod").val(data.lista_autores);
-							$("#bloque-mod").val(data.proyecto.bloque.bloque);
+							$("#concejales-mod").html(data.lista_consejales);
+							$("#bloques-mod").html(data.lista_bloques);
 							mostrarTiposPara("proyectos");
 						}
 						else{
@@ -622,8 +630,8 @@
 		        $("#nuevoExpediente").find('input[name="idProyecto"]').val(data[ "id" ]);
 		        var tipoExpediente=data[ "tipo_proyecto"].tipo_expediente.id;
 		        $("#nuevoExpediente").find('input[name="idTipoExpediente"]').val(tipoExpediente);
-		        $("#nuevoExpediente").find('input[name="autores"]').val(data[ "lista_autores"]);
-		        $("#nuevoExpediente").find('input[name="bloque"]').val(data[ "bloque"].bloque);
+		        $("#nuevoExpediente").find('div[name="concejales"]').html(data[ "lista_concejales"]);
+		        $("#nuevoExpediente").find('div[name="bloques"]').html(data[ "lista_bloques"]);
 		        $("#nuevoExpediente").modal('show');
 		    } );
 
@@ -685,7 +693,6 @@
 								      		{ "data": "tipo_proyecto.tipo_expediente.id"},
 								      		{ "data": "null","width":"5"},
 								      		{ "data": "tipo_proyecto.tipo_proyecto","width":"20%"},
-								            { "data": "bloque.bloque","width":"20%" },
 								            { "data": "lista_autores","className": "for-mobile","width":"60%" },
 								        ],
 								      "autoWidth":false,
@@ -881,7 +888,7 @@
 	    </div> {# row #}
 
 	    <div id="proyectosBusqueda" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false"> 
-		 	<div class="modal-dialog">
+		 	<div class="modal-dialog modal-lg">
 			    <!-- Modal content-->
 			    <div class="modal-content">
 				    <div class="modal-header" style="background-color:#666;color:#FFF">
@@ -900,7 +907,6 @@
 						                		<th>idTipoProyecto</th>
 						                		<th>Ingresar</th>
 								                <th>Tipo</th>
-								                <th>Bloque</th>
 								                <th>Autores</th>
 						                	</tr>
 						                </thead>
@@ -995,10 +1001,11 @@
 					        <div class="row">
 					        	<div class="col-md-6">
 					        		<div class="row">
-					        			<div class="col-md-12 expediente-origen" id="div-autores">
+					        			<div class="col-md-12 expediente-origen" id="div-concejales">
 							        		<div class="form-group">
-											    <label for="autores">Autores</label>
-											    <input id="autores" name="autores" type="text" class="form-control" readonly>
+											    <label for="concejales">Concejales</label>
+											    <div class="scrollable-div" id="concejales" name="concejales"></div>
+											    {# <input id="concejales" name="concejales" type="text" class="form-control" style="width: 100%;" readonly> #}
 											</div>
 										</div>
 										<div class="col-md-12 expediente-origen" id="div-origen">
@@ -1015,10 +1022,10 @@
 						        </div>
 						        <div class="col-md-6">
 						        	<div class="row">
-						        		<div class="col-md-12 expediente-origen" id="div-bloque">
+						        		<div class="col-md-12 expediente-origen" id="div-bloques">
 							        		<div class="form-group">
-							        			<label for="bloque">bloque</label>
-											    <input id="bloque" name="bloque" type="text" class="form-control" readOnly>
+							        			<label for="bloques">Bloques</label>
+							        			 <div class="scrollable-div" id="bloques" name="bloques"></div>
 											</div>
 										</div>
 										<div class="col-md-6 expediente-origen pedido-particular">
@@ -1113,10 +1120,10 @@
 					         <div class="row">
 					        	<div class="col-md-6">
 					        		<div class="row">
-					        			<div class="col-md-12 expediente-origen" id="div-autores-mod">
+					        			<div class="col-md-12 expediente-origen" id="div-concejales-mod">
 							        		<div class="form-group">
-											    <label for="autores-mod">Autores</label>
-											    <input id="autores-mod" name="autores-mod" type="text" class="form-control" readonly>
+											    <label for="concejales-mod">Concejales</label>
+											     <div class="scrollable-div" id="concejales-mod" name="concejales-mod"></div>
 											</div>
 										</div>
 										<div class="col-md-12 expediente-origen" id="div-origen-mod">
@@ -1133,10 +1140,10 @@
 						        </div>
 						        <div class="col-md-6">
 						        	<div class="row">
-						        		<div class="col-md-12 expediente-origen" id="div-bloque-mod">
+						        		<div class="col-md-12 expediente-origen" id="div-bloques-mod">
 							        		<div class="form-group">
-							        			<label for="bloque-mod">bloque</label>
-											    <input id="bloque-mod" name="bloque-mod" type="text" class="form-control" readOnly>
+							        			<label for="bloques-mod">Bloques</label>
+							        			 <div class="scrollable-div" id="bloques-mod" name="bloques-mod"></div>
 											</div>
 										</div>
 										<div class="col-md-6 expediente-origen pedido-particular">

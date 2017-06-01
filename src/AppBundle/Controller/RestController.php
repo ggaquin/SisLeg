@@ -205,6 +205,17 @@ class RestController extends FOSRestController{
     }
 
     /**
+     * @Rest\Get("/api/bloques/getByCriteria")
+     */
+    public function traerBloquePorCriterioAction(Request $request)
+    {   
+        $term=$request->query->get('q');
+        $bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
+        $bloques=$bloqueRepository->findBloqueByNombre_Patron($term);
+        return $this->view($bloques,200);
+    }
+
+    /**
      * @Rest\Get("/api/comision/getAll")
      */
     public function traerTodasLasComisionesAction(Request $request)
@@ -279,8 +290,9 @@ class RestController extends FOSRestController{
     public function crearProyectoAction(Request $request)
     {   
         $idtipoProyecto=$request->request->get('idtipoProyecto');
-        $idBloque=$request->request->get('idBloque');
-        $listaAutores=$request->request->get('autores');
+        //$idBloque=$request->request->get('idBloque');
+        $listaConcejales=$request->request->get('concejales');
+        $listaBloques=$request->request->get('bloques');
         $visto=$request->request->get('visto');
         
         $considerando=$request->request->get('considerando');
@@ -297,42 +309,60 @@ class RestController extends FOSRestController{
         */
         $usuario=$this->getUser();
 
-        $autores=explode(',',$listaAutores);
+        $concejales=explode(',',$listaConcejales);
+        $bloques=explode(',',$listaBloques);
 
         $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
         $tipoProyectoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoProyecto');
         $tipoProyecto=$tipoProyectoRepository->find($idtipoProyecto);
         $bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
-        $bloque=$bloqueRepository->find($idBloque);
+        //$bloque=$bloqueRepository->find($idBloque);
       
         $proyecto=new Proyecto();
         $proyecto->setTipoProyecto($tipoProyecto);
-        $proyecto->setBloque($bloque);
+        //$proyecto->setBloque($bloque);
         $proyecto->setVisto($visto);
         $proyecto->setConsiderandos($considerando);
         $proyecto->setQuienSanciona($quienSanciona);
 
-        if (is_array($autores)){
-            foreach ($autores as $autor) {
-                    $perfil=$perfilRepository->find($autor);
-                    $proyecto->addAutor($perfil);
-                    /*
-                        ---------------------------------------------
-                        descomentar si se acuerda mail de notifcacion
-                        ---------------------------------------------
-
-                    $firma= new ProyectoFirma();
-                    $firma->setAutor($perfil);
-                    $proyecto->addFirma($firma);
-                    */
+        if(is_array($bloques)){
+            foreach ($bloques as $bloque) {
+                $bloque=$bloqueRepository->find($bloque);
+                $proyecto->addBloque($bloque);
             }
         }
         else {
-                $perfil=$perfilRepository->find($autores);
-                $proyecto->addAutor($perfil);
+                $bloque=$bloqueRepository->find($bloques);
+                $proyecto->addBloque($bloque);
+        }
+
+        if (is_array($concejales)){
+            foreach ($concejales as $concejal) {
+                $perfil=$perfilRepository->find($concejal);
+                $proyecto->addConcejal($perfil);
+                /*
+                    ---------------------------------------------
+                    descomentar si se acuerda mail de notifcacion
+                    ---------------------------------------------
+
                 $firma= new ProyectoFirma();
                 $firma->setAutor($perfil);
                 $proyecto->addFirma($firma);
+                */
+            }
+        }
+        else {
+                $perfil=$perfilRepository->find($concejales);
+                $proyecto->addConcejal($perfil);
+                /*
+                    ---------------------------------------------
+                    descomentar si se acuerda mail de notifcacion
+                    ---------------------------------------------
+
+                $firma= new ProyectoFirma();
+                $firma->setAutor($perfil);
+                $proyecto->addFirma($firma);
+                */
             }
 
         $proyecto->setArticulos($articulos);
@@ -410,8 +440,10 @@ class RestController extends FOSRestController{
     {   
         $idProyecto=$request->request->get('idProyecto');
         $idtipoProyecto=$request->request->get('idtipoProyecto');
-        $idBloque=$request->request->get('idBloque');
-        $listaAutores=$request->request->get('autores');
+        //$idBloque=$request->request->get('idBloque');
+        $listaConcejales=$request->request->get('concejales');
+        $listaBloques=$request->request->get('bloques');
+
         $visto=$request->request->get('visto');
         $considerando=$request->request->get('considerando');
         $quienSanciona=$request->request->get('quienSanciona');
@@ -419,32 +451,46 @@ class RestController extends FOSRestController{
      
         $usuario=$this->getUser();
 
-        $autores=explode(',',$listaAutores);
+        $concejales=explode(',',$listaConcejales);
+        $bloques=explode(',',$listaBloques);
 
         $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
         $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
         $tipoProyectoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoProyecto');
         $tipoProyecto=$tipoProyectoRepository->find($idtipoProyecto);
         $bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
-        $bloque=$bloqueRepository->find($idBloque);
+        //$bloque=$bloqueRepository->find($idBloque);
       
         $proyecto=$proyectoRepository->find($idProyecto);
         $proyecto->setTipoProyecto($tipoProyecto);
-        $proyecto->setBloque($bloque);
+        //$proyecto->setBloque($bloque);
         $proyecto->setVisto($visto);
         $proyecto->setConsiderandos($considerando);
         $proyecto->setQuienSanciona($quienSanciona);
 
-        $nuevosAutores=[];
-        if (is_array($autores)){
-            foreach ($autores as $autor) {
-                    $perfil=$perfilRepository->find($autor);
-                    $nuevosAutores[]=$perfil;
+        $nuevosBloques=[];
+        if(is_array($bloques)){
+            foreach ($bloques as $bloque) {
+                $bloque=$bloqueRepository->find($bloque);
+                $nuevosBloques[]=$bloque;
+            }
+        }
+        else {
+                $bloque=$bloqueRepository->find($bloques);
+                $nuevosBloques[]=$bloque;
+        }
+        $proyecto->setBloques($nuevosBloques);
+
+        $nuevosConcejales=[];
+        if (is_array($concejales)){
+            foreach ($concejales as $concejal) {
+                    $perfil=$perfilRepository->find($concejal);
+                    $nuevosConcejales[]=$perfil;
                    
                     /*
-                        ---------------------------------------------
-                        descomentar si se acuerda mail de notifcacion
-                        ---------------------------------------------
+                        ----------------------------------------------
+                        descomentar si se acuerda mail de notificacion
+                        ----------------------------------------------
                     $firma= new ProyectoFirma();
                     $firma->setAutor($perfil);
                     $proyecto->addFirma($firma);
@@ -452,19 +498,19 @@ class RestController extends FOSRestController{
             }
         }
         else {
-                $perfil=$perfilRepository->find($autores);
-                $nuevosAutores[]=$perfil;
+                $perfil=$perfilRepository->find($concejales);
+                $nuevosConcejales[]=$perfil;
                 
                 /*
-                        ---------------------------------------------
-                        descomentar si se acuerda mail de notifcacion
-                        ---------------------------------------------
+                        ----------------------------------------------
+                        descomentar si se acuerda mail de notificacion
+                        ----------------------------------------------
 
                 $firma= new ProyectoFirma();
                 $proyecto->addFirma($firma);
                 */
             }
-         $proyecto->setAutores($nuevosAutores);
+         $proyecto->setConcejales($nuevosConcejales);
 
         $proyecto->setArticulos($articulos);
         $proyecto->setUsuarioModificacion($usuario->getUsername());

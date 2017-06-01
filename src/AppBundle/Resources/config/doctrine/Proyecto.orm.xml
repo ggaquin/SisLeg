@@ -3,7 +3,7 @@
   <entity name="AppBundle\Entity\Proyecto" table="proyecto" repository-class="AppBundle\Repository\ProyectoRepository">
     <indexes>
       <index name="proyecto_tipoProyecto_idx" columns="idTipoProyecto"/>
-      <index name="proyecto_bloque_idx" columns="idBloque"/>
+      <!-- <index name="proyecto_bloque_idx" columns="idBloque"/> -->
     </indexes>
     <unique-constraints>
       <unique-constraint columns="idExpediente" name="UNIQ_proyecto_expediente_idx" />
@@ -21,11 +21,11 @@
         <join-column name="idTipoProyecto" referenced-column-name="idTipoProyecto"/>
       </join-columns>
     </many-to-one>
-     <many-to-one field="bloque" target-entity="Bloque" fetch="LAZY">
+  <!--    <many-to-one field="bloque" target-entity="Bloque" fetch="LAZY">
       <join-columns>
         <join-column name="idBloque" referenced-column-name="idBloque"/>
       </join-columns>
-    </many-to-one>
+    </many-to-one> -->
     <field name="visto" type="text" column="visto" nullable="false">
     </field>
     <field name="considerandos" type="text" column="considerandos" nullable="false">
@@ -34,13 +34,23 @@
     </field>
     <field name="articulos" type="json_array" column="articulos" nullable="false">
     </field>
-    <many-to-many field="autores" target-entity="Perfil" inversed-by="proyectos" fetch="EAGER" orphan-removal="true">
-      <join-table name="autores_proyectos">
+    <many-to-many field="concejales" target-entity="Perfil" fetch="EAGER" orphan-removal="true">
+      <join-table name="legisladores_proyectos">
         <join-columns>
           <join-column name="idProyecto" referenced-column-name="idProyecto"/>
         </join-columns>
         <inverse-join-columns>
           <join-column name="idPerfil" referenced-column-name="idPerfil"/>
+        </inverse-join-columns>
+      </join-table>
+    </many-to-many>
+    <many-to-many field="bloques" target-entity="Bloque" fetch="EAGER" orphan-removal="true">
+      <join-table name="bloques_proyectos">
+        <join-columns>
+          <join-column name="idProyecto" referenced-column-name="idProyecto"/>
+        </join-columns>
+        <inverse-join-columns>
+          <join-column name="idBloque" referenced-column-name="idBloque"/>
         </inverse-join-columns>
       </join-table>
     </many-to-many>

@@ -82,7 +82,7 @@
 			height: 200px!important;
 		}
 		.text-area-media{
-			height: 400px!important;
+			height: 366px!important;
 		}
 		.text-area-larga{
 			height: 475px!important;
@@ -95,6 +95,16 @@
 		}
 		.toggle-off.btn{
 			line-height: 22.5px!important;
+		}
+		#selConcejales .select2.select2-container.select2-container--bootstrap.select2-container--below.select2-container--focus, .select2-selection.select2-selection--multiple{
+			height: 70px;
+		    max-height: 70px;
+		    overflow-y: auto;
+		}
+		#selBloques .select2.select2-container.select2-container--bootstrap.select2-container--below.select2-container--focus, .select2-selection.select2-selection--multiple{
+			height: 70px;
+		    max-height: 70px;
+		    overflow-y: auto;
 		}
 		
 	</style>
@@ -465,7 +475,8 @@
 		    //EVENTO ABRIR MODAL MODIFICAR PROYECTO
 			$('#editarProyecto').on('show.bs.modal', function () {
 
-				$("#selAutoresMod").empty().change();
+				$("#selConcejalesMod").empty().change();
+				$("#selBloquesMod").empty().change();
 				$("#vistoMod").data("wysihtml5").editor.setValue('');
 				$("#considerandoMod").data("wysihtml5").editor.setValue('');
 				$("#articulosMod > tbody").html('');
@@ -477,7 +488,7 @@
 
 		    	var select2_data=[];
 
-		    	$.ajax({
+		    	/*$.ajax({
 					type:'get',
 					dataType: 'json	',
 					url:'{{ app.request.getBaseURL() }}'+'/api/legislador/getAll',
@@ -493,6 +504,7 @@
 						toastr.error(qXHR.responseText);
 					}
 				});
+				*/
 
 		    	//Obtención de los datos del expediente a modificar ------------------------
 
@@ -503,22 +515,26 @@
 					success: function(data){
 
 						$("#selTipoProyectoMod").val(data.tipo_proyecto.id);
-						$("#selBloqueMod").val(data.bloque.id);
 						$("#vistoMod").data("wysihtml5").editor.setValue(data.visto);
 						$("#considerandoMod").data("wysihtml5").editor.setValue(data.considerandos);
 						$("#quienSancionaMod").val(data.quien_sanciona);
 
-					 	//selección en la grilla de los items almacenados
+					 	var concejales=data.concejales;
 
-					    var autores=data.autores;
-					    var selected=[];
-					    $("#selAutoresMod").select2({tags: select2_data, tokenSeparators: [',']});
-					    $.each(autores, function(index,autor){
-					    	selected.push(autor.id);
-					     });
+					 	//selección de los bloques almacenados
+					 	$.each(concejales, function(index,concejal){
+					 		var newOption = new Option(concejal.descripcion, concejal.id, true, true);
+						   	$("#selConcejalesMod").append(newOption).trigger('change');
+						 });
 
-					    $("#selAutoresMod").val(selected).change();
-					    
+					 	var bloques=data.bloques;
+
+					 	//selección de los bloques almacenados
+					 	$.each(bloques, function(index,bloque){
+					 		var newOption = new Option(bloque.bloque, bloque.id, true, true);
+						   	$("#selBloquesMod").append(newOption).trigger('change');
+						 });
+					 
 					    $.each(data.articulos,function(index,articulo){
 							agregarArticulo(articulo,'articulosMod');
 						});
@@ -547,8 +563,8 @@
 				var validacion='';
 				var formData=new FormData();
 				var idtipoProyecto=$("#selTipoProyectoMod").val();
-				var idBloque=$("#selBloqueMod").val();
-				var autores=$("#selAutoresMod").val();
+				var bloques=$("#selBloquesMod").val();
+				var concejales=$("#selConcejalesMod").val();
 				var visto=$("#vistoMod").val();
 				var considerando=$("#considerandoMod").val();
 				var quienSanciona=$("#quienSancionaMod").val();
@@ -559,16 +575,15 @@
 				*/
 
 				validacion+=((idtipoProyecto==0)?'<li>Debe seleccionar un tipo de proyecto</li>':'');
-				validacion+=((idBloque==0)?'<li>Debe seleccionar un bloque</li>':'');
-				validacion+=((autores==null||autores.length==0)
-								?'<li>Debe especificar al menos un autor para el proyecto</li>':'');
+				validacion+=(((concejales==null||concejales.length==0) && (bloques==null||bloques.length==0))
+								?'<li>Debe especificar al menos un autor o bloque para el proyecto</li>':'');
 				validacion+=((visto.length==0)?'<li>Debe especificar los vistos</li>':'');
 				validacion+=((considerando.length==0)?'<li>Debe especificar las consideraciones</li>':'');
 
 				formData.append("idProyecto",idProyecto);
 				formData.append("idtipoProyecto",idtipoProyecto);
-				formData.append("idBloque",idBloque);
-				formData.append("autores",autores);
+				formData.append("bloques",bloques);
+				formData.append("concejales",concejales);
 				formData.append("visto",visto);
 				formData.append("considerando",considerando);
 				formData.append("quienSanciona",quienSanciona);
@@ -625,8 +640,8 @@
 			//EVENTO ABRIR MODAL NUEVO PROYECTO
 		    $('#nuevoProyecto').on('show.bs.modal', function () {
 		  		$("#selTipoProyecto").val(0);
-		  		$("#selBloque").val(0);
-		    	$("#selAutores").empty().change();
+		  		$("#selBloques").empty().change();
+		    	$("#selConcejales").empty().change();
 				$("#visto").data("wysihtml5").editor.setValue('');
 				$("#considerando").data("wysihtml5").editor.setValue('');
 				$("#articulos > tbody").html('');
@@ -652,8 +667,8 @@
 				var validacion='';
 				var formData=new FormData();
 				var idtipoProyecto=$("#selTipoProyecto").val();
-				var idBloque=$("#selBloque").val();
-				var autores=$("#selAutores").val();
+				var bloques=$("#selBloques").val();
+				var concejales=$("#selConcejales").val();
 				var visto=$("#visto").val();
 				var considerando=$("#considerando").val();
 				var quienSanciona=$("#quienSanciona").val();
@@ -664,15 +679,14 @@
 				*/
 
 				validacion+=((idtipoProyecto==0)?'<li>Debe seleccionar un tipo de proyecto</li>':'');
-				validacion+=((idBloque==0)?'<li>Debe seleccionar un bloque</li>':'');
-				validacion+=((autores==null||autores.length==0)
-								?'<li>Debe especificar al menos un autor para el proyecto</li>':'');
+				validacion+=(((concejales==null||concejales.length==0) && (bloques==null||bloques.length==0))
+								?'<li>Debe especificar al menos un concejal o bloque para el proyecto</li>':'');
 				validacion+=((visto.length==0)?'<li>Debe especificar los vistos</li>':'');
 				validacion+=((considerando.length==0)?'<li>Debe especificar las consideraciones</li>':'');
 
 				formData.append("idtipoProyecto",idtipoProyecto);
-				formData.append("idBloque",idBloque);
-				formData.append("autores",autores);
+				formData.append("bloques",bloques);
+				formData.append("concejales",concejales);
 				formData.append("visto",visto);
 				formData.append("considerando",considerando);
 				formData.append("quienSanciona",quienSanciona);
@@ -894,14 +908,7 @@
 				},
 			});
 
-			$("#selAutoresMod").select2({
-			  language: "es",
-			  allowClear: true,
-			  minimumInputLength: 3,
-			  theme: "bootstrap",
-			});
-
-			$("#selAutores").select2({
+			$("#selConcejalesMod").select2({
 				ajax: {
 			    url: '{{ app.request.getBaseURL() }}'+"/api/legislador/nombre/getByCriteria",
 			    dataType: 'json',
@@ -917,7 +924,13 @@
 			       var dato=data;
 		           return {
 				        results: $.map(dato, function(item) {
-				            return { id: item.id, text: item.descripcion };
+
+				        	var bloqueSeleccionado=false;
+				        	$.each($("#selBloquesMod").val(),function(index,idBloque){
+				        		if (item.bloque.id==idBloque) bloqueSeleccionado=true;
+				        	});
+				        	if (!bloqueSeleccionado)
+				            	return { id: item.id, text: item.descripcion };
 				        })
 				    };
 		        },
@@ -925,6 +938,104 @@
 			  language: "es",
 			  minimumInputLength: 3,
 			  theme: "bootstrap",
+			});
+
+			$("#selBloquesMod").select2({
+				ajax: {
+			    url: '{{ app.request.getBaseURL() }}'+"/api/bloques/getByCriteria",
+			    dataType: 'json',
+			    delay: 250,
+			    cache: false,
+			    data: function (params) {
+			      return {
+			        q: params.term, // search term
+			        page: params.page
+			      };
+			    },
+			    processResults: function (data) {
+			       var dato=data;
+		           return {
+				        results: $.map(dato, function(item) {
+				            return { id: item.id, text: item.bloque };
+				        })
+				    };
+		        },
+			  },
+			  language: "es",
+			  minimumInputLength: 3,
+			  theme: "bootstrap",
+			}).on('select2:select',function(evt){
+				var seleccion="("+evt.params.data.text+")";
+				var elementos=$("#selConcejalesMod")[0].children.length;
+				for (var i = elementos-1; i > -1; i--) {
+					if ($("#selConcejalesMod")[0].children[i].text.indexOf(seleccion)!=-1)
+						$("#selConcejalesMod")[0].children[i].remove();
+				}
+			});
+
+			$("#selConcejales").select2({
+				ajax: {
+			    url: '{{ app.request.getBaseURL() }}'+"/api/legislador/nombre/getByCriteria",
+			    dataType: 'json',
+			    delay: 250,
+			    cache: false,
+			    data: function (params) {
+			      return {
+			        q: params.term, // search term
+			        page: params.page
+			      };
+			    },
+			    processResults: function (data) {
+			       var dato=data;
+		           return {
+				        results: $.map(dato, function(item) {
+
+				        	var bloqueSeleccionado=false;
+				        	$.each($("#selBloques").val(),function(index,idBloque){
+				        		if (item.bloque.id==idBloque) bloqueSeleccionado=true;
+				        	});
+				        	if (!bloqueSeleccionado)
+				            	return { id: item.id, text: item.descripcion };
+				        })
+				    };
+		        },
+			  },
+			  language: "es",
+			  minimumInputLength: 3,
+			  theme: "bootstrap",
+			});
+
+			$("#selBloques").select2({
+				ajax: {
+			    url: '{{ app.request.getBaseURL() }}'+"/api/bloques/getByCriteria",
+			    dataType: 'json',
+			    delay: 250,
+			    cache: false,
+			    data: function (params) {
+			      return {
+			        q: params.term, // search term
+			        page: params.page
+			      };
+			    },
+			    processResults: function (data) {
+			       var dato=data;
+		           return {
+				        results: $.map(dato, function(item) {
+				            return { id: item.id, text: item.bloque };
+				        })
+				    };
+		        },
+			  },
+			  language: "es",
+			  minimumInputLength: 3,
+			  theme: "bootstrap",
+			}).on('select2:select',function(evt){
+				var seleccion="("+evt.params.data.text+")";
+				var elementos=$("#selConcejales")[0].children.length;
+				for (var i = elementos-1; i > -1; i--) {
+					if ($("#selConcejales")[0].children[i].text.indexOf(seleccion)!=-1)
+						$("#selConcejales")[0].children[i].remove();
+				}
 			});
 	});
 	</script>
@@ -1041,16 +1152,6 @@
 								            {% endfor %}
 						        		</select>
 						        	</div>
-						        	<div class="form-group">
-						        		<label for="selBloque">Bloque</label>
-						        		<select class="form-control" id="selBloque" 
-						        				name="selBloque">
-						        			<option value="0">Seleccione Bloque</option>
-						        			{% for bloque in bloques %}
-								                <option value="{{ bloque.id }}">{{ bloque.bloque }}</option>
-								            {% endfor %}
-						        		</select>
-						        	</div>
 						        	{# Descomentar si se acuerda notificacion #}
 						        	{# 
 						        	<div class="form-group text-center" style="padding-top:15px">
@@ -1069,15 +1170,29 @@
 						    	<div class="col-md-10">
 								    <div class="row tab" id="tab-1">
 								    	<div class="col-md-12">
-								    		<div class="form-group">
-									        	<label for="selAutores">Autores:</label>
-									        	<select class="form-control" multiple="multiple" data-width="100%" id="selAutores" name="selAutores"></select>
-									        </div>
-							        		<div class="form-group">
-								        		<label for="visto">Visto:</label>
-								        		<textarea class="form-control text-area text-area-media" 
-								        		id="visto" name="visto" placeholder="Descripción Expediente"></textarea>
-								        	</div> 
+								    		<div class="row">
+								    			<div class="col-md-4">
+								    				<div class="form-group">
+											        	<label for="selBloques">Bloques:</label>
+											        	<select class="form-control" multiple="multiple" data-width="100%" id="selBloques" name="selBloques"></select>
+											        </div>
+								    			</div>
+								    			<div class="col-md-8">
+										    		<div class="form-group">
+											        	<label for="selConcejales">Autores:</label>
+											        	<select class="form-control" multiple="multiple" data-width="100%" id="selConcejales" name="selConcejales"></select>
+											        </div>
+											    </div>
+										    </div>
+										    <div class="row">
+										    	<div class="col-md-12">
+									        		<div class="form-group">
+										        		<label for="visto">Visto:</label>
+										        		<textarea class="form-control text-area text-area-media" 
+										        		id="visto" name="visto" placeholder="vistos"></textarea>
+										        	</div>
+										        </div>
+									        </div> 
 								        </div> 
 						        	</div>
 							        <div class="row tab hidden" id="tab-2">
@@ -1214,16 +1329,6 @@
 								            {% endfor %}
 						        		</select>
 						        	</div>
-						        	<div class="form-group">
-						        		<label for="selBloqueMod">Bloque</label>
-						        		<select class="form-control" id="selBloqueMod" 
-						        				name="selBloqueMod">
-						        			<option value="0">Seleccione Bloque</option>
-						        			{% for bloque in bloques %}
-								                <option value="{{ bloque.id }}">{{ bloque.bloque }}</option>
-								            {% endfor %}
-						        		</select>
-						        	</div>
 						    		<nav>
 									    <ul class="nav">
 										    <li><a href="#" id="link-tab-1" onclick = "habilitar('tab-1-mod')" >Autores/Visto</a></li>
@@ -1235,15 +1340,27 @@
 						    	<div class="col-md-10">
 								    <div class="row tab" id="tab-1-mod">
 								    	<div class="col-md-12">
-								    		<div class="form-group">
-									        	<label for="selAutoresMod">Autores:</label>
-									        	<select class="form-control" multiple="multiple" data-width="100%" id="selAutoresMod" name="selAutoresMod"></select>
-									        </div>
-							        		<div class="form-group">
-								        		<label for="vistoMod">Asunto:</label>
-								        		<textarea class="form-control text-area text-area-media" 
-								        		id="vistoMod" name="vistoMod" placeholder="Descripción Expediente"></textarea>
-								        	</div> 
+								    		<div class="row">
+								    			<div class="col-md-4">
+								    				<div class="form-group">
+											        	<label for="selBloquesMod">Bloques:</label>
+											        	<select class="form-control" multiple="multiple" data-width="100%" id="selBloquesMod" name="selBloquesMod"></select>
+											        </div>
+								    			</div>
+								    			<div class="col-md-8">
+										    		<div class="form-group">
+											        	<label for="selConcejalesMod">Autores:</label>
+											        	<select class="form-control" multiple="multiple" data-width="100%" id="selConcejalesMod" name="selConcejalesMod"></select>
+											        </div>
+											    </div>
+										    </div>
+										    <div class="row">
+								        		<div class="form-group">
+									        		<label for="vistoMod">Visto:</label>
+									        		<textarea class="form-control text-area text-area-media" 
+									        		id="vistoMod" name="vistoMod" placeholder="Vistos"></textarea>
+									        	</div>
+									        </div> 
 								        </div> 
 						        	</div>
 							        <div class="row tab hidden" id="tab-2-mod">

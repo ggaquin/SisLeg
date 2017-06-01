@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table(name="proyecto", uniqueConstraints={@ORM\UniqueConstraint(name="UNIQ_proyecto_expediente_idx",
  *                                                 columns={"idExpediente"})},
  *                             indexes={@ORM\Index(name="proyecto_tipoProyecto_idx", columns={"idTipoProyecto"}),
- *                                      @ORM\Index(name="proyecto_bloque_idx", columns={"idBloque"})
+ *                                     
  *                                     }
  *                              )
  * @ORM\Entity(repositoryClass="AppBundle\Repository\ProyectoRepository")
@@ -50,14 +50,19 @@ class Proyecto
      private $tipoProyecto;
 
      /**
-     * @var \AppBundle\Entity\Bloque
+     * @var \Doctrine\Common\Collections\Collection
      *
-     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Bloque", fetch="EAGER" )
-     * @ORM\JoinColumns({
-     *  @ORM\JoinColumn(name="idBloque", referencedColumnName="idBloque")
-     * })
+     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Bloque", fetch="EAGER", orphanRemoval=true )
+     * @ORM\JoinTable(name="bloques_proyectos",
+     *   joinColumns={
+     *     @ORM\JoinColumn(name="idProyecto", referencedColumnName="idProyecto")
+     *   },
+     *   inverseJoinColumns={
+     *     @ORM\JoinColumn(name="idBloque", referencedColumnName="idBloque")
+     *   }
+     * )
      */
-     private $bloque;
+     private $bloques;
 
     /**
      * @var text
@@ -90,8 +95,8 @@ class Proyecto
     /**
      * @var \Doctrine\Common\Collections\Collection
      *
-     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Perfil", inversedBy="proyectos", fetch="EAGER", orphanRemoval=true )
-     * @ORM\JoinTable(name="autores_proyectos",
+     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Perfil", fetch="EAGER", orphanRemoval=true )
+     * @ORM\JoinTable(name="legisladores_proyectos",
      *   joinColumns={
      *     @ORM\JoinColumn(name="idProyecto", referencedColumnName="idProyecto")
      *   },
@@ -100,7 +105,7 @@ class Proyecto
      *   }
      * )
      */
-    private $autores;
+    private $concejales;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
@@ -211,28 +216,59 @@ class Proyecto
     }
 
     /**
-     * Set bloque
+     * set bloques
      *
-     * @param \AppBundle\Entity\Bloque $bloque
+     * @param array $nuevosBloques
      *
      * @return Proyecto
      */
-    public function setBloque($bloque)
+    public function setBloques($nuevosBloques)
     {
-        $this->bloque = $bloque;
+        $collection= new \Doctrine\Common\Collections\ArrayCollection();
+        foreach ($nuevosBloques as $bloque) {
+            $collection[]=$bloque;
+        }
+        $this->bloques = $collection;
 
         return $this;
     }
 
     /**
-     * Get bloque
+     * Add bloque
      *
-     * @return \AppBundle\Entity\Bloque
+     * @param \AppBundle\Entity\Bloque $bloque
+     *
+     * @return Proyecto
      */
-    public function getBloque()
+    public function addBloque(\AppBundle\Entity\Bloque $bloque)
     {
-        return $this->bloque;
+        $this->bloques[] = $bloque;
+
+        return $this;
     }
+
+    /**
+     * Remove bloque
+     *
+     * @param \AppBundle\Entity\Bloque $bloque
+     *
+     * @return Proyecto
+     */
+    public function removeBloque(\AppBundle\Entity\Bloque $bloque)
+    {
+        $this->bloques->removeElement($bloque);
+        return $this;
+    }
+
+    /**
+     * Get bloques
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getBloques()
+    {
+        return $this->bloques;
+    } 
 
     /**
      * Set visto
@@ -331,58 +367,58 @@ class Proyecto
     } 
 
     /**
-     * set autores
+     * set concejales
      *
-     * @param array $nuevosAutores
+     * @param array $nuevosConcejales
      *
      * @return Proyecto
      */
-    public function setAutores($nuevosAutores)
+    public function setConcejales($nuevosConcejales)
     {
         $collection= new \Doctrine\Common\Collections\ArrayCollection();
-        foreach ($nuevosAutores as $autor) {
-            $collection[]=$autor;
+        foreach ($nuevosConcejales as $concejal) {
+            $collection[]=$concejal;
         }
-        $this->autores = $collection;
+        $this->concejales = $collection;
 
         return $this;
     }
 
     /**
-     * Add autor
+     * Add concejal
      *
-     * @param \AppBundle\Entity\Perfil $autor
+     * @param \AppBundle\Entity\Perfil $concejal
      *
      * @return Proyecto
      */
-    public function addAutor(\AppBundle\Entity\Perfil $autor)
+    public function addConcejal(\AppBundle\Entity\Perfil $concejal)
     {
-        $this->autores[] = $autor;
+        $this->concejales[] = $concejal;
 
         return $this;
     }
 
     /**
-     * Remove autor
+     * Remove concejal
      *
-     * @param \AppBundle\Entity\Expediente $autor
+     * @param \AppBundle\Entity\Perfil $concejal
      *
      * @return Proyecto
      */
-    public function removeAutor(\AppBundle\Entity\Perfil $autor)
+    public function removeConcejal(\AppBundle\Entity\Perfil $concejal)
     {
-        $this->autores->removeElement($autor);
+        $this->concejales->removeElement($concejal);
         return $this;
     }
 
     /**
-     * Get autores
+     * Get concejales
      *
      * @return \Doctrine\Common\Collections\Collection
      */
-    public function getAutores()
+    public function getConcejales()
     {
-        return $this->autores;
+        return $this->concejales;
     }
 
     /**
@@ -522,6 +558,41 @@ class Proyecto
     //------------------------------Propiedades virtuales-----------------------------------------
 
     /**
+     * Get listaConsejales
+     *
+     * @return string
+     *
+     * @VirtualProperty
+     */
+    public function getListaConcejales()
+    {
+        $listaConcejales="";
+        $concejales=$this->concejales;
+        foreach ($concejales as $concejal) {
+           $listaConcejales.=($listaConcejales!=""?" / ":"").$concejal->getDescripcion();  
+        }
+        return $listaConcejales;
+    }
+
+    /**
+     * Get listaBloques
+     *
+     * @return string
+     *
+     * @VirtualProperty
+     */
+    public function getListaBloques()
+    {
+        $listaBloques="";
+        $bloques=$this->bloques;
+        foreach ($bloques as $bloque) {
+           $listaBloques.=($listaBloques!=""?" / ":"").$bloque->getBloque();  
+        }
+
+        return $listaBloques;
+    }
+
+    /**
      * Get listaAutores
      *
      * @return string
@@ -530,11 +601,8 @@ class Proyecto
      */
     public function getListaAutores()
     {
-        $autores=$this->autores;
-        $listaAutores="";
-        foreach ($autores as $autor) {
-            $listaAutores.=($listaAutores!=""?"-":"").$autor->getNombreCompleto();
-        }
+        $listaAutores=$this->getListaBloques();
+        $listaAutores.=($listaAutores!=""?" / ":"").$this->getListaConcejales();  
         return $listaAutores;
     }
 
