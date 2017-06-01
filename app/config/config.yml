@@ -123,7 +123,8 @@ knp_snappy:
         options:    
             - { name: 'viewport-size', value: ‘1024x768’ }
             - { name: 'page-size', value: 'legal' }
-    temporary_folder: %kernel.cache_dir%/snappy
+    temporary_folder: %kernel.root_dir%/../web/snappy
+    
 # Assets
 assetic:
     debug:          '%kernel.debug%'
