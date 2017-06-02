@@ -290,11 +290,10 @@ class RestController extends FOSRestController{
     public function crearProyectoAction(Request $request)
     {   
         $idtipoProyecto=$request->request->get('idtipoProyecto');
-        //$idBloque=$request->request->get('idBloque');
         $listaConcejales=$request->request->get('concejales');
         $listaBloques=$request->request->get('bloques');
         $visto=$request->request->get('visto');
-        
+
         $considerando=$request->request->get('considerando');
         $quienSanciona=$request->request->get('quienSanciona');
         $articulos=json_decode($request->request->get('articulos'));
@@ -309,18 +308,16 @@ class RestController extends FOSRestController{
         */
         $usuario=$this->getUser();
 
-        $concejales=explode(',',$listaConcejales);
-        $bloques=explode(',',$listaBloques);
+        $concejales=(($listaConcejales=="")?[]:explode(',',$listaConcejales));
+        $bloques=(($listaBloques=="")?[]:explode(',',$listaBloques));       
 
         $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
         $tipoProyectoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoProyecto');
         $tipoProyecto=$tipoProyectoRepository->find($idtipoProyecto);
         $bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
-        //$bloque=$bloqueRepository->find($idBloque);
       
         $proyecto=new Proyecto();
         $proyecto->setTipoProyecto($tipoProyecto);
-        //$proyecto->setBloque($bloque);
         $proyecto->setVisto($visto);
         $proyecto->setConsiderandos($considerando);
         $proyecto->setQuienSanciona($quienSanciona);
@@ -330,10 +327,6 @@ class RestController extends FOSRestController{
                 $bloque=$bloqueRepository->find($bloque);
                 $proyecto->addBloque($bloque);
             }
-        }
-        else {
-                $bloque=$bloqueRepository->find($bloques);
-                $proyecto->addBloque($bloque);
         }
 
         if (is_array($concejales)){
@@ -351,19 +344,6 @@ class RestController extends FOSRestController{
                 */
             }
         }
-        else {
-                $perfil=$perfilRepository->find($concejales);
-                $proyecto->addConcejal($perfil);
-                /*
-                    ---------------------------------------------
-                    descomentar si se acuerda mail de notifcacion
-                    ---------------------------------------------
-
-                $firma= new ProyectoFirma();
-                $firma->setAutor($perfil);
-                $proyecto->addFirma($firma);
-                */
-            }
 
         $proyecto->setArticulos($articulos);
         $proyecto->setUsuarioCreacion($usuario->getUsername());
@@ -440,7 +420,6 @@ class RestController extends FOSRestController{
     {   
         $idProyecto=$request->request->get('idProyecto');
         $idtipoProyecto=$request->request->get('idtipoProyecto');
-        //$idBloque=$request->request->get('idBloque');
         $listaConcejales=$request->request->get('concejales');
         $listaBloques=$request->request->get('bloques');
 
@@ -451,19 +430,17 @@ class RestController extends FOSRestController{
      
         $usuario=$this->getUser();
 
-        $concejales=explode(',',$listaConcejales);
-        $bloques=explode(',',$listaBloques);
+        $concejales=(($listaConcejales=='')?[]:explode(',',$listaConcejales));
+        $bloques=(($listaBloques=''?[]:explode(',',$listaBloques));
 
         $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
         $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
         $tipoProyectoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoProyecto');
         $tipoProyecto=$tipoProyectoRepository->find($idtipoProyecto);
         $bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
-        //$bloque=$bloqueRepository->find($idBloque);
       
         $proyecto=$proyectoRepository->find($idProyecto);
         $proyecto->setTipoProyecto($tipoProyecto);
-        //$proyecto->setBloque($bloque);
         $proyecto->setVisto($visto);
         $proyecto->setConsiderandos($considerando);
         $proyecto->setQuienSanciona($quienSanciona);
@@ -475,10 +452,7 @@ class RestController extends FOSRestController{
                 $nuevosBloques[]=$bloque;
             }
         }
-        else {
-                $bloque=$bloqueRepository->find($bloques);
-                $nuevosBloques[]=$bloque;
-        }
+        
         $proyecto->setBloques($nuevosBloques);
 
         $nuevosConcejales=[];
@@ -497,20 +471,8 @@ class RestController extends FOSRestController{
                     */
             }
         }
-        else {
-                $perfil=$perfilRepository->find($concejales);
-                $nuevosConcejales[]=$perfil;
-                
-                /*
-                        ----------------------------------------------
-                        descomentar si se acuerda mail de notificacion
-                        ----------------------------------------------
-
-                $firma= new ProyectoFirma();
-                $proyecto->addFirma($firma);
-                */
-            }
-         $proyecto->setConcejales($nuevosConcejales);
+        
+        $proyecto->setConcejales($nuevosConcejales);
 
         $proyecto->setArticulos($articulos);
         $proyecto->setUsuarioModificacion($usuario->getUsername());
