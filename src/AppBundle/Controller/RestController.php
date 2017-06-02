@@ -431,7 +431,7 @@ class RestController extends FOSRestController{
         $usuario=$this->getUser();
 
         $concejales=(($listaConcejales=='')?[]:explode(',',$listaConcejales));
-        $bloques=(($listaBloques=''?[]:explode(',',$listaBloques));
+        $bloques=(($listaBloques='')?[]:explode(',',$listaBloques));
 
         $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
         $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
