@@ -1,0 +1,42 @@
+--- ../../vendor/tecnickcom/tcpdf/tcpdf.php	2015-09-12 07:08:34.000000000 -0300
++++ /var/www/vendor/tecnickcom/tcpdf/tcpdf.php	2017-06-04 17:11:50.961735361 -0300
+@@ -1815,6 +1815,8 @@
+ 	 */
+ 	protected $gdgammacache = array();
+ 
++    protected $baseImagePath=K_PATH_IMAGES;
++
+ 	//------------------------------------------------------------
+ 	// METHODS
+ 	//------------------------------------------------------------
+@@ -2206,6 +2208,12 @@
+ 		$this->setPageOrientation($orientation);
+ 	}
+ 
++    public function setBaseImagePath($baseImagePath=K_PATH_IMAGES){
++
++        $this->baseImagePath=$baseImagePath;
++    }
++
++
+ 	/**
+ 	 * Set page orientation.
+ 	 * @param $orientation (string) page orientation. Possible values are (case insensitive):<ul><li>P or Portrait (default)</li><li>L or Landscape</li><li>'' (empty string) for automatic orientation</li></ul>
+@@ -3402,13 +3410,13 @@
+ 				$this->x = $this->original_lMargin;
+ 			}
+ 			if (($headerdata['logo']) AND ($headerdata['logo'] != K_BLANK_IMAGE)) {
+-				$imgtype = TCPDF_IMAGES::getImageFileType(K_PATH_IMAGES.$headerdata['logo']);
++				$imgtype = TCPDF_IMAGES::getImageFileType($baseImagePath.$headerdata['logo']);
+ 				if (($imgtype == 'eps') OR ($imgtype == 'ai')) {
+-					$this->ImageEps(K_PATH_IMAGES.$headerdata['logo'], '', '', $headerdata['logo_width']);
++					$this->ImageEps($baseImagePath.$headerdata['logo'], '', '', $headerdata['logo_width']);
+ 				} elseif ($imgtype == 'svg') {
+-					$this->ImageSVG(K_PATH_IMAGES.$headerdata['logo'], '', '', $headerdata['logo_width']);
++					$this->ImageSVG($baseImagePath.$headerdata['logo'], '', '', $headerdata['logo_width']);
+ 				} else {
+-					$this->Image(K_PATH_IMAGES.$headerdata['logo'], '', '', $headerdata['logo_width']);
++					$this->Image($baseImagePath.$headerdata['logo'], '', '', $headerdata['logo_width']);
+ 				}
+ 				$imgy = $this->getImageRBY();
+ 			} else {
