@@ -36,9 +36,10 @@
         "jms/serializer-bundle": "^1.1",
         "friendsofsymfony/rest-bundle": "^2.1",
         "nelmio/cors-bundle": "^1.5",
-        "h4cc/wkhtmltopdf-amd64": "^0.12.3",
-        "knplabs/knp-snappy-bundle": "^1.4",
-        "spraed/pdf-generator-bundle": "^1.3"
+        "spraed/pdf-generator-bundle": "^1.3",
+        "whiteoctober/tcpdf-bundle": "^1.0",
+        "royopa/fpdf-symfony2": "^2.0",
+        "setasign/fpdi-tcpdf": "^1.6"
     },
     "require-dev": {
         "sensio/generator-bundle": "^3.0",
