@@ -302,7 +302,7 @@ class DefaultController extends Controller
                           Año:
                         </td>
                         <td style="width:10%;vertical-align: bottom;font-size:x-large;">
-                          <strong><i>'.$documento["ejercicio"].'</i></strong>
+                          <strong><i>'.$documento["ejercicio"].'</i></strong>x-large
                         </td>
                       </tr>
                     </table>';
@@ -372,7 +372,7 @@ class DefaultController extends Controller
 
             $pdf->AddPage('P','LEGAL');
             $pdf->Ln(5);
-            $html='<h3><strong><u>PROYECTO DE '. strtoupper($documento["tipo"]).'</u></strong></h3>';
+            $html='<h3><strong><u>PROYECTO DE '. strtoupper($tipo).'</u></strong></h3>';
             $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'C', true);
             
             $pdf->Ln(15);           
@@ -391,7 +391,7 @@ class DefaultController extends Controller
             $html=$documento["quienSanciona"];
             $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'C', true);
             $pdf->Ln(15);
-            $html='<h4><u>'.strtoupper($documento["tipo"]).'</u></h4>';
+            $html='<h4><u>'.strtoupper($tipo).'</u></h4>';
             $pdf->writeHTMLCell(185, '', '', '',$html, 0, 1, 0, true, 'C', true);
             $pdf->Ln(15);
             $html=$documento["articulos"];
