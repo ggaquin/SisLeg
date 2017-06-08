@@ -14,6 +14,99 @@ class ImpresionServicio
             $this->em=$em;
     }
     
+    public function traerParametrosCaratula($idExpediente)
+    {
+         try {
+
+            if (is_null($idExpediente))
+                return null;
+
+            $expedienteRepository=$this->em->getRepository('AppBundle:Expediente');
+            $expediente=$expedienteRepository->find($idExpediente);
+            $pgph_style='<p style="text-align: justify;margin-top: 0">&nbsp;&nbsp;&nbsp;&nbsp;';
+            $documento["caratula"]  = str_replace('<p>', $pgph_style, $expediente->getCaratula());
+            $documento["numeroExp"] = $expediente->getNumeroExpediente();
+            $documento["letra"] = $expediente->getTipoExpediente()->getLetra();
+            $documento["ejercicio"] = $expediente->getEjercicio();
+            $documento["entrada"] = $expediente->getFechaCreacionFormateada();
+
+            $idTipoExpediente = $expediente->getTipoExpediente()->getId();
+
+            $tieneProyecto=false;
+            $idProyecto=0;
+
+         
+            switch ($idTipoExpediente) {
+                case '3': //Petición Particular
+                    $documento["origen"]='Petición Particular';
+                    break;
+                case '4': //Departamento Ejecutivo
+                    $documento["origen"]='Departamento Ejecutivo';
+                    break;
+                case '5': //Secretaría Administrativa
+                    $documento["origen"]='Secretaría Administrativa';
+                    break;
+                default: //proyecto
+                    $proyecto=$expediente->getProyecto();
+                    $bloques=$proyecto->getBloques();
+                    $listaConcejales="";
+                    $perfilRepository=$this->em->getRepository('AppBundle:Perfil');
+                    foreach ($bloques as $bloque) {
+                       $listaConcejales.=($listaConcejales!=""?" - ":"");
+                       $listaConcejales.=$perfilRepository->findLegisladorByBloque_Id($bloque->getId());
+                    }
+                    $listaConcejales.=($listaConcejales!=""?" - ":"");
+                    $listaConcejales.=$proyecto->getListaConcejales(";");
+                    $documento["origen"]=$listaConcejales;
+                    $tieneProyecto=true;
+                    $idProyecto=$proyecto->getId();
+                    break;
+            }
+
+            $tipo = $expediente->getTipoExpediente()->getTipoExpediente();
+            $numeroCompleto = $expediente->getNumeroCompleto();
+
+            $nombreArchivo=sprintf('Expediente %s %s.pdf', $expediente->getNumeroCompleto(), date('d-m-Y H:i:s'));
+
+            $titulo=sprintf('Expediente %s', $expediente->getNumeroCompleto());
+
+            $nombreArchivo=sprintf('Expediente %s %s.pdf', $numeroCompleto, date('d-m-Y H:i:s'));
+            return array('documento' => $documento, 'tipo' => $tipo, 'nombreArchivo' => $nombreArchivo, 'titulo' => $titulo, 'tieneProyecto' => $tieneProyecto, 'idProyecto' => $idProyecto);
+            
+        } catch (Exception $e) {
+            throw $e;
+        }
+
+    }
+
+    public function traerParametrosProyecto($idProyecto)
+    {
+        
+        try{
+
+            if(is_null($idProyecto))
+                return null;
+
+            $proyectoRepository=$this->em->getRepository('AppBundle:Proyecto');
+            $proyecto=$proyectoRepository->find($idProyecto);
+            //return $proyecto;
+            
+            $documento = $this->traerDatosProyecto($proyecto);  
+            $numeroCompleto = $proyecto->getId();
+            $tipo=$proyecto->getTipoProyecto()->getTipoProyecto();
+
+            $nombreArchivo=sprintf('Proyecto %s %s.pdf', $numeroCompleto, date('d-m-Y H:i:s'));
+            $titulo=sprintf('Proyecto %s', $numeroCompleto);
+
+            return array('documento' => $documento, 'tipo' => $tipo, 'nombreArchivo' => $nombreArchivo, 'titulo' => $titulo);
+
+        } catch (Exception $e) {
+            throw $e;
+        }
+        
+    }
+
+    /*
     public function traerParametrosImpresionExpediente($idExpediente)
     {
         try {
@@ -89,7 +182,8 @@ class ImpresionServicio
         return array('documento' => $documento, 'encabezado' => $encabezado, 'nombreArchivo' => $nombreArchivo);
 
     }
-    
+    */
+
     protected function traerDatosProyecto($proyecto)
     {
         
@@ -104,13 +198,17 @@ class ImpresionServicio
         if(!is_null($proyecto)){
 
             $articulos=$proyecto->getArticulos();
+            $pgph_style='<p style="text-align: justify;margin-top: 0">&nbsp;&nbsp;&nbsp;&nbsp;';
+            $tipoProyecto=$proyecto->getTipoProyecto()->getTipoProyecto();
             
-            $quienSanciona=(($proyecto->getQuienSanciona()==1)
-                ?'<p class="ident"><strong>EL HONORABLE CONCEJO DELIBERANTE EN USO DE LAS FACULTADES QUE LE SON PROPIAS SANCIONA LA SIGUIENTE:</strong></p>'
-                :'<p class="ident"><strong>EL SR. PRESIDENTE DE ESTE HONORABLE CONCEJO DELIBERANTE, EN USO DE ATRIBUCIONES QUE LE SON PROPIAS, SANCIONA LA SIGUIENTE:</strong></p>');
-                
+            $quienSanciona=$pgph_style.'<strong>EL HONORABLE CONCEJO DELIBERANTE EN USO DE LAS FACULTADES QUE LE SON PROPIAS SANCIONA '.(($tipoProyecto=='Decreto')?'EL':'LA').' SIGUIENTE:</strong></p>';
+            
             foreach ($articulos as $articulo) {
-                 $htmlArticulos.='<strong><u>Artículo '.$articulo['numero'].'°</u>.- </strong>'.str_replace('</p>', '<br>',strip_tags($articulo['texto'],'</p>'));
+                $textoArticulo=substr($articulo['texto'], 3,strlen($articulo['texto'])+3);
+                $textoArticulo=str_replace('<p>', $pgph_style, $textoArticulo);
+                $htmlArticulos.='<p><strong><u>Artículo '.$articulo['numero'].'°</u>.- </strong>';
+                $htmlArticulos.=$textoArticulo;
+
                 if(count($articulo['incisos'])>0){
                     $htmlArticulos.='<ul style="list-style-type: none;">';
                     foreach ($articulo['incisos'] as $inciso) {
@@ -120,13 +218,13 @@ class ImpresionServicio
                 }
             } 
             
-            $visto=str_replace('<p>','<p class="ident">',strip_tags($proyecto->getVisto(),'<p>'));
-            $considerando=str_replace('<p>','<p class="ident">',strip_tags($proyecto->getConsiderandos(),'<p>'));
-            $tipoProyecto=$proyecto->getTipoProyecto()->getTipoProyecto();
+            $visto=str_replace('<p>', $pgph_style, $proyecto->getVisto());
+            $considerando= str_replace('<p>', $pgph_style, $proyecto->getConsiderandos());
+            
 
             return array('visto' => $visto, 'considerando' => $considerando, 
                          'tipoProyecto' => $tipoProyecto, 'articulos' => $htmlArticulos,
-                         'quienSanciona' => $quienSanciona, 'verProyecto' => !is_null($proyecto));
+                         'quienSanciona' => $quienSanciona);
         }
     }
     

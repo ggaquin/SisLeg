@@ -1052,15 +1052,15 @@ class RestController extends FOSRestController{
      */
     public function ejemploAction(Request $request){
 
-        $id=$request->get('id');
-        $usuarioRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
-        $usuario=$usuarioRepository->perfilPoseeUsuario($id);
+        //$r=$request->getSchemeAndHttpHost().'/document_bootstrap/escudopng2_mini.png';
 
+        $id = $request->get('id');
+         //$perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
+         //$legisladores=$perfilRepository->findLegisladorByBloque_Id($id);
+        $parametrosProyecto=$this->get('impresion_servicio')->traerParametrosProyecto($id);
 
+        return $this->view($parametrosProyecto,200);
 
-        return $this->view($usuario,200);
-
-    
     }
 
 

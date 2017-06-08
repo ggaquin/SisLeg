@@ -10,7 +10,7 @@ class PerfilRepository extends EntityRepository{
 
 	public function findLegisladorByNombre_Patron($patronBusqueda){
 
-		$rep=$this->getEntityManager()->getRepository('AppBundle:perfilLegislador');
+		$rep=$this->getEntityManager()->getRepository('AppBundle:PerfilLegislador');
 		$qb = $rep->createQueryBuilder('p');
 		$qb ->where($qb->expr()->orX(
 								       $qb->expr()->like('p.nombres', '?1'),
@@ -38,6 +38,22 @@ class PerfilRepository extends EntityRepository{
   		    ->setParameter(1,$id);
   		$usuario = $qb->getQuery()->getResult();
 	    return !empty((array)$usuario);
+	}
+
+	public function findLegisladorByBloque_Id($idBloque){
+
+		$rep=$this->getEntityManager()->getRepository('AppBundle:PerfilLegislador');
+		$qb = $rep->createQueryBuilder('p');
+		$qb = $qb->innerJoin('p.bloque','b');
+		$qb ->where('b.id = ?1')
+  		    ->setParameter(1, $idBloque);
+	    $concejales=$qb->getQuery()->getResult();
+	    //return $concejales;
+	    $listaConcejales="";
+	    foreach ($concejales as $concejal) {
+	    	$listaConcejales.=($listaConcejales!=""?" - ":"").$concejal->getNombreCompleto();
+	    }
+	    return $listaConcejales;
 	}
 }
 

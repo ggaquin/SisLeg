@@ -233,34 +233,178 @@ class DefaultController extends Controller
         $tipoDocumento = $request->query->get('tipoDocumento');
         $id = $request->query->get('id');
 
-        $parametros;
+        $idExpediente=(($tipoDocumento=='expediente')?$id:null);
+        $idProyecto=(($tipoDocumento=='proyecto')?$id:null);
+        $parametrosCaratula=null;
+        $parametrosProyecto=null;
 
-        if ($tipoDocumento=='expediente')
-            $parametros=$this->get('impresion_servicio')->traerParametrosImpresionExpediente($id);
+        $parametrosCaratula=$this->get('impresion_servicio')->traerParametrosCaratula($idExpediente);
 
-        if ($tipoDocumento=='proyecto')
-            $parametros=$this->get('impresion_servicio')->traerParametrosImpresionProyecto($id);
-       
-        $header=$this->renderView('documento/encabezado.html.twig', $parametros['encabezado']);
+        $idProyecto=(!is_null($parametrosCaratula)?$parametrosCaratula["idProyecto"]: $idProyecto);
+
+        $parametrosProyecto=$this->get('impresion_servicio')->traerParametrosProyecto($idProyecto);
         
-        $html= $this->renderView('documento/pdf.html.twig', $parametros['documento']);
+        $tipo = (!is_null($parametrosCaratula)?$parametrosCaratula["tipo"]:$parametrosProyecto["tipo"]);
 
-        $nombre = $parametros['nombreArchivo'];
+        $nombre = (!is_null($parametrosCaratula)?$parametrosCaratula["nombreArchivo"]:$parametrosProyecto["nombreArchivo"]);
+
+        $titulo = (!is_null($parametrosCaratula)?$parametrosCaratula["titulo"]:$parametrosCaratula["titulo"]);
+
+        $pdf = $this->get('white_october.tcpdf')->create();
         
+        // activa o desactiva encabezado de página
+        $pdf ->SetPrintHeader(true);
+        // activa o desactiva el pie de página
+        $pdf ->SetPrintFooter(false);
+        $pdf->setBaseImagePath($request->getSchemeAndHttpHost());
+        $urlImage='/document_bootstrap/escudopng2_mini.png';
+        // set default header data
+        $pdf ->SetAuthor('SisLeg');
+        $pdf ->SetTitle($titulo);
+        $pdf ->SetSubject($nombre);
+        $pdf ->SetHeaderData($urlImage, 8, $titulo, $tipo, array(0,0,0), array(0,0,0));
+        // set default monospaced font
+        $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+        // set margins
+        $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+        $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+        $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+        // set auto page breaks
+        $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+        $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+        /*---------------------------------------------------------------------------------------
+          --------------------------------------Caratula-----------------------------------------
+          ---------------------------------------------------------------------------------------*/
+
+        if (!is_null($parametrosCaratula))
+        {
+            $documento=$parametrosCaratula["documento"];
+            $pdf->AddPage('P','LEGAL');
+            $pdf->Ln(10);
+            $html='<h1>CONSEJO DELIBERANTE</h1><h3>DE</h3><h3>LOMAS DE ZAMORA</h3>';
+            $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'C', true);
+            $html='<table style="margin-top:15px;background-color:white">
+                      <tr style="height:20px">
+                        <td style="width:30%;vertical-align: bottom;">
+                          Expediente N°:
+                        </td>
+                        <td style="width:5%;font-size:x-large;vertical-align: bottom;">
+                          <strong><i>'.$documento["numeroExp"].'</i></strong>
+                        </td>
+                        <td style="width:20%;vertical-align: bottom;">
+                          Letra:
+                        </td>
+                        <td style="width:5%;vertical-align: bottom;font-size:x-large;">
+                          <strong><i>'.$documento["letra"].'</i></strong>
+                        </td>
+                        <td style="width:20%;vertical-align: bottom;">
+                          Año:
+                        </td>
+                        <td style="width:10%;vertical-align: bottom;font-size:x-large;">
+                          <strong><i>'.$documento["ejercicio"].'</i></strong>
+                        </td>
+                      </tr>
+                    </table>';
+            $pdf->Ln(15);
+            $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'C', true);
+            $pdf->Ln(15);
+            $pdf->writeHTMLCell(10, 80, '', '', '', 0, 0, 0, true, 'C', true);
+            $pdf->SetDrawColor(0, 0, 0, 3);
+            $pdf->SetFillColor(0, 0, 0, 3);
+            $html=$documento["caratula"];
+            $pdf->writeHTMLCell(165, 100, '', '', $html, 1, 1, 1, true, 'L', true);
+            $pdf->Ln(10);
+            $pdf->SetDrawColor(0, 0, 0, 100);
+            $pdf->SetFillColor(0, 0, 0, 0);
+            $html='<table style="background-color:white">
+                      <tr>
+                        <td style="width:140px;text-align: left;">Fecha Entrada:</td>
+                        <td style="text-align: left"><strong><i>'.$documento["entrada"].'</i></strong></td>
+                        </tr>
+                    </table>';
+            $pdf->writeHTMLCell(165, '', '', '', $html, 0, 1, 1, true, 'L', true);
+            $pdf->Ln(10);
+            $referencia=(($documento["tieneProyecto"]==false)?'Origen':'Autores');
+            $html='<table style="background-color:white">
+                      <tr>
+                        <td style="width:140px;text-align: left;">'.$referencia.':</td>
+                        <td style="width:500px;text-align: justify"><strong><i>'.$documento["origen"].'</i></strong>
+                        </td>
+                        </tr>
+                    </table>';
+            $pdf->writeHTMLCell(165, '', '', '', $html, 0, 1, 1, true, 'L', true);
+            $pdf->Ln(10);
+            $html='<table style="background-color:white">
+                      <tr>
+                        <td style="width:140px;">Observaciones:</td>
+                        </tr>
+                    </table>';
+            $pdf->writeHTMLCell(40, '', '', '', $html, 0, 0, 1, true, 'L', true);
+            $html='<hr><hr>';
+            $pdf->SetFillColor(0, 0, 0, 3);
+            $pdf->writeHTMLCell(145, 10, '' , '', '', 0, 1, 1, true, 'L', true);
+            $pdf->SetFillColor(0, 0, 0, 0);
+            $pdf->writeHTMLCell(40, '', '', '', '', 0, 0, 1, true, 'L', true);
+            $pdf->SetFillColor(0, 0, 0, 3);
+            $pdf->writeHTMLCell(145, '', '' , '', $html, 0, 1, 1, true, 'L', true);
+            $pdf->SetFillColor(0, 0, 0, 0);
+            $pdf->writeHTMLCell(40, '', '', '', '', 0, 0, 1, true, 'L', true);
+            $pdf->SetFillColor(0, 0, 0, 3);
+            $pdf->writeHTMLCell(145, '', '' , '', $html, 0, 1, 1, true, 'L', true);
+            $pdf->SetFillColor(0, 0, 0, 0);
+            $pdf->writeHTMLCell(40, '', '', '', '', 0, 0, 1, true, 'L', true);
+            $pdf->SetFillColor(0, 0, 0, 3);
+            $pdf->writeHTMLCell(145, '', '' , '', $html, 0, 1, 1, true, 'L', true);
+            $pdf->SetFillColor(0, 0, 0, 0);
+            $pdf->writeHTMLCell(40, '', '', '', '', 0, 0, 1, true, 'L', true);
+            $pdf->SetFillColor(0, 0, 0, 3);
+            $pdf->writeHTMLCell(145, '', '' , '', $html, 0, 1, 1, true, 'L', true);
+        }
+
+        /*---------------------------------------------------------------------------------------
+          --------------------------------------Proyecto-----------------------------------------
+          ---------------------------------------------------------------------------------------*/
+
+        if (!is_null($parametrosProyecto))
+        {
+            $documento=$parametrosProyecto["documento"];
+
+            $pdf->AddPage('P','LEGAL');
+            $pdf->Ln(5);
+            $html='<h3><strong><u>PROYECTO DE '. strtoupper($documento["tipo"]).'</u></strong></h3>';
+            $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'C', true);
+            
+            $pdf->Ln(15);           
+            $html='<h4><u>VISTO:</u></h4>';
+            $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'L', true);
+            $pdf->Ln(5);
+            $html=$documento["visto"];
+            $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'J', true);
+            $pdf->Ln(15);
+            $html='<h4><u>CONSIDERANDO:</u></h4>';
+            $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'L', true);
+            $pdf->Ln(5);
+            $html=$documento["considerando"];
+            $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'J', true);
+            $pdf->Ln(15);
+            $html=$documento["quienSanciona"];
+            $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'C', true);
+            $pdf->Ln(15);
+            $html='<h4><u>'.strtoupper($documento["tipo"]).'</u></h4>';
+            $pdf->writeHTMLCell(185, '', '', '',$html, 0, 1, 0, true, 'C', true);
+            $pdf->Ln(15);
+            $html=$documento["articulos"];
+            $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'J', true);
+        
+        } 
+
         return new Response(
-            $this->get('knp_snappy.pdf')->getOutputFromHtml($html,array(
-                'lowquality' => true,
-                'encoding' => 'utf-8',
-                'images' => true,
-                'header-html'=>$header
-                )),
+           $pdf->Output($nombre, 'D'),
             200,
             [
                 'Content-Type'        => 'application/pdf',
                 'Content-Disposition' => sprintf('attachment; filename="%s"', $nombre),
-                'lowquality' => true,
-                'encoding' => 'utf-8',
-                'images' => true
             ]
         );
     }
@@ -269,11 +413,13 @@ class DefaultController extends Controller
      * @Route("/pruebaVistas")
      */
     public function pruebaAction(Request $request){
-         $id=$request->get('id');
         
-        $r=$this->get('impresion_servicio')->traerParametrosImpresionExpediente($id);
+        $tipoDocumento = $request->query->get('tipoDocumento');
+        $id = $request->query->get('id');
+    
+        $r=$this->get('impresion_servicio')->traerParametrosCaratula($id);
 
-        return $this->render('documento/pdf.html.twig', $r['documento']);
+        return $this->render('documento/portada_expediente_2.html.twig', $r['documento']);
         
     }
 
