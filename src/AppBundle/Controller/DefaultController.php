@@ -248,7 +248,7 @@ class DefaultController extends Controller
 
         $nombre = (!is_null($parametrosCaratula)?$parametrosCaratula["nombreArchivo"]:$parametrosProyecto["nombreArchivo"]);
 
-        $titulo = (!is_null($parametrosCaratula)?$parametrosCaratula["titulo"]:$parametrosCaratula["titulo"]);
+        $titulo = (!is_null($parametrosCaratula)?$parametrosCaratula["titulo"]:$parametrosProyecto["titulo"]);
 
         $pdf = $this->get('white_october.tcpdf')->create();
         
@@ -257,7 +257,7 @@ class DefaultController extends Controller
         // activa o desactiva el pie de página
         $pdf ->SetPrintFooter(false);
         $pdf->setBaseImagePath($request->getSchemeAndHttpHost());
-        $urlImage='/document_bootstrap/escudopng2_mini.png';
+        $urlImage='/sisleg/web/document_bootstrap/escudopng2_mini.png';
         // set default header data
         $pdf ->SetAuthor('SisLeg');
         $pdf ->SetTitle($titulo);
@@ -289,7 +289,7 @@ class DefaultController extends Controller
                         <td style="width:30%;vertical-align: bottom;">
                           Expediente N°:
                         </td>
-                        <td style="width:5%;font-size:x-large;vertical-align: bottom;">
+                        <td style="width:15%;font-size:x-large;vertical-align: bottom;">
                           <strong><i>'.$documento["numeroExp"].'</i></strong>
                         </td>
                         <td style="width:20%;vertical-align: bottom;">
@@ -302,7 +302,7 @@ class DefaultController extends Controller
                           Año:
                         </td>
                         <td style="width:10%;vertical-align: bottom;font-size:x-large;">
-                          <strong><i>'.$documento["ejercicio"].'</i></strong>x-large
+                          <strong><i>'.$documento["ejercicio"].'</i></strong>
                         </td>
                       </tr>
                     </table>';
@@ -374,26 +374,37 @@ class DefaultController extends Controller
             $pdf->Ln(5);
             $html='<h3><strong><u>PROYECTO DE '. strtoupper($tipo).'</u></strong></h3>';
             $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'C', true);
-            
             $pdf->Ln(15);           
             $html='<h4><u>VISTO:</u></h4>';
+            $y=$pdf->getY();
             $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'L', true);
-            $pdf->Ln(5);
+            if($pdf->getY()>$y)
+                $pdf->Ln(5);
             $html=$documento["visto"];
+             $y=$pdf->getY();  
             $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'J', true);
-            $pdf->Ln(15);
+            if($pdf->getY()>$y)
+                $pdf->Ln(15);
             $html='<h4><u>CONSIDERANDO:</u></h4>';
+            $y=$pdf->getY();
             $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'L', true);
-            $pdf->Ln(5);
+            if($pdf->getY()>$y)
+                $pdf->Ln(5);
             $html=$documento["considerando"];
+            $y=$pdf->getY();
             $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'J', true);
-            $pdf->Ln(15);
+            if($pdf->getY()>$y)
+                $pdf->Ln(15);
             $html=$documento["quienSanciona"];
+            $y=$pdf->getY();
             $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'C', true);
-            $pdf->Ln(15);
+            if($pdf->getY()>$y)  
+                $pdf->Ln(15);
             $html='<h4><u>'.strtoupper($tipo).'</u></h4>';
+            $y=$pdf->getY();
             $pdf->writeHTMLCell(185, '', '', '',$html, 0, 1, 0, true, 'C', true);
-            $pdf->Ln(15);
+            if($pdf->getY()>$y)
+                $pdf->Ln(15);
             $html=$documento["articulos"];
             $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'J', true);
         
