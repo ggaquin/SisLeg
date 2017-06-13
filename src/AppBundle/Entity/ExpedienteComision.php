@@ -58,7 +58,7 @@ class ExpedienteComision
    /**
      * @var \AppBundle\Entity\Comision
      *
-     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Comision")
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Comision", inversedBy="expedientesAsignados")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="idComision", referencedColumnName="idComision")
      * })

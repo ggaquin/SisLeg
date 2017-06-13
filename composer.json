@@ -3,7 +3,7 @@
     "license": "proprietary",
     "type": "project",
     "config": {
-        "vendor-dir": "../vendor"
+        "vendor-dir": "vendor"
     },
     "autoload": {
         "psr-4": {

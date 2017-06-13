@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
   <entity name="AppBundle\Entity\Perfil" table="perfil" inheritance-type="SINGLE_TABLE" repository-class="AppBundle\Repository\PerfilRepository">
+    <indexes>
+      <index name="perfil_bloque_idx" columns="idBloque"/>
+    </indexes>
     <discriminator-column name="discriminador" type="string" length="20"/>
     <discriminator-map>
         <discriminator-mapping value="basico" class="AppBundle\Entity\Perfil" />
@@ -14,9 +17,6 @@
             <lifecycle-callback type="preUpdate" method="almacenarImagen"/>
             <lifecycle-callback type="preUpdate" method="removeImage"/>     
     </lifecycle-callbacks>
-    <indexes>
-      <index name="perfil_bloque_idx" columns="idBloque"/>
-    </indexes>
     <id name="id" type="integer" column="idPerfil">
       <generator strategy="IDENTITY"/>
     </id>

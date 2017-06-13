@@ -22,20 +22,7 @@
       </options>
     </field>
     <field name="activo" type="boolean" column="activo" nullable="false"/>
-    <one-to-one field="perfil" target-entity="Perfil" fetch="LAZY">
-      <cascade>
-        <cascade-persist/>
-      </cascade>
-      <join-columns>
-        <join-column name="idPerfil" referenced-column-name="idPerfil" nullable="false" fetch="LAZY"/>
-      </join-columns>
-    </one-to-one>
-    <many-to-one field="rol" target-entity="Rol" nullable="false" fetch="LAZY">
-      <join-columns>
-        <join-column name="idRol" referenced-column-name="idRol"/>
-      </join-columns>
-    </many-to-one>
-    <field name="fechaCreacion" type="datetime" column="fechaCreacion" nullable="false">
+     <field name="fechaCreacion" type="datetime" column="fechaCreacion" nullable="false">
     </field>
     <field name="usuarioCreacion" type="string" column="usuarioCreacion" length="70" nullable="false">
       <options>
@@ -49,5 +36,18 @@
         <option name="fixed"/>
       </options>
     </field>
+    <one-to-one field="perfil" target-entity="Perfil" fetch="LAZY">
+      <cascade>
+        <cascade-persist/>
+      </cascade>
+      <join-columns>
+        <join-column name="idPerfil" referenced-column-name="idPerfil" nullable="false"/>
+      </join-columns>
+    </one-to-one>
+    <many-to-one field="rol" target-entity="Rol" fetch="LAZY">
+      <join-columns>
+        <join-column name="idRol" referenced-column-name="idRol"/>
+      </join-columns>
+    </many-to-one>
   </entity>
 </doctrine-mapping>

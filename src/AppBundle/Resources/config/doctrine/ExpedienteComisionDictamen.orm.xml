@@ -7,12 +7,7 @@
     <id name="id" type="integer" column="idExpedienteComisionDictamen">
       <generator strategy="IDENTITY"/>
     </id>
-    <many-to-one field="expedienteComision" target-entity="ExpedienteComision" inversed-by="dictamenes" fetch="LAZY">
-      <join-columns>
-        <join-column name="idExpedienteComision" referenced-column-name="idExpedienteComision"/> 
-      </join-columns>
-    </many-to-one>
-    <field name="dictamen" type="string" column="dictamen" length="500" nullable="false">
+     <field name="dictamen" type="string" column="dictamen" length="500" nullable="false">
     </field>
     <field name="usuarioCreacion" type="string" column="usuarioCreacion" length="70" nullable="false">
     </field>
@@ -20,6 +15,11 @@
       <options>
         <option name="default">CURRENT_TIMESTAMP</option>
       </options>
-    </field>  
+    </field> 
+    <many-to-one field="expedienteComision" target-entity="ExpedienteComision" inversed-by="dictamenes" fetch="LAZY">
+      <join-columns>
+        <join-column name="idExpedienteComision" referenced-column-name="idExpedienteComision"/> 
+      </join-columns>
+    </many-to-one> 
   </entity>  
 </doctrine-mapping>

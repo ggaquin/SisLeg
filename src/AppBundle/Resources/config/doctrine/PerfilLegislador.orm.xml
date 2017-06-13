@@ -6,14 +6,14 @@
         <option name="fixed"/>
       </options>
     </field>
+    <field name="desde" type="datetime" column="desde" nullable="true">
+    </field>
+    <field name="hasta" type="datetime" column="hasta" nullable="true">
+    </field>
   	<many-to-one field="bloque" target-entity="Bloque" fetch="LAZY">
   		<join-columns>
     		<join-column name="idBloque" referenced-column-name="idBloque"/>
   		</join-columns>
     </many-to-one>
-    <field name="desde" type="datetime" column="desde" nullable="true">
-    </field>
-    <field name="hasta" type="datetime" column="hasta" nullable="true">
-    </field>
   </entity>
 </doctrine-mapping>

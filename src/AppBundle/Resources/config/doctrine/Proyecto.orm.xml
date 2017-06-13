@@ -3,7 +3,6 @@
   <entity name="AppBundle\Entity\Proyecto" table="proyecto" repository-class="AppBundle\Repository\ProyectoRepository">
     <indexes>
       <index name="proyecto_tipoProyecto_idx" columns="idTipoProyecto"/>
-      <!-- <index name="proyecto_bloque_idx" columns="idBloque"/> -->
     </indexes>
     <unique-constraints>
       <unique-constraint columns="idExpediente" name="UNIQ_proyecto_expediente_idx" />
@@ -11,21 +10,6 @@
     <id name="id" type="integer" column="idProyecto">
       <generator strategy="IDENTITY"/>
     </id>
-    <one-to-one field="expediente" target-entity="Expediente" inversed-by="proyecto" fetch="LAZY">
-      <join-columns>
-        <join-column name="idExpediente" referenced-column-name="idExpediente"/>
-      </join-columns>
-    </one-to-one>
-    <many-to-one field="tipoProyecto" target-entity="TipoProyecto" fetch="LAZY">
-      <join-columns>
-        <join-column name="idTipoProyecto" referenced-column-name="idTipoProyecto"/>
-      </join-columns>
-    </many-to-one>
-  <!--    <many-to-one field="bloque" target-entity="Bloque" fetch="LAZY">
-      <join-columns>
-        <join-column name="idBloque" referenced-column-name="idBloque"/>
-      </join-columns>
-    </many-to-one> -->
     <field name="visto" type="text" column="visto" nullable="false">
     </field>
     <field name="considerandos" type="text" column="considerandos" nullable="false">
@@ -34,6 +18,36 @@
     </field>
     <field name="articulos" type="json_array" column="articulos" nullable="false">
     </field>
+    <field name="fechaCreacion" type="datetime" column="fechaCreacion" nullable="false">
+    </field>
+    <field name="usuarioCreacion" type="string" column="usuarioCreacion" length="70" 
+           nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="fechaModificacion" type="datetime" column="fechaModificacion" nullable="true"  >
+    </field>
+     <field name="usuarioModificacion" type="string" column="usuarioModificacion" length="70" nullable="true">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <one-to-one field="expediente" target-entity="Expediente" inversed-by="proyecto" fetch="LAZY">
+      <join-columns>
+        <join-column name="idExpediente" referenced-column-name="idExpediente"/>
+      </join-columns>
+    </one-to-one>
+    <one-to-many field="firmas" target-entity="ProyectoFirma" mapped-by="proyecto">
+      <cascade>
+        <cascade-persist/>
+      </cascade>
+    </one-to-many>
+    <many-to-one field="tipoProyecto" target-entity="TipoProyecto" fetch="LAZY">
+      <join-columns>
+        <join-column name="idTipoProyecto" referenced-column-name="idTipoProyecto"/>
+      </join-columns>
+    </many-to-one>
     <many-to-many field="concejales" target-entity="Perfil" fetch="EAGER" orphan-removal="true">
       <join-table name="legisladores_proyectos">
         <join-columns>
@@ -54,25 +68,5 @@
         </inverse-join-columns>
       </join-table>
     </many-to-many>
-    <one-to-many field="firmas" target-entity="ProyectoFirma" mapped-by="proyecto">
-      <cascade>
-        <cascade-persist/>
-      </cascade>
-    </one-to-many>
-    <field name="fechaCreacion" type="datetime" column="fechaCreacion" nullable="false">
-    </field>
-    <field name="usuarioCreacion" type="string" column="usuarioCreacion" length="70" 
-           nullable="false">
-      <options>
-        <option name="fixed"/>
-      </options>
-    </field>
-    <field name="fechaModificacion" type="datetime" column="fechaModificacion" nullable="true"  >
-    </field>
-     <field name="usuarioModificacion" type="string" column="usuarioModificacion" length="70" nullable="true">
-      <options>
-        <option name="fixed"/>
-      </options>
-    </field>
   </entity>
 </doctrine-mapping>

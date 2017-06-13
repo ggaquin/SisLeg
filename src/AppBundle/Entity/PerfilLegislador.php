@@ -91,7 +91,7 @@ class PerfilLegislador extends Perfil
      */
     public function getOficina()
     {
-        return $this->$oficina;
+        return $this->oficina;
     }
 
     /**

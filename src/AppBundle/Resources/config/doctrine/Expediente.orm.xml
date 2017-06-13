@@ -24,22 +24,12 @@
         <option name="fixed"/>
       </options>
     </field>
-    <many-to-one field="estadoExpediente" target-entity="EstadoExpediente" fetch="LAZY">
-      <join-columns>
-        <join-column name="idEstadoExpediente" referenced-column-name="idEstadoExpediente"/>
-      </join-columns>
-    </many-to-one>
     <field name="numeroExpediente" type="string" column="numeroExpediente" length="50" 
            nullable="false">
       <options>
         <option name="fixed"/>
       </options>
     </field>
-    <many-to-one field="tipoExpediente" target-entity="TipoExpediente" fetch="LAZY">
-      <join-columns>
-        <join-column name="idTipoExpediente" referenced-column-name="idTipoExpediente"/>
-      </join-columns>
-    </many-to-one>
     <field name="caratula" type="string" column="caratula" length="500" nullable="false">
       <options>
         <option name="fixed"/>
@@ -60,7 +50,7 @@
         <option name="fixed"/>
       </options>
     </field>
-     <field name="listaImagenes" type="object" column="listaImagenes" nullable="true">
+    <field name="listaImagenes" type="object" column="listaImagenes" nullable="true">
     </field>
     <field name="fechaCreacion" type="datetime" column="fechaCreacion" nullable="false"/>
     <field name="usuarioCreacion" type="string" column="usuarioCreacion" length="70" 
@@ -83,6 +73,28 @@
         <option name="fixed"/>
       </options>
     </field>
-    <one-to-one field="proyecto" target-entity="Proyecto" mapped-by="expediente" />  
+    <one-to-one field="proyecto" target-entity="Proyecto" mapped-by="expediente" orphan-removal="true">
+    	<cascade>
+    		<cascade-persist/>
+    		<cascade-remove/>
+    	</cascade>
+    </one-to-one>  
+    <one-to-many field="giros" mapped-by="expediente" target-entity="Giro" orphan-removal="true">
+    	<cascade>
+    		<cascade-persist/>
+    		<cascade-remove/>
+    	</cascade>
+    </one-to-many>
+    <one-to-many field="informes" mapped-by="expediente" target-entity="Informe"/>
+    <many-to-one field="estadoExpediente" target-entity="EstadoExpediente" fetch="LAZY">
+      <join-columns>
+        <join-column name="idEstadoExpediente" referenced-column-name="idEstadoExpediente"/>
+      </join-columns>
+    </many-to-one>
+    <many-to-one field="tipoExpediente" target-entity="TipoExpediente" fetch="LAZY">
+      <join-columns>
+        <join-column name="idTipoExpediente" referenced-column-name="idTipoExpediente"/>
+      </join-columns>
+    </many-to-one>
   </entity>
 </doctrine-mapping>

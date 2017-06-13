@@ -6,13 +6,9 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use JMS\Serializer\SerializerBuilder;
-
 // use twig\twig;
 
 use AppBundle\Entity\Rol;
-use AppBundle\Entity\Usario;
-use AppBundle\Entity\Perfil;
 use AppBundle\Entity\Bloque;
 use AppBundle\Entity\Proyecto;
 
@@ -78,10 +74,7 @@ class DefaultController extends Controller
      */
     public function indexAction(Request $request)
     {
-        $usuario=$this->getUser();
-        $usuarioRepository=$this->getDoctrine()->getRepository('AppBundle:Usuario');
-        $usuario_actual=$usuarioRepository->findOneByUsuario($usuario->getUsername());
-
+ 
         return $this->render('default/index.html.twig', [
             'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
         ]);
@@ -255,9 +248,10 @@ class DefaultController extends Controller
         // activa o desactiva encabezado de página
         $pdf ->SetPrintHeader(true);
         // activa o desactiva el pie de página
-        $pdf ->SetPrintFooter(false);
-        $pdf->setBaseImagePath($request->getSchemeAndHttpHost());
-        $urlImage='/sisleg/web/document_bootstrap/escudopng2_mini.png';
+        if ($tipoDocumento=='proyecto') $pdf ->SetPrintFooter(true); else $pdf ->SetPrintFooter(false);
+        $base=$request->getSchemeAndHttpHost().$request->getBasePath();
+        $pdf->setBaseImagePath($base);
+        $urlImage='/document_bootstrap/escudopng2_mini.png';
         // set default header data
         $pdf ->SetAuthor('SisLeg');
         $pdf ->SetTitle($titulo);
@@ -369,45 +363,39 @@ class DefaultController extends Controller
         if (!is_null($parametrosProyecto))
         {
             $documento=$parametrosProyecto["documento"];
-
+            $max_pint_area=356-25;
             $pdf->AddPage('P','LEGAL');
             $pdf->Ln(5);
             $html='<h3><strong><u>PROYECTO DE '. strtoupper($tipo).'</u></strong></h3>';
             $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'C', true);
             $pdf->Ln(15);           
             $html='<h4><u>VISTO:</u></h4>';
-            $y=$pdf->getY();
             $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'L', true);
-            if($pdf->getY()>$y)
+            if($pdf->getY()+5>$max_pint_area || $pdf->getY()>28)
                 $pdf->Ln(5);
-            $html=$documento["visto"];
-             $y=$pdf->getY();  
+            $html=$documento["visto"]; 
             $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'J', true);
-            if($pdf->getY()>$y)
+            if($pdf->getY()+15<$max_pint_area || $pdf->getY()>28)
                 $pdf->Ln(15);
             $html='<h4><u>CONSIDERANDO:</u></h4>';
-            $y=$pdf->getY();
             $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'L', true);
-            if($pdf->getY()>$y)
+            if($pdf->getY()+5<$max_pint_area || $pdf->getY()>28)
                 $pdf->Ln(5);
             $html=$documento["considerando"];
-            $y=$pdf->getY();
             $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'J', true);
-            if($pdf->getY()>$y)
+            if($pdf->getY()+15<$max_pint_area || $pdf->getY()>28)
                 $pdf->Ln(15);
             $html=$documento["quienSanciona"];
-            $y=$pdf->getY();
             $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'C', true);
-            if($pdf->getY()>$y)  
+            if($pdf->getY()+15<$max_pint_area || $pdf->getY()>28)  
                 $pdf->Ln(15);
             $html='<h4><u>'.strtoupper($tipo).'</u></h4>';
-            $y=$pdf->getY();
             $pdf->writeHTMLCell(185, '', '', '',$html, 0, 1, 0, true, 'C', true);
-            if($pdf->getY()>$y)
+            if($pdf->getY()+15<$max_pint_area || $pdf->getY()>28)
                 $pdf->Ln(15);
             $html=$documento["articulos"];
             $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'J', true);
-        
+                  
         } 
 
         return new Response(
@@ -424,14 +412,14 @@ class DefaultController extends Controller
      * @Route("/pruebaVistas")
      */
     public function pruebaAction(Request $request){
-        
+        /*
         $tipoDocumento = $request->query->get('tipoDocumento');
         $id = $request->query->get('id');
     
         $r=$this->get('impresion_servicio')->traerParametrosCaratula($id);
 
         return $this->render('documento/portada_expediente_2.html.twig', $r['documento']);
-        
+        */
     }
 
 }

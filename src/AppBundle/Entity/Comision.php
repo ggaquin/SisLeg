@@ -68,7 +68,8 @@ class Comision
     /**
      * @var \Doctrine\Common\Collections\Collection
      *
-     * @ORM\OneToMany(targetEntity="AppBundle\Entity\ExpedienteComision", mappedBy="comision")
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\ExpedienteComision", mappedBy="comision", 
+     * 				  cascade={"persist", "remove"},orphanRemoval=true)
      */
 	private $expedientesAsignados;
 
@@ -209,7 +210,7 @@ class Comision
      *
      * @return Comision
      */
-    public function setTitulares($titulares)
+    public function setTitulares($nuevosTitulares)
     {
         $collection= new \Doctrine\Common\Collections\ArrayCollection();
         foreach ($nuevosTitulares as $titular) {
@@ -259,7 +260,7 @@ class Comision
      *
      * @return Comision
      */
-    public function setSuplentes($suplentes)
+    public function setSuplentes($nuevosSuplentes)
     {
         $collection= new \Doctrine\Common\Collections\ArrayCollection();
         foreach ($nuevosSuplentes as $suplente) {
@@ -277,7 +278,8 @@ class Comision
      */
     public function addExpedienteAsignado(\AppBundle\Entity\ExpedienteComision $expedienteAsignado)
     {
-        $this->expedientesAsignados[] = $expedienteAsignado;
+        $expedienteAsignado->setExpediente($this);
+    	$this->expedientesAsignados[] = $expedienteAsignado;
 
         return $this;
     }

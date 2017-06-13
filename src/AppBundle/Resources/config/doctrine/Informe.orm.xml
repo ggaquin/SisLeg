@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\Informe" table="informe">
+  	<indexes>
+  		<index columns="idDestino" name="informe_destino_idx"></index>
+  		<index columns="idExpediente" name="informe_expediente_idx"></index>
+  	</indexes>
+    <id name="id" type="integer" column="idInforme">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="solicitud" type="string" column="solicitud" length="200" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="fechaEmision" type="datetime" column="fechaEmision" nullable="true">
+    </field>
+    <field name="fechaIngresoRespuesta" type="datetime" column="fechaIngresoRespuesta" nullable="true">
+    </field>
+    <field name="fojas" type="string" column="fojas" length="50" nullable="true">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="usuarioCreacion" type="string" column="usuarioCreacion" length="70" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="fechaCreacion" type="datetime" column="fechaCreacion" nullable="false">
+    </field>
+    <field name="usuarioModificacion" type="string" column="usuarioModificacion" length="70" nullable="true">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="fechaModificacion" type="datetime" column="fechaModificacion" nullable="true">
+    </field>
+    <many-to-one field="destino" target-entity="Oficina">
+    	<join-columns>
+    		<join-column name="idDestino" referenced-column-name="idOficina"/>
+    	</join-columns>
+    </many-to-one>
+    <many-to-one field="expediente" target-entity="Expediente" inversed-by="informes">
+    	<join-columns>
+    		<join-column name="idExpediente" referenced-column-name="idExpediente"/>
+    	</join-columns>
+    </many-to-one>
+  </entity>
+</doctrine-mapping>

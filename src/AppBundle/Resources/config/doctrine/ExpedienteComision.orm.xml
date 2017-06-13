@@ -19,16 +19,16 @@
       </options>
     </field>
     <field name="fechaAprobacion" type="datetime" column="fechaAprobacion" nullable="true"/>
-    <many-to-one field="comision" target-entity="Comision" fetch="LAZY" inversed-by="expedientesAsignados">
+    <one-to-many field="dictamenes" target-entity="ExpedienteComisionDictamen" mapped-by="expedienteComision"/>
+    <many-to-one field="comision" target-entity="Comision" inversed-by="expedientesAsignados">
       <join-columns>
         <join-column name="idComision" referenced-column-name="idComision"/>
       </join-columns>
     </many-to-one>
-    <many-to-one field="expediente" target-entity="Expediente" fetch="LAZY">
+    <many-to-one field="expediente" target-entity="Expediente">
       <join-columns>
         <join-column name="idExpediente" referenced-column-name="idExpediente"/> 
       </join-columns>
     </many-to-one>
-    <one-to-many field="dictamenes" target-entity="ExpedienteComisionDictamen" mapped-by="expedienteComision"/>
   </entity>
 </doctrine-mapping>

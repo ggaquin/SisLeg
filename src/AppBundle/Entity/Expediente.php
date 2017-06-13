@@ -4,7 +4,6 @@ namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\VirtualProperty;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use \DateTime;
 use AppBundle\Popo\Image;
 
@@ -59,7 +58,7 @@ class Expediente
     public function setArchivoBorrado($archivoBorrado)
     {
         if(is_null($this->id)){
-            throw new Exception("setArchivoBorrado :accion no permitida si el expediente no esta persistido");
+            throw new \Exception("setArchivoBorrado :accion no permitida si el expediente no esta persistido");
         }
         else{    
             $this->archivoBorrado = $archivoBorrado;
@@ -196,6 +195,22 @@ class Expediente
      *  @ORM\OneToOne(targetEntity="\AppBundle\Entity\Proyecto", mappedBy="expediente")
      */
     private $proyecto;
+    
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     *
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\Giro", mappedBy="expediente", 
+     * 				  cascade={"persist", "remove"},orphanRemoval=true)
+     */
+    private $giros;
+    
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     *
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\Informe", mappedBy="expediente",
+     *  			  cascade={"persist", "remove"},orphanRemoval=true)
+     */
+    private $informes;
 
     //------------------------------------constructor---------------------------------------------
 
@@ -204,8 +219,10 @@ class Expediente
      */
     public function __construct()
     {
-       $fechaCreacion=new \DateTime("now");
-       $archivoBorrado="";
+       $this->fechaCreacion=new \DateTime("now");
+       $this->archivoBorrado="";
+       $this->giros = new \Doctrine\Common\Collections\ArrayCollection();
+       $this->informes = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     //-------------------------------setters y getters--------------------------------------------
@@ -590,6 +607,120 @@ class Expediente
     public function getUsuarioAprobacion()
     {
         return $this->usuarioAprobacion;
+    }
+    
+    /**
+     * set giros
+     *
+     * @param array $nuevosGiros
+     *
+     * @return Expediente
+     */
+    public function setGiros($nuevosGiros)
+    {
+    	$collection= new \Doctrine\Common\Collections\ArrayCollection();
+    	foreach ($nuevosGiros as $giro) {
+    		$giro->setExpediente($this);
+    		$collection[]=$giro;
+    	}
+    	$this->giros = $collection;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Add giro
+     *
+     * @param \AppBundle\Entity\Giro $giro
+     *
+     * @return Expediente
+     */
+    public function addGiro(\AppBundle\Entity\Giro $giro)
+    {
+    	$giro->setExpediente($this);
+    	$this->giros[] = $giro;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Remove giro
+     *
+     * @param \AppBundle\Entity\Giro $giro
+     *
+     * @return Expediente
+     */
+    public function removeGiro(\AppBundle\Entity\Giro $giro)
+    {
+    	$this->giros->removeElement($giro);
+    	return $this;
+    }
+    
+    /**
+     * Get giros
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getGiros()
+    {
+    	return $this->giros;
+    }
+    
+    /**
+     * set informe
+     *
+     * @param array $nuevosInformes
+     *
+     * @return Expediente
+     */
+    public function setInformes($nuevosInformes)
+    {
+    	$collection= new \Doctrine\Common\Collections\ArrayCollection();
+    	foreach ($nuevosInformes as $informe) {
+    		$informe->setExpediente($this);
+    		$collection[]=$informe;
+    	}
+    	$this->informes = $collection;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Add informe
+     *
+     * @param \AppBundle\Entity\Informe $informe
+     *
+     * @return Expediente
+     */
+    public function addInforme(\AppBundle\Entity\Informe $informe)
+    {
+    	$informe->setExpediente($this);
+    	$this->informes[] = $informe;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Remove informe
+     *
+     * @param \AppBundle\Entity\Informe informe
+     *
+     * @return Expediente
+     */
+    public function removeInforme(\AppBundle\Entity\Informe $informe)
+    {
+    	$this->informes->removeElement($informe);
+    	return $this;
+    }
+    
+    /**
+     * Get informes
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getInformes()
+    {
+    	return $this->informes;
     }
 
     //--------------------------------propiedades protegidas---------------------------------------

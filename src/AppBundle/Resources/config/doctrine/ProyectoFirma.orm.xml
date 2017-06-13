@@ -8,16 +8,6 @@
     <id name="id" type="integer" column="idProyectoFirma">
       <generator strategy="IDENTITY"/>
     </id>
-    <many-to-one field="autor" target-entity="Perfil" fetch="LAZY">
-      <join-columns>
-        <join-column name="idPerfil" referenced-column-name="idPerfil"/>
-      </join-columns>
-    </many-to-one>
-    <many-to-one field="proyecto" target-entity="Proyecto" fetch="LAZY" inversed-by="firmas">
-      <join-columns>
-        <join-column name="idProyecto" referenced-column-name="idProyecto"/>
-      </join-columns>
-    </many-to-one>
     <field name="confirmado" type="boolean" column="confirmado" nullable="false">
       <options>
         <option name="fixed"/>
@@ -28,5 +18,15 @@
         <option name="fixed"/>
       </options>
     </field>
+    <many-to-one field="autor" target-entity="Perfil" fetch="LAZY">
+      <join-columns>
+        <join-column name="idPerfil" referenced-column-name="idPerfil"/>
+      </join-columns>
+    </many-to-one>
+    <many-to-one field="proyecto" target-entity="Proyecto" fetch="LAZY" inversed-by="firmas">
+      <join-columns>
+        <join-column name="idProyecto" referenced-column-name="idProyecto"/>
+      </join-columns>
+    </many-to-one>
   </entity>
 </doctrine-mapping>

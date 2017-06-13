@@ -3,15 +3,12 @@
 namespace AppBundle\Controller;
 
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\FOSRestController;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use JMS\Serializer\SerializerBuilder;
 use FOS\RestBundle\View\View;
-use Symfony\Component\HttpFoundation\File\UploadedFile;;
+;
 
 // use twig\twig;
 
@@ -23,7 +20,6 @@ use AppBundle\Entity\PerfilPublico;
 use AppBundle\Entity\Bloque;
 use AppBundle\Entity\Expediente;
 use AppBundle\Entity\Proyecto;
-use AppBundle\Entity\ProyectoFirma;
 use AssistBundle\Entity\AdministracionSesion;
 
 
@@ -502,7 +498,6 @@ class RestController extends FOSRestController{
             $archivos=$request->files->all();
             $usuario=$this->getUser();
 
-            $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
             $tipoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
             $estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
             $estadoExpediente=$estadoExpedienteRepository->find(1);
@@ -567,13 +562,10 @@ class RestController extends FOSRestController{
             $idTipoExpediente=$request->request->get('selTipoExpedienteMod');
             $caratula=$request->request->get('caratulaMod');
 
-            // var_dump($request->request->all());
-            // die();
 
             $archivos=$request->files->all();
             $usuario=$this->getUser();
 
-            $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
             $tipoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
            
             $expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
@@ -665,7 +657,6 @@ class RestController extends FOSRestController{
             $clave=$request->request->get('clave');
             $eMail=$request->request->get('eMail');
             $telefono=$request->request->get('telefono');
-            $oficina=$request->request->get('oficina');
             $domicilio=$request->request->get('domicilio');
             $documento=$request->request->get('documento');
             $idBloque=$request->request->get('selBloque');
@@ -772,10 +763,8 @@ class RestController extends FOSRestController{
                 $clave=$request->request->get('claveMod');
                 $eMail=$request->request->get('eMailMod');
                 $telefono=$request->request->get('telefonoMod');
-                $oficina=$request->request->get('oficinaMod');
                 $domicilio=$request->request->get('domicilioMOd');
                 $documento=$request->request->get('documentoMod');
-                $idBloque=$request->request->get('selBloqueMod');
                 $archivos=$request->files->all();
                 $usuarioSesion=$this->getUser();
 
@@ -1048,18 +1037,20 @@ class RestController extends FOSRestController{
     }
 
     /**
-     *  @Rest\Get("/api/ejemplo/{id}")
+     *  @Rest\Get("/api/ejemplo")
      */
     public function ejemploAction(Request $request){
 
         //$r=$request->getSchemeAndHttpHost().'/document_bootstrap/escudopng2_mini.png';
 
-        $id = $request->get('id');
+        return $this->view($request->getSchemeAndHttpHost().'/document_bootstrap/escudopng2_mini.png',200);
+
+        //$id = $request->get('id');
          //$perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
          //$legisladores=$perfilRepository->findLegisladorByBloque_Id($id);
-        $parametrosProyecto=$this->get('impresion_servicio')->traerParametrosProyecto($id);
+        //$parametrosProyecto=$this->get('impresion_servicio')->traerParametrosProyecto($id);
 
-        return $this->view($parametrosProyecto,200);
+        //return $this->view($parametrosProyecto,200);
 
     }
 

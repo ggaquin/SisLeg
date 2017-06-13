@@ -4,8 +4,8 @@ namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\AdvancedUserInterface;
-use Symfony\Component\Security\Core\User\EquatableInterface;
 use JMS\Serializer\Annotation\VirtualProperty;
+use Symfony\Component\Security\Core\User\EquatableInterface;
 
 /**
  * Usuario
@@ -19,7 +19,7 @@ use JMS\Serializer\Annotation\VirtualProperty;
  *             )
  * @ORM\Entity
  */
-class Usuario implements AdvancedUserInterface, \Serializable
+class Usuario implements AdvancedUserInterface, EquatableInterface ,\Serializable
 {
     //---------------------------------atributos de la clase-------------------------------------
 
@@ -429,15 +429,15 @@ class Usuario implements AdvancedUserInterface, \Serializable
             return false;
         }
 
-        if ($this->getPassword() !== $user->getPassword()) {
+        if ($this->getPassword() !== $usuario->getPassword()) {
             return false;
         }
 
-        if ($this->getSalt() !== $user->getSalt()) {
+        if ($this->getSalt() !== $usuario->getSalt()) {
             return false;
         }
 
-        if ($this->getUsername() !== $user->getUsername()) {
+        if ($this->getUsername() !== $usuario->getUsername()) {
             return false;
         }
 

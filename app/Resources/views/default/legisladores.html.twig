@@ -248,10 +248,10 @@
 					var modo= $("#modalLegislador").find('input[name="modo"]').val()
 
 			    	if (modo=="ALTA")
-			    		urlAction='{{ app.request.getBaseURL() }}'+'api/perfilLegislador/create';
+			    		urlAction='{{ app.request.getBaseURL() }}'+'/api/perfilLegislador/create';
 			    	else {
 			    		var id= $("#modalLegislador").find('input[name="id"]').val();
-						urlAction='{{ app.request.getBaseURL() }}'+'api/perfilLegislador/update';
+						urlAction='{{ app.request.getBaseURL() }}'+'/api/perfilLegislador/update';
 			    	}
 
 	            	$.ajax({
@@ -301,14 +301,14 @@
 		<div class="row pull-right">
 		    <ol class="breadcrumb">
 		        <li><a href="#"><i class="fa fa-dashboard"></i> Principal</a></li>
-	        	<li class="active">Legisladores</li>
+	        	<li class="active">Concejales</li>
 		    </ol>
 		</div>
 		<hr>
 		<div class="row">
 			<div class="col-md-4">
 				<h2>
-			        Legisladores
+			        Concejales
 			    </h2>
 			</div>
 		</div>   

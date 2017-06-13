@@ -151,7 +151,8 @@ class Proyecto
      */
     public function __construct()
     {
-        $this->autores = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->concejales = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->bloques = new \Doctrine\Common\Collections\ArrayCollection();
         $this->firmas = new \Doctrine\Common\Collections\ArrayCollection();
     }
 

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\Giro" table="giro">
+  	<indexes>
+  		<index columns="idOrigenGiro" name="giro_oficinaOrigen_idx"/>
+  		<index columns="idDestinoGiro" name="giro_oficinaDestino_idx"/>
+  		<index columns="idExpediente" name="giro_expediente_idx"></index>
+  	</indexes>
+    <id name="id" type="integer" column="idGiro">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="fechaEnvioRemito" type="datetime" column="fechaEnvioRemito" nullable="true">
+    </field>
+    <field name="fechaRecepcionRemito" type="datetime" column="fechaRecepcionRemito" nullable="true">
+    </field>
+    <field name="observacion" type="string" length="200" column="observacion" nullable="true">
+    </field>
+    <field name="usuarioCreacion" type="string" length="70" column="usuarioCreacion" nullable="false">
+    </field>
+    <field name="fechaCreacion" type="datetime" column="fechaCreacion" nullable="false">
+    </field>
+    <field name="usuarioModificacion" type="string" length="70" column="usuarioModificacion" nullable="true">
+    </field>
+    <field name="fechaModificacion" type="datetime" column="fechaModificacion" nullable="true">
+    </field>
+    <many-to-one field="destinoGiro" target-entity="Oficina">
+    	<join-columns>
+    		<join-column name="idDestinoGiro" referenced-column-name="idOficina"/>
+    	</join-columns>
+    </many-to-one>
+    <many-to-one field="origenGiro" target-entity="Oficina">
+    	<join-columns>
+    		<join-column name="idOrigenGiro" referenced-column-name="idOficina"/>
+    	</join-columns>
+    </many-to-one>
+    <many-to-one field="expediente" target-entity="Expediente" inversed-by="giros">
+    	<join-columns>
+    		<join-column name="idExpediente" referenced-column-name="idExpediente"/>
+    	</join-columns>
+    </many-to-one>
+  </entity>
+</doctrine-mapping>

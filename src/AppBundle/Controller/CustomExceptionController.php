@@ -54,7 +54,6 @@ class CustomExceptionController extends ExceptionController
         $showException = $request->attributes->get('showException', $this->debug); // As opposed to an additional parameter, this maintains BC
 
         $code = $exception->getStatusCode();
-        $message = $exception->getMessage;
 
         return new Response($this->twig->render(
             (string) $this->findTemplate($request, 'json', $code, $showException),
@@ -94,8 +93,9 @@ class CustomExceptionController extends ExceptionController
      */
     protected function findTemplate(Request $request, $format, $code, $showException)
     {
+    	
         $template = sprintf('@Twig/Exception/exception.json.twig');
-		/*
+		
         $name = $showException ? 'exception' : 'error';
         if ($showException && 'html' == $format) {
             $name = 'exception_full';
@@ -119,7 +119,7 @@ class CustomExceptionController extends ExceptionController
         $request->setRequestFormat('html');
 
         return sprintf('@Twig/Exception/%s.html.twig', $showException ? 'exception_full' : $name);
-        */
+        
     }
 
     // to be removed when the minimum required version of Twig is >= 3.0

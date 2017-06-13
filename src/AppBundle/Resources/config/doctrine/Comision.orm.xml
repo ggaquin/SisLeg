@@ -9,6 +9,23 @@
     <id name="id" type="integer" column="idComision">
       <generator strategy="IDENTITY"/>
     </id>
+    <field name="comision" type="string" column="comision" length="100" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <field name="activa" type="boolean" column="activa" nullable="false"/>
+    <one-to-many field="expedientesAsignados" target-entity="ExpedienteComision" mapped-by="comision" orphan-removal="true">
+    	<cascade>
+    		<cascade-persist/>
+    		<cascade-remove/>
+    	</cascade>
+    </one-to-many>
+    <many-to-one field="tipoComision" target-entity="TipoComision" fetch="LAZY">
+      <join-columns>
+        <join-column name="idTipoComision" referenced-column-name="idTipoComision"/>
+      </join-columns>
+    </many-to-one>
     <many-to-one field="presidente" target-entity="PerfilLegislador">
       <join-column name="idPerfilPresidente" referenced-column-name="idPerfil" />
     </many-to-one>
@@ -35,17 +52,5 @@
           </inverse-join-columns>
       </join-table>
     </many-to-many>
-    <one-to-many field="expedientesAsignados" target-entity="ExpedienteComision" mapped-by="comision"/>
-    <field name="comision" type="string" column="comision" length="100" nullable="false">
-      <options>
-        <option name="fixed"/>
-      </options>
-    </field>
-    <many-to-one field="tipoComision" target-entity="TipoComision" fetch="LAZY" nullable="false">
-      <join-columns>
-        <join-column name="idTipoComision" referenced-column-name="idTipoComision"/>
-      </join-columns>
-    </many-to-one>
-    <field name="activa" type="boolean" column="activa" nullable="false"/>
   </entity>
 </doctrine-mapping>

@@ -20,7 +20,7 @@ class ImpresionServicio
 
             if (is_null($idExpediente))
                 return null;
-
+			$documento=[];
             $expedienteRepository=$this->em->getRepository('AppBundle:Expediente');
             $expediente=$expedienteRepository->find($idExpediente);
             $pgph_style='<p style="text-align: justify;margin-top: 0">&nbsp;&nbsp;&nbsp;&nbsp;';
