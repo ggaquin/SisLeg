@@ -876,7 +876,7 @@ class Expediente
      * @ORM\PreUpdate()
      */
     public function listarImagenes(){
-
+		//FIXME: camibiar generacion del hash para que no dependa del numero de Expediente
         $nuevaListaImagenes=[];
         $imagenes=$this->listaImagenes;
 

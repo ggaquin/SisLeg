@@ -17,4 +17,7 @@
 			</network-handler>
 		</connection>
 	</data-source>
+	<data-source id="sqlite_jdbc-15c9f96f3ec-2db5445ae658fd32" provider="generic" driver="sqlite_jdbc" name="SQLite - session-state.db" save-password="true" show-system-objects="true" read-only="false">
+		<connection server="" database="/home/gustavo/workspace/eclipse/SisLeg/app/sqlite/session-state.db" url="jdbc:sqlite:/home/gustavo/workspace/eclipse/SisLeg/app/sqlite/session-state.db" type="dev"/>
+	</data-source>
 </data-sources>
