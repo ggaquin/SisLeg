@@ -155,6 +155,28 @@ class RestController extends FOSRestController{
         $expediente=$expedienteRepository->find($id);
         return $this->view($expediente,200);
     }
+    
+    /**
+     * @Rest\Get("/api/expediente/giro/getAllByExpediente/{id}")
+     */
+    public function traerGirosPorIdExpediente(Request $request)
+    {
+    	$id=$request->get('id');
+    	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+    	$expediente=$expedienteRepository->find($id);
+    	return $this->view($expediente->getGiros(),200);
+    }
+    
+    /**
+     * @Rest\Get("/api/expediente/informe/getAllByExpediente/{id}")
+     */
+    public function traerInformesPorIdExpediente(Request $request)
+    {
+    	$id=$request->get('id');
+    	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+    	$expediente=$expedienteRepository->find($id);
+    	return $this->view($expediente->getInformes(),200);
+    }
 
     /**
      * @Rest\Get("/api/legislador/getAll")

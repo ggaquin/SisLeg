@@ -78,7 +78,29 @@
 			z-index: 10000;
 		}
 
+		.tab{
+			height: 545px;
+			max-height:545px;
+			overflow-y: auto; 
 		}
+		
+		.tab-active{
+			/* font-style: oblique;*/
+			font-weight: bold;
+			color: #0000ff;
+			padding-left: 10px;
+		}
+		
+		.tab-active::before{
+			content: "- ";
+			font-weight: bold;
+		}
+		/*
+		.tab-active::after{
+			content: "]";
+			font-weight: bold;
+		} */
+				
 		.toggle-on.btn{
 			line-height: 22.5px!important;
 		}
@@ -86,6 +108,12 @@
 			line-height: 22.5px!important;
 		}
 		
+		table {
+            table-layout:fixed;
+            width:100%;
+            word-wrap:break-word;
+        }
+        
 	</style>
 	<script type="text/javascript">
 
@@ -192,9 +220,27 @@
 			return false
 		}
 
+		function habilitar(nombre){
+			$(".tab").addClass("hidden");
+			$(".selectable").removeClass("tab-active");
+			
+			$("#"+nombre).removeClass("hidden");
+			$("#link-"+nombre).addClass("tab-active");
+			$("#link-"+nombre).blur();
+			
+		}
+
+		function traerIdParaMovimientos(){
+			return $("#movimientos").find('input[name="idExpediente"]').val();
+		}
+
 		$(document).ready(function () {
 
 			var tablaProyectos;
+
+			var tablaMovimientos;
+
+			var tablaInformes;
 			
 		    var tabla=$('#registroExpediente').DataTable({
 		    			  "language": {
@@ -238,10 +284,20 @@
 									            "render": function(data, type, row){
 									            	var html="<button type='button'title='Editar expediente' class='btn btn-primary btn-xs btn-editar ' data-toggle='modal' data-target='#modificacionExpediente'><span class='glyphicon glyphicon-pencil'></span></button>"
 									             	html+="<button type='button' title='Descargar Documento' class='btn btn-info btn-xs btn-descargar'><span class='glyphicon glyphicon-save-file'></span></button></div>"
-
+									             	html+="<button type='button' title='Movimientos' class='btn btn-info btn-xs btn-movimientos' data-toggle='modal' data-target='#movimientos'><span class='glyphicon glyphicon-share-alt'></span></button></div>"
 									            	return html;
 									            }
 									        }
+									        ,
+								            {
+									            "targets": [ 6 ],
+									            "data": 'caratula',
+									            "orderable":true,
+									            "render": function(data, type, row){
+									            	var html="<span title='"+row.caratula_sin_html+"'>"+data+"</span>";
+									            	return html;
+									            }
+									        } 
 									       
 						  ],
 					      "columns": [
@@ -251,7 +307,7 @@
 					            { "data": "tipo_expediente.tipo_expediente","width":"10%" },
 					            { "data": "fecha_creacion_formateada","width":"8%" },
 					            { "data": "fecha_modificacion_formateada","width":"8%" },
-					            { "data": "caratula_sin_html", "width": "67%"},
+					            { "data": "caratula_muestra", "width": "30%"},
 					        ],
 					      "autoWidth":false,
 					      "paging": true,
@@ -268,6 +324,8 @@
 		        					 '/imprimir?tipoDocumento=expediente&id='+
 		        					  data[ "id" ];
 		    } );
+		    
+		    
 			/*
 			//MODIFICAR EXPEDIENTE
 				$('#registroExpediente tbody').on( 'click', '.btn-detalle', function () {
@@ -691,9 +749,9 @@
 								      "columns": [
 								      		{ "data": "id" },
 								      		{ "data": "tipo_proyecto.tipo_expediente.id"},
-								      		{ "data": "null","width":"5"},
+								      		{ "data": "null","width":"5%"},
 								      		{ "data": "tipo_proyecto.tipo_proyecto","width":"20%"},
-								            { "data": "lista_autores","className": "for-mobile","width":"60%" },
+								            { "data": "lista_autores","className": "for-mobile","width":"75%" },
 								        ],
 								      "autoWidth":false,
 								      "paging": true,
@@ -710,6 +768,153 @@
 				tablaProyectos.destroy();
 			});
 
+			//------------------------------------------------------------------------------------------------------------
+			//------------------------------MOVIMIENTOS DE LOS EXPEDIENTES------------------------------------------------
+			//------------------------------------------------------------------------------------------------------------
+
+			//EVENTO BOTON MOVIMIENTOS DE LA GRILLA
+		    $('#registroExpediente tbody').on( 'click', '.btn-movimientos', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+		        $("#movimientos").find('input[name="idExpediente"]').val(data[ "id" ]);
+		        habilitar('tab-1');
+		    } );
+			
+		  	//EVENTO ABRIR MODAL MOVIMIENTOS
+			$('#movimientos').on('show.bs.modal', function () {
+
+				tablaMovimientos=$('#tablaMovimientos').DataTable({
+        	    			"language": {
+        			              "infoEmpty": "Sin registros para mostrar",
+        			              "paginate": {
+        					          	"last": "Ultima Página",
+        					          	"first": "Primer página",
+        					          	"next": "Siguiente",
+        					          	"previous": "Anterior"
+        					       },
+        					       "search":"Búsqueda rápida",
+        					       "emptyTable": "Sin Datos",
+        					       "lengthMenu": 'Registros Listados <select class="form-control input-sm">'+
+        							             '<option value="10">10</option>'+
+        							             '<option value="20">20</option>'+
+        							             '<option value="30">30</option>'+
+        							             '<option value="40">40</option>'+
+        							             '<option value="50">50</option>'+
+        							             '<option value="-1">Todos</option>'+
+        							             '</select>',
+        							"loadingRecords": "Espere...cargando datos",
+        							"processing": "Procesando...",
+        							"sInfo": "Mostrando  _START_ a _END_ de _TOTAL_ registros",
+        
+        		          	  },
+        				      "processing": false,
+        				      "ajax": {
+        						        "url": "api/expediente/giro/getAllByExpediente/"+traerIdParaMovimientos(),
+        		            			"dataSrc": '',
+        						    },
+        					  "columnDefs": [
+        							            {
+        							                "targets": [ 0 ],
+        							                "visible": false,
+        							                "searchable": false
+        							            },
+        							            {
+        								            "targets": [ 1 ],
+        								            "data": null,
+        								            "orderable":false,
+        								            "render": function(data, type, row){
+														var html="<button type='button' class='btn-descargar-remito'><span class='glyphicon glyphicon-save-file'></span></button>";
+														html+="<button type='button' class='btn-ingresar-recepcion' data-toggle='modal' data-target='#respuestaRemitoGiro'><span class='glyphicon glyphicon-log-in'></span></button>";
+        								            	return html;
+        								            }
+        								        }
+        					  ],
+        				      "columns": [
+        				      		{ "data": "id" },
+        				      		{ "data": "null","width":"5%"},
+        				      		{ "data": "origen_giro.oficina","width":"15%"},
+        				      		{ "data": "fecha_envio_remito_formateada","width":"10%"},
+        				      		{ "data": "destino_giro.oficina","width":"15%"},
+        				      		{ "data": "observacion","className": "for-mobile","width":"50%" },
+        				            { "data": "fecha_recepcion_remito_formateada","className": "for-mobile","width":"10%" },
+        				        ],
+        				      "autoWidth":false,
+        				      "paging": true,
+        				      "lengthChange": true,
+        				      "searching": true,
+        				      "ordering": true,
+        				      "info": true,
+        			});
+
+				tablaInformes=$('#tablaInformes').DataTable({
+                   			  	  "language": {
+                		              "infoEmpty": "Sin registros para mostrar",
+                		              "paginate": {
+                				          	"last": "Ultima Página",
+                				          	"first": "Primer página",
+                				          	"next": "Siguiente",
+                				          	"previous": "Anterior"
+                				       },
+                				       "search":"Búsqueda rápida",
+                				       "emptyTable": "Sin Datos",
+                				       "lengthMenu": 'Registros Listados <select class="form-control input-sm">'+
+                						             '<option value="10">10</option>'+
+                						             '<option value="20">20</option>'+
+                						             '<option value="30">30</option>'+
+                						             '<option value="40">40</option>'+
+                						             '<option value="50">50</option>'+
+                						             '<option value="-1">Todos</option>'+
+                						             '</select>',
+                						"loadingRecords": "Espere...cargando datos",
+                						"processing": "Procesando...",
+                						"sInfo": "Mostrando  _START_ a _END_ de _TOTAL_ registros",
+                
+                	          	  },
+                			      "processing": false,
+                			      "ajax": {
+                					        "url": "api/expediente/informe/getAllByExpediente/"+traerIdParaMovimientos(),
+                	            			"dataSrc": '',
+                					    },
+                				  "columnDefs": [
+                						            {
+                						                "targets": [ 0 ],
+                						                "visible": false,
+                						                "searchable": false
+                						            },
+                						            {
+                							            "targets": [ 1 ],
+                							            "data": null,
+                							            "orderable":false,
+                							            "render": function(data, type, row){
+                							            	return "<button type='button' class='btn-ingresar-respuesta' data-toggle='modal' data-target='#respuestaInforme'><span class='glyphicon glyphicon-log-in'></span></button>";
+                							            }
+                							        }
+                							       
+                				  ],
+                			      "columns": [
+                			      		{ "data": "id" },
+                			      		{ "data": "null","width":"5%"},
+                			      		{ "data": "destino.oficina","width":"15%"},
+                			      		{ "data": "fecha_emision_formateada","width":"10%"},
+                			      		{ "data": "solicitud","width":"50%"},
+                			      		{ "data": "fecha_ingreso_respesta_formateada","width":"10%"},
+                			            { "data": "fojas","className": "for-mobile","width":"10%" },
+
+                			        ],
+                			      "autoWidth":false,
+                			      "paging": true,
+                			      "lengthChange": true,
+                			      "searching": true,
+                			      "ordering": true,
+                			      "info": true,
+                		});
+                				
+			});
+
+			$('#movimientos').on('hidden.bs.modal', function () {
+				tablaMovimientos.destroy();
+				tablaInformes.destroy();
+			});
+			
 		    //------------------------------------------------------------------------------------------------------------
 			//---------------------------------INICIALIZACIÓN DE CONTROLES------------------------------------------------
 			//------------------------------------------------------------------------------------------------------------
@@ -1241,6 +1446,276 @@
 			    </div>
 		  	</div>
 		</div> #}
-	
+		<div id="movimientos" class="modal fade" role="dialog">
+		 	<div class="modal-dialog modal-xl">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Movimientos e Informes</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				    	<input type="hidden" id="idExpediente" name="idExpediente">				    	
+				    	<div class="row">
+				    		<div class="col-md-2">
+                				<h3>
+                			        Navegación
+                			    </h3>		
+				    			<nav>
+								    <ul class="nav">
+									    <li><a href="#" id="link-tab-1" class="selectable" onclick = "habilitar('tab-1')" >Giros (Movimientos)</a></li>
+										<li><a href="#" id="link-tab-2" class="selectable" onclick = "habilitar('tab-2')">CH (Respestas Informes)</a></li>
+									</ul>
+								</nav>
+				    		</div>
+    				    	<div class="col-md-10">
+    				    		<div class="row tab" id="tab-1">
+    		        				<div class="col-md-12">
+    		        					<div class="row">
+        		        					<div class="col-md-6">
+                                				<h3>
+                                			        Giros - Movimientos
+                                			    </h3>
+                                			</div>
+                            			</div>
+                            			<br>
+                            			<div class="row">
+                            				<div class="col-md-12">
+            						        	<table class="table table-striped" id="tablaMovimientos" width="100%">
+            						        		<thead>
+            						        			<th>id</th>
+            						        			<th>
+            						        				<div class="btn-group">
+                            		                			<button type="button" title="Agregar Giro"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#giro">
+                            							    			<span class="glyphicon glyphicon-plus"></span>
+                            							    	</button>
+                            							    </div>
+            						        			</th>
+            						        			<th>Origen</th>
+            						        			<th title="Fecha de Envío Remito">Fec. Env.</th>
+            						        			<th>Destino</th>
+            						        			<th>Observación</th>
+            						        			<th title="Fecha de Recepción Remito">Fec. Recep.</th>
+            						        		</thead>
+            						        	</table>
+        						        	</div>
+        						        </div>
+    						        </div>	
+    						    </div>
+    						    <div class="row tab hidden" id="tab-2">
+    		        				<div class="col-md-12">
+        		        				<div class="row">
+        		        					<div class="col-md-6">
+                                				<h3>
+                                			        CH - Respuestas Informes
+                                			    </h3>
+                                			</div>
+                            			</div>
+                            			<br>
+                                		<div class="row">
+                                			<div class="col-md-12">
+            						        	<table class="table table-striped" id="tablaInformes">
+            						        		<thead>
+            						        			<th>id</th>
+            						        			<th>
+            						        				<div class="btn-group">
+                            		                			<button type="button" title="Agregar Informe"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#informe">
+                            							    			<span class="glyphicon glyphicon-plus"></span>
+                            							    	</button>
+                            							    </div>
+            						        			</th>
+            						        			<th>Destino</th>
+            						        			<th title="Fecha Emisión">Fec. Em.</th>
+            						        			<th>Solicitud</th>
+            						        			<th title="Fecha Respuesta">Fec. Resp.</th>
+            						        			<th>Fojas</th>
+            						        		</thead>
+            						        	</table>
+            						        </div>
+        						        </div>
+        							</div>	
+    						    </div>
+    				    	</div>
+    				    </div>
+				        <hr>
+				        <div class="row">
+				        	<div class="col-md-12">
+				        		<div class="text-center">
+					    			<div class="btn-group">
+							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cerrar</button>
+							        </div>
+						        </div>
+						    </div>
+			    		</div>
+				     </div>
+			    </div>
+		  	</div>
+		  </div>
+		  <div id="giro" class="modal fade" role="dialog">
+		 	<div class="modal-dialog">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Giro</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				    	<input type="hidden" id="idGiro" name="idGiro">
+				    	<input type="hidden" id="modoGiro" name="modoGiro"> 	
+				    	<div class="row">
+				    		<div class="col-md-12">
+				    			<div class="form-group">
+				    				<label for="selOrigenGiro">Origen</label>
+				    				<select class="form-control" id="selOrigenGiro">
+				    					<option value="0">Seleccione Origen</option>
+				    				</select>
+				    			</div>
+				    			<div class="form-group">
+				    				<label for="selDestinoGiro">Destino</label>
+				    				<select class="form-control" id="selDestinoGiro">
+				    					<option value="0">Seleccione Destino</option>
+				    				</select>
+				    			</div>
+				    		</div>
+				    	</div>
+				    	<div class="row">
+				    		<div class="col-md-12">
+				    			<div class="form-group">
+				    				<label for="observacionGiro">Observación</label>
+				    				<textarea class="form-control" rows="8" cols="10" id="observacionGiro"></textarea>
+				    			</div>
+				    		</div>
+				    	</div>
+				        <hr>
+				        <div class="row">
+				        	<div class="col-md-12">
+				        		<div class="text-center">
+					    			<div class="btn-group">
+							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cerrar</button>
+							        	<button type="button" class="btn btn-primary" id="guardarGiro">Guardar</button>
+							        </div>
+						        </div>
+						    </div>
+			    		</div>
+				     </div>
+			    </div>
+			</div>
+		</div>
+		<div id="informe" class="modal fade" role="dialog">
+		 	<div class="modal-dialog">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Informe</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				    	<input type="hidden" id="idInforme" name="idInforme">
+				    	<input type="hidden" id="modoInforme" name="modoInforme"> 	
+				    	<div class="row">
+				    		<div class="col-md-12">
+				    			<div class="form-group">
+				    				<label for="selDestinoInforme">Destino</label>
+				    				<select class="form-control" id="selDestinoInforme">
+				    					<option value="0">Seleccione Destino</option>
+				    				</select>
+				    			</div>
+				    		</div>
+				    	</div>
+				    	<div class="row">
+				    		<div class="col-md-12">
+				    			<div class="form-group">
+				    				<label for="solicitudInforme">Solicitud</label>
+				    				<textarea class="form-control" rows="8" cols="10" id="solicitudInforme"></textarea>
+				    			</div>
+				    		</div>
+				    	</div>
+				        <hr>
+				        <div class="row">
+				        	<div class="col-md-12">
+				        		<div class="text-center">
+					    			<div class="btn-group">
+							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cerrar</button>
+							        	<button type="button" class="btn btn-primary" id="guardarInforme">Guardar</button>
+							        </div>
+						        </div>
+						    </div>
+			    		</div>
+				     </div>
+			    </div>
+			</div>
+		</div>
+		<div id="respuestaRemitoGiro" class="modal fade" role="dialog">
+		 	<div class="modal-dialog modal-sm">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Respuesta Remito</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				    	<input type="hidden" id="idGiro" name="idGiro">
+				    	<input type="hidden" id="modoRespuestaGiro" name="modoRespuestaGiro"> 	
+				    	<div class="row">
+				    		<div class="col-md-12">
+				    			<div class="form-group">
+				    				<label for="fechaRespuestaGiro">Fecha Recepción Remito</label>
+				    				<input type="date" id="fechaRespuestaGiro">
+				    			</div>
+				    		</div>
+				    	</div>
+				        <hr>
+				        <div class="row">
+				        	<div class="col-md-12">
+				        		<div class="text-center">
+					    			<div class="btn-group">
+							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cerrar</button>
+							        	<button type="button" class="btn btn-primary" id="guardarRespuestaGiro">Guardar</button>
+							        </div>
+						        </div>
+						    </div>
+			    		</div>
+				     </div>
+			    </div>
+			</div>
+		</div>
+		<div id="respuestaRemitoInforme" class="modal fade" role="dialog">
+		 	<div class="modal-dialog modal-sm">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Respuesta Informe</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				    	<input type="hidden" id="idInforme" name="idInforme">
+				    	<input type="hidden" id="modoRespuestaInforme" name="modoRespuestaInforme"> 	
+				    	<div class="row">
+				    		<div class="col-md-12">
+				    			<div class="form-group">
+				    				<label for="fechaRespuestaGiro">Fecha Recepción Respuesta</label>
+				    				<input type="date" id="fechaRespuestaGiro">
+				    			</div>
+				    			<div class="form-group">
+				    				<label for="fojasRespuestaInforme">Fojas</label>
+				    				<input type="text" id="fojasRespuestaInforme">
+				    			</div>
+				    		</div>
+				    	</div>
+				        <hr>
+				        <div class="row">
+				        	<div class="col-md-12">
+				        		<div class="text-center">
+					    			<div class="btn-group">
+							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cerrar</button>
+							        	<button type="button" class="btn btn-primary" id="guardarRespuestaGiro">Guardar</button>
+							        </div>
+						        </div>
+						    </div>
+			    		</div>
+				     </div>
+			    </div>
+			</div>
+		</div>
 	</section>
 {% endblock %}

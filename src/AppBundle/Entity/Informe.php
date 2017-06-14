@@ -2,6 +2,7 @@
 
 namespace AppBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\VirtualProperty;
 
 /**
  * Informe
@@ -315,5 +316,29 @@ class Informe {
 		return $this;
 	}
 	
+	//------------------------------Propiedades Virtuales -------------------------------------
 	
+	/**
+	 * Get fechaEmisionFormateada
+	 *
+	 * @return string
+	 *
+	 * @VirtualProperty
+	 */
+	public function getFechaEmisionFormateada()
+	{
+		return (!is_null($this->getFechaEmision())?$this->getFechaEmision()->format('d/m/Y'):'');
+	}
+	
+	/**
+	 * Get fechaIngresoRespuestaFormateada
+	 *
+	 * @return string
+	 *
+	 * @VirtualProperty
+	 */
+	public function getFechaIngresoRespuestaFormateada()
+	{
+		return (!is_null($this->getFechaIngresoRespuesta())?$this->getFechaIngresoRespuesta()->format('d/m/Y'):'');
+	}
 }

@@ -808,8 +808,57 @@ class Expediente
      * @VirtualProperty
      */
     public function getCaratulaSinHtml()
+    {	
+    	$patrones = array();
+    	$patrones[0] = '/<\/p>/';
+    	$patrones[1] = '/<\/li>/';
+    	$patrones[2] = '/<\/ul>/';
+    	$sustituciones = array();
+    	$sustituciones[2] = chr(10);
+    	$sustituciones[1] = chr(10);
+    	$sustituciones[0] = chr(10);
+    	
+    	$caratula=preg_replace($patrones, $sustituciones, $this->caratula);
+        return strip_tags($caratula);
+    }
+    
+    /**
+     * Get caratulaSinHtml
+     *
+     * @return string
+     *
+     * @VirtualProperty
+     */
+    public function getCaratulaMuestra()
     {
-        return strip_tags($this->caratula);
+    	$retorno='';
+    	$caratula=$this->getCaratula();
+    	$largoTexto=strlen($caratula);
+    	if($largoTexto<=154){
+    		$retorno=substr($caratula, 0,($largoTexto-4)).'...</p>';	
+    	}
+    	else
+    	{	
+	    	$posicionEnTramo=strpos(substr($this->getCaratula(), 145,8),'</p>');
+	    	if ($posicionEnTramo==false){
+	    		$caratula=substr($this->getCaratula(),0,150);
+	    		$posicionCorte=strpos($caratula, '</p>');
+		    	if ($posicionCorte==false){
+		    		$retorno=$caratula.'...</p>';
+		    	}
+		    	elseif ($posicionCorte<143){
+		    		$retorno=$caratula.'...</p>';
+		    	}
+		    	else {
+		    		$retorno=substr($caratula, 0, $posicionCorte-1).'...</p>';
+		    	}
+	    	}
+	    	else{
+	    		$retorno=substr($caratula, 0,$posicionEnTramo+145).'...</p>';
+	    	}
+	    	
+    	}
+    	return  $retorno;
     }
 
     /**

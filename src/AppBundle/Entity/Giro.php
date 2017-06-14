@@ -3,6 +3,7 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\VirtualProperty;
 
 /**
  * Giro
@@ -315,6 +316,29 @@ class Giro {
 		return $this->usuarioModificacion;
 	}
 	
+	//------------------------------Propiedades Virtuales -------------------------------------
 	
-		
+	/**
+	 * Get fechaEnvioRemitoFormateada
+	 *
+	 * @return string
+	 *
+	 * @VirtualProperty
+	 */
+	public function getFechaEnvioRemitoFormateada()
+	{
+		return (!is_null($this->getFechaEnvioRemito())?$this->getFechaEnvioRemito()->format('d/m/Y'):'');
+	}
+	
+	/**
+	 * Get fechaRecepcionRemitoFormateada
+	 *
+	 * @return string
+	 *
+	 * @VirtualProperty
+	 */
+	public function getFechaRecepcionRemitoFormateada()
+	{
+		return (!is_null($this->getFechaRecepcionRemito())?$this->getFechaRecepcionRemito()->format('d/m/Y'):'');
+	}
 }

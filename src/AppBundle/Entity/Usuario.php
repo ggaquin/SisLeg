@@ -19,7 +19,7 @@ use Symfony\Component\Security\Core\User\EquatableInterface;
  *             )
  * @ORM\Entity
  */
-class Usuario implements AdvancedUserInterface, EquatableInterface ,\Serializable
+class Usuario implements AdvancedUserInterface ,\Serializable
 {
     //---------------------------------atributos de la clase-------------------------------------
 
