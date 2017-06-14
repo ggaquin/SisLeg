@@ -809,21 +809,42 @@ class Expediente
      */
     public function getCaratulaSinHtml()
     {	
+    	    	
+    	$caratula=preg_replace("/(<p><br><\/p>)\\1+/", "$1", $this->getCaratula());
     	$patrones = array();
-    	$patrones[0] = '/<\/p>/';
-    	$patrones[1] = '/<\/li>/';
-    	$patrones[2] = '/<\/ul>/';
+    	$patrones[0] = '/<p><br><\/p>/';
+    	$patrones[1] = '/<\/p>/';
+    	$patrones[2] = '/<\/li>/';
+    	$patrones[3] = '/<\/ul>/';
+    	$patrones[4] = '/<li>/';
     	$sustituciones = array();
-    	$sustituciones[2] = chr(10);
+    	$sustituciones[0] = '';
     	$sustituciones[1] = chr(10);
-    	$sustituciones[0] = chr(10);
+    	$sustituciones[2] = chr(10);
+    	$sustituciones[3] = chr(10);
+    	$sustituciones[3] = '--*';
     	
-    	$caratula=preg_replace($patrones, $sustituciones, $this->caratula);
-        return strip_tags($caratula);
+    	$caratula=preg_replace($patrones, $sustituciones, $caratula);
+    	$caratula=strip_tags($caratula);
+    	$retorno='';
+    	$parrafos=explode(chr(10), $caratula);
+    	foreach ($parrafos as $parrafo){
+    		$inicio=0;
+    		$caracteres=strlen($parrafo);
+    		$tabulacion=((substr($parrafo, 0, 1)=='-')?'	':'');
+    		$parrafo=((substr($parrafo, 0, 1)=='-')?'':'  ').$parrafo;
+    		while ($inicio<$caracteres){
+    			$retorno.=$tabulacion.(($caracteres-$inicio>100)
+				    					?substr($caratula, $inicio, (($inicio==0 && $tabulacion=='')?96:100))
+    									:substr($caratula, $inicio, $caracteres-$inicio)).chr(10);
+    			$inicio+=100;
+    		}
+    	}
+        return $retorno;
     }
     
     /**
-     * Get caratulaSinHtml
+     * Get caratulaSinHtml	
      *
      * @return string
      *
@@ -831,30 +852,58 @@ class Expediente
      */
     public function getCaratulaMuestra()
     {
+    	
     	$retorno='';
-    	$caratula=$this->getCaratula();
+    	//elimina los retornos de carro repetidos
+    	$caratula=preg_replace("/(<p><br><\/p>)\\1+/", "$1", $this->getCaratula());
     	$largoTexto=strlen($caratula);
+    	$finPrimerParrafo=strpos($caratula,'</p>');
+    	$finSegundoParrafo=(($finPrimerParrafo!=false && strlen($caratula)>$finPrimerParrafo)
+    							?strpos(substr($caratula, $finPrimerParrafo+4,strlen($caratula)),'</p>')
+    							:false);
+    	//descarta el segundo parrafo sis es un retorno de linea
+    	$finSegundoParrafo=((substr($caratula, $finPrimerParrafo+$finSegundoParrafo,4)=='<br>')
+    			?$finPrimerParrafo:$finPrimerParrafo+4+$finSegundoParrafo);
+    	//si largo de texto es menor que 154 characteres
     	if($largoTexto<=154){
-    		$retorno=substr($caratula, 0,($largoTexto-4)).'...</p>';	
+    		//el limite es o el largo de a cadena o el fin del segundo parrafo (si existe)
+    		$limite=(($finSegundoParrafo!=false && $finSegundoParrafo<$largoTexto)
+    					?$finSegundoParrafo:$largoTexto);
+    		$retorno=substr($caratula, 0,($limite-4)).'...</p>';	
     	}
-    	else
+    	else //el largo es mayor de 154 caracteres
     	{	
-	    	$posicionEnTramo=strpos(substr($this->getCaratula(), 145,8),'</p>');
+    		$posicionEnTramo=strpos(substr($caratula, 145,8),'</p>');
+    		
+    		//no hay parrafos en los alrededores del área de corte
 	    	if ($posicionEnTramo==false){
-	    		$caratula=substr($this->getCaratula(),0,150);
+	    		$caratula=substr($caratula,0,150);
+	    		
+	    		//ultimo cierre de parrafo en los primeros 150 caracteres
 	    		$posicionCorte=strpos($caratula, '</p>');
+	    		
+	    		//no hay parrafos entre los primero 150 caracteres
 		    	if ($posicionCorte==false){
 		    		$retorno=$caratula.'...</p>';
 		    	}
-		    	elseif ($posicionCorte<143){
-		    		$retorno=$caratula.'...</p>';
+		    	elseif ($posicionCorte<143){ //hay un cierre de parrafo entre los ultimos 143 caracteres
+		    		$limite=(($finSegundoParrafo!=false && $finSegundoParrafo<strlen($caratula))
+		    				?$finSegundoParrafo:strlen($caratula));
+					
+		    		$retorno=substr($caratula, 0, $limite).'...</p>';
 		    	}
-		    	else {
-		    		$retorno=substr($caratula, 0, $posicionCorte-1).'...</p>';
+		    	else {//hay un cierres de parrafo por encima los primero 143 caracteres
+		    		$limite=(($finSegundoParrafo!=false && $finSegundoParrafo<$posicionCorte)
+		    				?$finSegundoParrafo:$posicionCorte);
+		    		
+		    		$retorno=substr($caratula, 0, $limite).'...</p>';
 		    	}
 	    	}
 	    	else{
-	    		$retorno=substr($caratula, 0,$posicionEnTramo+145).'...</p>';
+	    		$limite=(($finSegundoParrafo!=false && $finSegundoParrafo<$posicionEnTramo+145)
+	    				?$finSegundoParrafo:$posicionEnTramo+145);
+	    		
+	    		$retorno=substr($caratula, 0,$limite).'...</p>';
 	    	}
 	    	
     	}
