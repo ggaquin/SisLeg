@@ -139,10 +139,12 @@ class DefaultController extends Controller
         $tiposExpediente=$tiposExpedienteRepository->findBy(array(),array('tipoExpediente' => 'ASC') );
         $estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
         $estadosExpediente=$estadoExpedienteRepository->findBy(array(),array('estadoExpediente' => 'ASC') );
+        $ofcinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
+        $oficinas=$ofcinaRepository->findAll();
        
         return $this->render('default/expediente.html.twig', array(
             'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
-            'tipos' => $tiposExpediente,'estados'=>$estadosExpediente
+        		'tipos' => $tiposExpediente,'estados'=>$estadosExpediente, 'oficinas'=>$oficinas
         ));
          
     }

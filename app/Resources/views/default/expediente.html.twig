@@ -187,7 +187,7 @@
 						$("#div-bloques-mod").removeClass('hidden');
 						break;
 			};
-		}
+		}	
 		function mostrarTiposPara(mostrar){
 			if (mostrar=="no-proyectos"){
 				$(".opcion-P").addClass("hidden");
@@ -822,8 +822,8 @@
         								            "data": null,
         								            "orderable":false,
         								            "render": function(data, type, row){
-														var html="<button type='button' class='btn-descargar-remito'><span class='glyphicon glyphicon-save-file'></span></button>";
-														html+="<button type='button' class='btn-ingresar-recepcion' data-toggle='modal' data-target='#respuestaRemitoGiro'><span class='glyphicon glyphicon-log-in'></span></button>";
+														var html="<button type='button' class='btn btn-primary btn-descargar-remito'><span class='glyphicon glyphicon-save-file'></span></button>";
+														html+="<button type='button' class='btn btn-info btn-modificar-movimiento'><span class='glyphicon glyphicon-pencil'></span></button>";
         								            	return html;
         								            }
         								        }
@@ -831,9 +831,9 @@
         				      "columns": [
         				      		{ "data": "id" },
         				      		{ "data": "null","width":"5%"},
-        				      		{ "data": "origen_giro.oficina","width":"15%"},
+        				      		/* { "data": "origen_giro.oficina","width":"15%"}, */
         				      		{ "data": "fecha_envio_remito_formateada","width":"10%"},
-        				      		{ "data": "destino_giro.oficina","width":"15%"},
+        				      		{ "data": "destino_giro.oficina","width":"30%"},
         				      		{ "data": "observacion","className": "for-mobile","width":"50%" },
         				            { "data": "fecha_recepcion_remito_formateada","className": "for-mobile","width":"10%" },
         				        ],
@@ -885,7 +885,7 @@
                 							            "data": null,
                 							            "orderable":false,
                 							            "render": function(data, type, row){
-                							            	return "<button type='button' class='btn-ingresar-respuesta' data-toggle='modal' data-target='#respuestaInforme'><span class='glyphicon glyphicon-log-in'></span></button>";
+                							            	return "<button type='button' class='btn btn-info btn-modificar-informe'><span class='glyphicon glyphicon-pencil'></span></button>";
                 							            }
                 							        }
                 							       
@@ -910,10 +910,264 @@
                 				
 			});
 
+			//EVENTO CERRAR MODAL MOVIMIENTOS EXPEDDIENTE
 			$('#movimientos').on('hidden.bs.modal', function () {
 				tablaMovimientos.destroy();
 				tablaInformes.destroy();
 			});
+
+			//------------------------------------------------------------------------------------------------------------
+			//-------------------------------------ALTA Y EDICION DE GIROS------------------------------------------------
+			//------------------------------------------------------------------------------------------------------------
+			
+			//BOTON ALTA GIRO DE LA GRILLA DE GIROS
+			$("#alta-giro").click(function(){
+				$("#giro").find('input[name="modoGiro"]').val("alta");
+				$("#giro").modal("show");
+			});
+
+			//BOTON MODIFICAR GIRO DE LA GRILLA DE GIROS
+			$('#tablaMovimientos tbody').on( 'click', '.btn-modificar-movimiento', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+		        $("#giro").find('input[name="idGiro"]').val(data[ "id" ]);
+		        $("#giro").find('input[name="modoGiro"]').val("edicion");
+		        $("#giro").modal("show");
+		    } );
+
+			// EVENTO ABRIR DEL MODAL DE GIRO
+			$('#giro').on('show.bs.modal', function () {
+				var modo = $("#giro").find('input[name="modoGiro"]').val(); 
+				var fechaEnvio='';
+
+				$("#selDestinoGiro").val(0);
+				$("#observacionGiro").val("");
+				$("#fechaRecepcionRemito").val("");
+
+				if (modo=="edicion"){
+
+					var idGiro=$("#giro").find('input[name="idGiro"]').val();
+					
+					$.ajax({
+                        url: '{{ app.request.getBaseURL() }}' + '/api/expediente/giro/findOne/'+idGiro,
+                        type: 'GET',
+                    success: function(data) {
+                    	$("#selDestinoGiro").val(data.destino_giro.id);
+                    	$("#observacionGiro").val(data.observacion);
+                    	fechaEnvio=data.fecha_envio_remito_formateada;
+                    	$("#fechaRecepcionRemito").val(data.fecha_recepcion_remito_formateada)
+                    },
+                    error: function(jqXHR,textStatus,errorThrown ){
+        				toastr.error(jqXHR.responseText);
+        				}
+                	});
+				}
+
+    			if(fechaEnvio==''){
+    					$("#fechaRecepcionRemito").prop("disabled", true);
+            			$("#selDestinoGiro").prop("disabled", false);
+            			$("#observacionGiro").prop("disabled", false);
+    			}
+				else {
+					$("#selDestinoGiro").prop("disabled", true);
+					$("#observacionGiro").prop("disabled", true);
+					$("#fechaRecepcionRemito").prop("disabled", false);
+				}
+			});
+
+			$('#giro').on('hidden.bs.modal', function () {
+				$("#guardarGiro").prop("disabled", false);
+			});
+				
+			//BOTON GUARDAR GIRO DEL MODAL DE EDICION DE GIRO
+			$("#guardarGiro").click(function(){
+
+				$(this).prop("disabled", true);
+				
+				var validacion="";
+				var formData=new FormData();
+				var modo =$("#giro").find('input[name="modoGiro"]').val();
+				var url="";
+				
+				formData.append('observacion',$("#observacionGiro").val());
+				formData.append('idDestino',$("#selDestinoGiro").val());
+				validacion=(($("#selDestinoGiro").val()==0)
+								?'<li>Debe seleccionar un destino</li>':'');
+							
+				if (modo=='alta'){
+					url="/api/expediente/giro/create";
+					formData.append('id',$("#movimientos").find('input[name="idExpediente"]').val());
+				}
+				else{
+					url="/api/expediente/giro/update"
+					formData.append('id',$("#giro").find('input[name="idGiro"]').val());
+				}
+
+
+                if (validacion.length>0) 
+        		{
+        			validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+        						validacion+'</ul>':'');
+        			toastr.error(validacion);
+        			$(this).prop("disabled", false);
+        			return false;
+        		}
+        		else{
+        
+                	$.ajax({
+                        async: true,
+                        url: '{{ app.request.getBaseURL() }}' + url,
+                        data: formData,
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        type: 'POST',
+                    success: function(data) {
+                        toastr.success(data);
+        				tabla.ajax.reload();
+        				$('#giros').modal('hide');
+                    	},
+                    complete: function(){
+                    	$(this).prop("disabled", false);
+                    },
+                    error: function(jqXHR,textStatus,errorThrown ){
+        				toastr.error(jqXHR.responseText);
+        				}
+                	});
+                }
+				
+			});
+
+			//------------------------------------------------------------------------------------------------------------
+			//-------------------------------------ALTA Y EDICION DE INFORMES---------------------------------------------
+			//------------------------------------------------------------------------------------------------------------
+			
+			//BOTON ALTA GIRO DE LA GRILLA DE INFORMES
+			$("#alta-informe").click(function(){
+				$("#informe").find('input[name="modoInforme"]').val("alta");
+				$("#informe").modal("show");
+			});
+
+			//BOTON MODIFICAR GIRO DE LA GRILLA DE INFORMES
+			$('#tablaInformes tbody').on( 'click', '.btn-modificar-informe', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+		        $("#informe").find('input[name="idInforme"]').val(data[ "id" ]);
+		        $("#informe").find('input[name="modoInforme"]').val("edicion");
+		        $("#informe").modal("show");
+		    } );
+
+			// EVENTO ABRIR DEL MODAL DE INFORME
+			$('#informe').on('show.bs.modal', function () {
+				var modo = $("#giro").find('input[name="modoInforme"]').val(); 
+
+				$("#selDestinoInforme").val(0);
+				$("#solicitudInforme").val("");
+				$("#fechaEnvioInforme").val("");
+				$("#fechaRespuestaInforme").val("");
+				$("#fojasRespuestaInforme").val("");
+
+				if (modo=="edicion"){
+
+					var idInforme=$("#informe").find('input[name="idInforme"]').val();
+					
+					$.ajax({
+                        url: '{{ app.request.getBaseURL() }}' + '/api/expediente/informe/findOne/'+idInforme,
+                        type: 'GET',
+                    success: function(data) {
+                    	$("#selDestinoInforme").val(data.destino.id);
+                    	$("#solicitudInforme").val(data.solicitud);
+                    	$("#fechaEnvioInforme").val(data.fecha_emision_formateada);
+                    	$("#fechaRespuestaInforme").val(data.fecha_inggreso_repuesta_formateada);
+                    	$("#fojasRespuestaInforme").val(data.fojas);
+                    },
+                    error: function(jqXHR,textStatus,errorThrown ){
+        				toastr.error(jqXHR.responseText);
+        				}
+                	});
+				}
+
+    			if($("#fechaEnvioInforme").val()==''){
+    					$("#fechaRespuestaInforme").prop("disabled", true);
+    					$("#fojasRespuestaInforme").prop("disabled", true);
+    					$("#fechaEnvioInforme").prop("disabled", false);
+    					$("#selDestinoInforme").prop("disabled", false);
+                    	$("#solicitudInforme").prop("disabled", false);                    	
+    			}
+				else {
+					$("#fechaRespuestaInforme").prop("disabled", false);
+					$("#fojasRespuestaInforme").prop("disabled", false);
+					$("#fechaEnvioInforme").prop("disabled", true);
+					$("#selDestinoInforme").prop("disabled", true);
+                	$("#solicitudInforme").prop("disabled",true);
+				}
+			});
+
+			$('#informe').on('hidden.bs.modal', function () {
+				$("#guardarInforme").prop("disabled", false);
+			});
+				
+			//BOTON GUARDAR INFORME DEL MODAL DE EDICION DE INFORME
+			$("#guardarInforme").click(function(){
+
+				$(this).prop("disabled", true);
+				
+				var validacion="";
+				var formData=new FormData();
+				var modo =$("#informe").find('input[name="modoInforme"]').val();
+				var url="";
+				
+				formData.append('solicitud',$("#solicitudInforme").val());
+				formData.append('idDestino',$("#selDestinoInforme").val());
+				validacion=(($("#selDestinoInforme").val()==0)
+								?'<li>Debe seleccionar un destino</li>':'');
+				validacion=(($("#solicitudInforme").val()=="")
+								?'<li>Debe especificar la solicitud</li>':'');
+				validacion+=(($("#fechaRespuestaInforme").val()!="" && $("#fojasRespuestaInforme")=="")
+								?'<li>Debe indicar la ubicacion de las fojas en el expediente</li>':'');
+							
+				if (modo=='alta'){
+					url="/api/expediente/informe/create";
+					formData.append('id',$("#movimientos").find('input[name="idExpediente"]').val());
+				}
+				else{
+					url="/api/expediente/informe/update"
+					formData.append('id',$("#informe").find('input[name="idInforme"]').val());
+				}
+
+
+                if (validacion.length>0) 
+        		{
+        			validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+        						validacion+'</ul>':'');
+        			toastr.error(validacion);
+        			$(this).prop("disabled", false);
+        			return false;
+        		}
+        		else{
+        
+                	$.ajax({
+                        async: true,
+                        url: '{{ app.request.getBaseURL() }}' + url,
+                        data: formData,
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        type: 'POST',
+                    success: function(data) {
+                        toastr.success(data);
+        				tabla.ajax.reload();
+        				$('#informe').modal('hide');
+                    	},
+                    complete: function(){
+                    	$(this).prop("disabled", false);
+                    },
+                    error: function(jqXHR,textStatus,errorThrown ){
+        				toastr.error(jqXHR.responseText);
+        				}
+                	});
+                }
+				
+			});
+		
 			
 		    //------------------------------------------------------------------------------------------------------------
 			//---------------------------------INICIALIZACIÓN DE CONTROLES------------------------------------------------
@@ -998,6 +1252,11 @@
 			  minimumInputLength: -1,
 			  theme: "bootstrap",
 			});
+
+			$(".campo-fecha").datetimepicker({
+		    	locale: 'es',
+		    	format:'DD/MM/YYYY'
+		    });
 
 	});
 	</script>
@@ -1486,12 +1745,12 @@
             						        			<th>id</th>
             						        			<th>
             						        				<div class="btn-group">
-                            		                			<button type="button" title="Agregar Giro"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#giro">
+                            		                			<button type="button" id="alta-giro" title="Agregar Giro"class="btn btn-primary btn-xs">
                             							    			<span class="glyphicon glyphicon-plus"></span>
                             							    	</button>
                             							    </div>
             						        			</th>
-            						        			<th>Origen</th>
+            						        			<!-- <th>Origen</th> -->
             						        			<th title="Fecha de Envío Remito">Fec. Env.</th>
             						        			<th>Destino</th>
             						        			<th>Observación</th>
@@ -1519,7 +1778,7 @@
             						        			<th>id</th>
             						        			<th>
             						        				<div class="btn-group">
-                            		                			<button type="button" title="Agregar Informe"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#informe">
+                            		                			<button type="button" id="alta-informe" title="Agregar Informe"class="btn btn-primary btn-xs">
                             							    			<span class="glyphicon glyphicon-plus"></span>
                             							    	</button>
                             							    </div>
@@ -1564,25 +1823,32 @@
 				    	<input type="hidden" id="modoGiro" name="modoGiro"> 	
 				    	<div class="row">
 				    		<div class="col-md-12">
+				    			<!--  
 				    			<div class="form-group">
 				    				<label for="selOrigenGiro">Origen</label>
 				    				<select class="form-control" id="selOrigenGiro">
 				    					<option value="0">Seleccione Origen</option>
 				    				</select>
-				    			</div>
+				    			</div> 
+				    			-->
 				    			<div class="form-group">
 				    				<label for="selDestinoGiro">Destino</label>
 				    				<select class="form-control" id="selDestinoGiro">
 				    					<option value="0">Seleccione Destino</option>
 				    				</select>
 				    			</div>
-				    		</div>
-				    	</div>
-				    	<div class="row">
-				    		<div class="col-md-12">
 				    			<div class="form-group">
 				    				<label for="observacionGiro">Observación</label>
 				    				<textarea class="form-control" rows="8" cols="10" id="observacionGiro"></textarea>
+				    			</div>
+				    		</div>
+				    	</div>
+				    	<br>
+				    	<div class="row">
+				    		<div class="col-md-4 col-md-offset-4">
+				    			<div class="form-group">
+				    				<label for="fechaRecepcionRemito">Fecha Recepción Remito</label>
+				    				<input type="input" class="form-control campo-fecha text-center" id="fechaRecepcionRemito">
 				    			</div>
 				    		</div>
 				    	</div>
@@ -1620,14 +1886,34 @@
 				    					<option value="0">Seleccione Destino</option>
 				    				</select>
 				    			</div>
-				    		</div>
-				    	</div>
-				    	<div class="row">
-				    		<div class="col-md-12">
 				    			<div class="form-group">
 				    				<label for="solicitudInforme">Solicitud</label>
 				    				<textarea class="form-control" rows="8" cols="10" id="solicitudInforme"></textarea>
 				    			</div>
+				    		</div>
+				    	</div>
+				    	<div class="row">
+				    		<div class="col-md-12">
+				    			<div class="row">
+				    				<div class="col-md-4">	
+				    					<div class="form-group">
+        				    				<label for="fechaEnvioInforme">Fecha Envío</label>
+        				    				<input type="text" class="form-control campo-fecha text-center" id="fechaEnvioInforme">
+    				    				</div>
+				    				</div>
+				    				<div class="col-md-5">		
+        				    			<div class="form-group">
+        				    				<label for="fechaRespuestaInforme">Fecha Recepción Respuesta</label>
+        				    				<input type="text" class="form-control campo-fecha text-center" id="fechaRespuestaInforme">
+        				    			</div>
+        				    		</div>
+        				    		<div class="col-md-3">	
+        				    			<div class="form-group">
+        				    				<label for="fojasRespuestaInforme">Fojas</label>
+        				    				<input type="text" class="form-control text-center" id="fojasRespuestaInforme">
+        				    			</div>
+        				    		</div>
+    				    		</div>
 				    		</div>
 				    	</div>
 				        <hr>
@@ -1637,40 +1923,6 @@
 					    			<div class="btn-group">
 							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cerrar</button>
 							        	<button type="button" class="btn btn-primary" id="guardarInforme">Guardar</button>
-							        </div>
-						        </div>
-						    </div>
-			    		</div>
-				     </div>
-			    </div>
-			</div>
-		</div>
-		<div id="respuestaRemitoGiro" class="modal fade" role="dialog">
-		 	<div class="modal-dialog modal-sm">
-			    <!-- Modal content-->
-			    <div class="modal-content">
-				    <div class="modal-header" style="background-color:#666	;color:#FFF">
-		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title">Respuesta Remito</h4>
-				    </div>
-				    <div class="modal-body" style="background-color:#ecf0f5">
-				    	<input type="hidden" id="idGiro" name="idGiro">
-				    	<input type="hidden" id="modoRespuestaGiro" name="modoRespuestaGiro"> 	
-				    	<div class="row">
-				    		<div class="col-md-12">
-				    			<div class="form-group">
-				    				<label for="fechaRespuestaGiro">Fecha Recepción Remito</label>
-				    				<input type="date" id="fechaRespuestaGiro">
-				    			</div>
-				    		</div>
-				    	</div>
-				        <hr>
-				        <div class="row">
-				        	<div class="col-md-12">
-				        		<div class="text-center">
-					    			<div class="btn-group">
-							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cerrar</button>
-							        	<button type="button" class="btn btn-primary" id="guardarRespuestaGiro">Guardar</button>
 							        </div>
 						        </div>
 						    </div>

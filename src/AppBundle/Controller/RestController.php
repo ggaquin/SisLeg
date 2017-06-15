@@ -168,6 +168,33 @@ class RestController extends FOSRestController{
     }
     
     /**
+     * @Rest\Get("/api/expediente/giro/findOne/{id}")
+     */
+    public function traerGiroPorId(Request $request)
+    {
+    	$id=$request->get('id');
+    	$giroRepository=$this->getDoctrine()->getRepository('AppBundle:Giro');
+    	$giro=$giroRepository->find($id);
+    	return $this->view($giro->getGiros(),200);
+    }
+    
+    /**
+     * @Rest\Post("/api/expediente/giro/create")
+     */
+    public function crearGiro(Request $request)
+    {
+    	//TODO: implementar metodo crearGiro
+    }
+    
+    /**
+     * @Rest\Post("/api/expediente/giro/update")
+     */
+    public function actualizarGiro(Request $request)
+    {
+    	//TODO: implementar metodo actualizarGiro
+    }
+    
+    /**
      * @Rest\Get("/api/expediente/informe/getAllByExpediente/{id}")
      */
     public function traerInformesPorIdExpediente(Request $request)
@@ -177,7 +204,34 @@ class RestController extends FOSRestController{
     	$expediente=$expedienteRepository->find($id);
     	return $this->view($expediente->getInformes(),200);
     }
+    
+    /**
+     * @Rest\Get("/api/expediente/informe/findOne/{id}")
+     */
+    public function traerInformePorId(Request $request)
+    {
+    	$id=$request->get('id');
+    	$informeRepository=$this->getDoctrine()->getRepository('AppBundle:Informe');
+   		$informe=$informeRepository->find($id);
+   		return $this->view($informe->getGiros(),200);
+    }
 
+    /**
+     * @Rest\Post("/api/expediente/informe/create")
+     */
+    public function crearInforme(Request $request)
+    {
+    	//TODO: implementar metodo crearInforme
+    }
+    
+    /**
+     * @Rest\Post("/api/expediente/informe/update")
+     */
+    public function actualizarInforme(Request $request)
+    {
+    	//TODO: implementar metodo actualizarInforme
+    }
+    
     /**
      * @Rest\Get("/api/legislador/getAll")
      */

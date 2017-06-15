@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Oficina
  *
- * @ORM\Table(name="oficina")
+ * @ORM\Table(name="oficina",indexes={@ORM\Index(name="oficina_tipoOficina_idx", columns={"idTipoOficina"})})
  * 
  * @ORM\Entity
  */
@@ -37,6 +37,14 @@ class Oficina {
 	 * @ORM\Column(name="codigo", type="String", length=15, nullable=false)
 	 */
 	private $codigo;
+	
+	/**
+	 * @var \AppBundle\Entity\TipoOficina
+	 *
+	 * @ORM\ManyToOne(targetEntity="AppBundle\Entity\TipoOficina")
+	 * @ORM\JoinColumns({@ORM\JoinColumn(name="idTipoOficina", referencedColumnName="idTipoOficina")})
+	 */
+	private $tipoOficina;
 	
 	/**
 	 * Get id
@@ -86,6 +94,27 @@ class Oficina {
 	 */
 	public function setCodigo($codigo) {
 		$this->codigo = $codigo;
+		return $this;
+	}
+	
+	/**
+	 * Get tipoOficina
+	 *
+	 * @return \AppBundle\Entity\TipoOficina
+	 */
+	public function getTipoOficina() {
+		return $this->tipoOficina;
+	}
+	
+	/**
+	 * Set tipoOficina
+	 *
+	 * @param \AppBundle\Entity\TipoOficina $tipoOficina
+	 *
+	 * @return Oficina
+	 */
+	public function setTipoOficina(\AppBundle\Entity\TipoOficina $tipoOficina) {
+		$this->oficina = $tipoOficina	;
 		return $this;
 	}
 	

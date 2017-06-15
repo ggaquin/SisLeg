@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
   <entity name="AppBundle\Entity\Oficina" table="oficina">
+	<indexes>
+		<index columns="idTipoOficina" name="oficina_tipoOficina_idx"></index>
+	</indexes>
     <id name="id" type="integer" column="idOficina">
       <generator strategy="IDENTITY"/>
     </id>
@@ -14,5 +17,10 @@
         <option name="fixed"/>
       </options>
     </field>
+    <many-to-one field="tipoOficina" target-entity="TipoOficina">
+    	<join-columns>
+    		<join-column name="idTipoOficina" referenced-column-name="idTipoOficina"/>
+    	</join-columns>
+    </many-to-one>
   </entity>
 </doctrine-mapping>
