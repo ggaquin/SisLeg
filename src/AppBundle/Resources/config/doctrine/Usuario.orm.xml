@@ -21,6 +21,8 @@
         <option name="fixed"/>
       </options>
     </field>
+    <field name="permisos" type="json_array" column="permisos" nullable="true">
+    </field>
     <field name="activo" type="boolean" column="activo" nullable="false"/>
      <field name="fechaCreacion" type="datetime" column="fechaCreacion" nullable="false">
     </field>

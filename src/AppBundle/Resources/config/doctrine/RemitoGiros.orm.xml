@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
-  <entity name="AppBundle\Entity\Giro" table="giro">
+  <entity name="AppBundle\Entity\RemitoGiros" table="remitoGiros">
   	<indexes>
-  		<index columns="idRemitoGiros" name="giro_remitoGiros_idx"></index>
-  		<index columns="idExpediente" name="giro_expediente_idx"></index>
+  		<index columns="idOrigen" name="remiroGiros_oficinaOrigen_idx"/>
+  		<index columns="idDestino" name="remiroGiros_oficinaDestino_idx"/>
   	</indexes>
-    <id name="id" type="integer" column="idGiro">
+    <id name="id" type="integer" column="idRemitoGiros">
       <generator strategy="IDENTITY"/>
     </id>
-    <field name="observacion" type="string" length="200" column="observacion" nullable="true">
-    </field>
-    <field name="fojas" type="smallint" column="fojas" nullable="false">
+    <field name="fechaRecepcion" type="datetime" column="fechaRecepcion" nullable="true">
     </field>
     <field name="usuarioCreacion" type="string" length="70" column="usuarioCreacion" nullable="false">
     </field>
@@ -20,16 +18,20 @@
     </field>
     <field name="fechaModificacion" type="datetime" column="fechaModificacion" nullable="true">
     </field>
-    <field name="eliminado" type="boolean" column="eliminado">
-    </field>
-    <many-to-one field="remito" target-entity="RemitoGiros" inversed-by="giros">
+    <one-to-many field="giros" mapped-by="remito" target-entity="Giro" orphan-removal="true">
+    	<cascade>
+    		<cascade-persist/>
+    		<cascade-remove/>
+    	</cascade>
+    </one-to-many>
+    <many-to-one field="destino" target-entity="Oficina">
     	<join-columns>
-    		<join-column name="idRemitoGiros" referenced-column-name="idRemitoGiros"/>
+    		<join-column name="idDestino" referenced-column-name="idOficina"/>
     	</join-columns>
     </many-to-one>
-    <many-to-one field="expediente" target-entity="Expediente" inversed-by="giros">
+    <many-to-one field="origen" target-entity="Oficina">
     	<join-columns>
-    		<join-column name="idExpediente" referenced-column-name="idExpediente"/>
+    		<join-column name="idOrigen" referenced-column-name="idOficina"/>
     	</join-columns>
     </many-to-one>
   </entity>

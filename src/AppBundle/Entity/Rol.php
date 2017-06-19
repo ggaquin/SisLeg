@@ -30,6 +30,31 @@ class Rol
      * @ORM\Column(name="rol", type="string", length=45, nullable=false)
      */
     private $rol;
+    
+    /**
+     * @var \AppBundle\Entity\Oficina
+     *
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Oficina")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="idOficina", referencedColumnName="idOficina")
+     * })
+     */
+    private $oficina;
+    
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     *
+     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Menu", orphanRemoval=true )
+     * @ORM\JoinTable(name="rol_menu",
+     *   joinColumns={
+     *     @ORM\JoinColumn(name="idRol", referencedColumnName="idRol")
+     *   },
+     *   inverseJoinColumns={
+     *     @ORM\JoinColumn(name="idMenu", referencedColumnName="idMenu")
+     *   }
+     * )
+     */
+    private $menus;
 
     //------------------------------------setters y getters---------------------------------------
 
@@ -67,6 +92,66 @@ class Rol
         return $this->rol;
     }
 
+    /**
+     * Set oficina
+     *
+     * @param \AppBundle\Entity\Oficina $oficina
+     *
+     * @return Rol
+     */
+    public function setOficina($oficina)
+    {
+    	$this->oficina = $oficina;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Get oficina
+     *
+     * @return \AppBundle\Entity\Oficina
+     */
+    public function getOficina()
+    {
+    	return $this->oficina;
+    }
+    
+    /**
+     * Add Menu
+     *
+     * @param \AppBundle\Entity\Menu $menu
+     *
+     * @return Rol
+     */
+    public function addMenu(\AppBundle\Entity\Rol $menu)
+    {
+    	$this->menus[] = $menu;
+    	return $this;
+    }
+    
+    /**
+     * Remove menu
+     *
+     * @param \AppBundle\Entity\Menu $menu
+     *
+     * @return Rol
+     */
+    public function removeMenu(\AppBundle\Entity\Menu $menu)
+    {
+    	$this->menus->removeElement($menu);
+    	return $this;
+    }
+    
+    /**
+     * Get menus
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getMenus()
+    {
+    	return $this->menus;
+    }
+     
     /**
      * Get RolComoString
      *

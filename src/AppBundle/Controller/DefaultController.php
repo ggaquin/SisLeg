@@ -141,12 +141,26 @@ class DefaultController extends Controller
         $estadosExpediente=$estadoExpedienteRepository->findBy(array(),array('estadoExpediente' => 'ASC') );
         $ofcinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
         $oficinas=$ofcinaRepository->findAll();
+        $idOficinaActual=$this->getParameter('id_mesa_entradas');
        
         return $this->render('default/expediente.html.twig', array(
             'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
-        		'tipos' => $tiposExpediente,'estados'=>$estadosExpediente, 'oficinas'=>$oficinas
+        		'tipos' => $tiposExpediente,'estados'=>$estadosExpediente, 'oficinas'=>$oficinas,
+        		'idOficinaActual' => $idOficinaActual
         ));
          
+    }
+    
+    /**
+     * @Route("/giros", name="giros")
+     */
+    public function girosAction(Request $request)
+    {
+    		
+    	return $this->render('default/giros.html.twig', array(
+    			'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
+    	));
+    	
     }
 
     /*

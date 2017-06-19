@@ -65,6 +65,13 @@ class Usuario implements AdvancedUserInterface ,\Serializable
      * })
      */
     private $rol;
+    
+    /**
+     * @var array
+     *
+     * @ORM\Column(name="permisos", type="json_array", nullable=false)
+     */
+    private $permisos;
 
     /**
      * @var boolean
@@ -218,6 +225,30 @@ class Usuario implements AdvancedUserInterface ,\Serializable
     {
         return $this->rol;
     }
+    
+    /**
+     * Set permisos
+     *
+     * @param array $permisos
+     *
+     * @return Usuario
+     */
+    public function setPermidos($permisos)
+    {
+    	$this->permisos = $permisos;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Get permisos
+     *
+     * @return array
+     */
+    public function getPermisos()
+    {
+    	return $this->permisos;
+    } 
 
     /**
      * Set activo

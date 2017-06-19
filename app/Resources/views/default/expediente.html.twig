@@ -816,26 +816,16 @@
         							                "targets": [ 0 ],
         							                "visible": false,
         							                "searchable": false
-        							            },
-        							            {
-        								            "targets": [ 1 ],
-        								            "data": null,
-        								            "orderable":false,
-        								            "render": function(data, type, row){
-														var html="<button type='button' class='btn btn-primary btn-descargar-remito'><span class='glyphicon glyphicon-save-file'></span></button>";
-														html+="<button type='button' class='btn btn-info btn-modificar-movimiento'><span class='glyphicon glyphicon-pencil'></span></button>";
-        								            	return html;
-        								            }
-        								        }
+        							            }
         					  ],
         				      "columns": [
         				      		{ "data": "id" },
-        				      		{ "data": "null","width":"5%"},
-        				      		/* { "data": "origen_giro.oficina","width":"15%"}, */
-        				      		{ "data": "fecha_envio_remito_formateada","width":"10%"},
-        				      		{ "data": "destino_giro.oficina","width":"30%"},
-        				      		{ "data": "observacion","className": "for-mobile","width":"50%" },
-        				            { "data": "fecha_recepcion_remito_formateada","className": "for-mobile","width":"10%" },
+        				      		{ "data": "origen","width":"15%"},
+        				      		{ "data": "fecha_envio","width":"10%"},
+        				      		{ "data": "destino","width":"15%"},
+        				      		{ "data": "observacion","className": "for-mobile","width":"40%" },
+        				      		{ "data": "fojas","width":"10%" },
+        				            { "data": "fecha_recepcion","className": "for-mobile","width":"10%" },
         				        ],
         				      "autoWidth":false,
         				      "paging": true,
@@ -879,22 +869,13 @@
                 						                "targets": [ 0 ],
                 						                "visible": false,
                 						                "searchable": false
-                						            },
-                						            {
-                							            "targets": [ 1 ],
-                							            "data": null,
-                							            "orderable":false,
-                							            "render": function(data, type, row){
-                							            	return "<button type='button' class='btn btn-info btn-modificar-informe'><span class='glyphicon glyphicon-pencil'></span></button>";
-                							            }
-                							        }
+                						            }
                 							       
                 				  ],
                 			      "columns": [
                 			      		{ "data": "id" },
-                			      		{ "data": "null","width":"5%"},
-                			      		{ "data": "destino.oficina","width":"15%"},
-                			      		{ "data": "fecha_emision_formateada","width":"10%"},
+                			      		{ "data": "destino.oficina","width":"20%"},
+                			      		{ "data": "fecha_movimiento","width":"10%"},
                 			      		{ "data": "solicitud","width":"50%"},
                 			      		{ "data": "fecha_ingreso_respesta_formateada","width":"10%"},
                 			            { "data": "fojas","className": "for-mobile","width":"10%" },
@@ -910,7 +891,7 @@
                 				
 			});
 
-			//EVENTO CERRAR MODAL MOVIMIENTOS EXPEDDIENTE
+			//EVENTO CERRAR MODAL MOVIMIENTOS EXPEDIENTE
 			$('#movimientos').on('hidden.bs.modal', function () {
 				tablaMovimientos.destroy();
 				tablaInformes.destroy();
@@ -922,56 +903,46 @@
 			
 			//BOTON ALTA GIRO DE LA GRILLA DE GIROS
 			$("#alta-giro").click(function(){
-				$("#giro").find('input[name="modoGiro"]').val("alta");
 				$("#giro").modal("show");
 			});
 
-			//BOTON MODIFICAR GIRO DE LA GRILLA DE GIROS
-			$('#tablaMovimientos tbody').on( 'click', '.btn-modificar-movimiento', function () {
-		        var data = tabla.row( $(this).parents('tr') ).data();
-		        $("#giro").find('input[name="idGiro"]').val(data[ "id" ]);
-		        $("#giro").find('input[name="modoGiro"]').val("edicion");
-		        $("#giro").modal("show");
+			//BOTON ELIMINAR GIRO DE LA GRILLA DE GIROS
+			$('#tablaMovimientos tbody').on( 'click', '.btn-eliminar-movimiento', function () {
+		        /*
+		        	ver como implementar solo eliminar el último si:
+	        		el origen es mi oficina
+	        		no tiene fecha de recepcion
+        		*/	
 		    } );
 
 			// EVENTO ABRIR DEL MODAL DE GIRO
 			$('#giro').on('show.bs.modal', function () {
-				var modo = $("#giro").find('input[name="modoGiro"]').val(); 
-				var fechaEnvio='';
-
+				
 				$("#selDestinoGiro").val(0);
 				$("#observacionGiro").val("");
 				$("#fechaRecepcionRemito").val("");
+				$("#fechaIntervencionOficinaActual").val("");
 
-				if (modo=="edicion"){
-
-					var idGiro=$("#giro").find('input[name="idGiro"]').val();
-					
-					$.ajax({
-                        url: '{{ app.request.getBaseURL() }}' + '/api/expediente/giro/findOne/'+idGiro,
-                        type: 'GET',
-                    success: function(data) {
-                    	$("#selDestinoGiro").val(data.destino_giro.id);
-                    	$("#observacionGiro").val(data.observacion);
-                    	fechaEnvio=data.fecha_envio_remito_formateada;
-                    	$("#fechaRecepcionRemito").val(data.fecha_recepcion_remito_formateada)
-                    },
-                    error: function(jqXHR,textStatus,errorThrown ){
-        				toastr.error(jqXHR.responseText);
-        				}
-                	});
-				}
-
-    			if(fechaEnvio==''){
-    					$("#fechaRecepcionRemito").prop("disabled", true);
-            			$("#selDestinoGiro").prop("disabled", false);
-            			$("#observacionGiro").prop("disabled", false);
-    			}
-				else {
-					$("#selDestinoGiro").prop("disabled", true);
-					$("#observacionGiro").prop("disabled", true);
-					$("#fechaRecepcionRemito").prop("disabled", false);
-				}
+				$.ajax({
+                    url: '{{ app.request.getBaseURL() }}' + '/api/expediente/giro/findLast',
+                    type: 'GET',
+                success: function(data) {
+                    
+                    if (data.destino_giro.id!='{{ idOficinaActual }}'){
+						$("#fechaIntervencionOficinaActual").removeClass('hidden');
+                    	$("#giro").find('input[name="idOficinaActual"]').val(data.destino_giro.id);
+                    }
+                    else{
+                    	$("#fechaIntervencionOficinaActual").addClass('hidden');
+                    	$("#giro").find('input[name="idOficinaActual"]').val(0);
+                    }
+                		
+                },
+                error: function(jqXHR,textStatus,errorThrown ){
+    				toastr.error(jqXHR.responseText);
+    				}
+            	});
+            	
 			});
 
 			$('#giro').on('hidden.bs.modal', function () {
@@ -985,24 +956,16 @@
 				
 				var validacion="";
 				var formData=new FormData();
-				var modo =$("#giro").find('input[name="modoGiro"]').val();
-				var url="";
 				
 				formData.append('observacion',$("#observacionGiro").val());
+				formData.append('fojas',$("#fojasRespuestaInforme").val());
 				formData.append('idDestino',$("#selDestinoGiro").val());
 				validacion=(($("#selDestinoGiro").val()==0)
 								?'<li>Debe seleccionar un destino</li>':'');
-							
-				if (modo=='alta'){
-					url="/api/expediente/giro/create";
-					formData.append('id',$("#movimientos").find('input[name="idExpediente"]').val());
-				}
-				else{
-					url="/api/expediente/giro/update"
-					formData.append('id',$("#giro").find('input[name="idGiro"]').val());
-				}
-
-
+		
+				
+				formData.append('idExpediente',$("#movimientos").find('input[name="idExpediente"]').val());
+				
                 if (validacion.length>0) 
         		{
         			validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
@@ -1015,7 +978,7 @@
         
                 	$.ajax({
                         async: true,
-                        url: '{{ app.request.getBaseURL() }}' + url,
+                        url: '{{ app.request.getBaseURL() }}' + '/api/expediente/giro/create',
                         data: formData,
                         cache: false,
                         contentType: false,
@@ -1264,7 +1227,9 @@
 		<div class="row pull-right">
 			<ol class="breadcrumb">
 		        <li><a href="#"><i class="fa fa-dashboard"></i> Principal</a></li>
-		        <li class="active">Expedientes</li>
+		        <li>Expedientes</li>
+		        <li class="active">Alta y Modificación</li>
+		        
 		    </ol>
 		</div>
 		<hr>
@@ -1743,17 +1708,11 @@
             						        	<table class="table table-striped" id="tablaMovimientos" width="100%">
             						        		<thead>
             						        			<th>id</th>
-            						        			<th>
-            						        				<div class="btn-group">
-                            		                			<button type="button" id="alta-giro" title="Agregar Giro"class="btn btn-primary btn-xs">
-                            							    			<span class="glyphicon glyphicon-plus"></span>
-                            							    	</button>
-                            							    </div>
-            						        			</th>
-            						        			<!-- <th>Origen</th> -->
+            						        			<th>Origen</th>
             						        			<th title="Fecha de Envío Remito">Fec. Env.</th>
             						        			<th>Destino</th>
             						        			<th>Observación</th>
+            						        			<th>Fojas</th>
             						        			<th title="Fecha de Recepción Remito">Fec. Recep.</th>
             						        		</thead>
             						        	</table>
@@ -1776,13 +1735,6 @@
             						        	<table class="table table-striped" id="tablaInformes">
             						        		<thead>
             						        			<th>id</th>
-            						        			<th>
-            						        				<div class="btn-group">
-                            		                			<button type="button" id="alta-informe" title="Agregar Informe"class="btn btn-primary btn-xs">
-                            							    			<span class="glyphicon glyphicon-plus"></span>
-                            							    	</button>
-                            							    </div>
-            						        			</th>
             						        			<th>Destino</th>
             						        			<th title="Fecha Emisión">Fec. Em.</th>
             						        			<th>Solicitud</th>
@@ -1819,22 +1771,30 @@
 		    			<h4 class="modal-title">Giro</h4>
 				    </div>
 				    <div class="modal-body" style="background-color:#ecf0f5">
-				    	<input type="hidden" id="idGiro" name="idGiro">
-				    	<input type="hidden" id="modoGiro" name="modoGiro"> 	
+				    	<input type="hidden" id="idOficinaActual" name="idOficinaActual">	
 				    	<div class="row">
 				    		<div class="col-md-12">
-				    			<!--  
 				    			<div class="form-group">
+				    				<label for="fechaIntervencionOficinaActual">Ingreso A Esta Oficina</label>
+				    				<input type="input" class="form-control campo-fecha text-center hidden"
+				    				 id="fechaIntervencionOficinaActual">
+				    			</div>
+				    			{# <div class="form-group">
 				    				<label for="selOrigenGiro">Origen</label>
 				    				<select class="form-control" id="selOrigenGiro">
 				    					<option value="0">Seleccione Origen</option>
+				    					{% for oficina in oficinas %}
+							                <option value="{{ oficina.id }}">{{ oficina.oficina }}</option>
+							            {% endfor %}
 				    				</select>
-				    			</div> 
-				    			-->
+				    			</div> #} 
 				    			<div class="form-group">
 				    				<label for="selDestinoGiro">Destino</label>
 				    				<select class="form-control" id="selDestinoGiro">
 				    					<option value="0">Seleccione Destino</option>
+				    					{% for oficina in oficinas %}
+							                <option value="{{ oficina.id }}">{{ oficina.oficina }}</option>
+							            {% endfor %}
 				    				</select>
 				    			</div>
 				    			<div class="form-group">
@@ -1845,6 +1805,12 @@
 				    	</div>
 				    	<br>
 				    	<div class="row">
+				    		<div class="col-md-4">
+				    			<div class="form-group">
+				    				<label for="fojasRemitoGiro">fojas</label>
+				    				<input type="input" class="form-control text-center" disabled id="fojasRemitoGiro">
+				    			</div>
+				    		</div>
 				    		<div class="col-md-4 col-md-offset-4">
 				    			<div class="form-group">
 				    				<label for="fechaRecepcionRemito">Fecha Recepción Remito</label>

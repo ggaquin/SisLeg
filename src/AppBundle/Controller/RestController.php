@@ -21,6 +21,7 @@ use AppBundle\Entity\Bloque;
 use AppBundle\Entity\Expediente;
 use AppBundle\Entity\Proyecto;
 use AssistBundle\Entity\AdministracionSesion;
+use AppBundle\Entity\Giro;
 
 
 class RestController extends FOSRestController{
@@ -117,6 +118,28 @@ class RestController extends FOSRestController{
     }
 
     /**
+     * @Rest\Get("/api/expediente/getNumeroCompletoByNumero")
+     */
+    public function traerNumeroCompletoByNumeroAction(Request $request)
+    {
+    	try{
+    		
+    		$numero=$request->query->get('q');
+    		$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+    		$resultado=$expedienteRepository->findNumeroCompletoByNumero($numero);
+    		$formato = 'Y-m-d H:i:s';
+    		$fecha = \DateTime::createFromFormat($formato,$resultado["fecha"]);
+    		$ejercicio=substr($fecha->format("Y"),2,2);
+    		$numeroCompleto=$resultado["numero"].'-'.$resultado["letra"].'-'.$ejercicio.'('.$resultado["folios"].')';
+    		$valorRetorno=array(array('id' => $resultado["id"],'numeroCompleto' => $numeroCompleto));
+    		return $this->view($valorRetorno,200);
+    	}catch(\Exception $e)   {
+    		return $this->view($e->getMessage(),500);
+    		}
+    }
+    		
+    
+    /**
      * @Rest\Get("/api/expediente/getByCriteria/{tipoCriterio}/{criterio}")
      */
     public function traerExpedientesPorCriterioAction(Request $request)
@@ -137,7 +160,7 @@ class RestController extends FOSRestController{
                 $expedientes=$expedienteRepository->findBy(array('numeroExpediente'=>$criterio));
             if ($tipoCriterio=='busqueda-4')
                 $expedientes=$expedienteRepository->findByTipoExpediente_Id($criterio);
-
+			
             return $this->view($expedientes,200);
 
         }catch(\Exception $e)   {
@@ -183,7 +206,48 @@ class RestController extends FOSRestController{
      */
     public function crearGiro(Request $request)
     {
-    	//TODO: implementar metodo crearGiro
+    	/*
+    	$idDestino=$request->request->get('idDestino');
+    	$observacion=$request->request->get('observacion');
+    	$idExpediente=$request->request->get('idExpediente');
+    	$fojas=$request->request->get('fojas');
+    	$fechaIntervencionActual=$request->request->get('fechaIntervencionActual');
+    	$usuario=$this->getUser();
+    	
+    	$ultimoGiro=null;
+    	
+    	$giroRepositorio=$this->getDoctrine()->getRepository('AppBundle:Giro');
+    	$ultimoGiro=$giroRepositorio->traerUltimo($idExpediente);
+    	$oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
+    	$oficina=$oficinaRepository->find($idDestino);
+    	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+    	$expediente=$expedienteRepository->find($idExpediente);
+    	
+    	$idOficinaActual=$this->getParameter('id_mesa_entradas');
+    	
+    	//Necesita Auto pase
+    	if ($ultimoGiro->getDestinoGiro()->getId()!=$idOficinaActual){
+    		
+	    	$giro=new Giro();
+	    	$giro->setOrigenGiro($ultimoGiro->getDestinoGiro());
+	    	$destino=$oficinaRepository->find($idOficinaActual);
+	    	$giro->setDestinoGiro($destino);
+	    	$giro->setFojas($fojas);
+	    	$giro->getObservacion("Auto pase");
+	    	$giro->setFechaRecepcionRemito(new \DateTime("now"));
+	    	$giro->setUsuarioCreacion("sistema");
+	    	$giro->setFechaCreacion(new \DateTime("now"));
+    	}
+    	
+    	$giro=new Giro();
+    	$giro->setOrigenGiro($oficina);
+    	$giro->setObservacion($observacion);
+    	$giro->setFojas($fojas);
+    	$giro->setUsuarioCreacion($usuario->getUsername());
+    	$giro->setFechaCreacion(new \DateTime("now"));
+    	
+    	$expediente->addGiro($giro);
+    	*/
     }
     
     /**
@@ -577,12 +641,30 @@ class RestController extends FOSRestController{
             $tipoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
             $estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
             $estadoExpediente=$estadoExpedienteRepository->find(1);
+            
+            
+            
+            //Compatibilidad al inicio de la etapa de producción
+             $primerExpedienteSistema=$this->getParameter('primer_numero_sistema');
+                          
+             if($numeroExpediente<$primerExpedienteSistema)
+             	$observacion="Incorporacion Expediente";         	
+             else 
+             	$observacion="Alta Expediente";  
+             
+             $giro=new Giro();
+             $giro->setFojas($folios);
+             $giro->getObservacion($observacion);
+             $giro->setUsuarioCreacion("sistema");
+             $giro->setFechaCreacion(new \DateTime("now"));
+             
 
             $expediente=new Expediente();
             $expediente->setFolios($folios);
             $expediente->setArchivos($archivos);
             $expediente->setNumeroExpediente($numeroExpediente);
             $expediente->setCaratula($caratula);
+            $expediente->addGiro($giro);
 
             $proyecto=null;
             $tipoExpediente=null;
@@ -716,6 +798,18 @@ class RestController extends FOSRestController{
             return $this->view($e->getMessage());
             
         }
+    }
+    
+    /**
+     *  @Rest\Get("/api/rol/permisos/getByRol/{idRol}")	
+     */
+    public function traerPermisosRolAction(Request $request)
+    {
+    	$idRol=$request->get("idRol");
+    	$rolRepository=$this->getDoctrine()->getRepository('AppBundle:Rol');
+    	$rol=$rolRepository->find($idRol);
+    	
+    	return $this->view($rol->getMenus(),200);
     }
 
     /**

@@ -72,6 +72,12 @@
 		.locked{
   			pointer-events: none;
 		}
+		
+		.div-permisos{
+			min-height:420px;
+			max-height: 421px;
+			overflow-y:auto; 
+		}
 
 	</style>
 	<script type="text/javascript">
@@ -114,7 +120,7 @@
 			return usuario;
 		}
 
-		function actualizarRoles(idTipoPerfil,control){
+		function actualizarRoles(idTipoPerfil,control){	
 			$.ajax({
 				async:false,
 				type:'Get',
@@ -169,6 +175,52 @@
                 previewSettings:{image: {width: "auto", height: "220", width:"155px"}},
                 maxFileSize: 10240,                
             });
+		}
+
+		function rolChange(controlNombre,controlValor){
+
+			var div="";
+			var html="";
+			if(controlNombre=="selRol")
+				div="divPermisos";
+			else div="divPermisosMod";
+
+			$("#"+div).html('');
+
+			if(controlValor==0){
+				html="<div class='alert alert-info'>No hay ningún rol seleccionado</div>";
+				$("#"+div).html("<br>"+html);
+			}
+			else
+			{
+    			$.ajax({
+    				async:true,
+    				type:'Get',
+    				dataType: 'json	',
+    				url:'{{ app.request.getBaseURL() }}'+'/api/rol/permisos/getByRol/'+controlValor,
+    				success: function(data){
+    					var menus=data;
+						$.each(menus,function(index,menu){
+								html+="<h4>"+menu.menu+"</h4>";
+								html+="<ul style='list-style: none;'>";
+								$.each(menu.items,function(index,item){
+									html+="<li value='"+item.id+"'>"+
+										  "<label><input type='checkbox' checked>"+item.menu_item+
+										  "</li>";
+								});
+								html+="</ul>";
+						});
+						$("#"+div).html("<br>"+html);
+    				},
+    				error: function(jqXHR,textStatus,errorThrown ){
+    					html="<div class='alert alert-danger'>Ocurrió un error al recuperar los permisos</div>";
+    					$("#"+div).html("<br>"+html);
+    					toastr.error(jqXHR.responseText);
+    				}
+    	      	});
+			}
+
+			
 		}
 
 		$(document).ready(function () {
@@ -780,6 +832,10 @@
 			$('#input-file-mod').on('filedeleted', function(event, key) {
 			  $('#input-file-mod').fileinput('clear');
 			});
+
+			$("#selRol").change(function(){
+				rolChange($(this).attr('id'),$(this).val());
+			});
 		});
 	</script>
 	<section class="content-header">
@@ -834,93 +890,116 @@
 				        <h4 class="modal-title"><strong>Nuevo Usuario</strong></h4>
 				    </div>
 				    <div class="modal-body" style="background-color:#ecf0f5">
+				    	
 				        <form role="form" id="alta" action="api/usuario/create" method="POST">
-				        	<div class="row" style="min-height:420px">
-				        		<div class="col-md-4">
-				        			<div class="form-group">
-						        		<label for="selTipo">Perfil</label>
-						        		<select class="form-control" id="selTipo" name="selTipo">
-						        			<option value="1" selected="selected">Básico</option>
-						        			<option value="2">Legislador</option>
-						        			{# <option value="3">Público</option> #}
-						        		</select>
-						        	</div>
-						        	<div class="form-group">
-						        		<label for="login">LogIn</label>
-						        		<input type= "text" class="form-control input-sm" id="login" name="login" autocomplete="off" placeholder="nick / nombre usuario">
-						        	</div>
-						        	<div class="form-group">
-						        		<label for="selRol">Rol</label>
-						        		<select class="form-control" id="selRol" name="selRol">
-						        			{# <option value="0">Seleccione Rol</option>
-						        			{% for rol in roles %}
-								                <option value="{{ rol.id }}">{{ rol.rolComoString }}</option>
-								            {% endfor %} #}
-						        		</select>
-						        	</div>
-						        	<div class="form-group">
-						        		<label for="clave">Clave</label>
-						        		<input type="password" class="form-control input-sm" id="clave" name="clave" readOnly>
-						        	</div> 
-						        	<div class="form-group">
-						        		<label for="claveConfirma">Confirma Clave</label>
-						        		<input type="password" class="form-control input-sm" id="claveConfirma" name="claveConfirma" readOnly>
-						        	</div>	
-						        	<div id="mensaje"></div>
-								</div>
-					        	<div class="col-md-4">	
-					        		<div class="form-group div-legislador hidden">
-										<label for="selLegislador">Legislador:</label>
-									    <select class="form-control" data-width="100%" id="selLegislador" name="selLegislador"></select>
-						        	</div>
-						        	<div class="form-group">
-						        		<label class="es-nombre" for="apellidos">Apellidos</label>
-						        		<input type= "text" class="form-control input-sm control-comun es-nombre" name="apellidos" id="apellidos" placeholder="apellido del usuario">
-						        	</div>
-						        	<div class="form-group">
-						        		<label class="es-nombre" for="nombres">Nombres</label>
-						        		<input type= "text" class="form-control input-sm control-comun es-nombre" id="nombres" name="nombres" placeholder="nombre del usuario">
-						        	</div>
-						        	<div class="form-group">
-						        		<label for="eMail">Correo Electrónico</label>
-						        		<input type= "text" class="form-control input-sm control-comun" id="eMail" name="eMail" autocomplete="off" placeholder="dirección de correo electrónico">
-						        	</div>
-						        	<div class="form-group">
-										<label for="telefono">Telefono</label>
-										<input type= "text" class="form-control input-sm control-comun" id="telefono" name="telefono" placeholder="número de teléfono">
-									</div>
-									<div class="form-group div-legislador hidden">
-										<label for="oficina">Oficina</label>
-										<input type= "text" class="form-control input-sm" id="oficinaMod" name="oficinaMod" placeholder="oficina / despacho" readonly>
-									</div>
-								    <div class="form-group div-legislador hidden">
-						        		<label for="bloque">Bloque</label>
-						        		<input type= "text" class="form-control input-sm" id="bloque" name="bloque" placeholder="bloque" readonly>
-						        	</div>
-						        	<div class="form-group div-publico hidden">
-										<label for="documento">Documento</label>
-										<input type= "text" class="form-control input-sm" id="documento" name="documento" placeholder="número de documento del usuario">
-									</div>
-									<div class="form-group div-publico hidden">
-										<label for="domicilio">Domicilio</label>
-										<input type= "text" class="form-control input-sm" id="domicilio" name="domicilio" placeholder="domicilio del usuario">
-									</div>
-						        </div>
-								<div class="col-md-4">
-				        			<div class="row"> 	
-					        			<div class="image-container" id="file-container">
-								        	<div class="form-group">
-								        		{# <h3>Imagen Perfil</h3> #}
-								        		{# <label for="input-file">Imagen Perfil</label> #}
-									        	<input id="input-file" accept="image/*" name="input-file" type="file" class="file-loading">
-								        	</div>
-							        	</div>
-							        </div>
-							        <div class="row text-center">
-							        	<label for="input-file">Imagen de Perfil</label>
-							        </div>
-				        		</div>      
-							</div>
+				        	<div class="row">
+    				        	<div class="col-md-12">
+        				        	<ul class="nav nav-tabs" role="tablist">
+                                        <li role="presentation" class="active">
+                                        	<a href="#datos" aria-controls="datos" role="tab" data-toggle="tab">Datos</a>
+                                        </li>
+                                        <li role="presentation">
+                                        	<a href="#permisos" aria-controls="permisos" role="tab" data-toggle="tab">Permisos</a>
+                                        </li>
+                                    </ul>
+          							<div class="tab-content" >
+              							<div role="tabpanel" class="tab-pane active" id="datos">
+              								<br>
+                				        	<div class="row" style="min-height:420px">
+                				        		<div class="col-md-4">
+                				        			<div class="form-group">
+                						        		<label for="selTipo">Perfil</label>
+                						        		<select class="form-control" id="selTipo" name="selTipo">
+                						        			<option value="1" selected="selected">Básico</option>
+                						        			<option value="2">Legislador</option>
+                						        			{# <option value="3">Público</option> #}
+                						        		</select>
+                						        	</div>
+                						        	<div class="form-group">
+                						        		<label for="login">LogIn</label>
+                						        		<input type= "text" class="form-control input-sm" id="login" name="login" autocomplete="off" placeholder="nick / nombre usuario">
+                						        	</div>
+                						        	<div class="form-group">
+                						        		<label for="selRol">Rol</label>
+                						        		<select class="form-control" id="selRol" name="selRol">
+                						        			{# <option value="0">Seleccione Rol</option>
+                						        			{% for rol in roles %}
+                								                <option value="{{ rol.id }}">{{ rol.rolComoString }}</option>
+                								            {% endfor %} #}
+                						        		</select>
+                						        	</div>
+                						        	<div class="form-group">
+                						        		<label for="clave">Clave</label>
+                						        		<input type="password" class="form-control input-sm" id="clave" name="clave" readOnly>
+                						        	</div> 
+                						        	<div class="form-group">
+                						        		<label for="claveConfirma">Confirma Clave</label>
+                						        		<input type="password" class="form-control input-sm" id="claveConfirma" name="claveConfirma" readOnly>
+                						        	</div>	
+                						        	<div id="mensaje"></div>
+                								</div>
+                					        	<div class="col-md-4">	
+                					        		<div class="form-group div-legislador hidden">
+                										<label for="selLegislador">Legislador:</label>
+                									    <select class="form-control" data-width="100%" id="selLegislador" name="selLegislador"></select>
+                						        	</div>
+                						        	<div class="form-group">
+                						        		<label class="es-nombre" for="apellidos">Apellidos</label>
+                						        		<input type= "text" class="form-control input-sm control-comun es-nombre" name="apellidos" id="apellidos" placeholder="apellido del usuario">
+                						        	</div>
+                						        	<div class="form-group">
+                						        		<label class="es-nombre" for="nombres">Nombres</label>
+                						        		<input type= "text" class="form-control input-sm control-comun es-nombre" id="nombres" name="nombres" placeholder="nombre del usuario">
+                						        	</div>
+                						        	<div class="form-group">
+                						        		<label for="eMail">Correo Electrónico</label>
+                						        		<input type= "text" class="form-control input-sm control-comun" id="eMail" name="eMail" autocomplete="off" placeholder="dirección de correo electrónico">
+                						        	</div>
+                						        	<div class="form-group">
+                										<label for="telefono">Telefono</label>
+                										<input type= "text" class="form-control input-sm control-comun" id="telefono" name="telefono" placeholder="número de teléfono">
+                									</div>
+                									<div class="form-group div-legislador hidden">
+                										<label for="oficina">Oficina</label>
+                										<input type= "text" class="form-control input-sm" id="oficinaMod" name="oficinaMod" placeholder="oficina / despacho" readonly>
+                									</div>
+                								    <div class="form-group div-legislador hidden">
+                						        		<label for="bloque">Bloque</label>
+                						        		<input type= "text" class="form-control input-sm" id="bloque" name="bloque" placeholder="bloque" readonly>
+                						        	</div>
+                						        	<div class="form-group div-publico hidden">
+                										<label for="documento">Documento</label>
+                										<input type= "text" class="form-control input-sm" id="documento" name="documento" placeholder="número de documento del usuario">
+                									</div>
+                									<div class="form-group div-publico hidden">
+                										<label for="domicilio">Domicilio</label>
+                										<input type= "text" class="form-control input-sm" id="domicilio" name="domicilio" placeholder="domicilio del usuario">
+                									</div>
+                						        </div>
+                								<div class="col-md-4">
+                				        			<div class="row"> 	
+                					        			<div class="image-container" id="file-container">
+                								        	<div class="form-group">
+                								        		{# <h3>Imagen Perfil</h3> #}
+                								        		{# <label for="input-file">Imagen Perfil</label> #}
+                									        	<input id="input-file" accept="image/*" name="input-file" type="file" class="file-loading">
+                								        	</div>
+                							        	</div>
+                							        </div>
+                							        <div class="row text-center">
+                							        	<label for="input-file">Imagen de Perfil</label>
+                							        </div>
+                				        		</div> 
+                				        	</div>     
+            							</div>
+            							<div class="tab-pane" id="permisos">
+                					        <div class="row div-permisos">
+                					        	<div class="col-md-8 col-md-offset-2" id="divPermisos"></div>
+                					        </div>
+                					    </div>
+                					</div>
+                				</div>
+            				</div>
 					        <hr>
 					        <div class="row">
 					        	<div class="text-center">
@@ -946,7 +1025,7 @@
 				    </div>
 				    <div class="modal-body" style="background-color:#ecf0f5">
 				        <form role="form" id="modificacion" action="api/usuario/perfil/update" method="POST">
-				        	<input type="hidden" id="id" name="id">
+				        	<input type="hidden" id="id" name="id">				        	
 				        	<div class="row" style="min-height:420px">
 				        		<div class="col-md-4">
 						        	<div class="form-group">

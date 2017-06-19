@@ -62,4 +62,27 @@ class ExpedienteRepository extends EntityRepository{
 	        return $qb->getQuery()->getResult();
 	  
 	}
+	
+	public function findNumeroCompletoByNumero($numero){
+		
+		$rsm = new ResultSetMapping();
+		$rsm->addScalarResult('idExpediente', 'id');
+		$rsm->addScalarResult('numeroExpediente', 'numero');
+		$rsm->addScalarResult('letra', 'letra');
+		$rsm->addScalarResult('fechaCreacion', 'fecha');
+		$rsm->addScalarResult('folios', 'folios');
+		
+		$query = $this->getEntityManager()
+		->createNativeQuery(
+				'SELECT e.idExpediente, e.numeroExpediente, t.letra, e.fechaCreacion, e.folios '.
+				'FROM expediente e '.
+				'inner join tipoExpediente t '.
+				'on e.idTipoExpediente=t.idTipoExpediente '.
+				'WHERE e.numeroExpediente=:numero'
+				,$rsm);
+		$query->setParameter('numero',$numero);
+		
+		return $query->getSingleResult();
+		
+	}
 }

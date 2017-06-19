@@ -8,9 +8,8 @@ use JMS\Serializer\Annotation\VirtualProperty;
 /**
  * Giro
  *
- * @ORM\Table(name="giro", indexes={@ORM\Index(name="giro_oficinaOrigen_idx", columns={"idOrigenGiro"}), 
- *                                         	  @ORM\Index(name="giro_oficinaDestino_idx", columns={"idDestinoGiro"}), 
- *                                            @ORM\Index(name="giro_expediente_idx", columns={"idExpediente"})})
+ * @ORM\Table(name="giro", indexes={@ORM\Index(name="giro_remitoGiros_idx", columns={"idRemitoGiros"}), 
+ *                                  @ORM\Index(name="giro_expediente_idx", columns={"idExpediente"})})
  *
  * @ORM\Entity
  */
@@ -27,41 +26,12 @@ class Giro {
 	private $id;
 	
 	/**
-	 * @var \DateTime
-	 *
-	 * @ORM\Column(name="fechaEnvioRemito", type="datetime")
-	 */
-	private $fechaEnvioRemito;
-	
-	/**
-	 * @var \DateTime
-	 *
-	 * @ORM\Column(name="fechaRecepcionRemito", type="datetime", nullable=true)
-	 */
-	private $fechaRecepcionRemito;
-	
-	/**
 	 * @var string
 	 *
 	 * @ORM\Column(name="observacion", type="string", length=200, nullable=true)
 	 */
 	private $observacion;
 	
-	/**
-	 * @var \AppBundle\Entity\Oficina
-	 *
-	 * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Oficina")
-	 * @ORM\JoinColumns({@ORM\JoinColumn(name="idDestinoGiro", referencedColumnName="idOficina")})
-	 */
-	private $destinoGiro;
-	
-	/**
-	 * @var \AppBundle\Entity\Oficina
-	 *
-	 * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Oficina")
-	 * @ORM\JoinColumns({@ORM\JoinColumn(name="idOrigenGiro", referencedColumnName="idOficina")})
-	 */
-	private $origenGiro;
 	
 	/**
 	 * @var \AppBundle\Entity\Expediente
@@ -71,6 +41,28 @@ class Giro {
 	 */
 	private $expediente;
 	
+	/**
+	 * @var \AppBundle\Entity\RemitoGiros
+	 *
+	 * @ORM\ManyToOne(targetEntity="AppBundle\Entity\RemitoGiros", inversedBy="giros")
+	 * @ORM\JoinColumns({@ORM\JoinColumn(name="idRemitoGiros", referencedColumnName="idRemitoGiros")})
+	 */
+	private $remito;
+	
+	/**
+	 * @var smallint
+	 *
+	 * @ORM\Column(name="fojas", type="smallint", nullable=false)
+	 */
+	private $fojas;
+	
+	/**
+	 * @var boolean
+	 *
+	 * @ORM\Column(name="eliminado", type="boolean", nullable=false)
+	 */
+	private $eliminado;
+		
 	/**
 	 * @var string
 	 *
@@ -99,6 +91,7 @@ class Giro {
 	 */
 	private $fechaModificacion;
 	
+	
 	/**
 	 * Get id
 	 *
@@ -106,48 +99,6 @@ class Giro {
 	 */
 	public function getId() {
 		return $this->id;
-	}
-
-	/**
-	 * Get fechaEnvioRemito
-	 *
-	 * @return \DateTime
-	 */
-	public function getFechaEnvioRemito() {
-		return $this->fechaEnvioRemito;
-	}
-	
-	/**
-	 * Set fechaEnvioRemito
-	 *
-	 * @param \DateTime $fechaEnvioRemito
-	 *
-	 * @return Giro
-	 */
-	public function setFechaEnvioRemito(\DateTime $fechaEnvioRemito) {
-		$this->fechaEnvioRemito = $fechaEnvioRemito;
-		return $this;
-	}
-
-	/**
-	 * Get fechaRecepcionRemito
-	 *
-	 * @return \DateTime
-	 */
-	public function getFechaRecepcionRemito() {
-		return $this->fechaRecepcionRemito;
-	}
-	
-	/**
-	 * Set fechaRecepcionRemito
-	 *
-	 * @param \DateTime $fechaRecepcionRemito
-	 *
-	 * @return Giro
-	 */
-	public function setFechaRecepcionRemito(\DateTime $fechaRecepcionRemito) {
-		$this->fechaRecepcionRemito = $fechaRecepcionRemito;
-		return $this;
 	}
 	
 	/**
@@ -172,48 +123,6 @@ class Giro {
 	}
 	
 	/**
-	 * Get destinoGiro
-	 *
-	 * @return \AppBundle\Entity\Oficina
-	 */
-	public function getDestinoGiro() {
-		return $this->destinoGiro;
-	}
-	
-	/**
-	 * Set destinoGiro
-	 *
-	 * @param  \AppBundle\Entity\Oficina $destinoGiro
-	 * 
-	 * @return Giro
-	 */
-	public function setDestinoGiro(\AppBundle\Entity\Oficina $destinoGiro) {
-		$this->destinoGiro = $destinoGiro;
-		return $this;
-	}
-	
-	/**
-	 * Get origenGiro
-	 *
-	 * @return \AppBundle\Entity\Oficina
-	 */
-	public function getOrigenGiro() {
-		return $this->origenGiro;
-	}
-	
-	/**
-	 * Set origenGiro
-	 *
-	 * @param  \AppBundle\Entity\Oficina $origenGiro
-	 *
-	 * @return Giro
-	 */
-	public function setOrigenGiro( \AppBundle\Entity\Oficina $origenGiro) {
-		$this->origenGiro = $origenGiro;
-		return $this;
-	}
-	
-	/**
 	 * Get expediente
 	 *
 	 * @return \AppBundle\Entity\Expediente
@@ -227,10 +136,93 @@ class Giro {
 	 *
 	 * @param \AppBundle\Entity\Expediente $expediente
 	 *
-	 * @return Informe
+	 * @return Giro
 	 */
 	public function setExpediente(\AppBundle\Entity\Expediente $expediente) {
 		$this->expediente = $expediente;
+		return $this;
+	}
+	
+	/**
+	 * Get remito
+	 *
+	 * @return \AppBundle\Entity\RemitoGiros
+	 */
+	public function getRemito() {
+		return $this->remito;
+	}
+	
+	/**
+	 * Set remito
+	 *
+	 * @param \AppBundle\Entity\RemitoGiros $remito
+	 *
+	 * @return Giro
+	 */
+	public function setRemito(\AppBundle\Entity\RemitoGiros $remito) {
+		$this->remito = $remito;
+		return $this;
+	}
+	
+	/**
+	 * Set fojas
+	 *
+	 * @param integer $fojas
+	 *
+	 * @return Giro
+	 */
+	public function setFojas($fojas)
+	{
+		$this->fojas = $fojas;
+		
+		return $this;
+	}
+	
+	/**
+	 * Get fojas
+	 *
+	 * @return integer
+	 */
+	public function getFojas()
+	{
+		return $this->fojas;
+	}
+	
+	/**
+	 * Set eliminado
+	 *
+	 * @param boolean $eliminado
+	 *
+	 * @return Giro
+	 */
+	public function setEliminado($eliminado)
+	{
+		$this->eliminado = $eliminado;
+		
+		return $this;
+	}
+	
+	/**
+	 * Get eliminado
+	 *
+	 * @return integer
+	 */
+	public function getEliminado()
+	{
+		return $this->eliminado;
+	}
+	
+	/**
+	 * Set fechaCreacion
+	 *
+	 * @param \DateTime $fechaCreacion
+	 *
+	 * @return Giro
+	 */
+	public function setFechaCreacion($fechaCreacion)
+	{
+		$this->fechaCreacion = $fechaCreacion;
+		
 		return $this;
 	}
 	
@@ -249,7 +241,7 @@ class Giro {
 	 *
 	 * @param string $usuarioCreacion
 	 *
-	 * @return Expediente
+	 * @return Giro
 	 */
 	public function setUsuarioCreacion($usuarioCreacion)
 	{
@@ -273,7 +265,7 @@ class Giro {
 	 *
 	 * @param \DateTime $fechaModificacion
 	 *
-	 * @return Expediente
+	 * @return Giro
 	 */
 	public function setFechaModificacion($fechaModificacion)
 	{
@@ -297,7 +289,7 @@ class Giro {
 	 *
 	 * @param string $usuarioModificacion
 	 *
-	 * @return Expediente
+	 * @return Giro
 	 */
 	public function setUsuarioModificacion($usuarioModificacion)
 	{
@@ -319,26 +311,50 @@ class Giro {
 	//------------------------------Propiedades Virtuales -------------------------------------
 	
 	/**
-	 * Get fechaEnvioRemitoFormateada
+	 * Get fechaEnvio
 	 *
 	 * @return string
 	 *
 	 * @VirtualProperty
 	 */
-	public function getFechaEnvioRemitoFormateada()
+	public function getFechaEnvio()
 	{
-		return (!is_null($this->getFechaEnvioRemito())?$this->getFechaEnvioRemito()->format('d/m/Y'):'');
+		return ((!is_null($this->getRemito()))?$this->getRemito()->getFechaMovimientoFormateada():'');
 	}
 	
 	/**
-	 * Get fechaRecepcionRemitoFormateada
+	 * Get fechaRecepcion
 	 *
 	 * @return string
 	 *
 	 * @VirtualProperty
 	 */
-	public function getFechaRecepcionRemitoFormateada()
+	public function getFechaRecepcion()
 	{
-		return (!is_null($this->getFechaRecepcionRemito())?$this->getFechaRecepcionRemito()->format('d/m/Y'):'');
+		return ((!is_null($this->getRemito()))?$this->getRemito()->getFechaRecepcionFormateada():'');
+	}
+	
+	/**
+	 * Get origen
+	 *
+	 * @return string
+	 *
+	 * @VirtualProperty
+	 */
+	public function getOrigen()
+	{
+		return ((!is_null($this->getRemito()))?$this->getRemito()->getOrigen()->getOficina():'');
+	}
+	
+	/**
+	 * Get destino
+	 *
+	 * @return string
+	 *
+	 * @VirtualProperty
+	 */
+	public function getDestino()
+	{
+		return ((!is_null($this->getRemito()))?$this->getRemito()->getDestino()->getOficina():'');
 	}
 }

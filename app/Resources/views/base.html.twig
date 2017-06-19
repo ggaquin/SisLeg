@@ -251,12 +251,26 @@
                 </a>
                 <ul class="treeview-menu">
                   <li class="divider"></li>
-                  <li><a href="comisiones"><i class="fa fa-minus"></i>Conformación Comisiones</a></li>
+                  <li><a href="comisiones"><i class="fa fa-minus"></i>Alta y Modificación</a></li>
                   <li><a href="#" onclick="noImplementado();"><i class="fa fa-minus"></i>Expedientes</a></li>
                 </ul>
               </li>
               {% if app.user.rol.rol=="ROLE_MESA_ENTRADA" or app.user.rol.rol=="ROLE_ADMINISTRADOR" %}
-              <li><a href="expedientes"><i class="fa fa-book"></i><span>Expedientes</span></a></li>
+              <li class="treeview">
+                <a href="#">
+                  <i class="fa fa-inbox"></i>
+                  <span>Expedientes</span>
+                  <span class="pull-right-container">
+                    <i class="fa fa-angle-left pull-right"></i>
+                  </span>
+                </a>
+                <ul class="treeview-menu">
+                  <li class="divider"></li>
+                  <li><a href="expedientes"><i class="fa fa-minus"></i>Alta y Modificación</a></li>
+                  <li><a href="giros" onclick="noImplementado();"><i class="fa fa-minus"></i>Giros</a></li>
+                  <li><a href="#" onclick="noImplementado();"><i class="fa fa-minus"></i>Solicitud Informes (CH)</a></li>
+                </ul>
+              </li>
               {% endif %}
                {% if app.user.rol.rol=="ROLE_LEGISLADOR" or app.user.rol.rol=="ROLE_ADMINISTRADOR"%}
               <li><a href="proyectos"><i class="fa fa-cogs"></i><span>Proyectos</span></a></li>
