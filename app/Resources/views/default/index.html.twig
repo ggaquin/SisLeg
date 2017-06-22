@@ -1,10 +1,337 @@
-{% extends 'base.html.twig' %}
-
-{% block body %}
-    
-{% endblock %}
+{%  extends 'layout.html.twig' %}
 
 {% block stylesheets %}
-    {{ parent() }}
-    
+	{{ parent() }}
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+{% endblock %}
+
+{% block body %}
+
+      <script type="text/javascript">
+        function noImplementado(){
+          toastr.warning("NO IMPLEMENTADO EN ESTA VERSIÓN");
+        }
+
+        function cargarMenu(url){
+			debugger;
+        	$("#contenidoUsuario").load('{{ app.request.getBaseURL() }}'+ url);
+		
+         }
+      </script>
+      <div class="wrapper">
+        <header class="main-header">
+
+          <a href="index2.html" class="logo">
+            <!-- mini logo for sidebar mini 50x50 pixels -->
+            <span class="logo-mini">Sis<b>Leg</b></span>
+            <!-- logo for regular state and mobile devices -->
+            <span class="logo-lg">Sitstema <b>Legislativo</b></span>
+          </a>
+
+          <nav class="navbar navbar-inverse navbar-fixed-top">
+            <!-- Sidebar toggle button-->
+            <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+              <span class="sr-only">Toggle navigation</span>
+            </a>
+            <div class="navbar-custom-menu">
+            <ul class="nav navbar-nav">
+              <!-- Notifications: style can be found in dropdown.less -->
+              {# <li class="dropdown notifications-menu">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  <i class="fa fa-bell-o"></i>
+                  <span class="label label-warning">10</span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li class="header">You have 10 notifications</li>
+                  <li>
+                    <!-- inner menu: contains the actual data -->
+                    <ul class="menu">
+                      <li>
+                        <a href="#">
+                          <i class="fa fa-users text-aqua"></i> 5 new members joined today
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#">
+                          <i class="fa fa-warning text-yellow"></i> Very long description here that may not fit into the
+                          page and may cause design problems
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#">
+                          <i class="fa fa-users text-red"></i> 5 new members joined
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#">
+                          <i class="fa fa-shopping-cart text-green"></i> 25 sales made
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#">
+                          <i class="fa fa-user text-red"></i> You changed your username
+                        </a>
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="footer"><a href="#">View all</a></li>
+                </ul>
+              </li> #}
+              <!-- Tasks: style can be found in dropdown.less -->
+              {# <li class="dropdown tasks-menu">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  <i class="fa fa-flag-o"></i>
+                  <span class="label label-danger">9</span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li class="header">You have 9 tasks</li>
+                  <li>
+                    <!-- inner menu: contains the actual data -->
+                    <ul class="menu">
+                      <li><!-- Task item -->
+                        <a href="#">
+                          <h3>
+                            Design some buttons
+                            <small class="pull-right">20%</small>
+                          </h3>
+                          <div class="progress xs">
+                            <div class="progress-bar progress-bar-aqua" style="width: 20%" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">
+                              <span class="sr-only">20% Complete</span>
+                            </div>
+                          </div>
+                        </a>
+                      </li>
+                      <!-- end task item -->
+                      <li><!-- Task item -->
+                        <a href="#">
+                          <h3>
+                            Create a nice theme
+                            <small class="pull-right">40%</small>
+                          </h3>
+                          <div class="progress xs">
+                            <div class="progress-bar progress-bar-green" style="width: 40%" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">
+                              <span class="sr-only">40% Complete</span>
+                            </div>
+                          </div>
+                        </a>
+                      </li>
+                      <!-- end task item -->
+                      <li><!-- Task item -->
+                        <a href="#">
+                          <h3>
+                            Some task I need to do
+                            <small class="pull-right">60%</small>
+                          </h3>
+                          <div class="progress xs">
+                            <div class="progress-bar progress-bar-red" style="width: 60%" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">
+                              <span class="sr-only">60% Complete</span>
+                            </div>
+                          </div>
+                        </a>
+                      </li>
+                      <!-- end task item -->
+                      <li><!-- Task item -->
+                        <a href="#">
+                          <h3>
+                            Make beautiful transitions
+                            <small class="pull-right">80%</small>
+                          </h3>
+                          <div class="progress xs">
+                            <div class="progress-bar progress-bar-yellow" style="width: 80%" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">
+                              <span class="sr-only">80% Complete</span>
+                            </div>
+                          </div>
+                        </a>
+                      </li>
+                      <!-- end task item -->
+                    </ul>
+                  </li>
+                  <li class="footer">
+                    <a href="#">View all tasks</a>
+                  </li>
+                </ul>
+              </li> #}
+              <!-- User Account: style can be found in dropdown.less -->
+              <li class="dropdown user user-menu">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  {# <img src="dist/img/user2-160x160.jpg" class="user-image" alt="User Image"> #}
+                  <span class="hidden-xs">{{ app.user.username|capitalize  }}</span>
+                </a>
+                <ul class="dropdown-menu">
+                  <!-- User image -->
+                  <li class="user-header">
+                    {% if app.user.perfil.rutaWebImagen is not null %}
+                    <img src="{{ app.user.perfil.rutaWebImagen}}" class="img-circle" alt="User Image">
+                    {% else %}
+                    <img src="user.jpg" class="img-circle" alt="User Image">
+                  {% endif %}
+                    <p>
+                      {{ app.user.username|capitalize }}  - 
+                      {{ app.user.rolComoString|capitalize }}
+                      
+                      <small>Miembro desde {{ app.user.fechaCreacion | date("d/m/Y")  }} </small>
+                    </p>
+                  </li>
+                  <!-- Menu Body -->
+                 
+                  <li class="user-body">
+                        {# asignar info aqui #}
+                  </li> 
+                  <!-- Menu Footer-->
+                  <li class="user-footer">
+                    <div class="pull-left">
+                      <a href="#" class="btn btn-default btn-flat">Perfil</a>
+                    </div>
+                    <div class="pull-right">
+                      <a href="logout" class="btn btn-default btn-flat">Salir</a>
+                    </div>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </nav>
+        </header>
+        <aside class="main-sidebar">
+          <!-- sidebar: style can be found in sidebar.less -->
+          <section class="sidebar">
+            <!-- Sidebar user panel -->
+            <div class="user-panel">
+              <div class="pull-left image">
+                 {% if app.user.perfil.rutaWebImagen is not null %}
+                    <img src="{{ app.user.perfil.rutaWebImagen}}" class="img-circle" alt="User Image">
+                    {% else %}
+                    <img src="user.jpg" class="img-circle" alt="User Image">
+                  {% endif %}
+              </div>
+              <div class="info">
+                <p>{{ app.user.nombreCompleto|capitalize }}</p>
+                <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
+              </div>
+            </div>
+            <!-- search form -->
+           {#  <form action="#" method="get" class="sidebar-form">
+              <div class="input-group">
+                <input type="text" name="q" class="form-control" placeholder="Search...">
+                    <span class="input-group-btn">
+                      <button type="submit" name="search" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i>
+                      </button>
+                    </span>
+              </div>
+            </form> #}
+            <!-- /.search form -->
+            <!-- sidebar menu: : style can be found in sidebar.less -->
+            <ul class="sidebar-menu">
+              <li class="header text-center"><h5>Principal</h5></li>
+              {% if USR_MAIN is defined %}
+              <li><a href='#' onclick="cargarMenu('/usuarios')"><i class="fa fa-user-circle"></i><span>Usuarios</span></a></li>
+              {% endif %}
+               {% if CON_MAIN is defined %}
+              <li><a href="#" onclick="cargarMenu('/legisladores')"><i class="fa fa-address-card-o"></i><span>Concejales</span></a></li>
+              {% endif %}
+              {% if COM_MAIN is defined or COM_EXP_MAIN is defined %}
+              <li class="treeview">
+                <a href="#">
+                  <i class="fa fa-users"></i>
+                  <span>Comisiones</span>
+                  <span class="pull-right-container">
+                    <i class="fa fa-angle-left pull-right"></i>
+                  </span>
+                </a>
+                <ul class="treeview-menu">
+                  <li class="divider"></li>
+                  {% if COM_MAIN is defined %}
+                  <li><a href="#" onclick="cargarMenu('/comisiones')"><i class="fa fa-minus"></i>Alta y Modificación</a></li>
+                  {% endif %}
+                  {% if COM_EXP_MAIN is defined %}
+                  <li><a href="#" onclick="noImplementado();"><i class="fa fa-minus"></i>Expedientes</a></li>
+                  {% endif %}
+                </ul>
+              </li>
+              {% endif %}
+              {% if EXP_MAIN is defined or MOV_MAIN is defined or REP_MAIN is defined %}
+              <li class="treeview">
+                <a href="#">
+                  <i class="fa fa-inbox"></i>
+                  <span>Expedientes</span>
+                  <span class="pull-right-container">
+                    <i class="fa fa-angle-left pull-right"></i>
+                  </span>
+                </a>
+                <ul class="treeview-menu">
+                  <li class="divider"></li>
+                  {% if EXP_MAIN is defined %}
+                  <li><a href="#" onclick="cargarMenu('/expedientes')"><i class="fa fa-minus"></i>Alta y Modificación</a></li>
+                  {% endif %}
+                  {% if  MOV_MAIN is defined%}
+                  <li><a href="#" onclick="cargarMenu('/giros')"><i class="fa fa-minus"></i>Giros</a></li>
+                  {% endif %}
+                  {% if REP_MAIN is defined %}
+                  <li><a href="#" onclick="noImplementado();"><i class="fa fa-minus"></i>Solicitud Informes (CH)</a></li>
+                  {% endif %}
+                </ul>
+              </li>
+              {% endif %}
+               {% if PROJ_MAIN is defined %}
+              <li><a href="#" onclick="cargarMenu('/proyectos')"><i class="fa fa-cogs"></i><span>Proyectos</span></a></li>
+              {% endif %}
+              {#  <li><a href="#"><i class="fa fa-university"></i><span>Sesiones</span></a></li> #}
+              {# <li class="treeview">
+                <a href="#">
+                  <i class="fa fa-university"></i>
+                  <span>Sesiones</span>
+                  <span class="pull-right-container">
+                    <i class="fa fa-angle-left pull-right"></i>
+                  </span>
+                </a>
+                <ul class="treeview-menu">
+                  <li><a href="pages/charts/chartjs.html"><i class="fa fa-circle-o"></i> Nueva</a></li>
+                  <li><a href="pages/charts/morris.html"><i class="fa fa-circle-o"></i> Postergar</a></li>
+                  <li><a href="pages/charts/flot.html"><i class="fa fa-circle-o"></i> Resumen</a></li>
+                </ul>
+              </li> #}
+              {# <li>
+                <a href="pages/calendar.html">
+                  <i class="fa fa-calendar"></i> <span>Calendario</span>
+                  <span class="pull-right-container">
+                    <small class="label pull-right bg-red">3</small>
+                    <small class="label pull-right bg-blue">17</small>
+                  </span>
+                </a>
+              </li>
+              <li class="treeview">
+                <a href="#">
+                  <i class="fa fa-cloud"></i> <span>Links de Interés</span>
+                  <span class="pull-right-container">
+                    <i class="fa fa-angle-left pull-right"></i>
+                  </span>
+                </a>
+                <ul class="treeview-menu">
+                  <li><a href="pages/examples/invoice.html"><i class="fa fa-circle-o"></i> Link 1</a></li>
+                  <li><a href="pages/examples/profile.html"><i class="fa fa-circle-o"></i> Link 2</a></li>
+                  <li><a href="pages/examples/login.html"><i class="fa fa-circle-o"></i> Link 3</a></li>
+                  <li><a href="pages/examples/register.html"><i class="fa fa-circle-o"></i> Link 4</a></li>
+                  <li><a href="pages/examples/lockscreen.html"><i class="fa fa-circle-o"></i> Link 5</a></li>
+                  <li><a href="pages/examples/404.html"><i class="fa fa-circle-o"></i> Link 6</a></li>
+                  <li><a href="pages/examples/500.html"><i class="fa fa-circle-o"></i> Link 7</a></li>
+                  <li><a href="pages/examples/blank.html"><i class="fa fa-circle-o"></i> Link 8</a></li>
+                  <li><a href="pages/examples/pace.html"><i class="fa fa-circle-o"></i> Link 9</a></li>
+                </ul>
+              </li>
+              <li><a href="documentation/index.html"><i class="fa fa-file-text-o"></i> <span>Documentación</span></a></li> #}
+              
+            </ul>
+          </section>
+          <!-- /.sidebar -->
+        </aside>
+
+        <div class="content-wrapper" style="padding-top:5%">
+        
+        	<div id="contenidoUsuario">
+        	
+        	</div>
+        </div>
+
 {% endblock %}

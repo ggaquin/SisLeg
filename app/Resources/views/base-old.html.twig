@@ -30,6 +30,25 @@
         function noImplementado(){
           toastr.warning("NO IMPLEMENTADO EN ESTA VERSIÓN");
         }
+
+        function cargarUsuarios(){
+			debugger;
+        	$("#contenidoUsuario").load('{{ app.request.getBaseURL() }}'+ '/usuarios');
+			
+			/*
+        	$.ajax({
+                async: true,
+                url: '{{ app.request.getBaseURL() }}'+ '/usuarios',
+                contentType: false,
+                type: ''GET',
+            success: function(data) {
+                $("#contenidoUsuario").html(data);
+            error: function(jqXHR,textStatus,errorThrown ){
+				toastr.error(jqXHR.responseText);
+				}
+        	});
+        	*/
+         }
       </script>
       <div class="wrapper">
         <header class="main-header">
@@ -236,7 +255,7 @@
             <ul class="sidebar-menu">
               <li class="header text-center"><h5>Principal</h5></li>
               {% if app.user.rol.rol=="ROLE_ADMINISTRADOR" %}
-              <li><a href='usuarios'><i class="fa fa-user-circle"></i><span>Usuarios</span></a></li>
+              <li><a href='#' onclick="cargarUsuarios()"><i class="fa fa-user-circle"></i><span>Usuarios</span></a></li>
               {% endif %}
                {% if app.user.rol.rol=="ROLE_ADMINISTRADOR"%}
               <li><a href="legisladores"><i class="fa fa-address-card-o"></i><span>Concejales</span></a></li>
@@ -266,6 +285,7 @@
                 </a>
                 <ul class="treeview-menu">
                   <li class="divider"></li>
+                  
                   <li><a href="expedientes"><i class="fa fa-minus"></i>Alta y Modificación</a></li>
                   <li><a href="giros" onclick="noImplementado();"><i class="fa fa-minus"></i>Giros</a></li>
                   <li><a href="#" onclick="noImplementado();"><i class="fa fa-minus"></i>Solicitud Informes (CH)</a></li>
@@ -326,9 +346,14 @@
         </aside>
 
         <div class="content-wrapper" style="padding-top:5%">
+        
+        	<div id="contenidoUsuario">
+        	
+        	</div>
+            {#
           {% block body %}
               
-          {% endblock %}
+          {% endblock %}#}
         </div>
        {#  {% block javascripts %}
             {% javascripts '@js_general' %}

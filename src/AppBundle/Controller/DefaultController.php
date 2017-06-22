@@ -74,10 +74,21 @@ class DefaultController extends Controller
      */
     public function indexAction(Request $request)
     {
- 
-        return $this->render('default/index.html.twig', [
-            'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
-        ]);
+ 		$array=[];
+ 		
+ 		$usuario=$this->getUser();
+ 		$menus=$usuario->getRol()->getMenus();
+ 		foreach ($menus as $menu){
+ 			$array[$menu->getAbreviacion()]=true;
+ 		}
+//  		$permisos=$usuario->getPermisos();
+//  		foreach ($permisos as $permiso){
+//  			$array[$permiso]=true;
+//  		}
+ 		$array['base_dir']=realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR;
+ 		
+        return $this->render('default/index.html.twig', $array);
+        
     }
 
     /**
@@ -142,13 +153,26 @@ class DefaultController extends Controller
         $ofcinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
         $oficinas=$ofcinaRepository->findAll();
         $idOficinaActual=$this->getParameter('id_mesa_entradas');
-       
+        $usuario=$this->getUser();
+       	
+        $array=[];
+        $permisos=$usuario->getPermisos();
+        foreach ($permisos as $permiso){
+        	$array[$permiso]=true;
+        }
+        $array['base_dir']=realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR;
+        $array['tipos']=$tiposExpediente;
+        $array['estados']=$estadosExpediente;
+        $array['oficinas']=$oficinas;
+        $array['idOficinaActual']=$idOficinaActual;
+        return $this->render('default/expediente.html.twig', $array);
+        /*
         return $this->render('default/expediente.html.twig', array(
             'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
         		'tipos' => $tiposExpediente,'estados'=>$estadosExpediente, 'oficinas'=>$oficinas,
         		'idOficinaActual' => $idOficinaActual
         ));
-         
+        */ 
     }
     
     /**

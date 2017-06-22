@@ -808,6 +808,7 @@ class RestController extends FOSRestController{
     	$idRol=$request->get("idRol");
     	$rolRepository=$this->getDoctrine()->getRepository('AppBundle:Rol');
     	$rol=$rolRepository->find($idRol);
+    	$menus=$rol->getMenus();
     	
     	return $this->view($rol->getMenus(),200);
     }
@@ -831,6 +832,7 @@ class RestController extends FOSRestController{
             $documento=$request->request->get('documento');
             $idBloque=$request->request->get('selBloque');
             $idPerfil=$request->request->get('selLegislador');
+            $permisos=json_decode($request->request->get('permisos'));
             $archivos=$request->files->all();
             $usuarioSesion=$this->getUser();
 
@@ -880,7 +882,8 @@ class RestController extends FOSRestController{
             $encoded = $encoder->encodePassword($usuario, $clave);
             $usuario->setClave($encoded);
             $usuario->setRol($rol);
-            $usuario->setPerfil($perfil);
+	        $usuario->setPerfil($perfil);
+            $usuario->setPermisos($permisos);
             $usuario->setUsuarioCreacion($usuarioSesion->getUsername());
 
             $em = $this->getDoctrine()->getManager();
@@ -935,6 +938,7 @@ class RestController extends FOSRestController{
                 $telefono=$request->request->get('telefonoMod');
                 $domicilio=$request->request->get('domicilioMOd');
                 $documento=$request->request->get('documentoMod');
+                $permisos=json_decode($request->request->get('permisos'));
                 $archivos=$request->files->all();
                 $usuarioSesion=$this->getUser();
 
@@ -978,6 +982,7 @@ class RestController extends FOSRestController{
 
                 $usuario->setRol($rol);
                 $usuario->setPerfil($perfil);
+                $usuario->setPermisos($permisos);
                 $usuario->setUsuarioModificacion($usuarioSesion->getUsername());
                 $usuario->setFechaModificacion(new \DateTime("now"));
 
