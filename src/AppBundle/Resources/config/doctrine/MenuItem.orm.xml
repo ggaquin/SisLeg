@@ -12,9 +12,14 @@
         <option name="fixed"/>
       </options>
     </field>
+    <field name="abreviacion" type="string" column="abreviacion" length="70" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
     <many-to-one field="menu" target-entity="Menu" inversed-by="items">
     	<join-columns>
-    		<join-column name="IdMenu" referenced-column-name="idMenu"/>
+    		<join-column name="idMenu" referenced-column-name="idMenu"/>
     	</join-columns>
     </many-to-one>
   </entity>

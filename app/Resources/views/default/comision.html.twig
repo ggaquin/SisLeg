@@ -1,27 +1,28 @@
-{% extends 'base.html.twig' %}
+{% extends 'layout.html.twig' %}
 
 
 
 {% block stylesheets %}
-	{{ parent() }}
+	{# parent() #}
   	{% stylesheets '@css_datatables' %}
       	<link rel="stylesheet" href="{{ asset_url }}" /></link>
   	{% endstylesheets %}
 {% endblock %}
 
 {% block javascripts %}
-	{{ parent() }}
+	{# parent() #}
     {% javascripts '@js_datatables'%}
         <script src="{{ asset_url }}"></script>
     {% endjavascripts %}
 {% endblock %}
 
 {% block body %}
+
 	<script type="text/javascript">
 
 		$(document).ready(function () {
 			
-		    var tabla=$('#registroProyectos').DataTable({
+		    var tabla=$('#registroComisiones').DataTable({
 		    			  "language": {
 				              "infoEmpty": "Sin registros para mostrar",
 				              "paginate": {
@@ -174,7 +175,7 @@
 	    	<div class="col-xs-12">
 	     		{# <div class="box">
 		            <div class="box-body"> #}
-		              	<table id="registroProyectos" class="table table-striped">
+		              	<table id="registroComisiones" class="table table-striped">
 			                <thead>
 			                	<tr>
 			                		<th>id</th>
@@ -229,4 +230,5 @@
 		  	</div>
 		</div>
 	</section>
+	
 {% endblock %}

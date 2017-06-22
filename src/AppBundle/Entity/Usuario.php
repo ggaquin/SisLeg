@@ -233,7 +233,7 @@ class Usuario implements AdvancedUserInterface ,\Serializable
      *
      * @return Usuario
      */
-    public function setPermidos($permisos)
+    public function setPermisos($permisos)
     {
     	$this->permisos = $permisos;
     	
@@ -404,10 +404,21 @@ class Usuario implements AdvancedUserInterface ,\Serializable
      */
     public function getRolComoString()
     {
-        // $objetoRol=$this->rol;
-        // return substr($objetoRol->getRol(),5,strlen($objetoRol->getRol())-5);
         return $this->rol->getRolComoString();
     }
+    
+    /**
+     * Get RolComoString
+     *
+     * @return string
+     *
+     * @VirtualProperty
+     *
+    public function getRolComoString()
+    {
+    	return $this->rol->getRolComoString();
+    }*/
+    
    
     // Métodos de la interfáz AdvancedUserInterface
 

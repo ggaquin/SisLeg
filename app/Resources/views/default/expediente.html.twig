@@ -1,16 +1,16 @@
-{% extends 'base.html.twig' %}
+{% extends 'layout.html.twig' %}
 
 
 
 {% block stylesheets %}
-	{{ parent() }}
+	{# parent() }#}
   	{% stylesheets '@css_datatables' %}
       	<link rel="stylesheet" href="{{ asset_url }}" /></link>
   	{% endstylesheets %}
 {% endblock %}
 
 {% block javascripts %}
-	{{ parent() }}
+	{# parent() #}
     {% javascripts '@js_datatables'%}
         <script src="{{ asset_url }}"></script>
     {% endjavascripts %}
@@ -282,9 +282,13 @@
 									            "data": null,
 									            "orderable":false,
 									            "render": function(data, type, row){
-									            	var html="<button type='button'title='Editar expediente' class='btn btn-primary btn-xs btn-editar ' data-toggle='modal' data-target='#modificacionExpediente'><span class='glyphicon glyphicon-pencil'></span></button>"
-									             	html+="<button type='button' title='Descargar Documento' class='btn btn-info btn-xs btn-descargar'><span class='glyphicon glyphicon-save-file'></span></button></div>"
-									             	html+="<button type='button' title='Movimientos' class='btn btn-info btn-xs btn-movimientos' data-toggle='modal' data-target='#movimientos'><span class='glyphicon glyphicon-share-alt'></span></button></div>"
+										            var html="";
+										            if('{{ EXP_EDIT is defined}}')
+									            		html+="<button type='button'title='Editar expediente' class='btn btn-primary btn-xs btn-editar ' data-toggle='modal' data-target='#modificacionExpediente'><span class='glyphicon glyphicon-pencil'></span></button>"
+													if ('{{EXP_DOWNLOAD is defined}}')
+											        	html+="<button type='button' title='Descargar Documento' class='btn btn-info btn-xs btn-descargar'><span class='glyphicon glyphicon-save-file'></span></button></div>"
+													if ('{{EXP_MOVEMENT is defined}}')
+											            html+="<button type='button' title='Movimientos' class='btn btn-info btn-xs btn-movimientos' data-toggle='modal' data-target='#movimientos'><span class='glyphicon glyphicon-share-alt'></span></button></div>"
 									            	return html;
 									            }
 									        }
@@ -1295,12 +1299,16 @@
 	                		<th>id</th>
 	                		<th >
 	                			<div class="btn-group">
+	                				{% if EXP_NEW is defined %}
 		                			<button type="button" title="Agregar expediente"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#nuevoExpediente">
 							    			<span class="glyphicon glyphicon-plus"></span>
 							    	</button>
+							    	{% endif %}
+							    	{% if EXP_ADD is defined %}
 							    	<button type="button" title="Ingresar proyecto"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#proyectosBusqueda">
 							    			<span class="glyphicon glyphicon-download-alt"></span>
 							    	</button>
+							    	{% endif %}
 							    </div>
 						    </th>	
 						    <th>Numero</th>

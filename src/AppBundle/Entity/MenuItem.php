@@ -26,7 +26,7 @@ class MenuItem
 	/**
 	 * @var \AppBundle\Entity\Menu
 	 *
-	 * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Menu", fetch="EAGER",inversedBy="items" )
+	 * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Menu", inversedBy="items")
 	 * @ORM\JoinColumns({
 	 *  @ORM\JoinColumn(name="idMenu", referencedColumnName="idMenu")
 	 * })
@@ -39,6 +39,14 @@ class MenuItem
 	 * @ORM\Column(name="menuItem", type="string", length=50, nullable=false)
 	 */
 	private $menuItem;
+	
+	/**
+	 * @var string
+	 *
+	 * @ORM\Column(name="abreviacion", type="string", length=70, nullable=false)
+	 */
+	private $abreviacion;
+	
 	
 	//-------------------------------------setters y getters--------------------------------------
 	
@@ -98,6 +106,30 @@ class MenuItem
 	public function getMenuItem()
 	{
 		return $this->menuItem;
+	}
+	
+	/**
+	 * Set abreviacion
+	 *
+	 * @param string $abreviacion
+	 *
+	 * @return MenuItem
+	 */
+	public function setAbreviacion($abreviacion)
+	{
+		$this->abreviacion= $abreviacion;
+		
+		return $this;
+	}
+	
+	/**
+	 * Get abreviacion
+	 *
+	 * @return string
+	 */
+	public function getAbreviacion()
+	{
+		return $this->abreviacion;
 	}
 	
 }

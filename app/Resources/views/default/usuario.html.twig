@@ -1,22 +1,21 @@
-{% extends 'base.html.twig' %}
-
-
+{%  extends 'layout.html.twig' %}
 
 {% block stylesheets %}
-	{{ parent() }}
+	{# parent() #}
   	{% stylesheets '@css_datatables' %}
       	<link rel="stylesheet" href="{{ asset_url }}" /></link>
   	{% endstylesheets %}
 {% endblock %}
 
 {% block javascripts %}
-	{{ parent() }}
+	{# parent() #}
     {% javascripts '@js_datatables'%}
         <script src="{{ asset_url }}"></script>
     {% endjavascripts %}
 {% endblock %}
 
-{% block body %}
+{%  block body %}
+
 	<style type="text/css">
 		@media all and (max-width: 479px) {
 		    td.for-mobile{
@@ -177,7 +176,7 @@
             });
 		}
 
-		function rolChange(controlNombre,controlValor){
+		function rolChange(controlNombre,controlValor,permisos){
 
 			var div="";
 			var html="";
@@ -188,7 +187,7 @@
 			$("#"+div).html('');
 
 			if(controlValor==0){
-				html="<div class='alert alert-info'>No hay ningún rol seleccionado</div>";
+				html="<div class='alert alert-info text-center' style='color:#00acd6!important;'>No hay ningún rol seleccionado</div>";
 				$("#"+div).html("<br>"+html);
 			}
 			else
@@ -204,9 +203,10 @@
 								html+="<h4>"+menu.menu+"</h4>";
 								html+="<ul style='list-style: none;'>";
 								$.each(menu.items,function(index,item){
-									html+="<li value='"+item.id+"'>"+
-										  "<label><input type='checkbox' checked>"+item.menu_item+
-										  "</li>";
+									var habilitado=traerValorItem(permisos,item.abreviacion);
+									html+="<li data-value='"+item.abreviacion+"'>"+
+										  "<input type='checkbox' "+((habilitado)?'checked':'')+" ><span>"+item.menu_item+
+										  "</span></li>";
 								});
 								html+="</ul>";
 						});
@@ -219,13 +219,35 @@
     				}
     	      	});
 			}
-
-			
 		}
+
+		function traerValorItem(permisos,abreviacion){
+			var valor=false;
+			if (permisos.length>0){			
+    			for (var i=0;i<permisos.length;i++){
+    				if(permisos[i]==abreviacion){
+    					valor=true
+    					break;
+    				}
+    			}
+			}
+			else valor=true;
+			return valor;
+		}
+
+		function cargarPermisosAlmacenados(permisos){
+
+			$("#divPermisosMod > ul").find("li").each(function(){
+				var habilitado=traerValorItem(permisos,$(this).val());
+				$(this).find("input:checkbox").attr('checked',habilitado);
+			});
+		} 
 
 		$(document).ready(function () {
 
 			$.fn.modal.Constructor.prototype.enforceFocus = $.noop;
+
+			var permisosOriginales;
 			
 		    var tabla=$('#registroUsuarios').DataTable({
 			  	"language": {
@@ -313,7 +335,7 @@
 		      	"autoWidth": false,
 			});
 
-			//---------------------------MOIFICAR USUARIO--------------------------------------------
+			//---------------------------BLOQUEAR USUARIO-------------------------------------
 
 			$('#registroUsuarios tbody').on('click','.btn-desactivar',function(){
 
@@ -337,6 +359,8 @@
 		     	});
 			})
 
+			//---------------------------ACTIVAR USUARIO-------------------------------------
+			
 			$('#registroUsuarios tbody').on('click','.btn-activar',function(){
 
 				var data = tabla.row( $(this).parents('tr') ).data();
@@ -357,7 +381,8 @@
 		     	});
 			})
 
-
+			//---------------------------MOIFICAR USUARIO-------------------------------------
+			
 			//EVENTO BOTON DE EDITAR USUARIO
 		    $('#registroUsuarios tbody').on( 'click', '.btn-editar', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
@@ -434,6 +459,16 @@
 	                deleteUrl:'{{ app.request.getBaseURL() }}'+'/api/perfil/imagen/remove',
 	                maxFileSize: 10240,                
         		});
+
+        		permisosOriginales={
+									idRol:usuario.rol.id,
+									permisos:usuario.permisos
+                					};
+
+			    permisosModificacion=usuario.permisos;
+			    rolChange("selRolMod",usuario.rol.id,usuario.permisos);
+			    //cargarPermisosAlmacenados(usuario.permisos);
+			    
 				
 			});
 
@@ -443,48 +478,81 @@
 				e.preventDefault();
              	var form=$(e.target);
               	var formData=new FormData();
-              	var controles=$(form).serializeArray();
+              	//var controles=$(form).serializeArray();
               	var archivos=$(form).find('[name="input-file-mod"]')[0].files;
 
               	$.each(archivos, function(i, archivo) {
-                	
                 	formData.append('uploadedFiles-' + i, archivo);
             	});
 
-              	var conservarClave=$("#conservaContraseña").is(':checked');
               	var validacion='';
 
-            	$.each(controles, function(i, control) {
+              	var id= $("#editarUsuario").find('input[name="id"]').val();
+              	formData.append("id",id);
+              	
+              	var conservaContraseña=$("#conservaContraseña").is(':checked');
+              	formData.append("conservaContraseña",conservaContraseña);
 
-                	formData.append(control.name, ((control.name=="conservaContraseña")
-                												  ?conservarClave:control.value));
+              	var selRol=$("#selRolMod").val();
+              	formData.append("selRolMod",selRol);
+                validacion+=((selRolMod==0)?'<li>Debe especificar un rol para el usuario</li>':'');
+                
+                var claveMod=$("#claveMod").val();
+            	formData.append("claveMod",claveMod);
+            	validacion+=((conservaContraseña==false && claveMod.replace(/ /g, '').length<8)
+                    			?'<li>La contraseña debe tener como mínimo 8 caracteres</li>':'');
+                validacion+=((conservaContraseña==false && claveMod!=$("#claveConfirmaMod").val())
+                        		?'<li>Las contraseñas no coinciden</li>':'');
 
-            		validacion+=((control.name=="selRolMod" && control.value==0)?
-	                			'<li>Debe especificar un rol para el usuario</li>':'');
-            		validacion+=((conservarClave==false && control.name=="claveMod" && 
-            					 control.value.replace(/ /g, '').length<8)?
-	                			'<li>La contraseña debe tener como mínimo 8 caracteres</li>':'');
-            		validacion+=((conservarClave==false && control.name=="claveMod" && 
-            					 $("#claveMod").val()!=$("#claveConfirmaMod").val())?
-            					'<li>Las contraseñas no coinciden</li>':'');
-	                validacion+=((control.name=="apellidos" && control.value.replace(/ /g, '').length==0)		 ?'<li>Debe ingresar un apellido para el usuario</li>':'');
-			     	validacion+=((control.name=="nombres" && control.value.replace(/ /g, '').length==0)?
-			     				'<li>Debe ingresar un nombre para el usuario</li>':'');
-			     	validacion+=((control.name=="eMail" && control.value.indexOf(' ')!=-1)?'<li>El correo electrónico posee espacios blancos</li>':'');
-			     	validacion+=((control.name=="eMail" && control.value.replace(/ /g, '').length>0 &&
-			     				control.value.indexOf('@')==-1)?'<li>El correo electrónico no contiene @</li>':'');
+        		var apellidos=$("#apellidosMod").val();
+        		formData.append("apellidosMod",apellidos);
+                validacion+=((apellidos.replace(/ /g, '').length==0)
+                        		?'<li>Debe ingresar un apellido para el usuario</li>':'');
 
-			   		if ($("#selPerfil").val()==2){
-		
-			     		validacion+=((control.name=="oficina" && control.value.replace(/ /g, '').length==0)?'<li>Debe especificar ubicacion de la oficina del legislador</li>':'');
-			     		validacion+=((control.name=="selBloque" && control.value==0)?'<li>Debe especificar el bloque del legislador</li>':'');
-			     	}
+        		var nombres=$("#nombresMod").val();
+        		formData.append("nombresMod",nombres);
+                validacion+=((nombres.replace(/ /g, '').length==0)?
+                				'<li>Debe ingresar un nombre para el usuario</li>':'');
 
-			     	if ($("#selPerfil").val()==3){
-						validacion+=((control.name=="documento" && control.value.replace(/ /g, '').length==0)?'<li>Debe especificar el documento de la persona</li>':'');
-						validacion+=((control.name=="domicilio" && control.value.replace(/ /g, '').length==0)?'<li>Debe especificar el domicilio de la persona</li>':'');
-					}
-	            });
+				var eMail=$("#eMailMod").val();
+				formData.append("eMailMod",eMail);
+                validacion+=((eMail.indexOf(' ')!=-1)
+                        		?'<li>El correo electrónico posee espacios blancos</li>':'');
+                validacion+=((eMail.replace(/ /g, '').length>0 && eMail.indexOf('@')==-1)
+                        		?'<li>El correo electrónico no contiene @</li>':'');
+                
+				var selPerfil=$("#selPerfilMod").val();
+				formData.append("selPerfilMod",selPerfil);
+				
+                if (selPerfil==2){
+                	var oficina=$("#oficinaMod").val();
+                	formData.append("oficinaMod",oficina);
+                	validacion+=((oficina.replace(/ /g, '').length==0)
+                        			?'<li>Debe especificar ubicacion de la oficina del legislador</li>':'');
+        			
+        			var selBloque=$("#selBloqueMod").val();
+        			formData.append("selBloqueMod",selBloque);
+                	validacion+=((selBloque==0)?'<li>Debe especificar el bloque del legislador</li>':'');
+                }
+                
+                if (selPerfil==3){
+                    var documento=$("#documentoMod").val();
+                    formData.append("documentoMod",documento);
+                	validacion+=((documento.replace(/ /g, '').length==0)
+                        			?'<li>Debe especificar el documento de la persona</li>':'');
+
+        			var domicilio=$("#domicilioMod").val();
+        			formData.append("domicilioMod",domicilio);
+                	validacion+=((domicilio.replace(/ /g, '').length==0)
+                        			?'<li>Debe especificar el domicilio de la persona</li>':'');
+                }
+
+                var permisos=[];
+	            $("#divPermisosMod > ul").find("li").each(function(){
+		            if($(this).find("input:checkbox").is(":checked"))
+		            	permisos.push($(this).data('value'));
+				});
+	            formData.append('permisos',JSON.stringify(permisos));
 
 	            if (validacion.length>0) 
 				{
@@ -509,7 +577,6 @@
 						$('#editarUsuario').modal('hide');
 	                	},
 	                error: function(jqXHR,textStatus,errorThrown ){
-						//var response=JSON.parse(jqXHR.responseText)
 						toastr.error(jqXHR.responseText);
 						}
 	            	});
@@ -529,6 +596,7 @@
 				$(".control-comun").prop('readonly', false);
 				$(".es-nombre").removeClass("hidden");
 				$("#file-container").removeClass("locked");
+				rolChange("selRol",0,[]);
 			 
 			});
 
@@ -543,7 +611,6 @@
 				e.preventDefault();
              	var form=$(e.target);
               	var formData=new FormData();
-              	var controles=$(form).serializeArray();
               	var archivos=$(form).find('[name="input-file"]')[0].files;
 
               	$.each(archivos, function(i, archivo) {
@@ -553,36 +620,61 @@
 
               	var validacion='';
 
-            	$.each(controles, function(i, control) {
+              	var login=$("#login").val();
+              	validacion+=((login.replace(/ /g, '').length==0)?'<li>Debe especificar un login de usuario</li>':'');
+    			validacion+=((login.indexOf(' ')!=-1)?'<li>El login no debe poseer espacios</li>':'');
+    			formData.append('login',login);
 
-                	formData.append(control.name, control.value);
+    			var selRol=$("#selRol").val();
+    			validacion+=((selRol.value==0)?'<li>Debe especificar un rol para el usuario</li>':'');
+    			formData.append('selRol',selRol);
 
-            		validacion+=((control.name=="login" && control.value.replace(/ /g, '').length==0)?
-	                			'<li>Debe especificar un login de usuario</li>':'');
-            		validacion+=((control.name=="login" && control.value.indexOf(' ')!=-1)?
-	                			'<li>El login no debe poseer espacios</li>':'');
-            		validacion+=((control.name=="selRol" && control.value==0)?
-	                			'<li>Debe especificar un rol para el usuario</li>':'');
-            		validacion+=((control.name=="clave" && control.value.replace(/ /g, '').length<8)?
-	                			'<li>La contraseña debe tener como mínimo 8 caracteres</li>':'');
-            		validacion+=((control.name=="clave" && $("#clave").val()!=$("#claveConfirma").val())?'<li>Las contraseñas no coinciden</li>':'');
+				var clave=$("#clave").val();
+				validacion+=((clave.replace(/ /g, '').length<8)?'<li>La contraseña debe tener como mínimo 8 caracteres</li>':'');
+				validacion+=((clave!=$("#claveConfirma").val())?'<li>Las contraseñas no coinciden</li>':'');
+				formData.append('clave',clave);
 
-            		if ($("#selTipo").val()!=2){
-		                validacion+=((control.name=="apellidos" && control.value.replace(/ /g, '').length==0)?'<li>Debe ingresar un apellido para el usuario</li>':'');
-				     	validacion+=((control.name=="nombres" && control.value.replace(/ /g, '').length==0)?'<li>Debe ingresar un nombre para el usuario</li>':'');
-				     	validacion+=((control.name=="eMail" && control.value.indexOf(' ')!=-1)?'<li>El correo electrónico posee espacios blancos</li>':'');
-				     	validacion+=((control.name=="eMail" && control.value.replace(/ /g, '').length>0 && control.value.indexOf('@')==-1)?'<li>El correo electrónico no contiene @</li>':'');
-				     }
+				if ($("#selTipo").val()!=2){
+					var apellidos=$("#apellidos").val();
+	                validacion+=((apellidos.replace(/ /g, '').length==0)?'<li>Debe ingresar un apellido para el usuario</li>':'');
+	                formData.append('apellidos',apellidos);
 
-			     	if ($("#selTipo").val()==3){
-						validacion+=((control.name=="documento" && control.value.replace(/ /g, '').length==0)?'<li>Debe especificar el documento de la persona</li>':'');
-						validacion+=((control.name=="domicilio" && control.value.replace(/ /g, '').length==0)?'<li>Debe especificar el domicilio de la persona</li>':'');
-					}
-	            });
+	                var nombres=$("#nombres").val();
+			     	validacion+=((nombres.replace(/ /g, '').length==0)?'<li>Debe ingresar un nombre para el usuario</li>':'');
+			     	formData.append('nombres',nombres);
 
-	            if($("#selTipo").val()==2 && $("#selLegislador").val()==null)
-						validacion+='<li>Debe especificar un legislador</li>';
+			     	var eMail=$("#eMail").val();
+			     	validacion+=((eMail.indexOf(' ')!=-1)?'<li>El correo electrónico posee espacios blancos</li>':'');
+			     	validacion+=((eMail.replace(/ /g, '').length>0 && eMail.indexOf('@')==-1)?'<li>El correo electrónico no contiene @</li>':'');
+			     	formData.append('eMail',eMail);
+					
+				 }
 
+				if ($("#selTipo").val()==3){
+					var documento=$("#documento").val();
+					validacion+=((documento.replace(/ /g, '').length==0)?'<li>Debe especificar el documento de la persona</li>':'');
+					formData.append('documento',documento);
+
+					var domicilio=$("#domicilio").val();
+					validacion+=((domicilio.replace(/ /g, '').length==0)?'<li>Debe especificar el domicilio de la persona</li>':'');
+					formData.append('domicilio',domicilio);
+				}
+
+	            if($("#selTipo").val()==2){
+		            var selLegislador=$("#selLegislador").val();
+					validacion+=((selLegislador==null)?'<li>Debe especificar un legislador</li>':'');
+					formData.append('selLegislador',selLegislador);
+	            }
+
+				formData.append('selTipo',$("#selTipo").val());
+
+	            var permisos=[];
+	            $("#divPermisos > ul").find("li").each(function(){
+		            if ($(this).find("input:checkbox").is(":checked"))
+	            		permisos.push($(this).data('value'));
+				});
+	            formData.append('permisos',JSON.stringify(permisos));
+	            
 	            if (validacion.length>0) 
 				{
 					validacion=((validacion.length>0)?'<strong><u>Validación de Datos</u></strong><br><ul>'+
@@ -834,7 +926,14 @@
 			});
 
 			$("#selRol").change(function(){
-				rolChange($(this).attr('id'),$(this).val());
+				rolChange($(this).attr('id'),$(this).val(),[]);
+			});
+
+			$("#selRolMod").change(function(){
+				if ($(this).val()==permisosOriginales.idRol)
+					rolChange($(this).attr('id'),$(this).val(),permisosOriginales.permisos);
+				else
+					rolChange($(this).attr('id'),$(this).val(),[]);
 			});
 		});
 	</script>
@@ -1025,82 +1124,104 @@
 				    </div>
 				    <div class="modal-body" style="background-color:#ecf0f5">
 				        <form role="form" id="modificacion" action="api/usuario/perfil/update" method="POST">
-				        	<input type="hidden" id="id" name="id">				        	
-				        	<div class="row" style="min-height:420px">
-				        		<div class="col-md-4">
-						        	<div class="form-group">
-						        		<label for="selRolMod">Rol</label>
-						        		<select class="form-control" id="selRolMod" name="selRolMod">
-						        			{# <option value="0">Seleccione Rol</option>
-						        			{% for rol in roles %}
-								                <option value="{{ rol.id }}">{{ rol.rolComoString }}</option>
-								            {% endfor %} #}
-						        		</select>
-						        	</div>
-						        	<div class="form-group text-center" style="padding-top:15px">
-										<input type="checkbox" name="conservaContraseña" id="conservaContraseña" data-size="small">
-							        </div> 
-						        	<div class="form-group">
-						        		<label for="claveMod">Clave</label>
-						        		<input type="password" class="form-control" id="claveMod" name="claveMod" readOnly>
-						        	</div> 
-						        	<div class="form-group">
-						        		<label for="claveConfirmaMod">Confirma Clave</label>
-						        		<input type="password" class="form-control input-sm" id="claveConfirmaMod" name="claveConfirmaMod" readOnly>
-						        	</div>	
-						        	<div id="mensajeMod"></div>
-								</div>
-					        	<div class="col-md-4">	
-					        		<div class="form-group div-legislador hidden">
-										<label for="legisladorMod">Legislador:</label>
-										<input class="form-control" type="text" name="legisladorMod" id="legisladorMod" readonly>
-						        	</div>
-						        	<div class="form-group">
-						        		<label class="es-nombre" for="apellidosMod">Apellidos</label>
-						        		<input type= "text" class="form-control input-sm control-comun es-nombre" name="apellidosMod" id="apellidosMod" placeholder="apellido del usuario">
-						        	</div>
-						        	<div class="form-group">
-						        		<label class="es-nombre" for="nombresMod">Nombres</label>
-						        		<input type= "text" class="form-control input-sm control-comun es-nombre" id="nombresMod" name="nombresMod" placeholder="nombre del usuario">
-						        	</div>
-						        	<div class="form-group">
-						        		<label for="eMailMod">Correo Electrónico</label>
-						        		<input type= "text" class="form-control input-sm control-comun" id="eMailMod" name="eMailMod" autocomplete="off" placeholder="dirección de correo electrónico">
-						        	</div>
-						        	<div class="form-group">
-										<label for="telefonoMod">Telefono</label>
-										<input type= "text" class="form-control input-sm control-comun" id="telefonoMod" name="telefonoMod" placeholder="número de teléfono">
-									</div>
-									<div class="form-group div-legislador hidden">
-										<label for="oficinaMod">Oficina</label>
-										<input type= "text" class="form-control input-sm" id="oficina" name="oficina" placeholder="oficina / despacho" readonly>
-									</div>
-								    <div class="form-group div-legislador hidden">
-						        		<label for="bloqueMod">Bloque</label>
-						        		<input type= "text" class="form-control input-sm" id="bloqueMod" name="bloque" placeholder="bloqueMod" readonly>
-						        	</div>
-						        	<div class="form-group div-publico hidden">
-										<label for="documentoMod">Documento</label>
-										<input type= "text" class="form-control input-sm" id="documentoMod" name="documentoMod" placeholder="número de documento del usuario">
-									</div>
-									<div class="form-group div-publico hidden">
-										<label for="domicilioMod">Domicilio</label>
-										<input type= "text" class="form-control input-sm" id="domicilioMod" name="domicilioMod" placeholder="domicilio del usuario">
-									</div>
-						        </div>
-								<div class="col-md-4">
-				        			<div class="row"> 	
-					        			<div class="image-container" id="file-container-mod">
-								        	<div class="form-group">
-									        	<input id="input-file-mod" accept="image/*" name="input-file-mod" type="file" class="file-loading">
-								        	</div>
-							        	</div>
-							        </div>
-							        <div class="row text-center">
-							        	<label for="input-file-mod">Imagen de Perfil</label>
-							        </div>
-				        		</div>      
-							</div>
+				        	<input type="hidden" id="id" name="id">		
+				        	<div class="row">
+    				        	<div class="col-md-12">
+        				        	<ul class="nav nav-tabs" role="tablist">
+                                        <li role="presentation" class="active">
+                                        	<a href="#datosMod" aria-controls="datosMod" role="tab" data-toggle="tab">Datos</a>
+                                        </li>
+                                        <li role="presentation">
+                                        	<a href="#permisosMod" aria-controls="permisosMod" role="tab" data-toggle="tab">Permisos</a>
+                                        </li>
+                                    </ul>
+          							<div class="tab-content" >
+              							<div role="tabpanel" class="tab-pane active" id="datosMod">
+              								<br>		        	
+                				        	<div class="row" style="min-height:420px">
+                				        		<div class="col-md-4">
+                						        	<div class="form-group">
+                						        		<label for="selRolMod">Rol</label>
+                						        		<select class="form-control" id="selRolMod" name="selRolMod">
+                						        			{# <option value="0">Seleccione Rol</option>
+                						        			{% for rol in roles %}
+                								                <option value="{{ rol.id }}">{{ rol.rolComoString }}</option>
+                								            {% endfor %} #}
+                						        		</select>
+                						        	</div>
+                						        	<div class="form-group text-center" style="padding-top:15px">
+                										<input type="checkbox" name="conservaContraseña" id="conservaContraseña" data-size="small">
+                							        </div> 
+                						        	<div class="form-group">
+                						        		<label for="claveMod">Clave</label>
+                						        		<input type="password" class="form-control" id="claveMod" name="claveMod" readOnly>
+                						        	</div> 
+                						        	<div class="form-group">
+                						        		<label for="claveConfirmaMod">Confirma Clave</label>
+                						        		<input type="password" class="form-control input-sm" id="claveConfirmaMod" name="claveConfirmaMod" readOnly>
+                						        	</div>	
+                						        	<div id="mensajeMod"></div>
+                								</div>
+                					        	<div class="col-md-4">	
+                					        		<div class="form-group div-legislador hidden">
+                										<label for="legisladorMod">Legislador:</label>
+                										<input class="form-control" type="text" name="legisladorMod" id="legisladorMod" readonly>
+                						        	</div>
+                						        	<div class="form-group">
+                						        		<label class="es-nombre" for="apellidosMod">Apellidos</label>
+                						        		<input type= "text" class="form-control input-sm control-comun es-nombre" name="apellidosMod" id="apellidosMod" placeholder="apellido del usuario">
+                						        	</div>
+                						        	<div class="form-group">
+                						        		<label class="es-nombre" for="nombresMod">Nombres</label>
+                						        		<input type= "text" class="form-control input-sm control-comun es-nombre" id="nombresMod" name="nombresMod" placeholder="nombre del usuario">
+                						        	</div>
+                						        	<div class="form-group">
+                						        		<label for="eMailMod">Correo Electrónico</label>
+                						        		<input type= "text" class="form-control input-sm control-comun" id="eMailMod" name="eMailMod" autocomplete="off" placeholder="dirección de correo electrónico">
+                						        	</div>
+                						        	<div class="form-group">
+                										<label for="telefonoMod">Telefono</label>
+                										<input type= "text" class="form-control input-sm control-comun" id="telefonoMod" name="telefonoMod" placeholder="número de teléfono">
+                									</div>
+                									<div class="form-group div-legislador hidden">
+                										<label for="oficinaMod">Oficina</label>
+                										<input type= "text" class="form-control input-sm" id="oficina" name="oficina" placeholder="oficina / despacho" readonly>
+                									</div>
+                								    <div class="form-group div-legislador hidden">
+                						        		<label for="bloqueMod">Bloque</label>
+                						        		<input type= "text" class="form-control input-sm" id="bloqueMod" name="bloque" placeholder="bloqueMod" readonly>
+                						        	</div>
+                						        	<div class="form-group div-publico hidden">
+                										<label for="documentoMod">Documento</label>
+                										<input type= "text" class="form-control input-sm" id="documentoMod" name="documentoMod" placeholder="número de documento del usuario">
+                									</div>
+                									<div class="form-group div-publico hidden">
+                										<label for="domicilioMod">Domicilio</label>
+                										<input type= "text" class="form-control input-sm" id="domicilioMod" name="domicilioMod" placeholder="domicilio del usuario">
+                									</div>
+                						        </div>
+                								<div class="col-md-4">
+                				        			<div class="row"> 	
+                					        			<div class="image-container" id="file-container-mod">
+                								        	<div class="form-group">
+                									        	<input id="input-file-mod" accept="image/*" name="input-file-mod" type="file" class="file-loading">
+                								        	</div>
+                							        	</div>
+                							        </div>
+                							        <div class="row text-center">
+                							        	<label for="input-file-mod">Imagen de Perfil</label>
+                							        </div>
+                				        		</div>      
+                							</div>
+                						</div>
+                						<div class="tab-pane" role="tabpanel" id="permisosMod">
+                					        <div class="row div-permisos">
+                					        	<div class="col-md-8 col-md-offset-2" id="divPermisosMod"></div>
+                					        </div>
+                					    </div>
+                					</div>
+                				</div>
+                			</div>
 					        <hr>
 					        <div class="row">
 					        	<div class="text-center">
@@ -1117,4 +1238,5 @@
 		  	</div>
 		</div>
 	</section>
+	
 {% endblock %}

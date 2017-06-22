@@ -38,6 +38,13 @@ class Menu
 	 */
 	private $items;
 	
+	/**
+	 * @var string
+	 *
+	 * @ORM\Column(name="abreviacion", type="string", length=70, nullable=false)
+	 */
+	private $abreviacion;
+	
 	//------------------------------------constructor---------------------------------------------
 	
 	/**
@@ -120,5 +127,28 @@ class Menu
 		return $this->items;
 	}
 	
+	/**
+	 * Set abreviacion
+	 *
+	 * @param string $abreviacion
+	 *
+	 * @return Menu
+	 */
+	public function setAbreviacion($abreviacion)
+	{
+		$this->abreviacion= $abreviacion;
+		
+		return $this;
+	}
+	
+	/**
+	 * Get abreviacion
+	 *
+	 * @return string
+	 */
+	public function getAbreviacion()
+	{
+		return $this->abreviacion;
+	}
 	
 }

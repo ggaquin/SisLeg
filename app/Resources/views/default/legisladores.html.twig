@@ -1,22 +1,21 @@
-{% extends 'base.html.twig' %}
-
-
+{% extends 'layout.html.twig' %}
 
 {% block stylesheets %}
-	{{ parent() }}
+	{# parent() #}
   	{% stylesheets '@css_datatables' %}
       	<link rel="stylesheet" href="{{ asset_url }}" /></link>
   	{% endstylesheets %}
 {% endblock %}
 
 {% block javascripts %}
-	{{ parent() }}
+	{# parent() #}
     {% javascripts '@js_datatables'%}
         <script src="{{ asset_url }}"></script>
     {% endjavascripts %}
 {% endblock %}
 
 {% block body %}
+
 	<style type="text/css">
 		.image-container{
 			padding-top: 30px;
@@ -435,6 +434,7 @@
 		  	</div>
 		</div> 
 	</section>
+	
 {% endblock %}
 
 
