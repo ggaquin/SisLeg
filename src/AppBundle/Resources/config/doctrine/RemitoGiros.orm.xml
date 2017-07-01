@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
-  <entity name="AppBundle\Entity\RemitoGiros" table="remitoGiros">
+  <entity name="AppBundle\Entity\RemitoGiros" table="remitoGiros" repository-class="AppBundle\Repository\RemitoGirosRepository">
   	<indexes>
   		<index columns="idOrigen" name="remiroGiros_oficinaOrigen_idx"/>
   		<index columns="idDestino" name="remiroGiros_oficinaDestino_idx"/>

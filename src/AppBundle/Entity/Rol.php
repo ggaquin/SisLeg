@@ -42,6 +42,13 @@ class Rol
     private $oficina;
     
     /**
+     * @var boolean
+     *
+     * @ORM\Column(name="oficinaObligatoria", type="boolean", nullable=false)
+     */
+    private $oficinaObligatoria;
+    
+    /**
      * @var \Doctrine\Common\Collections\Collection
      *
      * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Menu", orphanRemoval=true )
@@ -115,6 +122,36 @@ class Rol
     {
     	return $this->oficina;
     }
+    
+    
+    //-------------------------
+    
+    /**
+     * Set oficinaObligatoria
+     *
+     * @param boolean $oficinaObligatoria
+     *
+     * @return Rol
+     */
+    public function setOficinaObligatoria($oficinaObligatoria)
+    {
+    	$this->oficinaObligatoria= $oficinaObligatoria;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Get oficinaObligatoria
+     *
+     * @return boolean
+     */
+    public function getOficinaObligatoria()
+    {
+    	return $this->oficinaObligatoria;
+    }
+    
+    
+    //------------------------
     
     /**
      * Add Menu

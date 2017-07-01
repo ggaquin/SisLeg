@@ -22,6 +22,7 @@ use AppBundle\Entity\Expediente;
 use AppBundle\Entity\Proyecto;
 use AssistBundle\Entity\AdministracionSesion;
 use AppBundle\Entity\Giro;
+use AppBundle\Entity\RemitoGiros;
 
 
 class RestController extends FOSRestController{
@@ -125,14 +126,24 @@ class RestController extends FOSRestController{
     	try{
     		
     		$numero=$request->query->get('q');
+    		$usuario=$this->getUser();
+    		   	    		
+    		$valorRetorno=null;
     		$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
-    		$resultado=$expedienteRepository->findNumeroCompletoByNumero($numero);
-    		$formato = 'Y-m-d H:i:s';
-    		$fecha = \DateTime::createFromFormat($formato,$resultado["fecha"]);
-    		$ejercicio=substr($fecha->format("Y"),2,2);
-    		$numeroCompleto=$resultado["numero"].'-'.$resultado["letra"].'-'.$ejercicio.'('.$resultado["folios"].')';
-    		$valorRetorno=array(array('id' => $resultado["id"],'numeroCompleto' => $numeroCompleto));
-    		return $this->view($valorRetorno,200);
+    		$resultado=$expedienteRepository->findNumeroCompletoByNumero($numero,
+    																	 $usuario->getRol()->getOficina());
+    		if (!is_null($resultado)){
+	    		$formato = 'Y-m-d H:i:s';
+	    		$fecha = \DateTime::createFromFormat($formato,$resultado["fecha"]);
+	    		$ejercicio=substr($fecha->format("Y"),2,2);
+	    		$numeroCompleto=$resultado["numero"].'-'.$resultado["letra"].'-'.$ejercicio.'('.$resultado["folios"].')';
+	    		$valorRetorno=array(array('id' => $resultado["id"],'numeroCompleto' => $numeroCompleto));
+	    		return $this->view($valorRetorno,200);
+    		}
+    		else 
+    		{
+    			return $this->view($valorRetorno,404);
+    		}
     	}catch(\Exception $e)   {
     		return $this->view($e->getMessage(),500);
     		}
@@ -182,12 +193,97 @@ class RestController extends FOSRestController{
     /**
      * @Rest\Get("/api/expediente/giro/getAllByExpediente/{id}")
      */
-    public function traerGirosPorIdExpediente(Request $request)
+    public function traerGirosPorIdExpedienteAction(Request $request)
     {
     	$id=$request->get('id');
     	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
     	$expediente=$expedienteRepository->find($id);
     	return $this->view($expediente->getGiros(),200);
+    }
+    
+    /**
+     * @Rest\Get("/api/expediente/remito/getAllByCriteria/{tipoCriterio}/{criterio}")
+     */
+    public function traerGirosPorOficinaAction(Request $request)
+    {
+    	
+    	try{
+	    	$tipoCriterio=$request->get('tipoCriterio');
+	    	$criterio=$request->get('criterio');
+	    	$oficina=$this->getUser()->getRol()->getOficina();
+	    	$remitoRepository=$this->getDoctrine()->getRepository('AppBundle:RemitoGiros');
+	    	
+	    	$remitos="";
+	    	if ($tipoCriterio=='todo')
+	    		$remitos=$remitoRepository->findByOficina($oficina,"any",$criterio);
+	    	if($tipoCriterio=='busqueda-1')
+	    		$remitos=$remitoRepository->findByOficina($oficina,"out",$criterio);
+	    	if ($tipoCriterio=='busqueda-2'){
+	    		$fecha= \DateTime::createFromFormat('Y-m-d', $criterio);
+	    		$remitos=$remitoRepository->findByOficinaYFechaCreacion($fecha);
+	    	}
+	    	if($tipoCriterio=='busqueda-3')
+	    		$remitos=$remitoRepository->findByOficina($oficina,"in",$criterio);
+	    	if ($tipoCriterio=='busqueda-4'){
+	    		$fecha= \DateTime::createFromFormat('Y-m-d', $criterio);
+	    		$remitos=$remitoRepository->findByOficinaYFechaRecepcion($fecha);
+	    	}
+	    	if ($tipoCriterio=='busqueda-5'){
+	    		$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+	    		$expediente=$expedienteRepository->findByNumeroCompleto($criterio,null);
+	    		$remitos=$expediente->getGiros();
+	    	}
+	    	
+	    	return $this->view($remitos,200);
+    	}
+    	catch (\Exception $e){
+    		return $this->view($e->getMessage(),500);
+    	}
+    }
+    
+    /**
+     * @Rest\Post("/api/expediente/remito/create")
+     */
+    public function crearRemitoExpedienteAction(Request $request)
+    {
+    	$idOficina=$request->request->get('idDestino');
+    	$remitoDetalle=json_decode($request->request->get('remitoDetalle'));
+    	$usuario=$this->getUser();
+    	
+    	$oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
+    	$fechaActual=new \DateTime('now');
+    	$remito= new RemitoGiros();
+    	
+    	$origen=$usuario->getRol()->getOficina();
+    	$destino=$oficinaRepository->find($idOficina);
+    	$remito->setDestino($destino);
+    	$remito->setOrigen($origen);
+    	$remito->setFechaCreacion($fechaActual);
+    	$remito->setUsuarioCreacion($usuario->getUsuario());
+    	
+    	$em = $this->getDoctrine()->getManager();
+
+    	foreach ($remitoDetalle as $detalle) {
+    		$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+    		$expediente=$expedienteRepository->find($detalle->id);
+    		$expediente->setOficinaActual($destino);
+    		$em->persist($expediente);
+    		$em->flush();
+    		$giro=new Giro();
+    		$giro->setExpediente($expediente);
+    		$giro->setFechaCreacion($fechaActual);
+    		$giro->setUsuarioCreacion($usuario->getUsuario());
+    		$giro->setFojas($detalle->folios);
+    		$giro->setObservacion($detalle->observaciones);
+    		$remito->addGiro($giro);
+    		
+    	}
+    	
+    	$em->persist($remito);
+    	$em->flush();
+    	
+    	return $this->view("El remito se guardó en forma exitosa",200);
+    	
     }
     
     /**
@@ -640,32 +736,22 @@ class RestController extends FOSRestController{
 
             $tipoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
             $estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
-            $estadoExpediente=$estadoExpedienteRepository->find(1);
-            
-            
-            
+            $estadoExpediente=null;
+                       
             //Compatibilidad al inicio de la etapa de producción
              $primerExpedienteSistema=$this->getParameter('primer_numero_sistema');
                           
              if($numeroExpediente<$primerExpedienteSistema)
-             	$observacion="Incorporacion Expediente";         	
+             	$estadoExpediente=$estadoExpedienteRepository->find(1);
              else 
-             	$observacion="Alta Expediente";  
-             
-             $giro=new Giro();
-             $giro->setFojas($folios);
-             $giro->getObservacion($observacion);
-             $giro->setUsuarioCreacion("sistema");
-             $giro->setFechaCreacion(new \DateTime("now"));
-             
+             	$estadoExpediente=$estadoExpedienteRepository->find(5);       
 
             $expediente=new Expediente();
             $expediente->setFolios($folios);
             $expediente->setArchivos($archivos);
             $expediente->setNumeroExpediente($numeroExpediente);
             $expediente->setCaratula($caratula);
-            $expediente->addGiro($giro);
-
+      
             $proyecto=null;
             $tipoExpediente=null;
 
@@ -1216,17 +1302,12 @@ class RestController extends FOSRestController{
      */
     public function ejemploAction(Request $request){
 
-        //$r=$request->getSchemeAndHttpHost().'/document_bootstrap/escudopng2_mini.png';
-
-        return $this->view($request->getSchemeAndHttpHost().'/document_bootstrap/escudopng2_mini.png',200);
-
-        //$id = $request->get('id');
-         //$perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
-         //$legisladores=$perfilRepository->findLegisladorByBloque_Id($id);
-        //$parametrosProyecto=$this->get('impresion_servicio')->traerParametrosProyecto($id);
-
-        //return $this->view($parametrosProyecto,200);
-
+//     	$oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
+//     	$oficina=$oficinaRepository->find(9);
+    	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+    	$expediente=$expedienteRepository->findByNumeroCompleto('1/2017',null);
+    	return $this->view($expediente,200);
+        
     }
 
 

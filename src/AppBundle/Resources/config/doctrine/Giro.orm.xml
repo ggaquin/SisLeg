@@ -20,8 +20,6 @@
     </field>
     <field name="fechaModificacion" type="datetime" column="fechaModificacion" nullable="true">
     </field>
-    <field name="eliminado" type="boolean" column="eliminado">
-    </field>
     <many-to-one field="remito" target-entity="RemitoGiros" inversed-by="giros">
     	<join-columns>
     		<join-column name="idRemitoGiros" referenced-column-name="idRemitoGiros"/>

@@ -26,6 +26,7 @@
 
 		.custom-modal{
 			height: 2000%!important;
+			overflow-y:auto!important; 
 		}
 
 		.select2-selection--multiple { max-height: 10rem; overflow-y: auto }
@@ -103,8 +104,8 @@
 		}
 		
 		.div-tabla{
-			height: 400px;
-			max-height: 400px;
+			height: 384px;
+			max-height: 384px;
 			overflow-y: auto;
 		}
 		
@@ -119,30 +120,6 @@
 		
 		function tipoCriterio(){
 			return $("#selBusqueda").val();
-		}
-
-
-		function agregarInciso(modalTabla){
-			var control=((modalTabla=='incisos')?'inciso':'incisoMod');
-			var letra=String.fromCharCode($("#"+modalTabla).find('tr').length+65);
-			var inciso='<tr>'+
-	        		   '<td class="numero-fila">'+letra.toLowerCase()+') -</td>' +
-	        		   '<td><textarea class="form-control text-area text-area-mini" id="'+control+'-'+letra+'" '+
-	        		   'name="inciso" placeholder="Inciso"></textarea></td>'+
-	        		   '<td class="herramienta-fila"><div class="text-center">'+
-	        		   '<button type="button" class="btn btn-sm btn-info" onClick="noImplementado();"><span class="glyphicon glyphicon-tasks"></button>'+
-	        		   '</div><div class="row text-center"><button type="button" class="btn btn-sm btn-danger btn-eliminar-inciso">'+
-	        		   '<span class="glyphicon glyphicon-remove"></button></div></td>'+
-	        		   '</tr>';
-
-	        $("#"+modalTabla+" > tbody").append(inciso);
-	        $("#"+control+"-"+letra).wysihtml5({
-				toolbar: {
-				    "image": false,
-					"size": "xs",
-				},
-			});
-			$("#div-incisos").animate({ scrollTop: $("#div-incisos")[0].scrollHeight}, 1000);
 		}
 
 		$(document).ready(function () {
@@ -175,45 +152,43 @@
 			          	  },
 					      "processing": false,
 					      "ajax": {
-							        "url": "api/proyecto/getByCriteria/"+tipoCriterio()+"/"+criterio(),
+							        "url": "api/expediente/remito/getAllByCriteria/"+tipoCriterio()+"/"+criterio(),
 			            			"dataSrc": '',
 							    },
 						  "columnDefs": [
 								            {
-								                "targets": [ 0 ],
-								                // "visible": false,
-								                "searchable": false,
-								                "orderable":false
-								            },
-								            {
-									            "targets": [ 1 ],
+									            "targets": [ 0 ],
 									            "data": null,
 									            "orderable":false,
 									            "render": function(data, type, row){
 									            	// var html="<button type='button'title='Editar Proyecto' class='btn btn-primary btn-xs btn-editar-proyecto' data-toggle='modal' data-target='#editarProyecto'><span class='glyphicon glyphicon-pencil'></span></button>"
 									            	var html="";
 
-									            	if("{{app.user.rol.rol}}"=="ROLE_ADMINISTRADOR" || row.numero_expediente=="---")
-
-									            		html="<button type='button'title='Editar Proyecto' class='btn btn-primary btn-xs btn-editar-proyecto' data-toggle='modal' data-target='#editarProyecto'><span class='glyphicon glyphicon-pencil'></span></button>";
-									            	else
-									            		html="<button type='button'title='Editar Proyecto' class='btn btn-danger btn-xs' disabled><span class='glyphicon glyphicon-lock'></span></button>";
-									            	"<span class='glyphicon glyphicon-lock' title='Editar Proyecto' ></span>";
-									             	html+="<button type='button' title='Descargar Documento' class='btn btn-info btn-xs btn-descargar'><span class='glyphicon glyphicon-save-file'></span></button>";
+									            	html="<button type='button' title='Anular Remito' class='btn btn-danger btn-xs btn-anular'>"+
+									            		 "<span class='glyphicon glyphicon-ban-circle'></span></button>";
+									            	html+="<button type='button' title='Agregar Recepción' class='btn btn-info btn-xs btn-recepcion' data-toggle='modal' data-target='#recepcion'>"+
+									             		  "<span class='glyphicon glyphicon-calendar'></span></button>";
+									             	html+="<button type='button' title='Descargar Remito' class='btn btn-info btn-xs btn-descargar'>"+
+									             		  "<span class='glyphicon glyphicon-save-file'></span></button>";
 									            	return html;
 									            }
-									        }
+									        },
+									        {
+								                "targets": [ 1 ],
+								                // "visible": false,
+								                "searchable": false,
+								                "orderable":false
+								            },
 									       
 						  ],
 					      "columns": [
-					      		{ "data": "id" },
 					      		{ "data": "null","width":"10%"},
-					      		{ "data": "numero_expediente","width":"5%"},
-					      		{ "data": "tipo_proyecto.tipo_proyecto","width":"5%"},
-					            { "data": "fecha_creacion_formateada", "width": "15%" },
-					            { "data": "fecha_entrada_formateada", "width": "15%" },
-					            { "data": "estado_expediente","width":"10%" },
-					            { "data": "lista_autores","className": "for-mobile","width":"40%" },
+					      		{ "data": "id", "width":"10%"},
+					      		{ "data": "origen.oficina","width":"20%"},
+					      		{ "data": "fecha_movimiento_formateada","width":"10%"},
+					            { "data": "destino.oficina", "width": "20%" },
+					            { "data": "fecha_recepcion_formateada", "width": "10%" },
+					            { "data": "lista_expedientes","width": "20%" },
 					        ],
 					      "autoWidth":false,
 					      "paging": true,
@@ -236,72 +211,42 @@
 
 			//--------------------------------------NUEVO INCISO---------------------------------------------
 			
-			//EVENTO ABRIR MODAL NUEVO ARTICULO
-		    $('#nuevoArticulo').on('show.bs.modal', function () {
-				$("#incisos > tbody").html('');
-				$("#articulo").data("wysihtml5").editor.setValue('');
-		    	
+			//EVENTO ABRIR MODAL NUEVO REMITO
+		    $('#nuevoRemito').on('show.bs.modal', function () {
+		    	$("#detalleRemito > tbody").html("");
+		    	$("#selExpedientes").val();
+		    	$("#total-filas").val("");
+				$("#total-filas").addClass("hidden");
+		    	$("#selExpedientes").empty().change();
 			});
-
-			//EVENTO ABRIR MODAL NUEVO PROYECTO
-		    $('#nuevoProyecto').on('show.bs.modal', function () {
-		  		$("#selTipoProyecto").val(0);
-		  		$("#selBloques").empty().change();
-		    	$("#selConcejales").empty().change();
-				$("#visto").data("wysihtml5").editor.setValue('');
-				$("#considerando").data("wysihtml5").editor.setValue('');
-				$("#articulos > tbody").html('');
-				$('#btn-guardar-proyecto').prop("disabled",false);
-				articulosIngresados=[];
-				habilitar('tab-1');
-
-				/* descomentar si se acuerda notificacion */
-				/*
-				$("#notificarProyecto").bootstrapToggle('on');
-				*/
-			});
-			
-			//EVENTO CERRAR MODAL NUEVO PROYECTO
-			$('#nuevoProyecto').on('hidden.bs.modal', function () {
-				$("#btn-guardar-proyecto").prop("disabled",false);
-			});
-			
-			//GUARDAR ALTA PROYECTO
-			$("#btn-guardar-proyecto").click(function(e){
+						
+			//GUARDAR REMITO
+			$("#btn-guardar-remito").click(function(e){
 
 				$(this).prop("disabled",true);
 				var validacion='';
 				var formData=new FormData();
-				var idtipoProyecto=$("#selTipoProyecto").val();
-				var bloques=$("#selBloques").val();
-				var concejales=$("#selConcejales").val();
-				var visto=$("#visto").val();
-				var considerando=$("#considerando").val();
-				var quienSanciona=$("#quienSanciona").val();
 
-				/* descomentar si se acuerda notificacion */
-				/*
-				var notificar=$('#notificarProyecto').is(':checked');
-				*/
+				var idDestino=$("#selDestino").val();
+				formData.append("idDestino",idDestino);
+				var filas=$('#detalleRemito >tbody >tr').length;
 
-				validacion+=((idtipoProyecto==0)?'<li>Debe seleccionar un tipo de proyecto</li>':'');
-				validacion+=(((concejales==null||concejales.length==0) && (bloques==null||bloques.length==0))
-								?'<li>Debe especificar al menos un concejal o bloque para el proyecto</li>':'');
-				validacion+=((visto.length==0)?'<li>Debe especificar los vistos</li>':'');
-				validacion+=((considerando.length==0)?'<li>Debe especificar las consideraciones</li>':'');
+				validacion+=((idDestino==0)?'<li>Debe seleccionar un destino</li>':'');
+				validacion+=((filas==0)?'<li>No especificó ningún expediente para el remito</li>':'');
 
-				formData.append("idtipoProyecto",idtipoProyecto);
-				formData.append("bloques",bloques);
-				formData.append("concejales",concejales);
-				formData.append("visto",visto);
-				formData.append("considerando",considerando);
-				formData.append("quienSanciona",quienSanciona);
-				formData.append("articulos",JSON.stringify(articulosIngresados));
+				var remitoDetalle=[];
+				
+				$('#detalleRemito >tbody >tr').each(function(){
+					var celdas=$(this).find('td');
+					detalle={
+							id:$(celdas[0]).text(),
+							folios:$(celdas[2]).find('input').val(),
+							observaciones:$(celdas[3]).find('textarea').val()
+						  };
+					remitoDetalle.push(detalle);
+				});
 
-				/* descomentar si se acuerda notificacion */
-				/*
-				formData.append("notificar",notificar);
-				*/
+				formData.append("remitoDetalle",JSON.stringify(remitoDetalle));
 
 	            if (validacion.length>0) 
 				{
@@ -315,7 +260,7 @@
 
 	            	$.ajax({
 		                async: true,
-		                url: '{{ app.request.getBaseURL() }}'+'/api/proyecto/create',
+		                url: '{{ app.request.getBaseURL() }}'+'/api/expediente/remito/create',
 		                data: formData,
 		                type: 'post',
 		                cache: false,
@@ -324,13 +269,12 @@
 	                success: function(data) {
 	                    toastr.success(data);
 						tabla.ajax.reload();
-						$('#nuevoProyecto').modal('hide');
+						$('#nuevoRemito').modal('hide');
 	                	},
 	                complete: function(){
-	                	$('#btn-guardar-proyecto').prop("disabled",false);
+	                	$('#btn-guardar-remito').prop("disabled",false);
 	                	},
 	                error: function(jqXHR,textStatus,errorThrown ){
-						//var response=JSON.parse(jqXHR.responseText)
 						toastr.error(jqXHR.responseText);
 						}
 	            	});
@@ -339,7 +283,10 @@
 		    
 			//---------------------------------INICIALIZACIÓN DE CONTROLES--------------------------
 
-			
+			 $('#datepicker1').datetimepicker({
+		    	locale: 'es',
+		    	format:'DD/MM/YYYY'
+		    });
 
 			$('#estadoFiltro').bootstrapToggle({
 		      on:  'Activo',
@@ -357,22 +304,22 @@
 			$("#selBusqueda").change(function(){
 
 				var control=$(this).val();
+				$("#busqueda-1").val("0");
+				$("#busqueda-2").val("");
+				$("#busqueda-3").val("0");
+				$("#busqueda-4").val("");
+				$("#busqueda-5").val("");
 				$(".busqueda").addClass('hidden');
 				if(control!="todo")
 					$("#"+control).removeClass('hidden');
-				else{
-					$("#busqueda-1").val("");
-					$("#busqueda-2").val("0");
-					$("#busqueda-3").val("");
-					$("#busqueda-4").val("0");
-				}
+				
 			});
 
 			$("#btn-busqueda").click(function(){
 								
 				if($("#selBusqueda").val()!="todo" && criterio()!="" && criterio()!="0")
 				{
-					//tabla.ajax.url("api/proyecto/getByCriteria/"+tipoCriterio()+"/"+criterio()).load();
+					tabla.ajax.url("api/expediente/remito/getAllByCriteria/"+tipoCriterio()+"/"+criterio()).load();
 					$(".filtro").prop('disabled',true);
 					$('#estadoFiltro').bootstrapToggle('enable');
 					$("#estadoFiltro").bootstrapToggle('on');
@@ -385,12 +332,11 @@
 					$(".filtro").prop('disabled',false);
 					$("#selBusqueda").val("todo").change();
 					$(".filtro").prop('disabled',false);
-					//tabla.ajax.url("api/proyecto/getByCriteria/"+tipoCriterio()+"/"+criterio()).load();
+					tabla.ajax.url("api/expediente/remito/getAllByCriteria/"+tipoCriterio()+"/"+criterio()).load();
 					$(this).bootstrapToggle('disable');
 					
 				}
 			});
-
 
 			$("#selExpedientes").select2({
 				ajax: {
@@ -416,8 +362,44 @@
 			  language: "es",
 			  minimumInputLength: 1,
 			  theme: "bootstrap",
-			});		
+			});	
 
+			$("#btn-generar-remito").click(function(){
+
+				var filas=$('#detalleRemito >tbody >tr').length;
+				
+				if (filas==0){
+    
+    				var html="";
+    
+    				$("#selExpedientes > option").each(function(){
+    					var texto=$(this).text();
+    					var numero=texto.substring(0,texto.indexOf('('));
+    					var folios=texto.substring(texto.indexOf('(')+1,texto.indexOf(')'));
+    					html+="<tr><td class='hidden'>"+$(this).val()+"</td><td><input type='text' class='form-control' readonly value='"+numero+"'></td>"+
+    						  "<td><input type='number' class='form-control text-center' min='"+folios+"' id='"+
+    						  numero+"' value='"+folios+"'></td>"+"<td><textarea class='form-control' rows=3></textarea></td></tr>";
+    				});
+    
+    				$("#detalleRemito > tbody").append(html);
+    				filas=$('#detalleRemito >tbody >tr').length;
+    				$("#total-filas").val("Expedientes en remito:"+filas);
+    				$("#total-filas").removeClass("hidden");
+				}
+				else toastr.error("El remito ya posee expedientes oprima <strong>'Reiniciar'</strong>, para volver a generar el detalle");
+				
+			});
+
+			$("#btn-borrar-remito").click(function(){
+				$("#detalleRemito > tbody").html("");
+				$("#total-filas").addClass("hidden");
+			});
+
+			$(".campo-fecha").datetimepicker({
+		    	locale: 'es',
+		    	format:'DD/MM/YYYY'
+		    });
+					
 	});
 	</script>
 	<section class="content-header">
@@ -425,17 +407,17 @@
 			<ol class="breadcrumb">
 		        <li><a href="#"><i class="fa fa-dashboard"></i> Principal</a></li>
 		        <li >Expedientes</li>
-		        <li class="active">Giros</li>
+		        <li class="active">Movimientos</li>
 		    </ol>
 		</div>
 		<hr>
 		<div class="row">
 			<div class="col-md-2">
 				<h2>
-			        Giros
+			        Remitos
 			    </h2>
 			</div>
-			<div class="col-md-6 col-md-offset-4">
+			<div class="col-md-7 col-md-offset-3">
 				<nav class="navbar navbar-default">
 					<div class="container-fluid">
 						<div class="navbar-header">
@@ -452,20 +434,32 @@
 
 										<select class="form-control filtro" id="selBusqueda">
 											<option value="todo">Todo</option>
-											<option value="busqueda-1">Origen</option>
+											{% if app.user.rol.rol=='ROLE_ADMINISTRADOR' %}
+											    <option value="busqueda-1">Origen</option>
+											{% endif %}
 											<option value="busqueda-2">Fecha Envio</option>
 											<option value="busqueda-3">Destino</option>
 											<option value="busqueda-4">Fecha Recepcion</option>
+											<option value="busqueda-5">Expediente</option>
 										</select>
 										
 										<select class="form-control busqueda hidden filtro" id="busqueda-1">
 											<option value="0">Seleccione Origen</option>
+											{% for oficina in oficinas %}
+								                <option value="{{ oficina.id }}">{{ oficina.oficina }}</option>
+								            {% endfor %}
 										</select>
-										<input class="form-control busqueda hidden filtro" id="busqueda-2">
+										<input class="form-control campo-fecha text-center busqueda hidden filtro" 
+											   id="busqueda-2">
 										<select class="form-control busqueda hidden filtro" id="busqueda-3">
 											<option value="0">Seleccione Destino</option>
+											{% for oficina in oficinas %}
+								                <option value="{{ oficina.id }}">{{ oficina.oficina }}</option>
+								            {% endfor %}
 										</select>
-										<input class="form-control busqueda hidden filtro" id="busqueda-4">
+										<input class="form-control campo-fecha text-center busqueda hidden filtro" 
+											   id="busqueda-4">
+										<input class="form-control busqueda hidden filtro" placeholder="numero/año" id="busqueda-5">
 									<div>
 								</form>
 							</div>
@@ -489,11 +483,12 @@
 						    			<span class="glyphicon glyphicon-plus"></span>
 						    	</button>
 						    </th>
-						    <th>Nro Remito</th>
+						    <th>Remito</th>
 						    <th>Origen</th>
 			                <th>F. Envío</th>
 			                <th>Destino</th>
 			                <th>F. Recepción</th>
+			                <th>Expedientes</th>
 	                	</tr>
 	                </thead>
 	                <tbody>
@@ -515,33 +510,46 @@
 						<div class="row">
 							<div class="col-md-3">
 								<div class="form-group">
+						        	<label for="selDestino">Destino:</label>
+						        	<select class="form-control" id="selDestino" name="selDestino">
+						        		<option value="0">Seleccione Destino</option>
+						        		{% for oficina in oficinas %}
+							                <option value="{{ oficina.id }}">{{ oficina.oficina }}</option>
+							            {% endfor %}
+						        	</select>
+						        </div>
+								<div class="form-group">
 						        	<label for="selExpedientes">Expedientes:</label>
 						        	<select class="form-control" multiple="multiple" data-width="100%" id="selExpedientes" 
 						        			name="selExpedientes">
 						        	</select>
 						        </div>
 							</div>
-							<div class="col-md-1">
+							<div class="col-md-1" style="padding-top: 25px;">
  								<div class="btn-group-vertical">
-						        	<button type="button" class="btn btn-primary" id="generar-remito">Crear</button>
+						        	<button type="button" class="btn btn-primary" id="btn-generar-remito">Crear</button>
 						        	<br>
-						        	<button type="button" class="btn btn-info" id="borrar-remito">Reiniciar</button>  
+						        	<button type="button" class="btn btn-info" id="btn-borrar-remito">Reiniciar</button>  
  						        </div>
 							</div>
 							<div class="col-md-8">
 								<div class="div-tabla">
-    								<table class="table table-striped">
+    								<table class="table table-striped" id="detalleRemito"  width='100%'>
     								     <thead>
                     	                	<tr>
                     						    <th class="hidden">id</th>
-                    						    <th>Nro Exp</th>
-                    						    <th>Fojas</th>
-                    			                <th>Observación</th>
+                    						    <th width="10%">Nro Exp</th>
+                    						    <th width="10%">Fojas</th>
+                    			                <th width="80%">Observación</th>
                     	                	</tr>
                     	                </thead>
                     	                <tbody>
                     	                </tbody>
     								</table>
+    							</div>
+    							<div class="text-center">
+    								<input type="text" id="total-filas" readonly style="color: red" 
+    									   class="form-control text-center hidden">
     							</div>
 							</div>
 						</div>   
@@ -559,6 +567,44 @@
 				     </div>
 			    </div>
 		  	</div>
+		</div>
+		<div id="recepcion" class="modal fade custom-modal" role="dialog" data-backdrop="static" 
+		     data-keyboard="false">
+		 	<div class="modal-dialog modal-sm">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Recepción de Remito</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				    	<div class="row">
+				    		<div class="col-md-12">
+    				    		<div class="form-group">
+    				        		<label for="datepicker1">Fecha de Recepción</label>
+									<div class="input-group date" id="datepicker1">
+						                <input type="text" class="form-control text-center" id="fechaRecepcion" name="fechaRecepcion" data-provide="datepicker">
+						                 <div class="input-group-addon">
+						                    <i class="fa fa-calendar"></i>
+						                </div>
+						             </div>
+    							</div>
+    						</div>
+				    	</div>
+				     	<hr>
+				        <div class="row">
+				        	<div class="col-md-12">
+				        		<div class="text-center">
+					    			<div class="btn-group">
+							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+						       			 <button type="button" class="btn btn-primary" id="btn-guardar-fecha">Guardar</button>
+							        </div>
+						        </div>
+						    </div>
+			    		</div>
+				    </div>
+				</div>
+			</div>
 		</div>
 	</section>
 	

@@ -389,15 +389,15 @@ class Expediente
     }
     
     /**
-     * Set oficinaActual
+     * Set oficiaActual
      *
-     * @param \AppBundle\Entity\Oficina $oficinaActual
+     * @param \AppBundle\Entity\Oficina $oficiaActual
      *
      * @return Expediente
      */
-    public function setOficinaActual(\AppBundle\Entity\Oficina $oficinaActual=null)
+    public function setOficina(\AppBundle\Entity\Oficina $oficiaActual= null)
     {
-    	$this->oficinaActual= $oficinaActual;
+    	$this->oficiaActual= $oficiaActual;
     	
     	return $this;
     }

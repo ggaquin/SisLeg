@@ -63,7 +63,7 @@ class ExpedienteRepository extends EntityRepository{
 	  
 	}
 	
-	public function findNumeroCompletoByNumero($numero){
+	public function findNumeroCompletoByNumero($numero,$oficina){
 		
 		$rsm = new ResultSetMapping();
 		$rsm->addScalarResult('idExpediente', 'id');
@@ -72,17 +72,47 @@ class ExpedienteRepository extends EntityRepository{
 		$rsm->addScalarResult('fechaCreacion', 'fecha');
 		$rsm->addScalarResult('folios', 'folios');
 		
+		$sql='SELECT e.idExpediente, e.numeroExpediente, t.letra, e.fechaCreacion, e.folios '.
+			 'FROM expediente e '.
+			 'inner join tipoExpediente t '.
+			 'on e.idTipoExpediente=t.idTipoExpediente ';
+		
+		$condition='WHERE e.numeroExpediente=:numero';
+		
+		if(!is_null($oficina)){
+			$sql.='inner join oficina o on e.idOficina=o.idOficina ';
+			$condition.=' and o.idOficina=:idOficina';
+		}
+		
+		$sql.=$condition;
+		
 		$query = $this->getEntityManager()
-		->createNativeQuery(
-				'SELECT e.idExpediente, e.numeroExpediente, t.letra, e.fechaCreacion, e.folios '.
-				'FROM expediente e '.
-				'inner join tipoExpediente t '.
-				'on e.idTipoExpediente=t.idTipoExpediente '.
-				'WHERE e.numeroExpediente=:numero'
-				,$rsm);
+		->createNativeQuery($sql,$rsm);
 		$query->setParameter('numero',$numero);
+		
+		if(!is_null($oficina))
+			$query->setParameter('idOficina',$oficina->getId());
 		
 		return $query->getSingleResult();
 		
+	}
+	
+	public function findByNumeroCompleto($numero,$oficina){
+		
+		
+		$numeroBusqueda=explode("/", $numero);
+		$inicio= \DateTime::createFromFormat('Y-m-d', $numeroBusqueda[1].'-01-01');
+		$fin= \DateTime::createFromFormat('Y-m-d', $numeroBusqueda[1].'-12-31');
+		$qb = $this->createQueryBuilder('e');
+		$qb -> where($qb->expr()->andX(
+										$qb->expr()->eq('e.numeroExpediente', '?1'),
+										$qb->expr()->between('e.fechaCreacion','?2','?3')
+									  )
+				)
+			->setParameter(1, $numeroBusqueda[0])
+			->setParameter(2, $inicio)
+			->setParameter(3, $fin);
+		return $qb->getQuery()->getResult();
+			
 	}
 }

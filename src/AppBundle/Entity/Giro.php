@@ -55,13 +55,6 @@ class Giro {
 	 * @ORM\Column(name="fojas", type="smallint", nullable=false)
 	 */
 	private $fojas;
-	
-	/**
-	 * @var boolean
-	 *
-	 * @ORM\Column(name="eliminado", type="boolean", nullable=false)
-	 */
-	private $eliminado;
 		
 	/**
 	 * @var string

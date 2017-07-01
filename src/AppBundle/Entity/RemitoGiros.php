@@ -11,7 +11,7 @@ use JMS\Serializer\Annotation\VirtualProperty;
  * @ORM\Table(name="remitoGiros", indexes={@ORM\Index(name="remitoGiros_oficinaOrigen_idx", columns={"idOrigen"}),
  *                                  	   @ORM\Index(name="remitoGiros_oficinaDestino_idx", columns={"idDestino"})})
  *
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="AppBundle\Repository\RemitoGirosRepository")
  */
 
 class RemitoGiros{
@@ -19,7 +19,7 @@ class RemitoGiros{
 	/**
 	 * @var integer
 	 *
-	 * @ORM\Column(name="idGiro", type="integer")
+	 * @ORM\Column(name="idRemitoGiros", type="integer")
 	 * @ORM\Id
 	 * @ORM\GeneratedValue(strategy="IDENTITY")
 	 */
@@ -346,5 +346,21 @@ class RemitoGiros{
 	public function getFechaRecepcionFormateada()
 	{
 		return (!is_null($this->getFechaRecepcion())?$this->getFechaRecepcion()->format('d/m/Y'):'');
+	}
+	
+	/**
+	 * Get listaExpedientes
+	 * @return string
+	 *
+	 * @VirtualProperty
+	 */
+	public function getListaExpedientes()
+	{
+		$expedientes="";
+		$girosAux=(!is_null($this->getGiros())?$this->getGiros():[]);
+		foreach ($girosAux as $giro){
+			$expedientes.=$giro->getExpediente()->getNumeroCompleto();
+		}
+		return $expedientes;
 	}
 }

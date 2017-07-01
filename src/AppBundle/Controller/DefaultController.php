@@ -176,13 +176,15 @@ class DefaultController extends Controller
     }
     
     /**
-     * @Route("/giros", name="giros")
+     * @Route("/movimientos", name="movimientos")
      */
-    public function girosAction(Request $request)
+    public function movimientosAction(Request $request)
     {
-    		
-    	return $this->render('default/giros.html.twig', array(
+    	$oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
+    	$oficinas=$oficinaRepository->findAll();
+    	return $this->render('default/movimientos.html.twig', array(
     			'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
+    			'oficinas' => $oficinas
     	));
     	
     }

@@ -4,7 +4,7 @@
     <indexes>
       <index name="expediente_tipoExpediente_idx" columns="idTipoExpediente"/>
       <index name="expediente_estadoExpediente_idx" columns="idEstadoExpediente"/>
-      <index name="expediente_numeroExpediente_idx" columns="numeroExpediente"/>
+      <index name="expediente_oficina_idx" columns="idOficina"/>
     </indexes>
     <unique-constraints>
             <unique-constraint columns="numeroExpediente" name="numeroExpediente_idx" />
@@ -91,9 +91,14 @@
         <join-column name="idEstadoExpediente" referenced-column-name="idEstadoExpediente"/>
       </join-columns>
     </many-to-one>
-    <many-to-one field="tipoExpediente" target-entity="TipoExpediente" fetch="LAZY">
+    <many-to-one field="tipoExpediente" target-entity="TipoExpediente">
       <join-columns>
         <join-column name="idTipoExpediente" referenced-column-name="idTipoExpediente"/>
+      </join-columns>
+    </many-to-one>
+    <many-to-one field="oficinaActual" target-entity="Oficina">
+      <join-columns>
+        <join-column name="idOficina" referenced-column-name="idOficina"/>
       </join-columns>
     </many-to-one>
   </entity>

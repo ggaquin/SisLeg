@@ -12,6 +12,11 @@
         <option name="fixed"/>
       </options>
     </field>
+    <field name="oficinaObligatoria" type="boolean" column="oficinaObligatoria" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
     <many-to-one field="oficina" target-entity="Oficina">
     	<join-columns>
     		<join-column name="idOficina" referenced-column-name="idOficina"/>
