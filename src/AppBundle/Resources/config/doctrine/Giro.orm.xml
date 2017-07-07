@@ -12,6 +12,8 @@
     </field>
     <field name="fojas" type="smallint" column="fojas" nullable="false">
     </field>
+    <field name="anulado" type="boolean" column="anulado" nullable="true">
+    </field>
     <field name="usuarioCreacion" type="string" length="70" column="usuarioCreacion" nullable="false">
     </field>
     <field name="fechaCreacion" type="datetime" column="fechaCreacion" nullable="false">

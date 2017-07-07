@@ -152,7 +152,7 @@ class DefaultController extends Controller
         $estadosExpediente=$estadoExpedienteRepository->findBy(array(),array('estadoExpediente' => 'ASC') );
         $ofcinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
         $oficinas=$ofcinaRepository->findAll();
-        $idOficinaActual=$this->getParameter('id_mesa_entradas');
+        //$idOficinaActual=$this->getParameter('id_mesa_entradas');
         $usuario=$this->getUser();
        	
         $array=[];
@@ -164,7 +164,7 @@ class DefaultController extends Controller
         $array['tipos']=$tiposExpediente;
         $array['estados']=$estadosExpediente;
         $array['oficinas']=$oficinas;
-        $array['idOficinaActual']=$idOficinaActual;
+        //$array['idOficinaActual']=$idOficinaActual;
         return $this->render('default/expediente.html.twig', $array);
         /*
         return $this->render('default/expediente.html.twig', array(
@@ -258,6 +258,15 @@ class DefaultController extends Controller
             'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR
         ));
 
+    }
+    
+    /**
+     * @Route("/imprimir/remito")
+     */
+    public function impresionRemitoAction(Request $request)
+    {
+    	
+ 
     }
 
     /**

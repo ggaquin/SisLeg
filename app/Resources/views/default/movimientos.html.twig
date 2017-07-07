@@ -115,11 +115,33 @@
 
 		function criterio(){
 			var tipo=$("#selBusqueda").val();
-			return ((tipo=="todo")?"0":$("#"+tipo).val());	
+			return ((tipo=="todo")?"0":$("#"+tipo).val().replace(/\//g,""));	
 		}
 		
 		function tipoCriterio(){
 			return $("#selBusqueda").val();
+		}
+
+		function validarFolios(control){
+			
+			var valorControl=$(control).val();
+			var idControl=$(control).attr("id");
+			var minimoValor=$(control).attr("min");
+			
+			if (!$.isNumeric(valorControl)){
+				toastr.error("El contenido ingresado en folios del expediente " +idControl+ " no es numérico");
+				setTimeout(function(){
+					   $("#"+idControl).select();
+				},10);
+			}
+			else {
+					if(valorControl<minimoValor){	
+						toastr.error("El contenido ingresado en folios del expediente " +idControl+ " es menor al minimo");
+						setTimeout(function(){
+							   $("#"+idControl).select();
+						},10);
+					}
+			}
 		}
 
 		$(document).ready(function () {
@@ -161,34 +183,44 @@
 									            "data": null,
 									            "orderable":false,
 									            "render": function(data, type, row){
-									            	// var html="<button type='button'title='Editar Proyecto' class='btn btn-primary btn-xs btn-editar-proyecto' data-toggle='modal' data-target='#editarProyecto'><span class='glyphicon glyphicon-pencil'></span></button>"
 									            	var html="";
-
-									            	html="<button type='button' title='Anular Remito' class='btn btn-danger btn-xs btn-anular'>"+
-									            		 "<span class='glyphicon glyphicon-ban-circle'></span></button>";
-									            	html+="<button type='button' title='Agregar Recepción' class='btn btn-info btn-xs btn-recepcion' data-toggle='modal' data-target='#recepcion'>"+
-									             		  "<span class='glyphicon glyphicon-calendar'></span></button>";
-									             	html+="<button type='button' title='Descargar Remito' class='btn btn-info btn-xs btn-descargar'>"+
+									            	if (row.anulado==false && row.fecha_recepcion_formateada=="") {
+    									            	html+="<button type='button' title='Anular Remito' class='btn btn-danger btn-xs btn-anular' data-toggle='modal' data-target='#anulacion'>"+
+    									            		 "<span class='glyphicon glyphicon-ban-circle'></span></button>";
+    									            
+									            		html+="<button type='button' title='Agregar Recepción' class='btn btn-info btn-xs btn-recepcion' data-toggle='modal' data-target='#recepcion'>"+
+									             		  	  "<span class='glyphicon glyphicon-calendar'></span></button>";
+									            	}
+									             	html+="<button type='button' title='Descargar Remito' class='btn btn-info btn-xs btn-descargar' onclick='noImplementado();'>"+
 									             		  "<span class='glyphicon glyphicon-save-file'></span></button>";
 									            	return html;
 									            }
 									        },
 									        {
 								                "targets": [ 1 ],
-								                // "visible": false,
 								                "searchable": false,
 								                "orderable":false
+								            },
+								            {
+								                "targets": [ 5 ],
+								                "data": null,
+								                "searchable": false,
+								                "render": function(data, type, row){	
+									                							            	
+									            	return ((row.anulado==true)?"SI":"NO");
+									            }
 								            },
 									       
 						  ],
 					      "columns": [
-					      		{ "data": "null","width":"10%"},
-					      		{ "data": "id", "width":"10%"},
+					      		{ "data": "null","width":"7%"},
+					      		{ "data": "id", "width":"9%"},
 					      		{ "data": "origen.oficina","width":"20%"},
-					      		{ "data": "fecha_movimiento_formateada","width":"10%"},
+					      		{ "data": "fecha_movimiento_formateada","width":"7%"},
 					            { "data": "destino.oficina", "width": "20%" },
-					            { "data": "fecha_recepcion_formateada", "width": "10%" },
-					            { "data": "lista_expedientes","width": "20%" },
+					            { "data": "null","width":"5%"},
+					            { "data": "fecha_recepcion_formateada", "width": "7%" },
+					            { "data": "lista_expedientes","width": "25%" },
 					        ],
 					      "autoWidth":false,
 					      "paging": true,
@@ -200,16 +232,117 @@
 				});
 
 		    //-----------------------------------DESCARGA DEL REMITO----------------------------------------
-			
-			$("#registroProyectos > tbody").on('click','.btn-descargar',function(){
+			/*
+			$("#registroRemitos > tbody").on('click','.btn-descargar',function(){
 				var data = tabla.row( $(this).parents('tr') ).data();
 				window.location.href='{{ app.request.getBaseURL() }}'+
 		        					 '/imprimir?tipoDocumento=proyecto&id='+
 		        					  data[ "id" ];
 			});
+			*/
+		   //-----------------------------------ANULACION REMITO--------------------------------------------
+			
+			//BOTON ANULACION DEL LISTADO DE REMITOS
+			$("#registroRemitos > tbody").on('click','.btn-anular',function(){
+				var data = tabla.row( $(this).parents('tr') ).data();
+				$("#anulacion").find('input[name="idRemito"]').val(data[ "id" ]);
+			});
 
+			//EVENTO ABRIR MODAL ANULACION REMITO
+			$("#anulacion").on('show.bs.modal', function () {
+				$("#anulacion").find('textarea[name="motivoAnulacion"]').val("");
+			});
 
-			//--------------------------------------NUEVO INCISO---------------------------------------------
+			$("#btn-guardar-anulacion").click(function(){
+				var idRemito=$("#anulacion").find('input[name="idRemito"]').val();
+				var motivoAnulacion=$("#anulacion").find('textarea[name="motivoAnulacion"]').val();
+				var formData=new FormData();
+				
+				formData.append("idRemito",idRemito);
+				formData.append("motivoAnulacion",motivoAnulacion);
+				
+				$.ajax({
+    	                url: '{{ app.request.getBaseURL() }}'+'/api/expediente/remito/invalidate',
+    	                data: formData,
+    	                type: 'post',
+    	                cache: false,
+    	                contentType: false,
+    	                processData: false,
+                    success: function(data) {
+                        toastr.success(data);
+    					tabla.ajax.reload();
+                    	},
+                    error: function(jqXHR,textStatus,errorThrown ){
+    					toastr.error(jqXHR.responseText);
+					}
+            	});
+			});
+			
+
+			//-----------------------------------RECEPCION REMITO--------------------------------------------
+			
+			//BOTON FECHA RECEPCION DEL LISTADO DE REMITOS
+			$("#registroRemitos > tbody").on('click','.btn-recepcion',function(){
+				var data = tabla.row( $(this).parents('tr') ).data();
+				$("#recepcion").find('input[name="idRemito"]').val(data[ "id" ]);
+			});
+			
+			//EVENTO ABRIR MODAL RECEPCION REMITO
+			$("#recepcion").on('show.bs.modal', function () {
+				$("#recepcion").find('input[name="fechaRecepcion"]').val("");
+			});
+
+			//GUERDAR FECHA
+			$("#btn-guardar-fecha").click(function(){
+
+				$(this).prop("disabled",true);
+				var validacion='';
+				var formData=new FormData();
+
+				var idRemito=$("#recepcion").find('input[name="idRemito"]').val();
+				var fecha=$("#recepcion").find('input[name="fechaRecepcion"]').val();
+				validacion+=((fecha=="")?'<li>Debe especificar la fecha de recepción</li>':'');
+
+				
+				
+				formData.append("fechaRecepcion",fecha);
+				formData.append("idRemito",idRemito);
+
+				if (validacion.length>0) 
+				{
+					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+								validacion+'</ul>':'');
+					$('#btn-guardar-fecha').prop("disabled",false);
+					toastr.error(validacion);
+					return false;
+				}
+				else{
+
+	            	$.ajax({
+		                async: true,
+		                url: '{{ app.request.getBaseURL() }}'+'/api/expediente/remito/update',
+		                data: formData,
+		                type: 'post',
+		                cache: false,
+		                contentType: false,
+		                processData: false,
+	                success: function(data) {
+	                    toastr.success(data);
+						tabla.ajax.reload();
+						$('#recepcion').modal('hide');
+	                	},
+	                complete: function(){
+	                	$('#btn-guardar-fecha').prop("disabled",false);
+	                	},
+	                error: function(jqXHR,textStatus,errorThrown ){
+						toastr.error(jqXHR.responseText);
+						}
+	            	});
+	            }
+					
+			});
+
+			//--------------------------------------NUEVO REMITO---------------------------------------------
 			
 			//EVENTO ABRIR MODAL NUEVO REMITO
 		    $('#nuevoRemito').on('show.bs.modal', function () {
@@ -378,7 +511,8 @@
     					var folios=texto.substring(texto.indexOf('(')+1,texto.indexOf(')'));
     					html+="<tr><td class='hidden'>"+$(this).val()+"</td><td><input type='text' class='form-control' readonly value='"+numero+"'></td>"+
     						  "<td><input type='number' class='form-control text-center' min='"+folios+"' id='"+
-    						  numero+"' value='"+folios+"'></td>"+"<td><textarea class='form-control' rows=3></textarea></td></tr>";
+    						  numero+"' name='"+numero+"' value='"+folios+"' onblur='validarFolios(this);'></td>"+
+    						  "<td><textarea class='form-control' rows=3></textarea></td></tr>";
     				});
     
     				$("#detalleRemito > tbody").append(html);
@@ -487,7 +621,8 @@
 						    <th>Origen</th>
 			                <th>F. Envío</th>
 			                <th>Destino</th>
-			                <th>F. Recepción</th>
+			                <th title="Anulado">Ado.</th>
+			                <th>F. Recep.</th>
 			                <th>Expedientes</th>
 	                	</tr>
 	                </thead>
@@ -578,6 +713,7 @@
 		    			<h4 class="modal-title">Recepción de Remito</h4>
 				    </div>
 				    <div class="modal-body" style="background-color:#ecf0f5">
+				    	<input type="hidden" id="idRemito" name="idRemito">
 				    	<div class="row">
 				    		<div class="col-md-12">
     				    		<div class="form-group">
@@ -598,6 +734,42 @@
 					    			<div class="btn-group">
 							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
 						       			 <button type="button" class="btn btn-primary" id="btn-guardar-fecha">Guardar</button>
+							        </div>
+						        </div>
+						    </div>
+			    		</div>
+				    </div>
+				</div>
+			</div>
+		</div>
+		<div id="anulacion" class="modal fade custom-modal" role="dialog" data-backdrop="static" 
+		     data-keyboard="false">
+		 	<div class="modal-dialog modal-sm">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Anulación de Remito</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				    	<input type="hidden" id="idRemito" name="idRemito">
+				    	<div class="row">
+				    		<div class="col-md-12">
+    				    		<div class="form-group">
+    				        		<label for="motivoAnulacion">Motivo</label>
+									<textarea class="form-control" rows="3" cols="" maxlength="150" id="motivoAnulacion" 
+											  name="motivoAnulacion">
+									</textarea>
+    							</div>
+    						</div>
+				    	</div>
+				     	<hr>
+				        <div class="row">
+				        	<div class="col-md-12">
+				        		<div class="text-center">
+					    			<div class="btn-group">
+							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+						       			 <button type="button" class="btn btn-primary" id="btn-guardar-anulacion">Guardar</button>
 							        </div>
 						        </div>
 						    </div>

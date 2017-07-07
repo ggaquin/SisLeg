@@ -33,6 +33,20 @@ class RemitoGiros{
 	private $fechaRecepcion;
 	
 	/**
+	 * @var boolean
+	 *
+	 * @ORM\Column(name="anulado", type="boolean", nullable=true)
+	 */
+	private $anulado;
+	
+	/**
+	 * @var string
+	 *
+	 * @ORM\Column(name="motivoAnulacion", type="string", length=150, nullable=true)
+	 */
+	private $motivoAnulacion;
+	
+	/**
 	 * @var \AppBundle\Entity\Oficina
 	 *
 	 * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Oficina")
@@ -92,6 +106,7 @@ class RemitoGiros{
 	public function __construct()
 	{
 		$this->giros = new \Doctrine\Common\Collections\ArrayCollection();
+		$this->anulado=false;
 	}
 	
 	//-------------------------------setters y getters--------------------------------------------
@@ -125,6 +140,54 @@ class RemitoGiros{
 	public function setFechaRecepcion(\DateTime $fechaRecepcion) {
 		$this->fechaRecepcion = $fechaRecepcion;
 		return $this;
+	}
+	
+	/**
+	 * Set anulado
+	 *
+	 * @param boolean $anulado
+	 *
+	 * @return Giro
+	 */
+	public function setAnulado($anulado)
+	{
+		$this->anulado= $anulado;
+		
+		return $this;
+	}
+	
+	/**
+	 * Get $anulado
+	 *
+	 * @return boolean
+	 */
+	public function getAnulado()
+	{
+		return $this->anulado;
+	}
+	
+	/**
+	 * Set motivoAnulacion
+	 *
+	 * @param string $motivoAnulacion
+	 *
+	 * @return Giro
+	 */
+	public function setMotivoAnulacion($motivoAnulacion)
+	{
+		$this->motivoAnulacion= $motivoAnulacion;
+		
+		return $this;
+	}
+	
+	/**
+	 * Get motivoAnulacion
+	 *
+	 * @return string
+	 */
+	public function getMotivoAnulacion()
+	{
+		return $this->motivoAnulacion;
 	}
 		
 	/**

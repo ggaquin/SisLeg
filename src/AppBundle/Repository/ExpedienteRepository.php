@@ -100,18 +100,19 @@ class ExpedienteRepository extends EntityRepository{
 	public function findByNumeroCompleto($numero,$oficina){
 		
 		
-		$numeroBusqueda=explode("/", $numero);
-		$inicio= \DateTime::createFromFormat('Y-m-d', $numeroBusqueda[1].'-01-01');
-		$fin= \DateTime::createFromFormat('Y-m-d', $numeroBusqueda[1].'-12-31');
+		$periodo='20'.substr($numero, -2);
+		$numerador=substr($numero, 0,strlen($numero)-2);
+		$inicio= new \DateTime($periodo.'-01-01 00:00:00');
+		$fin= new \DateTime($periodo.'-12-31 23:59:59');
 		$qb = $this->createQueryBuilder('e');
 		$qb -> where($qb->expr()->andX(
 										$qb->expr()->eq('e.numeroExpediente', '?1'),
 										$qb->expr()->between('e.fechaCreacion','?2','?3')
 									  )
 				)
-			->setParameter(1, $numeroBusqueda[0])
-			->setParameter(2, $inicio)
-			->setParameter(3, $fin);
+			->setParameter(1, $numerador)
+			->setParameter(2, $inicio->format('Y-m-d'))
+			->setParameter(3, $fin->format('Y-m-d'));
 		return $qb->getQuery()->getResult();
 			
 	}

@@ -55,6 +55,13 @@ class Giro {
 	 * @ORM\Column(name="fojas", type="smallint", nullable=false)
 	 */
 	private $fojas;
+	
+	/**
+	 * @var boolean
+	 *
+	 * @ORM\Column(name="anulado", type="boolean", nullable=true)
+	 */
+	private $anulado;
 		
 	/**
 	 * @var string
@@ -83,6 +90,16 @@ class Giro {
 	 * @ORM\Column(name="fechaModificacion", type="datetime", nullable=true)
 	 */
 	private $fechaModificacion;
+	
+	//------------------------------------constructor---------------------------------------------
+	
+	/**
+	 * Constructor
+	 */
+	public function __construct()
+	{
+		$this->anulado=false;
+	}
 	
 	
 	/**
@@ -182,27 +199,27 @@ class Giro {
 	}
 	
 	/**
-	 * Set eliminado
+	 * Set anulado
 	 *
-	 * @param boolean $eliminado
+	 * @param boolean $anulado
 	 *
 	 * @return Giro
 	 */
-	public function setEliminado($eliminado)
+	public function setAnulado($anulado)
 	{
-		$this->eliminado = $eliminado;
+		$this->anulado= $anulado;
 		
 		return $this;
 	}
 	
 	/**
-	 * Get eliminado
+	 * Get anulado
 	 *
-	 * @return integer
+	 * @return boolean
 	 */
-	public function getEliminado()
+	public function getAnulado()
 	{
-		return $this->eliminado;
+		return $this->anulado;
 	}
 	
 	/**

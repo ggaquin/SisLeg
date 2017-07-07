@@ -23,6 +23,7 @@ use AppBundle\Entity\Proyecto;
 use AssistBundle\Entity\AdministracionSesion;
 use AppBundle\Entity\Giro;
 use AppBundle\Entity\RemitoGiros;
+use AppBundle\Entity\Oficina;
 
 
 class RestController extends FOSRestController{
@@ -219,19 +220,21 @@ class RestController extends FOSRestController{
 	    	if($tipoCriterio=='busqueda-1')
 	    		$remitos=$remitoRepository->findByOficina($oficina,"out",$criterio);
 	    	if ($tipoCriterio=='busqueda-2'){
-	    		$fecha= \DateTime::createFromFormat('Y-m-d', $criterio);
-	    		$remitos=$remitoRepository->findByOficinaYFechaCreacion($fecha);
+	    		$criterio=substr($criterio, -4)."-".substr($criterio, -6, -4)."-".substr($criterio, 0,strlen($criterio)-6);
+	    		$fecha =new \DateTime($criterio);
+	    		$remitos=$remitoRepository->findByOficinaYFechaCreacion($oficina,$fecha->format('Y-m-d'));
 	    	}
 	    	if($tipoCriterio=='busqueda-3')
 	    		$remitos=$remitoRepository->findByOficina($oficina,"in",$criterio);
 	    	if ($tipoCriterio=='busqueda-4'){
-	    		$fecha= \DateTime::createFromFormat('Y-m-d', $criterio);
-	    		$remitos=$remitoRepository->findByOficinaYFechaRecepcion($fecha);
+	    		$criterio=substr($criterio, -4)."-".substr($criterio, -6, -4)."-".substr($criterio, 0,strlen($criterio)-6);
+	    		$fecha =new \DateTime($criterio);
+	    		$remitos=$remitoRepository->findByOficinaYFechaRecepcion($oficina,$fecha->format('Y-m-d'));
 	    	}
 	    	if ($tipoCriterio=='busqueda-5'){
-	    		$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
-	    		$expediente=$expedienteRepository->findByNumeroCompleto($criterio,null);
-	    		$remitos=$expediente->getGiros();
+	    		//$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+	    		$remitos=$remitoRepository->findByNumeroCompleto($oficina,$criterio);
+	    		//$remitos=$expediente->getGiros();
 	    	}
 	    	
 	    	return $this->view($remitos,200);
@@ -287,6 +290,63 @@ class RestController extends FOSRestController{
     }
     
     /**
+     * @Rest\Post("/api/expediente/remito/invalidate")
+     */
+    public function anularRemitoAction(Request $request)
+    {
+    	$idRemito = $request->request->get('idRemito');
+    	$motivoAnulacion = $request->request->get('motivoAnulacion');
+    	
+    	$remitoRepository=$this->getDoctrine()->getRepository('AppBundle:RemitoGiros');
+    	$remito = $remitoRepository->find($idRemito);
+    	
+    	if($remito->getFechaRecepcion()!=null)
+    		return $this->view("El remito ".$remito->getId()." tiene fecha de recepción. No se puede Anular",500);
+    	
+    	if($remito->getAnulado()==true)	
+    		return $this->view("El remito ".$remito->getId()." ya se encuentra anulado. No se puede Anular",500);
+    	
+    	$remito->setAnulado(true);
+    	$remito->setMotivoAnulacion($motivoAnulacion);
+    	foreach ($remito->getGiros() as $giro) {
+    		$giro->setAnulado(true);
+    	}
+    	$em = $this->getDoctrine()->getManager();
+    	$em->persist($remito);
+    	$em->flush();
+    	
+    	return $this->view("El remito ".$remito->getId()." se anuló en forma exitosa",200);
+    	
+    }
+    
+    /**
+     * @Rest\Post("/api/expediente/remito/update")
+     */
+    public function actualizarFechaRemitoAction(Request $request)
+    {
+    	$idRemito = $request->request->get('idRemito');
+    	$fechaRecepcion = $request->request->get('fechaRecepcion');
+    	
+    	$fecha = \DateTime::createFromFormat('d/m/Y', $fechaRecepcion);
+    	$remitoRepository=$this->getDoctrine()->getRepository('AppBundle:RemitoGiros');
+    	$remito = $remitoRepository->find($idRemito);
+    	
+    	if ($remito->getFechaRecepcion()!=null)
+    		return $this->view("El remito ".$remito->getId()." ya tiene fecha de recepción",500);
+    	
+    	if ($remito->getAnulado()==true)
+    		return $this->view("El remito ".$remito->getId()." se encuentra anulado",500);
+    	
+    	$remito->setFechaRecepcion($fecha);
+    	
+    	$em = $this->getDoctrine()->getManager();
+    	$em->persist($remito);
+    	$em->flush();
+    	
+    	return $this->view("El remito ".$remito->getId()." se actualizó en forma exitosa",200);
+    }
+    
+    /**
      * @Rest\Get("/api/expediente/giro/findOne/{id}")
      */
     public function traerGiroPorId(Request $request)
@@ -296,64 +356,7 @@ class RestController extends FOSRestController{
     	$giro=$giroRepository->find($id);
     	return $this->view($giro->getGiros(),200);
     }
-    
-    /**
-     * @Rest\Post("/api/expediente/giro/create")
-     */
-    public function crearGiro(Request $request)
-    {
-    	/*
-    	$idDestino=$request->request->get('idDestino');
-    	$observacion=$request->request->get('observacion');
-    	$idExpediente=$request->request->get('idExpediente');
-    	$fojas=$request->request->get('fojas');
-    	$fechaIntervencionActual=$request->request->get('fechaIntervencionActual');
-    	$usuario=$this->getUser();
-    	
-    	$ultimoGiro=null;
-    	
-    	$giroRepositorio=$this->getDoctrine()->getRepository('AppBundle:Giro');
-    	$ultimoGiro=$giroRepositorio->traerUltimo($idExpediente);
-    	$oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
-    	$oficina=$oficinaRepository->find($idDestino);
-    	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
-    	$expediente=$expedienteRepository->find($idExpediente);
-    	
-    	$idOficinaActual=$this->getParameter('id_mesa_entradas');
-    	
-    	//Necesita Auto pase
-    	if ($ultimoGiro->getDestinoGiro()->getId()!=$idOficinaActual){
-    		
-	    	$giro=new Giro();
-	    	$giro->setOrigenGiro($ultimoGiro->getDestinoGiro());
-	    	$destino=$oficinaRepository->find($idOficinaActual);
-	    	$giro->setDestinoGiro($destino);
-	    	$giro->setFojas($fojas);
-	    	$giro->getObservacion("Auto pase");
-	    	$giro->setFechaRecepcionRemito(new \DateTime("now"));
-	    	$giro->setUsuarioCreacion("sistema");
-	    	$giro->setFechaCreacion(new \DateTime("now"));
-    	}
-    	
-    	$giro=new Giro();
-    	$giro->setOrigenGiro($oficina);
-    	$giro->setObservacion($observacion);
-    	$giro->setFojas($fojas);
-    	$giro->setUsuarioCreacion($usuario->getUsername());
-    	$giro->setFechaCreacion(new \DateTime("now"));
-    	
-    	$expediente->addGiro($giro);
-    	*/
-    }
-    
-    /**
-     * @Rest\Post("/api/expediente/giro/update")
-     */
-    public function actualizarGiro(Request $request)
-    {
-    	//TODO: implementar metodo actualizarGiro
-    }
-    
+            
     /**
      * @Rest\Get("/api/expediente/informe/getAllByExpediente/{id}")
      */
@@ -733,9 +736,12 @@ class RestController extends FOSRestController{
             $caratula=$request->request->get('caratula');
             $archivos=$request->files->all();
             $usuario=$this->getUser();
+            $idMesaEntradas=$this->getParameter('id_mesa_entradas');
 
             $tipoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
             $estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
+            $oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
+            $oficina=$oficinaRepository->find($idMesaEntradas);
             $estadoExpediente=null;
                        
             //Compatibilidad al inicio de la etapa de producción
@@ -751,6 +757,8 @@ class RestController extends FOSRestController{
             $expediente->setArchivos($archivos);
             $expediente->setNumeroExpediente($numeroExpediente);
             $expediente->setCaratula($caratula);
+            //todos ingresan por mesa de entradas
+            $expediente->setOficinaActual($oficina);
       
             $proyecto=null;
             $tipoExpediente=null;
