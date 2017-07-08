@@ -16,7 +16,7 @@ class PerfilLegislador extends Perfil
     /**
      * @var \AppBundle\Entity\Bloque
      *
-     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Bloque")
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Bloque", inversedBy="concejales")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="idBloque", referencedColumnName="idBloque")
      * })

@@ -29,6 +29,23 @@ class Bloque
      * @ORM\Column(name="bloque", type="string", length=100, nullable=false)
      */
     private $bloque;
+    
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     *
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\PerfilLegislador", mappedBy="bloque")
+     */
+    private $concejales;
+    
+    //------------------------------------constructor---------------------------------------------
+    
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+    	$this->concejales = new \Doctrine\Common\Collections\ArrayCollection();
+    }
 
     //-------------------------------------setters y getters--------------------------------------
 
@@ -66,5 +83,39 @@ class Bloque
     {
         return $this->bloque;
     }
-
+    
+    /**
+     * Add concejal
+     *
+     * @param \AppBundle\Entity\PerfilLegislador $concejal
+     *
+     * @return Bloque
+     */
+    public function addConcejal(\AppBundle\Entity\PerfilLegislador $concejal)
+    {
+    	$this->concejales[] = $concejal;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Remove concejal
+     *
+     * @param \AppBundle\Entity\PerfilLegislador $concejal
+     */
+    public function removeConcejal(\AppBundle\Entity\PerfilLegislador $concejal)
+    {
+    	$this->concejales->removeElement($concejal);
+    }
+    
+    /**
+	 * Get concejales
+	 *
+	 * @return \Doctrine\Common\Collections\Collection
+	 */
+	public function getConcejales()
+	{
+		return $this->concejales;
+	}
+    
 }

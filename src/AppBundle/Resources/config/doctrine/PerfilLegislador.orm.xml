@@ -10,7 +10,7 @@
     </field>
     <field name="hasta" type="datetime" column="hasta" nullable="true">
     </field>
-  	<many-to-one field="bloque" target-entity="Bloque" fetch="LAZY">
+  	<many-to-one field="bloque" target-entity="Bloque" inversed-by="concejales" fetch="LAZY">
   		<join-columns>
     		<join-column name="idBloque" referenced-column-name="idBloque"/>
   		</join-columns>

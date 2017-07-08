@@ -396,12 +396,21 @@ class RestController extends FOSRestController{
     }
     
     /**
-     * @Rest\Get("/api/legislador/getAll")
+     * @Rest\Get("/api/legislador/getByCriteria/{criterio}")
      */
     public function traerTodosLosLegisladoresAction(Request $request)
     {
-        $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:PerfilLegislador');
-        $perfiles=$perfilRepository->findAll();
+    	$criterio=$request->get('criterio');
+    	
+    	if ($criterio=='todo'){
+    		$perfilRepository=$this->getDoctrine()->getRepository('AppBundle:PerfilLegislador');
+    		$perfiles=$perfilRepository->findAll();
+    	}
+    	else{
+    		$perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
+    		$perfiles=$perfilRepository->findLegisladoresActivos();
+    	}
+        
         return $this->view($perfiles,200);
     }
 
@@ -423,7 +432,7 @@ class RestController extends FOSRestController{
     {   
         $term=$request->query->get('q');
         $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
-        $perfiles=$perfilRepository->findLegisladorByNombre_Patron($term);
+        $perfiles=$perfilRepository->findLegisladorByPatronBusqueda($term);
         return $this->view($perfiles,200);
     }
 
@@ -435,7 +444,7 @@ class RestController extends FOSRestController{
     {   
         $term=$request->query->get('q');
         $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
-        $perfiles=$perfilRepository->findLegisladorByDescripcion_Patron($term);
+        $perfiles=$perfilRepository->findLegisladorByPatronBusqueda($term,true);
         return $this->view($perfiles,200);
     }
 
@@ -478,9 +487,8 @@ class RestController extends FOSRestController{
             foreach ($proyecto->getFirmas() as $firma) 
                $destinatarios[]=$firma->getAutor()->getCorreoElectronico();
 
-            $quienSanciona=(($proyecto->getQuienSanciona()==1)
-                ?'<p class="ident"><strong>EL HONORABLE CONCEJO DELIBERANTE EN USO DE LAS FACULTADES QUE LE SON PROPIAS SANCIONA LA SIGUIENTE:</strong></p>'
-                :'<p class="ident"><strong>EL SR. PRESIDENTE DE ESTE HONORABLE CONCEJO DELIBERANTE, EN USO DE ATRIBUCIONES QUE LE SON PROPIAS, SANCIONA LA SIGUIENTE:</strong></p>');
+            $quienSanciona='<p class="ident"><strong>EL HONORABLE CONCEJO DELIBERANTE EN USO DE LAS FACULTADES QUE LE SON PROPIAS SANCIONA LA SIGUIENTE:</strong></p>';
+               
 
             $htmlArticulos='';
             
@@ -530,7 +538,6 @@ class RestController extends FOSRestController{
         $visto=$request->request->get('visto');
 
         $considerando=$request->request->get('considerando');
-        $quienSanciona=$request->request->get('quienSanciona');
         $articulos=json_decode($request->request->get('articulos'));
         /*
           ---------------------------------------------
@@ -555,12 +562,23 @@ class RestController extends FOSRestController{
         $proyecto->setTipoProyecto($tipoProyecto);
         $proyecto->setVisto($visto);
         $proyecto->setConsiderandos($considerando);
-        $proyecto->setQuienSanciona($quienSanciona);
 
         if(is_array($bloques)){
             foreach ($bloques as $bloque) {
                 $bloque=$bloqueRepository->find($bloque);
-                $proyecto->addBloque($bloque);
+                $concejales=$bloque->getConcejales();
+                foreach ($concejales as $concejal) {
+                	$proyecto->addConcejal($concejal);
+                	/*
+                	 ---------------------------------------------
+                	 descomentar si se acuerda mail de notifcacion
+                	 ---------------------------------------------
+                	 
+                	 $firma= new ProyectoFirma();
+                	 $firma->setAutor($concejal);
+                	 $proyecto->addFirma($firma);
+                	 */
+                }
             }
         }
 
@@ -660,7 +678,6 @@ class RestController extends FOSRestController{
 
         $visto=$request->request->get('visto');
         $considerando=$request->request->get('considerando');
-        $quienSanciona=$request->request->get('quienSanciona');
         $articulos=json_decode($request->request->get('articulos'));
      
         $usuario=$this->getUser();
@@ -678,19 +695,26 @@ class RestController extends FOSRestController{
         $proyecto->setTipoProyecto($tipoProyecto);
         $proyecto->setVisto($visto);
         $proyecto->setConsiderandos($considerando);
-        $proyecto->setQuienSanciona($quienSanciona);
 
-        $nuevosBloques=[];
+        $nuevosConcejales=[];
         if(is_array($bloques)){
             foreach ($bloques as $bloque) {
                 $bloque=$bloqueRepository->find($bloque);
-                $nuevosBloques[]=$bloque;
+                $concejales=$bloque->getConcejales();
+                foreach ($concejales as $concejal) {
+                	$nuevosConcejales[]=$concejal;
+                	/*
+                	 ----------------------------------------------
+                	 descomentar si se acuerda mail de notificacion
+                	 ----------------------------------------------
+                	 $firma= new ProyectoFirma();
+                	 $firma->setAutor($concejal);
+                	 $proyecto->addFirma($firma);
+                	 */
+                }
             }
         }
         
-        $proyecto->setBloques($nuevosBloques);
-
-        $nuevosConcejales=[];
         if (is_array($concejales)){
             foreach ($concejales as $concejal) {
                     $perfil=$perfilRepository->find($concejal);

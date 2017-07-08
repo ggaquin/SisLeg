@@ -61,7 +61,7 @@
 			          	  },
 					      "processing": false,
 					      "ajax": {
-							        "url": '{{ app.request.getBaseURL() }}'+"/api/legislador/getAll",
+							        "url": '{{ app.request.getBaseURL() }}'+"/api/legislador/getByCriteria/activos",
 			            			"dataSrc": '',
 							    },
 						  "columnDefs": [
@@ -294,6 +294,11 @@
 				if (modo=="EDICION")
 			  		$('#input-file').fileinput('clear');
 			});
+
+			$("#selBusqueda").change(function(){
+				var control=$(this).val();
+				tabla.ajax.url("api/legislador/getByCriteria/"+control).load();
+			});
 	});
 	</script>
 	<section class="content-header">
@@ -305,10 +310,31 @@
 		</div>
 		<hr>
 		<div class="row">
-			<div class="col-md-4">
+			<div class="col-md-3">
 				<h2>
 			        Concejales
 			    </h2>
+			</div>
+		    <div class="col-md-3 col-md-offset-6">
+				<nav class="navbar navbar-default">
+					<div class="container-fluid">
+						<div class="navbar-header">
+							<label class="navbar-brand">Filtro</label>
+						</div>
+						<div class="collapse navbar-collapse">
+							<div>
+								<form class="navbar-form navbar-left">
+									<div class="form-group">
+										<select class="form-control filtro" id="selBusqueda">
+											<option value="activos">Activos</option>
+											<option value="todos">Todos</option>
+										</select>
+									<div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</nav>
 			</div>
 		</div>   
 	</section>

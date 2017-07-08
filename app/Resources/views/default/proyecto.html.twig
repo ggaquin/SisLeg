@@ -153,6 +153,7 @@
 			var tipo=$("#selBusqueda").val();
 			return ((tipo=="todo")?"0":$("#"+tipo).val());	
 		}
+		
 		function tipoCriterio(){
 			return $("#selBusqueda").val();
 		}
@@ -482,29 +483,7 @@
 				$("#articulosMod > tbody").html('');
 				articulosIngresados=[];
 
-		    	var id= $("#editarProyecto").find('input[name="id"]').val();
-
-		    	//Obtención de los datos del select2 ----------------------------------
-
-		    	var select2_data=[];
-
-		    	/*$.ajax({
-					type:'get',
-					dataType: 'json	',
-					url:'{{ app.request.getBaseURL() }}'+'/api/legislador/getAll',
-					success: function(data){
-					    $.each(data, function(index,autor){
-					    	var autorAux={'id':autor.id, 'text':autor.nombre_completo};
-					    	select2_data.push(autorAux);
-					     });
-						
-					},
-					error: function(jqXHR,textStatus,errorThrown ){
-						//var response=JSON.parse(jqXHR.responseText)
-						toastr.error(qXHR.responseText);
-					}
-				});
-				*/
+		    	var id= $("#editarProyecto").find('input[name="id"]').val();		
 
 		    	//Obtención de los datos del expediente a modificar ------------------------
 
@@ -517,7 +496,6 @@
 						$("#selTipoProyectoMod").val(data.tipo_proyecto.id);
 						$("#vistoMod").data("wysihtml5").editor.setValue(data.visto);
 						$("#considerandoMod").data("wysihtml5").editor.setValue(data.considerandos);
-						$("#quienSancionaMod").val(data.quien_sanciona);
 
 					 	var concejales=data.concejales;
 
@@ -567,7 +545,6 @@
 				var concejales=$("#selConcejalesMod").val();
 				var visto=$("#vistoMod").val();
 				var considerando=$("#considerandoMod").val();
-				var quienSanciona=$("#quienSancionaMod").val();
 
 				/* descomentar si se acuerda notificacion */
 				/*
@@ -586,7 +563,6 @@
 				formData.append("concejales",concejales);
 				formData.append("visto",visto);
 				formData.append("considerando",considerando);
-				formData.append("quienSanciona",quienSanciona);
 				formData.append("articulos",JSON.stringify(articulosIngresados));
 
 				/* descomentar si se acuerda notificacion */
@@ -671,7 +647,6 @@
 				var concejales=$("#selConcejales").val();
 				var visto=$("#visto").val();
 				var considerando=$("#considerando").val();
-				var quienSanciona=$("#quienSanciona").val();
 
 				/* descomentar si se acuerda notificacion */
 				/*
@@ -689,7 +664,6 @@
 				formData.append("concejales",concejales);
 				formData.append("visto",visto);
 				formData.append("considerando",considerando);
-				formData.append("quienSanciona",quienSanciona);
 				formData.append("articulos",JSON.stringify(articulosIngresados));
 
 				/* descomentar si se acuerda notificacion */
@@ -1060,7 +1034,7 @@
 							<label class="navbar-brand">Filtro</label>
 						</div>
 						<div class="collapse navbar-collapse">
-							<div class>
+							<div>
 								<form class="navbar-form navbar-left">
 									<div class="form-group">
 										<div class="form-group text-center">
@@ -1210,11 +1184,6 @@
 								        		<div class="col-md-12">	
 										        	<label>Artículos:</label>
 										        	<div class="form-inline pull-right">
-										        		<label for="quienSanciona">Sanciona a Nombre de:</label>
-										        		<select class="form-control input-sm" id="quienSanciona" name="quienSanciona">
-										        			<option value="1">Consejo</option>
-										        			<option value="2">Presidente</option>
-										        		</select>
 										        		<button type="button" class="btn btn-primary btn-sm" onClick="modalNuevoArticulo('articulos')" >Nuevo Artículo</button>
 										        	</div>
 										        </div>
@@ -1378,11 +1347,6 @@
 								        		<div class="col-md-12">	
 										        	<label>Artículos:</label>
 										        	<div class="form-inline pull-right">
-										        		<label for="quienSancionaMod">Sanciona a Nombre de:</label>
-										        		<select class="form-control input-sm" id="quienSancionaMod" name="quienSancionaMod">
-										        			<option value="1">Consejo</option>
-										        			<option value="2">Presidente</option>
-										        		</select>
 										        		<button type="button" onClick="modalNuevoArticulo('articulosMod')" class="btn btn-primary btn-sm">Nuevo Artículo</button>
 										        	</div>
 										        </div>

@@ -157,7 +157,6 @@
 						break;
 				default:
 						$("#div-concejales").removeClass('hidden');
-						$("#div-bloques").removeClass('hidden');
 						break;
 			};
 		}
@@ -184,7 +183,6 @@
 						break;
 				default:
 						$("#div-concejales-mod").removeClass('hidden');
-						$("#div-bloques-mod").removeClass('hidden');
 						break;
 			};
 		}	
@@ -330,97 +328,96 @@
 		    } );
 		    
 		    
-			/*
-			//MODIFICAR EXPEDIENTE
-				$('#registroExpediente tbody').on( 'click', '.btn-detalle', function () {
-		        var data = tabla.row( $(this).parents('tr') ).data();
-		        $("#revistaExpediente").find('input[name="id"]').val(data[ "id" ]);
-		    } );
+// 			MODIFICAR EXPEDIENTE
+// 				$('#registroExpediente tbody').on( 'click', '.btn-detalle', function () {
+// 		        var data = tabla.row( $(this).parents('tr') ).data();
+// 		        $("#revistaExpediente").find('input[name="id"]').val(data[ "id" ]);
+// 		    } );
 
-		    //EVENTO ABRIR MODAL MODIFICAR EXPEDIENTE
-			$('#revistaExpediente').on('show.bs.modal', function () {
+// 		    EVENTO ABRIR MODAL MODIFICAR EXPEDIENTE
+// 			$('#revistaExpediente').on('show.bs.modal', function () {
 
-		    	var id= $("#revistaExpediente").find('input[name="id"]').val();
+// 		    	var id= $("#revistaExpediente").find('input[name="id"]').val();
 
-		    	//Obtención de los datos del select2 -------------------------------------
+// 		    	Obtención de los datos del select2 -------------------------------------
 
-		    	var select2_data=[];
+// 		    	var select2_data=[];
 
-		    	$.ajax({
-					type:'get',
-					dataType: 'json	',
-					url:'{{ app.request.getBaseURL() }}'+'/api/legislador/getAll',
-					success: function(data){
-					    $.each(data, function(index,autor){
-					    	var autorAux={'id':autor.id, 'text':autor.nombre_completo};
-					    	select2_data.push(autorAux);
-					     });
+// 		    	$.ajax({
+// 					type:'get',
+// 					dataType: 'json	',
+//					url:"{{ app.request.getBaseURL() }}/api/legislador/getAll",
+// 					success: function(data){
+// 					    $.each(data, function(index,autor){
+// 					    	var autorAux={'id':autor.id, 'text':autor.nombre_completo};
+// 					    	select2_data.push(autorAux);
+// 					     });
 						
-					},
-					error: function(jqXHR,textStatus,errorThrown ){
-						var response=JSON.parse(jqXHR.responseText)
-						toastr.error(response.throwCause);
-					}
-				});
+// 					},
+// 					error: function(jqXHR,textStatus,errorThrown ){
+// 						var response=JSON.parse(jqXHR.responseText)
+// 						toastr.error(response.throwCause);
+// 					}
+// 				});
 
-		    	//Obtención de los datos del expediente a modificar ------------------------
+// 		    	Obtención de los datos del expediente a modificar ------------------------
 
-		    	$.ajax({
-					type:'Get',
-					dataType: 'json	',
-					url:'{{ app.request.getBaseURL() }}'+'/api/expediente/getOne/'+id,
-					success: function(data){
+// 		    	$.ajax({
+// 					type:'Get',
+// 					dataType: 'json	',
+//					url:"{{ app.request.getBaseURL() }}/api/expediente/getOne/"+id,
+// 					success: function(data){
 
-						$("#tipoExpedientePrev").val(data.tipo_expediente.tipo_expediente +
-													 '-('+data.tipo_expediente.letra+')');
-						$("#numeroExpedientePrev").val(data.numero_expediente);
-					    $("#caratulaPrev").html(data.caratula);
+// 						$("#tipoExpedientePrev").val(data.tipo_expediente.tipo_expediente +
+// 													 '-('+data.tipo_expediente.letra+')');
+// 						$("#numeroExpedientePrev").val(data.numero_expediente);
+// 					    $("#caratulaPrev").html(data.caratula);
 					 	
-					 	//selección en la grilla de los items almacenados
+// 					 	selección en la grilla de los items almacenados
 
-					    var autores=data.proyecto.autores;
-					    var selected=[];
-					    $("#selAutoresPrev").select2({tags: select2_data, tokenSeparators: [',']});
-					    $.each(autores, function(index,autor){
-					    	selected.push(autor.id);
-					     });
-					    $("#selAutoresPrev").val(selected).change();
-					    var select2=$("#revistaExpediente").find('.select2')
-					    select2.prepend('<div class="disabled-select"></div>');
+// 					    var autores=data.proyecto.autores;
+// 					    var selected=[];
+// 					    $("#selAutoresPrev").select2({tags: select2_data, tokenSeparators: [',']});
+// 					    $.each(autores, function(index,autor){
+// 					    	selected.push(autor.id);
+// 					     });
+// 					    $("#selAutoresPrev").val(selected).change();
+// 					    var select2=$("#revistaExpediente").find('.select2')
+// 					    select2.prepend('<div class="disabled-select"></div>');
 
-					    var config=[];
-					    $.each(data.lista_imagenes, function(index,imagen){
-					    	config.push(imagen.image_config);
-					    });
+// 					    var config=[];
+// 					    $.each(data.lista_imagenes, function(index,imagen){
+// 					    	config.push(imagen.image_config);
+// 					    });
 					    
-					    //recuperacion de los archivos subidos
-					    $("#input-file-Prev").fileinput({
-				    		language: "es",
-			                initialPreview: data.rutas_web_expediente,
-			                showUpload: false,
-			                showRemove: false,
-			                showBrowse: false,
-			                initialPreviewAsData: false,
-			                initialPreviewConfig:config,
-			                overwriteInitial: false,
-			                maxFileSize: 10240,
+// 					    recuperacion de los archivos subidos
+// 					    $("#input-file-Prev").fileinput({
+// 				    		language: "es",
+// 			                initialPreview: data.rutas_web_expediente,
+// 			                showUpload: false,
+// 			                showRemove: false,
+// 			                showBrowse: false,
+// 			                initialPreviewAsData: false,
+// 			                initialPreviewConfig:config,
+// 			                overwriteInitial: false,
+// 			                maxFileSize: 10240,
 			                
-			                initialCaption: "Archivos Expediente " + data.numero_expediente
+// 			                initialCaption: "Archivos Expediente " + data.numero_expediente
 			                
-			            });		    			
-					},
-					error: function(jqXHR,textStatus,errorThrown ){
-						var response=JSON.parse(jqXHR.responseText)
-						toastr.error(response.throwCause);
-					}
-		      	});
-			});
+// 			            });		    			
+// 					},
+// 					error: function(jqXHR,textStatus,errorThrown ){
+// 						var response=JSON.parse(jqXHR.responseText)
+// 						toastr.error(response.throwCause);
+// 					}
+// 		      	});
+// 			});
 
-			$('#revistaExpediente').on('hidden.bs.modal', function () {
-				$('#input-file-Prev').fileinput('destroy');
-				$("#selAutoresPrev").empty().change();
-			});	
-			*/
+// 			$('#revistaExpediente').on('hidden.bs.modal', function () {
+// 				$('#input-file-Prev').fileinput('destroy');
+// 				$("#selAutoresPrev").empty().change();
+// 			});	
+			
 			//---------------------------------------------------------------------------------------------------------------
 			//---------------------------------------EDICIÓN DEL EXPEDIENTE--------------------------------------------------
 			//---------------------------------------------------------------------------------------------------------------
@@ -451,7 +448,6 @@
 						if(data.hasOwnProperty('proyecto')){
 							$("#selTipoExpedienteMod").prop( "disabled", true );
 							$("#concejales-mod").html(data.lista_consejales);
-							$("#bloques-mod").html(data.lista_bloques);
 							mostrarTiposPara("proyectos");
 						}
 						else{
@@ -564,8 +560,6 @@
 	                	$('#btn-Modificacion-expediente').prop("disabled", false);
 	                },
 	                error: function(jqXHR,textStatus,errorThrown ){
-						// var response=JSON.parse(jqXHR.responseText)
-						// toastr.error(response.throwCause);
 						toastr.error(jqXHR.responseText);
 						}
 	            	});
@@ -675,7 +669,6 @@
 	                	$('#btn-nuevo-expediente').prop("disabled", false);
 	                },
 	                error: function(jqXHR,textStatus,errorThrown ){
-						//var response=JSON.parse(jqXHR.responseText)
 						toastr.error(jqXHR.responseText);
 						}
 	            	});
@@ -693,7 +686,6 @@
 		        var tipoExpediente=data[ "tipo_proyecto"].tipo_expediente.id;
 		        $("#nuevoExpediente").find('input[name="idTipoExpediente"]').val(tipoExpediente);
 		        $("#nuevoExpediente").find('div[name="concejales"]').html(data[ "lista_concejales"]);
-		        $("#nuevoExpediente").find('div[name="bloques"]').html(data[ "lista_bloques"]);
 		        $("#nuevoExpediente").modal('show');
 		    } );
 
@@ -755,7 +747,7 @@
 								      		{ "data": "tipo_proyecto.tipo_expediente.id"},
 								      		{ "data": "null","width":"5%"},
 								      		{ "data": "tipo_proyecto.tipo_proyecto","width":"20%"},
-								            { "data": "lista_autores","className": "for-mobile","width":"75%" },
+								            { "data": "lista_concejales","className": "for-mobile","width":"75%" },
 								        ],
 								      "autoWidth":false,
 								      "paging": true,
@@ -1459,12 +1451,6 @@
 						        </div>
 						        <div class="col-md-6">
 						        	<div class="row">
-						        		<div class="col-md-12 expediente-origen" id="div-bloques">
-							        		<div class="form-group">
-							        			<label for="bloques">Bloques</label>
-							        			 <div class="scrollable-div" id="bloques" name="bloques"></div>
-											</div>
-										</div>
 										<div class="col-md-6 expediente-origen pedido-particular">
 										   	<label for="apellidoParticular">Apellidos</label>
 	  										<input type="text" class="form-control" id="apellidosSiParticular" name="apellidosSiParticular">
@@ -1577,12 +1563,6 @@
 						        </div>
 						        <div class="col-md-6">
 						        	<div class="row">
-						        		<div class="col-md-12 expediente-origen" id="div-bloques-mod">
-							        		<div class="form-group">
-							        			<label for="bloques-mod">Bloques</label>
-							        			 <div class="scrollable-div" id="bloques-mod" name="bloques-mod"></div>
-											</div>
-										</div>
 										<div class="col-md-6 expediente-origen pedido-particular">
 										   	<label for="apellidosSiParticular-mod">Apellidos</label>
 	  										<input type="text" class="form-control" id="apellidosSiParticular-mod" name="apellidosSiParticular-mod">

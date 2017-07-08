@@ -14,8 +14,6 @@
     </field>
     <field name="considerandos" type="text" column="considerandos" nullable="false">
     </field>
-    <field name="quienSanciona" type="string" column="quienSanciona" length="130" nullable="false">
-    </field>
     <field name="articulos" type="json_array" column="articulos" nullable="false">
     </field>
     <field name="fechaCreacion" type="datetime" column="fechaCreacion" nullable="false">
@@ -55,16 +53,6 @@
         </join-columns>
         <inverse-join-columns>
           <join-column name="idPerfil" referenced-column-name="idPerfil"/>
-        </inverse-join-columns>
-      </join-table>
-    </many-to-many>
-    <many-to-many field="bloques" target-entity="Bloque" fetch="EAGER" orphan-removal="true">
-      <join-table name="bloques_proyectos">
-        <join-columns>
-          <join-column name="idProyecto" referenced-column-name="idProyecto"/>
-        </join-columns>
-        <inverse-join-columns>
-          <join-column name="idBloque" referenced-column-name="idBloque"/>
         </inverse-join-columns>
       </join-table>
     </many-to-many>

@@ -9,5 +9,7 @@
         <option name="fixed"/>
       </options>
     </field>
+    <one-to-many field="concejales" mapped-by="bloque" target-entity="PerfilLegislador"></one-to-many>
   </entity>
 </doctrine-mapping>
+	

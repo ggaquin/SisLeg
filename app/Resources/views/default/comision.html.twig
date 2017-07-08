@@ -88,10 +88,11 @@
 					      "autoWidth": false,
 					    });
 
-		    $('#registroUsuarios tbody').on( 'click', '.btn-editar', function () {
+		    $('#registroComisiones tbody').on( 'click', '.btn-editar', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		    } );
-		
+
+			/*
 			$("#selIntegrantes").select2({
 				ajax: {
 			    url: "api/legislador/getAll",
@@ -150,7 +151,7 @@
 
 				});
 				console.log(data);
-			});
+			});*/
 	});
 	</script>
 	<section class="content-header">
@@ -168,7 +169,7 @@
 			        Conformación Comisiones
 			    </h2>
 			</div>
-		</div>   
+	    </div>  
 	</section>
 	<section class="content">
 	  	<div class="row">
