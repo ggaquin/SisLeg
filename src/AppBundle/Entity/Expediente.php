@@ -210,18 +210,11 @@ class Expediente
     /**
      * @var \Doctrine\Common\Collections\Collection
      *
-     * @ORM\OneToMany(targetEntity="AppBundle\Entity\Giro", mappedBy="expediente", 
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\Movimiento", mappedBy="expediente", 
      * 				  cascade={"persist", "remove"},orphanRemoval=true)
      */
-    private $giros;
-    
-    /**
-     * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\OneToMany(targetEntity="AppBundle\Entity\Informe", mappedBy="expediente",
-     *  			  cascade={"persist", "remove"},orphanRemoval=true)
-     */
-    private $informes;
+    private $movimientos;
+   
 
     //------------------------------------constructor---------------------------------------------
 
@@ -232,8 +225,7 @@ class Expediente
     {
        $this->fechaCreacion=new \DateTime("now");
        $this->archivoBorrado="";
-       $this->giros = new \Doctrine\Common\Collections\ArrayCollection();
-       $this->informes = new \Doctrine\Common\Collections\ArrayCollection();
+       $this->movimientos = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     //-------------------------------setters y getters--------------------------------------------
@@ -645,119 +637,62 @@ class Expediente
     }
     
     /**
-     * set giros
+     * set movimientos
      *
-     * @param array $nuevosGiros
+     * @param array $nuevosMovimientos
      *
      * @return Expediente
      */
-    public function setGiros($nuevosGiros)
+    public function setMovimientos($nuevosMovimientos)
     {
     	$collection= new \Doctrine\Common\Collections\ArrayCollection();
-    	foreach ($nuevosGiros as $giro) {
-    		$giro->setExpediente($this);
-    		$collection[]=$giro;
+    	foreach ($nuevosMovimientos as $movimiento) {
+    		$movimiento->setExpediente($this);
+    		$collection[]=$movimiento;
     	}
-    	$this->giros = $collection;
+    	$this->movimientos = $collection;
     	
     	return $this;
     }
     
     /**
-     * Add giro
+     * Add movimiento
      *
-     * @param \AppBundle\Entity\Giro $giro
+     * @param \AppBundle\Entity\Movimiento $movimiento
      *
      * @return Expediente
      */
-    public function addGiro(\AppBundle\Entity\Giro $giro)
+    public function addMovimiento(\AppBundle\Entity\Movimiento $movimiento)
     {
-    	$giro->setExpediente($this);
-    	$this->giros[] = $giro;
+    	$movimiento->setExpediente($this);
+    	$this->movimientos[] = $movimiento;
     	
     	return $this;
     }
     
     /**
-     * Remove giro
+     * Remove movimiento
      *
-     * @param \AppBundle\Entity\Giro $giro
+     * @param \AppBundle\Entity\Movimiento $movimiento
      *
      * @return Expediente
      */
-    public function removeGiro(\AppBundle\Entity\Giro $giro)
+    public function removeMovimiento(\AppBundle\Entity\Movimiento $movimiento)
     {
-    	$this->giros->removeElement($giro);
+    	$this->movimientos->removeElement($movimiento);
     	return $this;
     }
     
     /**
-     * Get giros
+     * Get movimiento
      *
      * @return \Doctrine\Common\Collections\Collection
      */
-    public function getGiros()
+    public function getMovimientos()
     {
-    	return $this->giros;
+    	return $this->movimientos;
     }
     
-    /**
-     * set informe
-     *
-     * @param array $nuevosInformes
-     *
-     * @return Expediente
-     */
-    public function setInformes($nuevosInformes)
-    {
-    	$collection= new \Doctrine\Common\Collections\ArrayCollection();
-    	foreach ($nuevosInformes as $informe) {
-    		$informe->setExpediente($this);
-    		$collection[]=$informe;
-    	}
-    	$this->informes = $collection;
-    	
-    	return $this;
-    }
-    
-    /**
-     * Add informe
-     *
-     * @param \AppBundle\Entity\Informe $informe
-     *
-     * @return Expediente
-     */
-    public function addInforme(\AppBundle\Entity\Informe $informe)
-    {
-    	$informe->setExpediente($this);
-    	$this->informes[] = $informe;
-    	
-    	return $this;
-    }
-    
-    /**
-     * Remove informe
-     *
-     * @param \AppBundle\Entity\Informe informe
-     *
-     * @return Expediente
-     */
-    public function removeInforme(\AppBundle\Entity\Informe $informe)
-    {
-    	$this->informes->removeElement($informe);
-    	return $this;
-    }
-    
-    /**
-     * Get informes
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getInformes()
-    {
-    	return $this->informes;
-    }
-
     //--------------------------------propiedades protegidas---------------------------------------
 
     /**
@@ -972,7 +907,7 @@ class Expediente
     public function getListaAutores()
     {
         return ((!is_null($this->proyecto))
-                ?$this->getProyecto()->getListaAutores()
+                ?$this->getProyecto()->getListaConcejales()
                 :'---');
     }
 
@@ -1009,69 +944,33 @@ class Expediente
      * @ORM\PreUpdate()
      */
     public function listarImagenes(){
-		//FIXME: camibiar generacion del hash para que no dependa del numero de Expediente
-        $nuevaListaImagenes=[];
+	
         $imagenes=$this->listaImagenes;
-
-        if(!is_null($this->id)){
-
-            /* se cambio el numero de expediente */
-
-            if (md5($this->numeroExpediente)!=$this->hashId){
-
-                //Valor hash anterior
-                $hashAnterior=$this->hashId;  
-
-                //actualiza valor hash        
-                $this->hashId=md5($this->numeroExpediente);
-            
-                //actualiza ubicacion archivos
-                foreach ($imagenes as $imagen) {
-                    $keyAnterior=$imagen->getImageConfig()->getKey();
-                    throw new \Exception($keyAnterior);
-                    $componentesKey=explode("/",$keyAnterior);
-                    //throw new \Exception($this->getNombreCarpeta().'///'.$componentesKey[0].'///'.$componentesKey[1].'///'.$this->hashId);
-                    
-                    $keyActual=$this->getNombreCarpeta().$componentesKey[1];  
-                    $nuevaListaImagenes[]=new Image($imagen->getFileName(),
-                                                    $imagen->getImageConfig()->getCaption(),
-                                                    $imagen->getImageConfig()->getSize(),
-                                                    $imagen->getImageConfig()->getWidth(),
-                                                    $keyActual,
-                                                    $imagen->getImageConfig()->getType()
-                                                    );             
-                }
-
-
-                $this->listaImagenes=$nuevaListaImagenes;
-                //renombra carpeta expediente
-                $antiguoNombre=$this->getRutaAbsolutaExpedientes().$hashAnterior;
-                $nuevoNombre=$this->getRutaAbsolutaExpedientes().$this->hashId;
-                rename($antiguoNombre, $nuevoNombre);
-
-            }
-        }
-        else $this->hashId=md5($this->numeroExpediente);
+        
+        if(is_null($this->id))
+        	$this->hashId=md5($this->usuarioCreacion.uniqid());
 
         //agrega nuevos setArchivos
         $archivos=$this->archivos;
+        
         foreach ($archivos as $archivo) {
 
             $existe=false;
 
             foreach ($imagenes as $imagen) {
-                if ($imagen->getImageConfig()->getCaption()==$archivo->getClientOriginalName())
+                if ($imagen->getImageConfig()->getCaption()==$archivo->getClientOriginalName()){
                     $existe=true;
                     break;
+                }
             }
             if($existe==false)
                 $this->listaImagenes[]=new Image(md5($archivo->getClientOriginalName()).'.'.$archivo->guessExtension(),
-                                                       $archivo->getClientOriginalName(),
-                                                       $archivo->getClientSize(),
-                                                       '120px',
-                                                       $this->getNombreCarpeta().md5($archivo->getClientOriginalName()).'.'.$archivo->guessExtension(),
-                                                       ((strtolower($archivo->guessExtension())=='pdf')?'pdf':'image')
-                                                       );
+                                                 $archivo->getClientOriginalName(),
+                                                 $archivo->getClientSize(),
+                                                 '120px',
+                                                 $this->getNombreCarpeta().md5($archivo->getClientOriginalName()).'.'.$archivo->guessExtension(),
+                                                 ((strtolower($archivo->guessExtension())=='pdf')?'pdf':'image')
+                                                 );
         }
     }
 
@@ -1083,20 +982,22 @@ class Expediente
         $nuevaListaImagenes=[];
         if($nombreArchivo!=""){
             $imagenes=$this->listaImagenes;
-            //throw new \Exception($imagenes[3]->getFileName());
+ 
             for ($i = 0; $i < count($imagenes); $i++) {
-                //throw new \Exception($imagenes[2]->getFileName());
+                
                 if ($imagenes[$i]->getFileName()==$nombreArchivo){
                      $ruta=realpath(__DIR__.'/../../../web').DIRECTORY_SEPARATOR.
-                            $this->getRutaRelativaExpedientes().DIRECTORY_SEPARATOR.
-                            md5($this->getNumeroExpediente()).DIRECTORY_SEPARATOR.
+                            $this->getRutaRelativaExpedientes().//DIRECTORY_SEPARATOR.
+                            $this->getNombreCarpeta().//DIRECTORY_SEPARATOR.
                             $nombreArchivo;
 
                     unlink($ruta);
                 }
                 else $nuevaListaImagenes[]=$imagenes[$i];
-            } 
+            }
+            
             $this->listaImagenes=$nuevaListaImagenes;
+            
         }
     }
 

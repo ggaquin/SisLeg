@@ -13,9 +13,8 @@
       </options>
     </field>
     <field name="oficinaObligatoria" type="boolean" column="oficinaObligatoria" nullable="false">
-      <options>
-        <option name="fixed"/>
-      </options>
+    </field>
+     <field name="activo" type="boolean" column="activo" nullable="false">
     </field>
     <many-to-one field="oficina" target-entity="Oficina">
     	<join-columns>

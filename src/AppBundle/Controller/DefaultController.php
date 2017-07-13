@@ -149,12 +149,12 @@ class DefaultController extends Controller
         $tiposExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
         $tiposExpediente=$tiposExpedienteRepository->findBy(array(),array('tipoExpediente' => 'ASC') );
         $estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
-        $estadosExpediente=$estadoExpedienteRepository->findBy(array(),array('estadoExpediente' => 'ASC') );
-        $ofcinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
-        $oficinas=$ofcinaRepository->findAll();
-        //$idOficinaActual=$this->getParameter('id_mesa_entradas');
-        $usuario=$this->getUser();
-       	
+        $estadosExpediente=$estadoExpedienteRepository->findBy(array(),array('estadoExpediente' => 'ASC'));
+        $oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
+        
+        $usuario=$this->getUser();    
+        //$oficinas=$oficinaRepository->findAll();
+        
         $array=[];
         $permisos=$usuario->getPermisos();
         foreach ($permisos as $permiso){
@@ -163,7 +163,7 @@ class DefaultController extends Controller
         $array['base_dir']=realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR;
         $array['tipos']=$tiposExpediente;
         $array['estados']=$estadosExpediente;
-        $array['oficinas']=$oficinas;
+        //$array['oficinas']=$oficinas;
         //$array['idOficinaActual']=$idOficinaActual;
         return $this->render('default/expediente.html.twig', $array);
         /*
@@ -181,7 +181,20 @@ class DefaultController extends Controller
     public function movimientosAction(Request $request)
     {
     	$oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
-    	$oficinas=$oficinaRepository->findAll();
+    	$tipoOficinaRepository=$this->getDoctrine()->getRepository('AppBundle:TipoOficina');
+    	$idOficinaInterna=$this->getParameter('id_oficina_interna');
+    	$tipoOficina= $tipoOficinaRepository->find($idOficinaInterna);
+    	$oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
+    	
+    	$usuario=$this->getUser();
+    	$oficinaUsuario=$usuario->getRol()->getOficina();
+    	$idMesaEntradas=$this->getParameter('id_mesa_entradas');
+    	
+    	if ($oficinaUsuario->getId()!=$idMesaEntradas)
+    		$oficinas=$oficinaRepository->findBy(array('tipoOficina' => $tipoOficina));
+    	else
+    		$oficinas=$oficinaRepository->findAll();
+    		
     	return $this->render('default/movimientos.html.twig', array(
     			'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
     			'oficinas' => $oficinas

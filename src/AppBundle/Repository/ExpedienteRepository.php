@@ -7,7 +7,7 @@ use Doctrine\ORM\Query\ResultSetMapping;
 
 class ExpedienteRepository extends EntityRepository{
 	
-
+	
 	public function searchByHashValue($hashValue){
 
 		$rsm = new ResultSetMapping();

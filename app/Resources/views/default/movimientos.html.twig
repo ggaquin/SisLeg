@@ -98,16 +98,19 @@
 			line-height: 22.5px!important;
 		}
 		#selExpedientes .select2.select2-container.select2-container--bootstrap.select2-container--below.select2-container--focus, .select2-selection.select2-selection--multiple{
-			height: 300px;
-		    max-height: 300px;
+			height: 100px;
+		    max-height: 100px;
 		    overflow-y: auto;
 		}
-		
 		.div-tabla{
 			height: 384px;
 			max-height: 384px;
 			overflow-y: auto;
 		}
+		
+		textarea.vertical-resize {
+          resize: vertical;
+        }
 		
 	</style>
 	<script type="text/javascript">
@@ -509,10 +512,12 @@
     					var texto=$(this).text();
     					var numero=texto.substring(0,texto.indexOf('('));
     					var folios=texto.substring(texto.indexOf('(')+1,texto.indexOf(')'));
-    					html+="<tr><td class='hidden'>"+$(this).val()+"</td><td><input type='text' class='form-control' readonly value='"+numero+"'></td>"+
+    					html+="<tr><td class='hidden'>"+$(this).val()+"</td><td><input type='text' class='form-control text-center' readonly value='"+numero+"'></td>"+
     						  "<td><input type='number' class='form-control text-center' min='"+folios+"' id='"+
     						  numero+"' name='"+numero+"' value='"+folios+"' onblur='validarFolios(this);'></td>"+
-    						  "<td><textarea class='form-control' rows=3></textarea></td></tr>";
+    						  "<td><select class='form-control' name='sel"+numero+"'><option value='1' selected>Pase</option><option value='2'>Solicitud Informe</option>"+
+    						  "<option value='2'>Solicitud Informe Con Pase</option></select>"+
+    						  "<td><textarea class='form-control vertical-resize' rows=3></textarea></td></tr>";
     				});
     
     				$("#detalleRemito > tbody").append(html);
@@ -541,17 +546,17 @@
 			<ol class="breadcrumb">
 		        <li><a href="#"><i class="fa fa-dashboard"></i> Principal</a></li>
 		        <li >Expedientes</li>
-		        <li class="active">Movimientos</li>
+		        <li class="active">Remitos Movimientos (Giros)</li>
 		    </ol>
 		</div>
 		<hr>
 		<div class="row">
-			<div class="col-md-2">
+			<div class="col-md-4">
 				<h2>
-			        Remitos
+			        Remitos Movimientos (Giros)
 			    </h2>
 			</div>
-			<div class="col-md-7 col-md-offset-3">
+			<div class="col-md-7 col-md-offset-1">
 				<nav class="navbar navbar-default">
 					<div class="container-fluid">
 						<div class="navbar-header">
@@ -643,16 +648,7 @@
 				    </div>
 				    <div class="modal-body" style="background-color:#ecf0f5">
 						<div class="row">
-							<div class="col-md-3">
-								<div class="form-group">
-						        	<label for="selDestino">Destino:</label>
-						        	<select class="form-control" id="selDestino" name="selDestino">
-						        		<option value="0">Seleccione Destino</option>
-						        		{% for oficina in oficinas %}
-							                <option value="{{ oficina.id }}">{{ oficina.oficina }}</option>
-							            {% endfor %}
-						        	</select>
-						        </div>
+						 	<div class="col-md-8">
 								<div class="form-group">
 						        	<label for="selExpedientes">Expedientes:</label>
 						        	<select class="form-control" multiple="multiple" data-width="100%" id="selExpedientes" 
@@ -660,22 +656,46 @@
 						        	</select>
 						        </div>
 							</div>
-							<div class="col-md-1" style="padding-top: 25px;">
- 								<div class="btn-group-vertical">
-						        	<button type="button" class="btn btn-primary" id="btn-generar-remito">Crear</button>
-						        	<br>
-						        	<button type="button" class="btn btn-info" id="btn-borrar-remito">Reiniciar</button>  
- 						        </div>
-							</div>
-							<div class="col-md-8">
+							<div class="col-md-4">
+								<div class="row">
+        							<div class="col-md-12">
+        								<div class="form-group">
+        						        	<label for="selDestino">Destino:</label>
+        						        	<select class="form-control" id="selDestino" name="selDestino">
+        						        		<option value="0">Seleccione Destino</option>
+        						        		{% for oficina in oficinas %}
+        						        			{% if app.user.rol.oficina.id != oficina.id  %}
+        							                	<option value="{{ oficina.id }}">{{ oficina.oficina }}</option>
+        							                {% endif %}
+        							            {% endfor %}
+        						        	</select>
+        						        </div>
+        						 	</div>
+        						 </div>
+        						 <div class="row">
+        							<div class="col-md-12">
+        								<div class="text-center">
+             								<div class="btn-group">
+            						        	<button type="button" class="btn btn-primary" id="btn-generar-remito">Crear</button>
+            						        	<button type="button" class="btn btn-info" id="btn-borrar-remito">Reiniciar</button>  
+             						        </div>
+             						    </div>
+        							</div>
+        						</div>
+        					</div>
+						</div>
+						<hr>	
+						<div class="row">
+							<div class="col-md-12">
 								<div class="div-tabla">
     								<table class="table table-striped" id="detalleRemito"  width='100%'>
     								     <thead>
                     	                	<tr>
                     						    <th class="hidden">id</th>
-                    						    <th width="10%">Nro Exp</th>
-                    						    <th width="10%">Fojas</th>
-                    			                <th width="80%">Observación</th>
+                    						    <th width="15%" class="text-center" >Nro Exp</th>
+                    						    <th width="10%" class="text-center" ">Fojas</th>
+                    			                <th width="18%">Tipo Movimiento</th>
+                    			                <th width="60%">Observación</th>
                     	                	</tr>
                     	                </thead>
                     	                <tbody>

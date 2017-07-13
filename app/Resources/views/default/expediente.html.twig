@@ -282,17 +282,17 @@
 									            "render": function(data, type, row){
 										            var html="";
 										            if('{{ EXP_EDIT is defined}}')
-									            		html+="<button type='button'title='Editar expediente' class='btn btn-primary btn-xs btn-editar ' data-toggle='modal' data-target='#modificacionExpediente'><span class='glyphicon glyphicon-pencil'></span></button>"
+									            		html+="<button type='button'title='Editar expediente' class='btn btn-primary btn-xs btn-editar ' data-toggle='modal' data-target='#modificacionExpediente'><span class='glyphicon glyphicon-pencil'></span></button>";
 													if ('{{EXP_DOWNLOAD is defined}}')
-											        	html+="<button type='button' title='Descargar Documento' class='btn btn-info btn-xs btn-descargar'><span class='glyphicon glyphicon-save-file'></span></button></div>"
-													if ('{{EXP_MOVEMENT is defined}}')
-											            html+="<button type='button' title='Movimientos' class='btn btn-info btn-xs btn-movimientos' data-toggle='modal' data-target='#movimientos'><span class='glyphicon glyphicon-share-alt'></span></button></div>"
+											        	html+="<button type='button' title='Descargar Documento' class='btn btn-info btn-xs btn-descargar'><span class='glyphicon glyphicon-save-file'></span></button></div>";
+							
+											        html+="<button type='button' title='Movimientos' class='btn btn-info btn-xs btn-movimientos' data-toggle='modal' data-target='#movimientos'><span class='glyphicon glyphicon-share-alt'></span></button></div>";
 									            	return html;
 									            }
 									        }
 									        ,
 								            {
-									            "targets": [ 6 ],
+									            "targets": [ 7 ],
 									            "data": 'caratula',
 									            "orderable":true,
 									            "render": function(data, type, row){
@@ -306,10 +306,11 @@
 					      		{ "data": "id" },
 					      		{ "data": "null","width":"8%"},
 					      		{ "data": "numero_completo","width":"10%"},
-					            { "data": "tipo_expediente.tipo_expediente","width":"10%" },
-					            { "data": "fecha_creacion_formateada","width":"8%" },
-					            { "data": "fecha_modificacion_formateada","width":"8%" },
-					            { "data": "caratula_muestra", "width": "30%"},
+					            { "data": "tipo_expediente.tipo_expediente","width":"8%" },
+					            { "data": "fecha_creacion_formateada","width":"5%" },
+					            { "data": "fecha_modificacion_formateada","width":"5%" },
+					            { "data": "oficina_actual.oficina","width":"14%" },
+					            { "data": "caratula_muestra", "width": "50%"},
 					        ],
 					      "autoWidth":false,
 					      "paging": true,
@@ -445,7 +446,7 @@
 						mostrarOrigenParaEdicion($("#selTipoExpedienteMod").val());
 
 
-						if(data.hasOwnProperty('proyecto')){
+						if(data.proyecto!=null){
 							$("#selTipoExpedienteMod").prop( "disabled", true );
 							$("#concejales-mod").html(data.lista_consejales);
 							mostrarTiposPara("proyectos");
@@ -1224,18 +1225,18 @@
 			<ol class="breadcrumb">
 		        <li><a href="#"><i class="fa fa-dashboard"></i> Principal</a></li>
 		        <li>Expedientes</li>
-		        <li class="active">Alta y Modificación</li>
+		        <li class="active">Gestión Expedientes</li>
 		        
 		    </ol>
 		</div>
 		<hr>
 		<div class="row">
-			<div class="col-md-2">
+			<div class="col-md-3">
 				<h2>
-			        Expedientes
+			        Gestión Expedientes
 			    </h2>
 			</div>
-			<div class="col-md-6 col-md-offset-4">
+			<div class="col-md-6 col-md-offset-3">
 				<nav class="navbar navbar-default">
 					<div class="container-fluid">
 						<div class="navbar-header">
@@ -1307,6 +1308,7 @@
 			                <th>Tipo</th>
 			                <th>F. Ing</th>
 			                <th>F. Mod</th>
+			                <th>Oficina Actual</th>
 			                <th>Caratula</th>
 	                	</tr>
 	                </thead>

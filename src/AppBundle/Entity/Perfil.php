@@ -522,7 +522,7 @@ class Perfil
      */
     public function getTipoPerfil()
     {
-        return "basico";
+        return "administrativo";
     }
 
     //----------------------------administracion de carga de archivos-------------------------------

@@ -79,13 +79,12 @@
     		<cascade-remove/>
     	</cascade>
     </one-to-one>  
-    <one-to-many field="giros" mapped-by="expediente" target-entity="Giro" orphan-removal="true">
+    <one-to-many field="movimientos" mapped-by="expediente" target-entity="Movimiento" orphan-removal="true">
     	<cascade>
     		<cascade-persist/>
     		<cascade-remove/>
     	</cascade>
     </one-to-many>
-    <one-to-many field="informes" mapped-by="expediente" target-entity="Informe"/>
     <many-to-one field="estadoExpediente" target-entity="EstadoExpediente" fetch="LAZY">
       <join-columns>
         <join-column name="idEstadoExpediente" referenced-column-name="idEstadoExpediente"/>

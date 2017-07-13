@@ -6,20 +6,20 @@ use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\VirtualProperty;
 
 /**
- * RemitoGiros
+ * Remito
  *
- * @ORM\Table(name="remitoGiros", indexes={@ORM\Index(name="remitoGiros_oficinaOrigen_idx", columns={"idOrigen"}),
- *                                  	   @ORM\Index(name="remitoGiros_oficinaDestino_idx", columns={"idDestino"})})
+ * @ORM\Table(name="remito", indexes={@ORM\Index(name="remito_oficinaOrigen_idx", columns={"idOrigen"}),
+ *                                    @ORM\Index(name="remito_oficinaDestino_idx", columns={"idDestino"})})
  *
- * @ORM\Entity(repositoryClass="AppBundle\Repository\RemitoGirosRepository")
+ * @ORM\Entity(repositoryClass="AppBundle\Repository\RemitoRepository")
  */
 
-class RemitoGiros{
+class Remito{
 	
 	/**
 	 * @var integer
 	 *
-	 * @ORM\Column(name="idRemitoGiros", type="integer")
+	 * @ORM\Column(name="idRemito", type="integer")
 	 * @ORM\Id
 	 * @ORM\GeneratedValue(strategy="IDENTITY")
 	 */
@@ -93,10 +93,10 @@ class RemitoGiros{
 	/**
 	 * @var \Doctrine\Common\Collections\Collection
 	 *
-	 * @ORM\OneToMany(targetEntity="AppBundle\Entity\Giro", mappedBy="remiroGiro",
+	 * @ORM\OneToMany(targetEntity="AppBundle\Entity\Movimiento", mappedBy="remito",
 	 * 				  cascade={"persist", "remove"},orphanRemoval=true)
 	 */
-	private $giros;
+	private $movimientos;
 	
 	//------------------------------------constructor---------------------------------------------
 	
@@ -105,7 +105,7 @@ class RemitoGiros{
 	 */
 	public function __construct()
 	{
-		$this->giros = new \Doctrine\Common\Collections\ArrayCollection();
+		$this->movimientos = new \Doctrine\Common\Collections\ArrayCollection();
 		$this->anulado=false;
 	}
 	
@@ -135,7 +135,7 @@ class RemitoGiros{
 	 *
 	 * @param \DateTime $fechaRecepcion
 	 *
-	 * @return Giro
+	 * @return Remito
 	 */
 	public function setFechaRecepcion(\DateTime $fechaRecepcion) {
 		$this->fechaRecepcion = $fechaRecepcion;
@@ -147,7 +147,7 @@ class RemitoGiros{
 	 *
 	 * @param boolean $anulado
 	 *
-	 * @return Giro
+	 * @return Movimiento
 	 */
 	public function setAnulado($anulado)
 	{
@@ -171,7 +171,7 @@ class RemitoGiros{
 	 *
 	 * @param string $motivoAnulacion
 	 *
-	 * @return Giro
+	 * @return Movimiento
 	 */
 	public function setMotivoAnulacion($motivoAnulacion)
 	{
@@ -204,7 +204,7 @@ class RemitoGiros{
 	 *
 	 * @param  \AppBundle\Entity\Oficina $destino
 	 *
-	 * @return RemitoGiros
+	 * @return Remito
 	 */
 	public function setDestino(\AppBundle\Entity\Oficina $destino) {
 		$this->destino = $destino;
@@ -225,7 +225,7 @@ class RemitoGiros{
 	 *
 	 * @param  \AppBundle\Entity\Oficina $origen
 	 *
-	 * @return RemitoGiros
+	 * @return Remito
 	 */
 	public function setOrigen( \AppBundle\Entity\Oficina $origen) {
 		$this->origen = $origen;
@@ -233,60 +233,60 @@ class RemitoGiros{
 	}
 	
 	/**
-	 * set giros
+	 * set movimientos
 	 *
-	 * @param array $nuevosGiros
+	 * @param array $nuevosMovimientos
 	 *
-	 * @return RemitoGiros
+	 * @return Remito
 	 */
-	public function setGiros($nuevosGiros)
+	public function setMovimientos($nuevosMovimientos)
 	{
 		$collection= new \Doctrine\Common\Collections\ArrayCollection();
-		foreach ($nuevosGiros as $giro) {
-			$giro->setRemito($this);
-			$collection[]=$giro;
+		foreach ($nuevosMovimientos as $movimiento) {
+			$movimiento->setRemito($this);
+			$collection[]=$movimiento;
 		}
-		$this->giros = $collection;
+		$this->movimientos = $collection;
 		
 		return $this;
 	}
 	
 	/**
-	 * Add giro
+	 * Add movimiento
 	 *
-	 * @param \AppBundle\Entity\Giro $giro
+	 * @param \AppBundle\Entity\Movimiento $movimiento
 	 *
-	 * @return RemitoGiros
+	 * @return Remito
 	 */
-	public function addGiro(\AppBundle\Entity\Giro $giro)
+	public function addMovimiento(\AppBundle\Entity\Movimiento $movimiento)
 	{
-		$giro->setRemito($this);
-		$this->giros[] = $giro;
+		$movimiento->setRemito($this);
+		$this->movimientos[] = $movimiento;
 		
 		return $this;
 	}
 	
 	/**
-	 * Remove giro
+	 * Remove movimiento
 	 *
-	 * @param \AppBundle\Entity\Giro $giro
+	 * @param \AppBundle\Entity\Movimiento $movimiento
 	 *
-	 * @return RemitoGiros
+	 * @return Remito
 	 */
-	public function removeGiro(\AppBundle\Entity\Giro $giro)
+	public function removeMovimiento(\AppBundle\Entity\Movimiento $movimiento)
 	{
-		$this->giros->removeElement($giro);
+		$this->movimientos->removeElement($movimiento);
 		return $this;
 	}
 	
 	/**
-	 * Get giros
+	 * Get movimientos
 	 *
 	 * @return \Doctrine\Common\Collections\Collection
 	 */
-	public function getGiros()
+	public function getMovimientos()
 	{
-		return $this->giros;
+		return $this->movimientos;
 	}
 	
 	/**

@@ -127,9 +127,10 @@
 				url:'{{ app.request.getBaseURL() }}'+'/api/roles/getByTipoPerfil/'+idTipoPerfil,
 				success: function(data){
 					var roles=data.roles;
-					var html='<option value=0>Selecciones Rol</option>';
+					var html='<option value=0>Seleccione Rol</option>';
 					$.each(roles,function(i,rol){
-						html+='<option value="'+rol.id+'">'+rol.rol_como_string+'</option>';
+						if(rol.activo==1)
+							html+='<option value="'+rol.id+'">'+rol.rol_como_string+'</option>';
 					});
 					$("#"+control).html('');
 					$("#"+control).html(html);
@@ -412,7 +413,7 @@
 			    $(".control-comun").prop("readonly",false);
 			    $("#file-container-mod").removeClass("locked");
 			 
-			 	if(perfil.tipo_perfil=="basico")
+			 	if(perfil.tipo_perfil=="administrativo")
 					actualizarRoles(1,'selRolMod');
 
 				if (perfil.tipo_perfil=="legislador"){
@@ -1009,7 +1010,7 @@
                 				        			<div class="form-group">
                 						        		<label for="selTipo">Perfil</label>
                 						        		<select class="form-control" id="selTipo" name="selTipo">
-                						        			<option value="1" selected="selected">Básico</option>
+                						        			<option value="1" selected="selected">Administrativo</option>
                 						        			<option value="2">Legislador</option>
                 						        			{# <option value="3">Público</option> #}
                 						        		</select>
@@ -1143,8 +1144,8 @@
                 						        	<div class="form-group">
                 						        		<label for="selRolMod">Rol</label>
                 						        		<select class="form-control" id="selRolMod" name="selRolMod">
-                						        			{# <option value="0">Seleccione Rol</option>
-                						        			{% for rol in roles %}
+                						        			<option value="0">Seleccione Rol</option>
+                								        		{# {% for rol in roles %}
                 								                <option value="{{ rol.id }}">{{ rol.rolComoString }}</option>
                 								            {% endfor %} #}
                 						        		</select>

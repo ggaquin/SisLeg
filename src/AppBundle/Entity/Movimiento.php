@@ -6,24 +6,35 @@ use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\VirtualProperty;
 
 /**
- * Giro
+ * Movimiento
  *
- * @ORM\Table(name="giro", indexes={@ORM\Index(name="giro_remitoGiros_idx", columns={"idRemitoGiros"}), 
- *                                  @ORM\Index(name="giro_expediente_idx", columns={"idExpediente"})})
+ * @ORM\Table(name="movimiento", indexes={@ORM\Index(name="movimiento_remito_idx", columns={"idRemito"}), 
+ *                                        @ORM\Index(name="movimiento_expediente_idx", columns={"idExpediente"}),
+ *                                        @ORM\Index(name="movimiento_tipoMovimiento_idx", columns={"idTipoMovimiento"})})
  *
  * @ORM\Entity
  */
 
-class Giro {
+class Movimiento {
 	
 	/**
 	* @var integer
 	*
-	* @ORM\Column(name="idGiro", type="integer")
+	* @ORM\Column(name="idMovimiento", type="integer")
 	* @ORM\Id
 	* @ORM\GeneratedValue(strategy="IDENTITY")
 	*/
 	private $id;
+	
+	/**
+	 * @var \AppBundle\Entity\TipoMovimiento
+	 *
+	 * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Movimiento")
+	 * @ORM\JoinColumns({
+	 *   @ORM\JoinColumn(name="idTipoMovimiento", referencedColumnName="idTipoMovimiento")
+	 * })
+	 */
+	private $tipoMovimiento;
 	
 	/**
 	 * @var string
@@ -44,8 +55,8 @@ class Giro {
 	/**
 	 * @var \AppBundle\Entity\RemitoGiros
 	 *
-	 * @ORM\ManyToOne(targetEntity="AppBundle\Entity\RemitoGiros", inversedBy="giros")
-	 * @ORM\JoinColumns({@ORM\JoinColumn(name="idRemitoGiros", referencedColumnName="idRemitoGiros")})
+	 * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Remito", inversedBy="movimientos")
+	 * @ORM\JoinColumns({@ORM\JoinColumn(name="idRemito", referencedColumnName="idRemito")})
 	 */
 	private $remito;
 	
@@ -112,6 +123,29 @@ class Giro {
 	}
 	
 	/**
+	 * Set tipoMovimiento
+	 *
+	 * @param \AppBundle\Entity\TipoMovimiento $tipoMovimiento
+	 *
+	 * @return Movimiento
+	 */
+	public function setTipoMovimiento(\AppBundle\Entity\TipoMovimiento $tipoMovimiento= null)
+	{
+		$this->tipoMovimiento = $tipoMovimiento;
+		return $this;
+	}
+	
+	/**
+	 * Get tipoMovimiento
+	 *
+	 * @return \AppBundle\Entity\TipoMovimiento
+	 */
+	public function getTipoMovimiento()
+	{
+		return $this->tipoMovimiento;
+	}
+	
+	/**
 	 * Get observacion
 	 *
 	 * @return string
@@ -125,7 +159,7 @@ class Giro {
 	 *
 	 * @param string $observacion
 	 *
-	 * @return Giro
+	 * @return Movimiento
 	 */
 	public function setObservacion($observacion) {
 		$this->observacion = $observacion;
@@ -146,7 +180,7 @@ class Giro {
 	 *
 	 * @param \AppBundle\Entity\Expediente $expediente
 	 *
-	 * @return Giro
+	 * @return Movimiento
 	 */
 	public function setExpediente(\AppBundle\Entity\Expediente $expediente) {
 		$this->expediente = $expediente;
@@ -156,7 +190,7 @@ class Giro {
 	/**
 	 * Get remito
 	 *
-	 * @return \AppBundle\Entity\RemitoGiros
+	 * @return \AppBundle\Entity\Remito
 	 */
 	public function getRemito() {
 		return $this->remito;
@@ -165,11 +199,11 @@ class Giro {
 	/**
 	 * Set remito
 	 *
-	 * @param \AppBundle\Entity\RemitoGiros $remito
+	 * @param \AppBundle\Entity\Remito $remito
 	 *
-	 * @return Giro
+	 * @return Movimiento
 	 */
-	public function setRemito(\AppBundle\Entity\RemitoGiros $remito) {
+	public function setRemito(\AppBundle\Entity\Remito $remito) {
 		$this->remito = $remito;
 		return $this;
 	}
@@ -179,7 +213,7 @@ class Giro {
 	 *
 	 * @param integer $fojas
 	 *
-	 * @return Giro
+	 * @return Movimiento
 	 */
 	public function setFojas($fojas)
 	{
@@ -203,7 +237,7 @@ class Giro {
 	 *
 	 * @param boolean $anulado
 	 *
-	 * @return Giro
+	 * @return Movimiento
 	 */
 	public function setAnulado($anulado)
 	{
@@ -227,7 +261,7 @@ class Giro {
 	 *
 	 * @param \DateTime $fechaCreacion
 	 *
-	 * @return Giro
+	 * @return Movimiento
 	 */
 	public function setFechaCreacion($fechaCreacion)
 	{
@@ -251,7 +285,7 @@ class Giro {
 	 *
 	 * @param string $usuarioCreacion
 	 *
-	 * @return Giro
+	 * @return Movimiento
 	 */
 	public function setUsuarioCreacion($usuarioCreacion)
 	{
@@ -275,7 +309,7 @@ class Giro {
 	 *
 	 * @param \DateTime $fechaModificacion
 	 *
-	 * @return Giro
+	 * @return Movimiento
 	 */
 	public function setFechaModificacion($fechaModificacion)
 	{
@@ -299,7 +333,7 @@ class Giro {
 	 *
 	 * @param string $usuarioModificacion
 	 *
-	 * @return Giro
+	 * @return Movimiento
 	 */
 	public function setUsuarioModificacion($usuarioModificacion)
 	{

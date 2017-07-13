@@ -683,7 +683,7 @@ class RestController extends FOSRestController{
         $usuario=$this->getUser();
 
         $concejales=(($listaConcejales=='')?[]:explode(',',$listaConcejales));
-        $bloques=(($listaBloques='')?[]:explode(',',$listaBloques));
+        $bloques=(($listaBloques=='')?[]:explode(',',$listaBloques));
 
         $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
         $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
@@ -697,7 +697,7 @@ class RestController extends FOSRestController{
         $proyecto->setConsiderandos($considerando);
 
         $nuevosConcejales=[];
-        if(is_array($bloques)){
+        if(is_array($bloques) &&  count($bloques)>0){
             foreach ($bloques as $bloque) {
                 $bloque=$bloqueRepository->find($bloque);
                 $concejales=$bloque->getConcejales();

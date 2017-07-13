@@ -262,14 +262,14 @@
                 </a>
                 <ul class="treeview-menu">
                   <li class="divider"></li>
-                  {% if EXP_MAIN is defined %}
-                  <li><a href="#" onclick="cargarMenu('/expedientes')"><i class="fa fa-minus"></i>Alta y Modificación</a></li>
-                  {% endif %}
+                  {# {% if EXP_MAIN is defined %} #}
+                  <li><a href="#" onclick="cargarMenu('/expedientes')"><i class="fa fa-minus"></i>Gestión de Expedientes</a></li>
+                  {# {% endif %} #}
                   {% if  MOV_MAIN is defined%}
-                  <li><a href="#" onclick="cargarMenu('/movimientos')"><i class="fa fa-minus"></i>Movimientos - Remitos</a></li>
+                  <li><a href="#" onclick="cargarMenu('/movimientos')"><i class="fa fa-minus"></i>Remitos Movimientos (Giros)</a></li>
                   {% endif %}
                   {% if REP_MAIN is defined %}
-                  <li><a href="#" onclick="noImplementado();"><i class="fa fa-minus"></i>Solicitud Informes</a></li>
+                  <li><a href="#" onclick="noImplementado();"><i class="fa fa-minus"></i>Remitos Informes (CH)</a></li>
                   {% endif %}
                 </ul>
               </li>

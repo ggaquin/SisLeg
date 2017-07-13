@@ -3,7 +3,7 @@
 
 namespace AppBundle\Repository;
 use Doctrine\ORM\EntityRepository;
-class RemitoGirosRepository extends EntityRepository{
+class RemitoRepository extends EntityRepository{
 	
 	public function findByOficina($oficina,$tipo,$idOficinaFiltro){
 		
@@ -128,8 +128,8 @@ class RemitoGirosRepository extends EntityRepository{
 		$inicio= new \DateTime($periodo.'-01-01 00:00:00');
 		$fin= new \DateTime($periodo.'-12-31 23:59:59');
 		$qb = $this->createQueryBuilder('r')
-			-> innerJoin('r.giros', 'g')
-			-> innerJoin('g.expediente', 'e');
+			-> innerJoin('r.movimientos', 'm')
+			-> innerJoin('m.expediente', 'e');
 		$qb -> where($qb->expr()->andX(
 										$qb->expr()->eq('e.numeroExpediente', '?1'),
 										$qb->expr()->between('e.fechaCreacion','?2','?3')
