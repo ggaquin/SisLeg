@@ -150,7 +150,7 @@ class DefaultController extends Controller
         $tiposExpediente=$tiposExpedienteRepository->findBy(array(),array('tipoExpediente' => 'ASC') );
         $estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
         $estadosExpediente=$estadoExpedienteRepository->findBy(array(),array('estadoExpediente' => 'ASC'));
-        $oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
+        //$oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
         
         $usuario=$this->getUser();    
         //$oficinas=$oficinaRepository->findAll();

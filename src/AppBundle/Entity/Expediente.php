@@ -14,7 +14,10 @@ use AppBundle\Popo\Image;
  *                                        @ORM\Index(name="expediente_tipoExpediente_idx", columns={"idTipoExpediente"}),
  *                                        @ORM\Index(name="expediente_oficina_idx", columns={"idOficina"})
  *                                       },
- *            uniqueConstraints={@ORM\UniqueConstraint(name="numeroExpediente_idx", columns={"numeroExpediente"})})
+ *            uniqueConstraints={@ORM\UniqueConstraint(name="numeroExpediente_idx", columns={"numeroExpediente"}),
+ *            					 @ORM\UniqueConstraint(name="expediente_origenExterno_idx", columns={"idOrigenExterno"}),
+ *            					 @ORM\UniqueConstraint(name="expediente_demandanteParticular_idx", columns={"idDemandateParticular"})
+ *            })
  * @ORM\Entity(repositoryClass="AppBundle\Repository\ExpedienteRepository")
  *
  * @ORM\HasLifecycleCallbacks
@@ -92,6 +95,26 @@ class Expediente
      * @ORM\Column(name="numeroExpediente", type="string", length=50, nullable=false)
      */
     private $numeroExpediente;
+    
+    /**
+     * @var \AppBundle\Entity\DemandanteParticular
+     *
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\DemandanteParticular")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="idDemandanteParticular", referencedColumnName="idDemandanteParticular")
+     * })
+     */
+    private $demandanteParticular;
+ 
+    /**
+     * @var \AppBundle\Entity\OrigenExterno
+     *
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\OrigenExterno")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="idOrigenExterno", referencedColumnName="idOrigenExterno")
+     * })
+     */
+   	private $origenExterno;
 
     /**
      * @var \AppBundle\Entity\EstadoExpediente
@@ -137,20 +160,6 @@ class Expediente
      */
     private $oficinaActual;
 
-     /**
-     * @var string
-     *
-     * @ORM\Column(name="apellidosSiParticular", type="string", length=80, nullable=true)
-     */
-    private $apellidosSiParticular;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="nombresSiParticular", type="string", length=80, nullable=true)
-     */
-    private $nombresSiParticular;
-
     /**
      * @var array
      *
@@ -185,20 +194,6 @@ class Expediente
      * @ORM\Column(name="usuarioModificacion", type="string", length=70, nullable=true)
      */
     private $usuarioModificacion;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="fechaAprobacion", type="datetime", nullable=true)
-     */
-    private $fechaAprobacion;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="usuarioAprobacion", type="string", length=70, nullable=false)
-     */
-    private $usuarioAprobacion;
 
     /**
      *  @var \AppBundle\Entity\Proyecto $proyecto
@@ -273,7 +268,55 @@ class Expediente
     {
         return $this->numeroExpediente;
     }
+    
+    /**
+     * Set demandanteParticular
+     *
+     * @param \AppBundle\Entity\DemandanteParticular $demandanteParticular
+     *
+     * @return Expediente
+     */
+    public function setDemandanteParticular(\AppBundle\Entity\DemandanteParticular $demandanteParticular= null)
+    {
+    	$this->demandanteParticular = $demandanteParticular;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Get demandanteParticular
+     *
+     * @return \AppBundle\Entity\DemandanteParticular
+     */
+    public function getDemandanteParticular()
+    {
+    	return $this->demandanteParticular;
+    }
 
+    /**
+     * Set origenExterno
+     *
+     * @param \AppBundle\Entity\OrigenExterno $origenExterno
+     *
+     * @return Expediente
+     */
+    public function setOrigenExterno(\AppBundle\Entity\OrigenExterno $origenExterno= null)
+    {
+    	$this->origenExterno = $origenExterno;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Get origenExterno
+     *
+     * @return \AppBundle\Entity\OrigenExterno
+     */
+    public function getOrigenExterno()
+    {
+    	return $this->origenExterno;
+    }
+    
     /**
      * Set estadoExpediente
      *
@@ -392,54 +435,6 @@ class Expediente
     	$this->oficinaActual= $oficinaActual;
     	
     	return $this;
-    }
-
-    /**
-     * Set apellidosSiParticular
-     *
-     * @param string $apellidos
-     *
-     * @return Expediente
-     */
-    public function setApellidosSiParticular($apellidos)
-    {
-        $this->apellidosSiParticular = $apellidos;
-
-        return $this;
-    }
-
-    /**
-     * Get apellidosSiParticular
-     *
-     * @return string
-     */
-    public function getApellidosSiParticular()
-    {
-        return $this->apellidosSiParticular;
-    }
-
-    /**
-     * Set nombresSiParticular
-     *
-     * @param string $nombres
-     *
-     * @return Expediente
-     */
-    public function setNombresSiParticular($nombres)
-    {
-        $this->nombresSiParticular = $nombres;
-
-        return $this;
-    }
-
-    /**
-     * Get nombresSiParticular
-     *
-     * @return string
-     */
-    public function geNombresSiParticular()
-    {
-        return $this->nombresSiParticular;
     }
 
     /**
@@ -585,55 +580,6 @@ class Expediente
     public function getUsuarioModificacion()
     {
         return $this->usuarioModificacion;
-    }
-
-
-    /**
-     * Set fechaAprobacion
-     *
-     * @param \DateTime $fechaAprobacion
-     *
-     * @return Expediente
-     */
-    public function setFechaAprobacion($fechaAprobacion)
-    {
-        $this->fechaAprobacion = $fechaAprobacion;
-
-        return $this;
-    }
-
-    /**
-     * Get fechaAprobacion
-     *
-     * @return \DateTime
-     */
-    public function getFechaAprobacion()
-    {
-        return $this->fechaAprobacion;
-    }
-
-    /**
-     * Set usuarioAprobacion
-     *
-     * @param string $usuarioAprobacion
-     *
-     * @return Expediente
-     */
-    public function setUsuarioAprobacion($usuarioAprobacion)
-    {
-        $this->usuarioAprobacion = $usuarioAprobacion;
-
-        return $this;
-    }
-
-    /**
-     * Get usuarioAprobacion
-     *
-     * @return string
-     */
-    public function getUsuarioAprobacion()
-    {
-        return $this->usuarioAprobacion;
     }
     
     /**

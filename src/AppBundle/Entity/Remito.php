@@ -420,9 +420,9 @@ class Remito{
 	public function getListaExpedientes()
 	{
 		$expedientes="";
-		$girosAux=(!is_null($this->getGiros())?$this->getGiros():[]);
-		foreach ($girosAux as $giro){
-			$expedientes.=$giro->getExpediente()->getNumeroCompleto();
+		$movimientosAux=(!is_null($this->getMovimientos())?$this->getMovimientos():[]);
+		foreach ($movimientosAux as $movimiento){
+			$expedientes.=$movimiento->getExpediente()->getNumeroCompleto();
 		}
 		return $expedientes;
 	}

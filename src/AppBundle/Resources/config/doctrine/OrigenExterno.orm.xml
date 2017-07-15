@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\OrigenExterno" table="origenExterno">
+  	<indexes>
+  		<index columns="idOficina" name="origenExterno_oficina_idx"/>
+  	</indexes>
+    <id name="id" type="integer" column="idOrigenExterno">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="numeracionOrigen" type="json_array" column="numeracionOrigen" nullable="false">
+      <options>
+        <option name="fixed"/>
+      </options>
+    </field>
+    <many-to-one field="oficina" target-entity="Oficina">
+    	<join-columns>
+    		<join-column name="idOficina" referenced-column-name="idOficina"/>
+    	</join-columns>
+    </many-to-one>
+  </entity>
+</doctrine-mapping>
+	

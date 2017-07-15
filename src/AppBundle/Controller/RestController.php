@@ -21,9 +21,10 @@ use AppBundle\Entity\Bloque;
 use AppBundle\Entity\Expediente;
 use AppBundle\Entity\Proyecto;
 use AssistBundle\Entity\AdministracionSesion;
-use AppBundle\Entity\Giro;
-use AppBundle\Entity\RemitoGiros;
+use AppBundle\Entity\Movimiento;
+use AppBundle\Entity\Remito;
 use AppBundle\Entity\Oficina;
+use AppBundle\Entity\TipoMovimiento;
 
 
 class RestController extends FOSRestController{
@@ -198,8 +199,8 @@ class RestController extends FOSRestController{
     {
     	$id=$request->get('id');
     	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
-    	$expediente=$expedienteRepository->find($id);
-    	return $this->view($expediente->getGiros(),200);
+    	$giros=$expedienteRepository->findGirosByExpediente_Id($id);
+    	return $this->view($giros,200);
     }
     
     /**
@@ -293,7 +294,7 @@ class RestController extends FOSRestController{
      * @Rest\Post("/api/expediente/remito/invalidate")
      */
     public function anularRemitoAction(Request $request)
-    {
+    {	/*
     	$idRemito = $request->request->get('idRemito');
     	$motivoAnulacion = $request->request->get('motivoAnulacion');
     	
@@ -316,7 +317,7 @@ class RestController extends FOSRestController{
     	$em->flush();
     	
     	return $this->view("El remito ".$remito->getId()." se anuló en forma exitosa",200);
-    	
+    	*/
     }
     
     /**
@@ -346,16 +347,6 @@ class RestController extends FOSRestController{
     	return $this->view("El remito ".$remito->getId()." se actualizó en forma exitosa",200);
     }
     
-    /**
-     * @Rest\Get("/api/expediente/giro/findOne/{id}")
-     */
-    public function traerGiroPorId(Request $request)
-    {
-    	$id=$request->get('id');
-    	$giroRepository=$this->getDoctrine()->getRepository('AppBundle:Giro');
-    	$giro=$giroRepository->find($id);
-    	return $this->view($giro->getGiros(),200);
-    }
             
     /**
      * @Rest\Get("/api/expediente/informe/getAllByExpediente/{id}")
@@ -364,19 +355,19 @@ class RestController extends FOSRestController{
     {
     	$id=$request->get('id');
     	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
-    	$expediente=$expedienteRepository->find($id);
-    	return $this->view($expediente->getInformes(),200);
+    	$informes=$expedienteRepository->findInformesByExpediente_Id($id);
+    	return $this->view($informes,200);
     }
     
     /**
      * @Rest\Get("/api/expediente/informe/findOne/{id}")
      */
     public function traerInformePorId(Request $request)
-    {
+    {	/*
     	$id=$request->get('id');
     	$informeRepository=$this->getDoctrine()->getRepository('AppBundle:Informe');
    		$informe=$informeRepository->find($id);
-   		return $this->view($informe->getGiros(),200);
+   		return $this->view($informe->getGiros(),200);*/
     }
 
     /**

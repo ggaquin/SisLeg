@@ -47,13 +47,13 @@ class Movimiento {
 	/**
 	 * @var \AppBundle\Entity\Expediente
 	 *
-	 * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Expediente", inversedBy="giros")
+	 * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Expediente", inversedBy="movimientos")
 	 * @ORM\JoinColumns({@ORM\JoinColumn(name="idExpediente", referencedColumnName="idExpediente")})
 	 */
 	private $expediente;
 	
 	/**
-	 * @var \AppBundle\Entity\RemitoGiros
+	 * @var \AppBundle\Entity\Remito
 	 *
 	 * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Remito", inversedBy="movimientos")
 	 * @ORM\JoinColumns({@ORM\JoinColumn(name="idRemito", referencedColumnName="idRemito")})

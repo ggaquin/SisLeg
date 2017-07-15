@@ -8,6 +8,8 @@
     </indexes>
     <unique-constraints>
             <unique-constraint columns="numeroExpediente" name="numeroExpediente_idx" />
+            <unique-constraint columns="idOrigenExterno" name="expediente_origenExterno_idx" />
+            <unique-constraint columns="idDemandanteParticular" name="expediente_demandanteParticular_idx" />
         </unique-constraints>
     <lifecycle-callbacks>
             <lifecycle-callback type="postPersist" method="upload"/>
@@ -40,16 +42,6 @@
         <option name="fixed"/>
       </options>
     </field>
-    <field name="apellidosSiParticular" type="string" column="apellidosSiParticular" length="80" nullable="true">
-      <options>
-        <option name="fixed"/>
-      </options>
-    </field>
-    <field name="nombresSiParticular" type="string" column="nombresSiParticular" length="80" nullable="true">
-      <options>
-        <option name="fixed"/>
-      </options>
-    </field>
     <field name="listaImagenes" type="object" column="listaImagenes" nullable="true">
     </field>
     <field name="fechaCreacion" type="datetime" column="fechaCreacion" nullable="false"/>
@@ -65,14 +57,24 @@
         <option name="fixed"/>
       </options>
     </field>
-    <field name="fechaAprobacion" type="datetime" column="fechaAprobacion" nullable="true">
-    </field>
-    <field name="usuarioAprobacion" type="string" column="usuarioAprobacion" length="70" 
-           nullable="true">
-      <options>
-        <option name="fixed"/>
-      </options>
-    </field>
+    <one-to-one field="demandanteParticular" target-entity="DemandanteParticular">
+    	<cascade>
+    		<cascade-persist/>
+    		<cascade-remove/>
+    	</cascade>
+    	<join-columns>
+    		<join-column name="idDemandanteParticular" referenced-column-name="idDemandanteParticular"/>
+    	</join-columns>
+    </one-to-one>
+    <one-to-one field="origenExterno" target-entity="OrigenExterno">
+    	<cascade>
+    		<cascade-persist/>
+    		<cascade-remove/>
+    	</cascade>
+    	<join-columns>
+    		<join-column name="idOrigenExterno" referenced-column-name="idOrigenExterno"/>
+    	</join-columns>
+    </one-to-one>
     <one-to-one field="proyecto" target-entity="Proyecto" mapped-by="expediente" orphan-removal="true">
     	<cascade>
     		<cascade-persist/>
