@@ -6,6 +6,7 @@
     </indexes>
     <unique-constraints>
       <unique-constraint columns="idExpediente" name="UNIQ_proyecto_expediente_idx" />
+      <unique-constraint columns="idUltimaRevision" name="UNIQ_proyecto_ultimaRevision_idx"/>
     </unique-constraints>
     <id name="id" type="integer" column="idProyecto">
       <generator strategy="IDENTITY"/>
@@ -31,6 +32,11 @@
         <option name="fixed"/>
       </options>
     </field>
+     <one-to-one field="ultimaRevision" target-entity="ProyectoRevision">
+      <join-columns>
+        <join-column name="idUltimaRevision" referenced-column-name="idProyectoRevision"/> 
+      </join-columns>
+    </one-to-one>
     <one-to-one field="expediente" target-entity="Expediente" inversed-by="proyecto" fetch="LAZY">
       <join-columns>
         <join-column name="idExpediente" referenced-column-name="idExpediente"/>

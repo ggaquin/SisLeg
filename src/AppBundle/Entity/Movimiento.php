@@ -43,7 +43,6 @@ class Movimiento {
 	 */
 	private $observacion;
 	
-	
 	/**
 	 * @var \AppBundle\Entity\Expediente
 	 *
@@ -102,6 +101,13 @@ class Movimiento {
 	 */
 	private $fechaModificacion;
 	
+	/**
+	 * @var \DateTime
+	 *
+	 * @ORM\Column(name="fechaRespuestaInforme", type="datetime", nullable=true)
+	 */
+	private $fechaRespuestaInforme;
+	
 	//------------------------------------constructor---------------------------------------------
 	
 	/**
@@ -112,6 +118,7 @@ class Movimiento {
 		$this->anulado=false;
 	}
 	
+	//-----------------------------------setters y getters--------------------------------------
 	
 	/**
 	 * Get id
@@ -352,6 +359,30 @@ class Movimiento {
 		return $this->usuarioModificacion;
 	}
 	
+	/**
+	 * Set fechaRespuestaInforme
+	 *
+	 * @param \DateTime $fechaRespuestaInforme
+	 *
+	 * @return Movimiento
+	 */
+	public function setFechaRespuestaInforme($fechaRespuestaInforme)
+	{
+		$this->fechaRespuestaInforme = $fechaRespuestaInforme;
+		
+		return $this;
+	}
+	
+	/**
+	 * Get fechaRespuestaInforme
+	 *
+	 * @return \DateTime
+	 */
+	public function getFechaRespuestaInforme()
+	{
+		return $this->fechaRespuestaInforme;
+	}
+	
 	//------------------------------Propiedades Virtuales -------------------------------------
 	
 	/**
@@ -379,6 +410,18 @@ class Movimiento {
 	}
 	
 	/**
+	 * Get fechaRespuestaFormateada
+	 *
+	 * @return string
+	 *
+	 * @VirtualProperty
+	 */
+	public function getFechaRespuestaFormateada()
+	{
+		return ((!is_null($this->fechaRespuestaInforme))?$this->fechaRespuestaInforme->format('d/m/Y'):'');
+	}
+	
+	/**
 	 * Get origen
 	 *
 	 * @return string
@@ -394,11 +437,24 @@ class Movimiento {
 	 * Get destino
 	 *
 	 * @return string
-	 *
 	 * @VirtualProperty
 	 */
 	public function getDestino()
 	{
 		return ((!is_null($this->getRemito()))?$this->getRemito()->getDestino()->getOficina():'');
 	}
+	
+	/**
+	 * Get fechaRespuestaInformeFormateada
+	 *
+	 * @return string
+	 *
+	 * @VirtualProperty
+	 */
+	public function getFechaRespuestaInformeFormateada()
+	{
+		return ((!is_null($this->getFechaRespuestaInforme()))?$this->getFechaRespuestaInforme()->format('d/m/Y'):'');
+	}
+	
+	
 }

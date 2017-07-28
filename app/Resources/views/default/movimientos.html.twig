@@ -19,7 +19,7 @@
 	<style type="text/css">
 		@media (min-width: 768px) {
 		  .modal-xl {
-		    width: 90%;
+		    width: 95%;
 		    max-width:1600px;
 		  }
 		}
@@ -78,7 +78,6 @@
 		.text-area-mini{
 			height: 80px!important;
 		}
-		}
 		.text-area-corta{
 			height: 200px!important;
 		}
@@ -98,13 +97,13 @@
 			line-height: 22.5px!important;
 		}
 		#selExpedientes .select2.select2-container.select2-container--bootstrap.select2-container--below.select2-container--focus, .select2-selection.select2-selection--multiple{
-			height: 100px;
-		    max-height: 100px;
+			height: 300px;
+		    max-height: 300px;
 		    overflow-y: auto;
 		}
 		.div-tabla{
-			height: 384px;
-			max-height: 384px;
+			height: 415px;
+			max-height: 415px;
 			overflow-y: auto;
 		}
 		
@@ -114,7 +113,6 @@
 		
 	</style>
 	<script type="text/javascript">
-
 
 		function criterio(){
 			var tipo=$("#selBusqueda").val();
@@ -181,31 +179,50 @@
 			            			"dataSrc": '',
 							    },
 						  "columnDefs": [
-								            {
-									            "targets": [ 0 ],
+            							  {
+            					                "targets": [ 0 ],
+            					                "searchable": false,
+            					                "orderable":false,
+            					                "visible": false,
+            					                
+            					            },
+					            			{
+
+									            "targets": [ 1 ],
 									            "data": null,
 									            "orderable":false,
 									            "render": function(data, type, row){
-									            	var html="";
-									            	if (row.anulado==false && row.fecha_recepcion_formateada=="") {
-    									            	html+="<button type='button' title='Anular Remito' class='btn btn-danger btn-xs btn-anular' data-toggle='modal' data-target='#anulacion'>"+
-    									            		 "<span class='glyphicon glyphicon-ban-circle'></span></button>";
-    									            
-									            		html+="<button type='button' title='Agregar Recepción' class='btn btn-info btn-xs btn-recepcion' data-toggle='modal' data-target='#recepcion'>"+
-									             		  	  "<span class='glyphicon glyphicon-calendar'></span></button>";
+									            	var html="<div class='text-center'>";
+									            	if (row.anulado==false && row.fecha_recepcion_formateada==""){
+										            	if ("{{ app.user.rol.oficina is null}}" || "{{ app.user.rol.oficina.oficina }}"== row.origen.oficina) {
+        									            	html+="<button type='button' title='Anular Remito' class='btn btn-danger btn-xs btn-anular' data-toggle='modal' data-target='#anulacion'>"+
+        									            		 "<span class='glyphicon glyphicon-ban-circle'></span></button>";
+		    											}
+    									            	if ("{{ app.user.rol.oficina is null}}" || "{{ app.user.rol.oficina.oficina }}"== row.destino.oficina ||
+    									            		("{{ app.user.rol.oficina.id }}"== "9" && row.destino.es_externa)) {
+    									            		html+="<button type='button' title='Agregar Recepción' class='btn btn-info btn-xs btn-recepcion' data-toggle='modal' data-target='#recepcion'>"+
+    									             		  	  "<span class='glyphicon glyphicon-calendar'></span></button>";
+														}
 									            	}
-									             	html+="<button type='button' title='Descargar Remito' class='btn btn-info btn-xs btn-descargar' onclick='noImplementado();'>"+
-									             		  "<span class='glyphicon glyphicon-save-file'></span></button>";
-									            	return html;
+									            	return html+"</div>";
 									            }
 									        },
 									        {
-								                "targets": [ 1 ],
+								                "targets": [ 2 ],
+								                "data": null,
 								                "searchable": false,
-								                "orderable":false
+								                "visible": ("{{ muestra_remitos|raw }}"==1?true:false),
+								                "render": function(data, type, row){
+									                var html="";
+									                if (row.numero_remito>0){
+    									             	html+="<div class='text-center'><button type='button' title='Descargar Remito' class='btn btn-info btn-xs btn-descargar' onclick='noImplementado();'>"+
+									             		   +row.numero_remito+"</span></button></div>";
+								            		}							            	
+									            	return html;
+									            }
 								            },
 								            {
-								                "targets": [ 5 ],
+								                "targets": [ 6 ],
 								                "data": null,
 								                "searchable": false,
 								                "render": function(data, type, row){	
@@ -216,15 +233,18 @@
 									       
 						  ],
 					      "columns": [
+					      		{ "data": "id"},
 					      		{ "data": "null","width":"7%"},
-					      		{ "data": "id", "width":"9%"},
-					      		{ "data": "origen.oficina","width":"20%"},
-					      		{ "data": "fecha_movimiento_formateada","width":"7%"},
-					            { "data": "destino.oficina", "width": "20%" },
+					     		{ "data": "numero_remito", "width":"7%"},
+					      		{ "data": "origen.oficina","width":"18%"},
+					      		{ "data": "fecha_movimiento_formateada","width":"9%"},
+					            { "data": "destino.oficina", "width": "18%" },
 					            { "data": "null","width":"5%"},
-					            { "data": "fecha_recepcion_formateada", "width": "7%" },
-					            { "data": "lista_expedientes","width": "25%" },
+					            { "data": "fecha_recepcion_formateada", "width": "9%" },
+					            { "data": "lista_expedientes","width": "25%" }
 					        ],
+
+			
 					      "autoWidth":false,
 					      "paging": true,
 					      "lengthChange": true,
@@ -348,7 +368,7 @@
 			//--------------------------------------NUEVO REMITO---------------------------------------------
 			
 			//EVENTO ABRIR MODAL NUEVO REMITO
-		    $('#nuevoRemito').on('show.bs.modal', function () {
+		    $('#nuevoMovimiento').on('show.bs.modal', function () {
 		    	$("#detalleRemito > tbody").html("");
 		    	$("#selExpedientes").val();
 		    	$("#total-filas").val("");
@@ -371,13 +391,18 @@
 				validacion+=((filas==0)?'<li>No especificó ningún expediente para el remito</li>':'');
 
 				var remitoDetalle=[];
-				
+				var esOficinaComisiones=($("#selDestino option:selected").text()=="COMISIONES");
+				var muestra_comisiones="{{ muestra_comisiones|raw }}";
 				$('#detalleRemito >tbody >tr').each(function(){
 					var celdas=$(this).find('td');
+					debugger;
 					detalle={
 							id:$(celdas[0]).text(),
 							folios:$(celdas[2]).find('input').val(),
-							observaciones:$(celdas[3]).find('textarea').val()
+							idTipoMovimiento:$(celdas[3]).find('select').val(),
+							incluyeComision:((esOficinaComisiones && muestra_comisiones==1)?true:false),
+							idComision:((esOficinaComisiones==true && muestra_comisiones==1)?($(celdas[4]).find('select').val()):0),
+							observaciones:$(celdas[5]).find('textarea').val()
 						  };
 					remitoDetalle.push(detalle);
 				});
@@ -405,7 +430,7 @@
 	                success: function(data) {
 	                    toastr.success(data);
 						tabla.ajax.reload();
-						$('#nuevoRemito').modal('hide');
+						$('#nuevoMovimiento').modal('hide');
 	                	},
 	                complete: function(){
 	                	$('#btn-guardar-remito').prop("disabled",false);
@@ -476,38 +501,67 @@
 
 			$("#selExpedientes").select2({
 				ajax: {
-			    url: '{{ app.request.getBaseURL() }}'+"/api/expediente/getNumeroCompletoByNumero",
-			    dataType: 'json',
-			    delay: 250,
-			    cache: false,
-			    data: function (params) {
-			      return {
-			        q: params.term, // search term
-			        page: params.page
-			      };
-			    },
-			    processResults: function (data) {
-			       var dato=data;
-			       return {
-				        results: $.map(dato, function(item) {
-				            return { id: item.id, text: item.numeroCompleto };
-				        })
-				    };				   
-		        },
+    			    url: '{{ app.request.getBaseURL() }}'+"/api/expediente/getNumeroCompletoByNumero",
+    			    dataType: 'json',
+    			    delay: 250,
+    			    cache: false,
+    			    data: function (params) {
+    			      return {
+    			        q: params.term, // search term
+    			        page: params.page
+    			      };
+    			    },
+    			    processResults: function (data) {
+    			       var dato=data;
+    			       return {
+    				        results: $.map(dato, function(item) {
+    				            return { id: item.id, text: item.numeroCompleto };
+    				        })
+    				    };				   
+    		        },
+    		        /* transport: function (params, success, failure) {
+
+						debugger;
+    		            var $request = $.ajax(params);
+    		         
+    		            $request.then(success);
+    		            $request.fail(failure);
+    		         
+    		            return $request;
+    		         },
+    		         error: function (jqXHR, status, error) {
+    		             console.log(error + ": " + jqXHR.responseText);
+    		             return { results: [] };
+    		         } */
 			  },
+			  allowClear: true,
 			  language: "es",
 			  minimumInputLength: 1,
-			  theme: "bootstrap",
+			  theme: "bootstrap"
 			});	
 
 			$("#btn-generar-remito").click(function(){
 
 				var filas=$('#detalleRemito >tbody >tr').length;
+				debugger;
+				var oficinas={{ oficinas|serialize("json")|raw }};
+				var comisiones="{{ comisiones|raw }}";
+				var movimientosCompletos="{{ movimientosCompletos|raw }}";
+				var movimientoPase="{{ movimientoPase|raw }}";				
+				var esOficinaInterna=false;
+				var esOficinaComisiones=($("#selDestino option:selected").text()=="COMISIONES");
+				var muestra_comisiones="{{ muestra_comisiones|raw }}";
+				$.each(oficinas,function(i,oficina){
+					if(oficina.id==$("#selDestino").val() && oficina.tipo_oficina.tipo_oficina=="Interna")
+						esOficinaInterna=true;
+				})
+				if (esOficinaComisiones && muestra_comisiones==1)
+					$(".header-comision").removeClass("hidden");
 				
 				if (filas==0){
     
     				var html="";
-    
+    				debugger;
     				$("#selExpedientes > option").each(function(){
     					var texto=$(this).text();
     					var numero=texto.substring(0,texto.indexOf('('));
@@ -515,14 +569,17 @@
     					html+="<tr><td class='hidden'>"+$(this).val()+"</td><td><input type='text' class='form-control text-center' readonly value='"+numero+"'></td>"+
     						  "<td><input type='number' class='form-control text-center' min='"+folios+"' id='"+
     						  numero+"' name='"+numero+"' value='"+folios+"' onblur='validarFolios(this);'></td>"+
-    						  "<td><select class='form-control' name='sel"+numero+"'><option value='1' selected>Pase</option><option value='2'>Solicitud Informe</option>"+
-    						  "<option value='2'>Solicitud Informe Con Pase</option></select>"+
+    						  "<td><select class='form-control' name='selMovimiento"+numero+"'>"+
+    						  (esOficinaInterna?movimientoPase:movimientosCompletos) + "</select>"+
+    						  ((esOficinaComisiones && muestra_comisiones==1)?"<td><select class='form-control' name='selComision"+numero+"'>"+
+    								  			   comisiones + "</select></td>"
+    								  			  :"<td class='hidden'></td>")+
     						  "<td><textarea class='form-control vertical-resize' rows=3></textarea></td></tr>";
     				});
     
     				$("#detalleRemito > tbody").append(html);
     				filas=$('#detalleRemito >tbody >tr').length;
-    				$("#total-filas").val("Expedientes en remito:"+filas);
+    				$("#total-filas").val("Expedientes en movimiento:"+filas);
     				$("#total-filas").removeClass("hidden");
 				}
 				else toastr.error("El remito ya posee expedientes oprima <strong>'Reiniciar'</strong>, para volver a generar el detalle");
@@ -532,6 +589,7 @@
 			$("#btn-borrar-remito").click(function(){
 				$("#detalleRemito > tbody").html("");
 				$("#total-filas").addClass("hidden");
+				$(".header-comision").addClass("hidden");
 			});
 
 			$(".campo-fecha").datetimepicker({
@@ -546,14 +604,14 @@
 			<ol class="breadcrumb">
 		        <li><a href="#"><i class="fa fa-dashboard"></i> Principal</a></li>
 		        <li >Expedientes</li>
-		        <li class="active">Remitos Movimientos (Giros)</li>
+		        <li class="active">Movimientos</li>
 		    </ol>
 		</div>
 		<hr>
 		<div class="row">
 			<div class="col-md-4">
 				<h2>
-			        Remitos Movimientos (Giros)
+			        Movimientos
 			    </h2>
 			</div>
 			<div class="col-md-7 col-md-offset-1">
@@ -616,13 +674,16 @@
               	<table id="registroRemitos" class="table table-striped">
 	                <thead>
 	                	<tr>
-	                		<th class="text-center">
-	                			<button type="button" title="Agregar Remito"class="btn btn-primary btn-xs pull-left"
-						    			data-toggle="modal" data-target="#nuevoRemito">
-						    			<span class="glyphicon glyphicon-plus"></span>
-						    	</button>
+	                		<th>id</th>
+	                		<th>
+	                			<div style="display: table;margin: auto;">
+    	                			<button type="button" title="Agregar Remito"class="btn btn-primary btn-xs pull-left"
+    						    			data-toggle="modal" data-target="#nuevoMovimiento">
+    						    			<span class="glyphicon glyphicon-plus"></span>
+    						    	</button>
+    						    </div></div>
 						    </th>
-						    <th>Remito</th>
+						    <th class="text-center">Remito</th>
 						    <th>Origen</th>
 			                <th>F. Envío</th>
 			                <th>Destino</th>
@@ -637,29 +698,21 @@
 	        </div> {# col #}
 	    </div> {# row #}
 
-		<div id="nuevoRemito" class="modal fade custom-modal" role="dialog" data-backdrop="static" 
+		<div id="nuevoMovimiento" class="modal fade custom-modal" role="dialog" data-backdrop="static" 
 		     data-keyboard="false">
 		 	<div class="modal-dialog modal-xl">
 			    <!-- Modal content-->
 			    <div class="modal-content">
 				    <div class="modal-header" style="background-color:#666	;color:#FFF">
 		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title">Nuevo Remito</h4>
+		    			<h4 class="modal-title">Nuevo Movimiento</h4>
 				    </div>
 				    <div class="modal-body" style="background-color:#ecf0f5">
 						<div class="row">
-						 	<div class="col-md-8">
-								<div class="form-group">
-						        	<label for="selExpedientes">Expedientes:</label>
-						        	<select class="form-control" multiple="multiple" data-width="100%" id="selExpedientes" 
-						        			name="selExpedientes">
-						        	</select>
-						        </div>
-							</div>
-							<div class="col-md-4">
-								<div class="row">
-        							<div class="col-md-12">
-        								<div class="form-group">
+						 	<div class="col-md-3">
+						 		<div class="row">
+    								<div class="col-md-12">
+    									<div class="form-group">
         						        	<label for="selDestino">Destino:</label>
         						        	<select class="form-control" id="selDestino" name="selDestino">
         						        		<option value="0">Seleccione Destino</option>
@@ -670,9 +723,19 @@
         							            {% endfor %}
         						        	</select>
         						        </div>
-        						 	</div>
-        						 </div>
-        						 <div class="row">
+    								</div>
+    							</div>
+						 		<div class="row">
+						 			<div class="col-md-12">
+        								<div class="form-group">
+        						        	<label for="selExpedientes">Expedientes:</label>
+        						        	<select class="form-control" multiple="multiple" data-width="100%" id="selExpedientes" 
+        						    	    			name="selExpedientes">
+        						        	</select>
+        						        </div>
+        							</div>
+    							</div>
+    							<div class="row">
         							<div class="col-md-12">
         								<div class="text-center">
              								<div class="btn-group">
@@ -682,20 +745,18 @@
              						    </div>
         							</div>
         						</div>
-        					</div>
-						</div>
-						<hr>	
-						<div class="row">
-							<div class="col-md-12">
+							</div>
+							<div class="col-md-9">
 								<div class="div-tabla">
     								<table class="table table-striped" id="detalleRemito"  width='100%'>
     								     <thead>
                     	                	<tr>
                     						    <th class="hidden">id</th>
-                    						    <th width="15%" class="text-center" >Nro Exp</th>
+                    						    <th width="10%" class="text-center" >Nro Exp</th>
                     						    <th width="10%" class="text-center" ">Fojas</th>
-                    			                <th width="18%">Tipo Movimiento</th>
-                    			                <th width="60%">Observación</th>
+                    			                <th width="20%">Tipo Movimiento</th>
+                    			                <th width="20" class="header-comision hidden">Comisión</th>
+                    			                <th width="40%">Observación</th>
                     	                	</tr>
                     	                </thead>
                     	                <tbody>
@@ -707,7 +768,8 @@
     									   class="form-control text-center hidden">
     							</div>
 							</div>
-						</div>   
+						</div>
+						<hr>	   
 				        <hr>
 				        <div class="row">
 				        	<div class="col-md-12">

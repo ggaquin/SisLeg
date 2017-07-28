@@ -33,29 +33,34 @@ class ImpresionServicio
             $idTipoExpediente = $expediente->getTipoExpediente()->getId();
 
             $tieneProyecto=false;
-            $idProyecto=0;
+            $idProyecto=null;
 
          
             switch ($idTipoExpediente) {
                 case '3': //Petición Particular
-                    $documento["origen"]='Petición Particular';
+                	$demandante=$expediente->getDemandanteParticular();
+                	$demandante="PARTICULAR".((!is_null($demandante))?(" - ".$demandante):"");
+                	$documento["origen"]=$demandante;
                     break;
-                case '4': //Departamento Ejecutivo
-                    $documento["origen"]='Departamento Ejecutivo';
+                case '4': //Poder Ejecutivo
+                	$externo=$expediente->getOrigenExterno()->getOficina()->getOficina();
+                	$origen=((!is_null($externo))?(" - ".$externo):"");
+                	$origen='PODER EJECUTIVO'.$origen;
+                	$documento["origen"]=$origen;
                     break;
                 case '5': //Secretaría Administrativa
-                    $documento["origen"]='Secretaría Administrativa';
+                    $documento["origen"]='SECRETARIA ADMINISTRATIVA';
                     break;
                 default: //proyecto
                     $proyecto=$expediente->getProyecto();
-                    $bloques=$proyecto->getBloques();
-                    $listaConcejales="";
-                    $perfilRepository=$this->em->getRepository('AppBundle:Perfil');
-                    foreach ($bloques as $bloque) {
-                       $listaConcejales.=($listaConcejales!=""?" - ":"");
-                       $listaConcejales.=$perfilRepository->findLegisladorByBloque_Id($bloque->getId());
-                    }
-                    $listaConcejales.=($listaConcejales!=""?" - ":"");
+                    //$bloques=$proyecto->getBloques();
+                    //$listaConcejales="";
+                    //$perfilRepository=$this->em->getRepository('AppBundle:Perfil');
+//                     foreach ($bloques as $bloque) {
+//                        $listaConcejales.=($listaConcejales!=""?" - ":"");
+//                        $listaConcejales.=$perfilRepository->findLegisladorByBloque_Id($bloque->getId());
+//                     }
+                    //$listaConcejales.=($listaConcejales!=""?" - ":"");
                     $listaConcejales.=$proyecto->getListaConcejales(";");
                     $documento["origen"]=$listaConcejales;
                     $tieneProyecto=true;

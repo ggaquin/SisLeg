@@ -10,6 +10,8 @@
     </id>
     <field name="fechaRecepcion" type="datetime" column="fechaRecepcion" nullable="true">
     </field>
+    <field name="numeroRemito" column="numeroRemito" type="integer" nullable="false">
+    </field>
     <field name="anulado" type="boolean" column="anulado" nullable="true">
     </field>
     <field name="motivoAnulacion" type="string" column="motivoAnulacion" length="150" nullable="true">

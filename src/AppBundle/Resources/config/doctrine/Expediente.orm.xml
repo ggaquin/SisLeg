@@ -80,7 +80,8 @@
     		<cascade-persist/>
     		<cascade-remove/>
     	</cascade>
-    </one-to-one>  
+    </one-to-one> 
+    <one-to-many field="asignacionComisiones" mapped-by="expediente" target-entity="ExpedienteComision"/> 
     <one-to-many field="movimientos" mapped-by="expediente" target-entity="Movimiento" orphan-removal="true">
     	<cascade>
     		<cascade-persist/>

@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use AppBundle\Entity\Rol;
 use AppBundle\Entity\Bloque;
 use AppBundle\Entity\Proyecto;
+use AppBundle\Entity\Comision;
 
 
 class DefaultController extends Controller
@@ -147,13 +148,16 @@ class DefaultController extends Controller
     public function expedienteAction(Request $request)
     {
         $tiposExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
-        $tiposExpediente=$tiposExpedienteRepository->findBy(array(),array('tipoExpediente' => 'ASC') );
         $estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
-        $estadosExpediente=$estadoExpedienteRepository->findBy(array(),array('estadoExpediente' => 'ASC'));
-        //$oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
+        $tipoOficinaRepository=$this->getDoctrine()->getRepository('AppBundle:TipoOficina');
+        $oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
+        $idOficinaExterna=$this->getParameter('id_oficina_externa');
         
+        $tiposExpediente=$tiposExpedienteRepository->findBy(array(),array('tipoExpediente' => 'ASC'));
+        $estadosExpediente=$estadoExpedienteRepository->findBy(array(),array('estadoExpediente' => 'ASC'));
+        $tipoOficinaExterna=$tipoOficinaRepository->find($idOficinaExterna);
+        $oficinasExternas=$oficinaRepository->findBy(array('tipoOficina' => $tipoOficinaExterna));
         $usuario=$this->getUser();    
-        //$oficinas=$oficinaRepository->findAll();
         
         $array=[];
         $permisos=$usuario->getPermisos();
@@ -163,16 +167,8 @@ class DefaultController extends Controller
         $array['base_dir']=realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR;
         $array['tipos']=$tiposExpediente;
         $array['estados']=$estadosExpediente;
-        //$array['oficinas']=$oficinas;
-        //$array['idOficinaActual']=$idOficinaActual;
+        $array['oficinasExternas']=$oficinasExternas;
         return $this->render('default/expediente.html.twig', $array);
-        /*
-        return $this->render('default/expediente.html.twig', array(
-            'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
-        		'tipos' => $tiposExpediente,'estados'=>$estadosExpediente, 'oficinas'=>$oficinas,
-        		'idOficinaActual' => $idOficinaActual
-        ));
-        */ 
     }
     
     /**
@@ -185,19 +181,55 @@ class DefaultController extends Controller
     	$idOficinaInterna=$this->getParameter('id_oficina_interna');
     	$tipoOficina= $tipoOficinaRepository->find($idOficinaInterna);
     	$oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
+    	$tipoMovimientoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoMovimiento');
+    	$comisionesRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
     	
     	$usuario=$this->getUser();
     	$oficinaUsuario=$usuario->getRol()->getOficina();
     	$idMesaEntradas=$this->getParameter('id_mesa_entradas');
+    	$oficinas=null;
+    	$tiposMovimientos=null;    	
     	
-    	if ($oficinaUsuario->getId()!=$idMesaEntradas)
+    	if ($oficinaUsuario!=null && $oficinaUsuario->getId()!=$idMesaEntradas){
     		$oficinas=$oficinaRepository->findBy(array('tipoOficina' => $tipoOficina));
-    	else
+    		$tiposMovimientos=$tipoMovimientoRepository->findBy(array('tipoMovimiento' => 'Pase'));
+    		$muestra_comisiones=0;
+    		$muestra_remitos=0;
+    	}
+    	else{
     		$oficinas=$oficinaRepository->findAll();
-    		
+    		$tiposMovimientos=$tipoMovimientoRepository->findAll();
+    		$muestra_comisiones=1;
+    		$muestra_remitos=1;
+    	}
+  
+    	$movimientosCompletosHTML="";
+    	foreach ($tiposMovimientos as $tipoMovimiento){
+    		$movimientosCompletosHTML.="<option value='".$tipoMovimiento->getId().
+    		"'>".$tipoMovimiento->getTipoMovimiento().
+    		"</option>";
+    	}
+    	
+    	$movimientoPase=$tipoMovimientoRepository->findBy(array('tipoMovimiento' => 'Pase'));
+    	foreach ($movimientoPase as $tipoMovimiento){
+    		$movimientosPaseHTML="<option value='".$tipoMovimiento->getId().
+    		"' selected>".$tipoMovimiento->getTipoMovimiento().
+	    	"</option>";
+    	}
+    	
+    	$comisiones=$comisionesRepository->findAll();
+    	$comisionesHTML="";
+    	foreach ($comisiones as $comision){
+    		$comisionesHTML.="<option value='".$comision->getId().
+    		"'>".$comision->getComision().
+    		"</option>";
+    	}
+    	
     	return $this->render('default/movimientos.html.twig', array(
     			'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
-    			'oficinas' => $oficinas
+    			'oficinas' => $oficinas, 'movimientosCompletos' => $movimientosCompletosHTML,
+    			'movimientoPase' => $movimientosPaseHTML, 'comisiones' => $comisionesHTML,
+    			'muestra_comisiones' => $muestra_comisiones,'muestra_remitos' => $muestra_remitos
     	));
     	
     }
@@ -297,7 +329,7 @@ class DefaultController extends Controller
 
         $parametrosCaratula=$this->get('impresion_servicio')->traerParametrosCaratula($idExpediente);
 
-        $idProyecto=(!is_null($parametrosCaratula)?$parametrosCaratula["idProyecto"]: $idProyecto);
+        $idProyecto=((!is_null($parametrosCaratula))?$parametrosCaratula["idProyecto"]: $idProyecto);
 
         $parametrosProyecto=$this->get('impresion_servicio')->traerParametrosProyecto($idProyecto);
         
@@ -353,13 +385,13 @@ class DefaultController extends Controller
                         <td style="width:20%;vertical-align: bottom;">
                           Letra:
                         </td>
-                        <td style="width:5%;vertical-align: bottom;font-size:x-large;">
+                        <td style="width:8%;vertical-align: bottom;font-size:x-large;">
                           <strong><i>'.$documento["letra"].'</i></strong>
                         </td>
-                        <td style="width:20%;vertical-align: bottom;">
+                        <td style="width:15%;vertical-align: bottom;">
                           Año:
                         </td>
-                        <td style="width:10%;vertical-align: bottom;font-size:x-large;">
+                        <td style="width:8%;vertical-align: bottom;font-size:x-large;">
                           <strong><i>'.$documento["ejercicio"].'</i></strong>
                         </td>
                       </tr>
@@ -401,23 +433,23 @@ class DefaultController extends Controller
             $pdf->writeHTMLCell(40, '', '', '', $html, 0, 0, 1, true, 'L', true);
             $html='<hr><hr>';
             $pdf->SetFillColor(0, 0, 0, 3);
-            $pdf->writeHTMLCell(145, 10, '' , '', '', 0, 1, 1, true, 'L', true);
+            $pdf->writeHTMLCell(135, 10, '' , '', '', 0, 1, 1, true, 'L', true);
             $pdf->SetFillColor(0, 0, 0, 0);
             $pdf->writeHTMLCell(40, '', '', '', '', 0, 0, 1, true, 'L', true);
             $pdf->SetFillColor(0, 0, 0, 3);
-            $pdf->writeHTMLCell(145, '', '' , '', $html, 0, 1, 1, true, 'L', true);
+            $pdf->writeHTMLCell(135, '', '' , '', $html, 0, 1, 1, true, 'L', true);
             $pdf->SetFillColor(0, 0, 0, 0);
             $pdf->writeHTMLCell(40, '', '', '', '', 0, 0, 1, true, 'L', true);
             $pdf->SetFillColor(0, 0, 0, 3);
-            $pdf->writeHTMLCell(145, '', '' , '', $html, 0, 1, 1, true, 'L', true);
+            $pdf->writeHTMLCell(135, '', '' , '', $html, 0, 1, 1, true, 'L', true);
             $pdf->SetFillColor(0, 0, 0, 0);
             $pdf->writeHTMLCell(40, '', '', '', '', 0, 0, 1, true, 'L', true);
             $pdf->SetFillColor(0, 0, 0, 3);
-            $pdf->writeHTMLCell(145, '', '' , '', $html, 0, 1, 1, true, 'L', true);
+            $pdf->writeHTMLCell(135, '', '' , '', $html, 0, 1, 1, true, 'L', true);
             $pdf->SetFillColor(0, 0, 0, 0);
             $pdf->writeHTMLCell(40, '', '', '', '', 0, 0, 1, true, 'L', true);
             $pdf->SetFillColor(0, 0, 0, 3);
-            $pdf->writeHTMLCell(145, '', '' , '', $html, 0, 1, 1, true, 'L', true);
+            $pdf->writeHTMLCell(135, '', '' , '', $html, 0, 1, 1, true, 'L', true);
         }
 
         /*---------------------------------------------------------------------------------------

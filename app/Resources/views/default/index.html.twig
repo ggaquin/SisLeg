@@ -16,10 +16,9 @@
         }
 
         function cargarMenu(url){
-			debugger;
         	$("#contenidoUsuario").load('{{ app.request.getBaseURL() }}'+ url);
 		
-         }
+        } 
       </script>
       <div class="wrapper">
         <header class="main-header">
@@ -246,7 +245,7 @@
                   <li><a href="#" onclick="cargarMenu('/comisiones')"><i class="fa fa-minus"></i>Alta y Modificación</a></li>
                   {% endif %}
                   {% if COM_EXP_MAIN is defined %}
-                  <li><a href="#" onclick="noImplementado();"><i class="fa fa-minus"></i>Expedientes</a></li>
+                  <!-- <li><a href="#" onclick="noImplementado();"><i class="fa fa-minus"></i>Expedientes Girados</a></li> -->
                   {% endif %}
                 </ul>
               </li>
@@ -266,10 +265,7 @@
                   <li><a href="#" onclick="cargarMenu('/expedientes')"><i class="fa fa-minus"></i>Gestión de Expedientes</a></li>
                   {# {% endif %} #}
                   {% if  MOV_MAIN is defined%}
-                  <li><a href="#" onclick="cargarMenu('/movimientos')"><i class="fa fa-minus"></i>Remitos Movimientos (Giros)</a></li>
-                  {% endif %}
-                  {% if REP_MAIN is defined %}
-                  <li><a href="#" onclick="noImplementado();"><i class="fa fa-minus"></i>Remitos Informes (CH)</a></li>
+                  <li><a href="#" onclick="cargarMenu('/movimientos')"><i class="fa fa-minus"></i>Movimientos</a></li>
                   {% endif %}
                 </ul>
               </li>

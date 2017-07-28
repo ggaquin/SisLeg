@@ -94,7 +94,7 @@ class ExpedienteRepository extends EntityRepository{
 		if(!is_null($oficina))
 			$query->setParameter('idOficina',$oficina->getId());
 		
-		return $query->getSingleResult();
+		return $query->getOneOrNullResult(); //getSingleResult();
 		
 	}
 	
@@ -120,35 +120,39 @@ class ExpedienteRepository extends EntityRepository{
 	
 	public function findGirosByExpediente_Id($idExpediente){
 		
-		$tipoMovimientoPase=1;
+		$movimientoInforme=2;
 		$rep = $this->getEntityManager()->getRepository('AppBundle:Movimiento');
 		$qb = $rep->createQueryBuilder('m');
 		$qb ->innerJoin('m.expediente', 'e')
 		    -> innerJoin("m.tipoMovimiento", 't')
 		    -> where($qb->expr()->andX(
 							    		$qb->expr()->eq('e.id', '?1'),
-							    		$qb->expr()->eq('t.id','?2')
+		    							$qb->expr()->neq('t.id','?2'),
+		    							$qb->expr()->eq('m.anulado', '?3')
 							    		)
 		    		)
 		    ->setParameter(1, $idExpediente)
-		    ->setParameter(2, $tipoMovimientoPase);
+		    ->setParameter(2, $movimientoInforme)
+		    ->setParameter(3, false);
 		return $qb->getQuery()->getResult();
 	}
 	
 	public function findInformesByExpediente_Id($idExpediente){
 		
-		$tipoMovimientoPase=1;
+		$movimientoPase=1;
 		$rep = $this->getEntityManager()->getRepository('AppBundle:Movimiento');
 		$qb = $rep->createQueryBuilder('m');
 		$qb -> innerJoin('m.expediente', 'e')
 			-> innerJoin("m.tipoMovimiento", 't')
 			-> where($qb->expr()->andX(
 										$qb->expr()->eq('e.id', '?1'),
-										$qb->expr()->neq('t.id','?2')
+										$qb->expr()->neq('t.id','?2'),
+										$qb->expr()->eq('m.anulado', '?3')	
 									   )
 					)
 			->setParameter(1, $idExpediente)
-			->setParameter(2, $tipoMovimientoPase);
+			->setParameter(2, $movimientoPase)
+			->setParameter(3, false);
 		return $qb->getQuery()->getResult();
 	}
 }

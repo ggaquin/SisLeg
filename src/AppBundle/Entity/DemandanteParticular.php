@@ -3,6 +3,7 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\VirtualProperty;
 
 /**
  * DemandanteParticular
@@ -129,4 +130,19 @@ class DemandanteParticular
     	return $this->documento;
     }
     
+    //------------------------------Propiedades virtuales-----------------------------------------
+    
+    
+    /**
+     * Get descripcion
+     *
+     * @return string
+     *
+     * @VirtualProperty
+     */
+    public function getDescripcion()
+    {   $descripcion = "Documento: " .$this->getDocumento();
+    	$descripcion .=" - Nombre :" .$this->getApellidos() .", ".$this->getNombres();
+    	return $descripcion;
+    }
 }

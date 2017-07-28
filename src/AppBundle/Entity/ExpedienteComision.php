@@ -7,8 +7,11 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ExpedienteComision
  *
- * @ORM\Table(name="expedienteComision", indexes={@ORM\Index(name="expedienteComision_expediente_idx", columns={"idExpediente"}), 
- *                                                @ORM\Index(name="expedienteComision_comision_idx", columns={"idComision"})})
+ * @ORM\Table(name="expedienteComision", uniqueConstraints={@ORM\UniqueConstraint(name="UNIQ_expedienteComision_dictamen_idx",
+ *                                                 columns={"idDictamen"})},
+ * 										 indexes={@ORM\Index(name="expedienteComision_expediente_idx", columns={"idExpediente"}), 
+ *                                                @ORM\Index(name="expedienteComision_comision_idx", columns={"idComision"})
+ *                                               })
  * @ORM\Entity
  */
 class ExpedienteComision
@@ -27,28 +30,14 @@ class ExpedienteComision
    /**
      * @var \DateTime
      *
-     * @ORM\Column(name="fechaAprobacion", type="datetime", nullable=false)
-     */
-    private $fechaAprobacion;
-
-   /**
-     * @var \DateTime
-     *
      * @ORM\Column(name="fechaAsignacion", type="datetime", nullable=false)
      */
     private $fechaAsignacion = 'CURRENT_TIMESTAMP';
 
    /**
-     * @var boolean
-     *
-     * @ORM\Column(name="aprobado", type="boolean", nullable=false)
-     */
-    private $aprobado;
-
-   /**
      * @var \AppBundle\Entity\Expediente
      *
-     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Expediente")
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Expediente", inversedBy="asignacionComisiones")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="idExpediente", referencedColumnName="idExpediente")
      * })
@@ -66,11 +55,20 @@ class ExpedienteComision
     private $comision;
     
     /**
-     * @var \Doctrine\Common\Collections\Collection
+     * @var \AppBundle\Entity\Dictamen
      *
-     * @ORM\OneToMany(targetEntity="AppBundle\Entity\ExpedienteComisionDictamen", mappedBy="expedienteComision")
+     * @ORM\OneToOne(targetEntity="AppBundle\Entity\Dictamen")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="idDictamen", referencedColumnName="idDictamen")
+     * })
      */
-    private $dictamenes;
+    private $dictamen; 
+    
+   /**
+    * @var boolean
+    * @ORM\Column(name="asignacionActual", type="boolean", nullable=false)
+    */ 
+    private $asignacionActual;
 
     //--------------------------------------setters y getters----------------------------------------
 
@@ -85,35 +83,11 @@ class ExpedienteComision
     }
 
     /**
-     * Set fechaAprobacion
-     *
-     * @param \DateTime $fechaAprobacion
-     *
-     * @return ProyectoAsignado
-     */
-    public function setFechaAAprobacion($fechaAprobacion)
-    {
-        $this->fechaAprobacion = $fechaAprobacion;
-
-        return $this;
-    }
-
-    /**
-     * Get fechaAprobacion
-     *
-     * @return \DateTime
-     */
-    public function getFechaAprobacion()
-    {
-        return $this->fechaAprobacion;
-    }
-
-    /**
      * Set fechaAsignacion
      *
      * @param \DateTime $fechaAsignacion
      *
-     * @return ProyectoAsignado
+     * @return ExpedienteComision
      */
     public function setFechaAsignacion($fechaAsignacion)
     {
@@ -130,30 +104,6 @@ class ExpedienteComision
     public function getFechaAsignacion()
     {
         return $this->fechaAsignacion;
-    }
-
-    /**
-     * Set aprobado
-     *
-     * @param boolean $aprobado
-     *
-     * @return ProyectoAsignado
-     */
-    public function setAprobado($aprobado)
-    {
-        $this->aprobado = $aprobado;
-
-        return $this;
-    }
-
-    /**
-     * Get esLegislador
-     *
-     * @return boolean
-     */
-    public function getAprobado()
-    {
-        return $this->aprobado;
     }
 
     /**
@@ -185,7 +135,7 @@ class ExpedienteComision
      *
      * @param \AppBundle\Entity\Comision $comision
      *
-     * @return ProtectoAsignado
+     * @return ExpedienteComision
      */
     public function setComision($comision)
     {
@@ -205,28 +155,51 @@ class ExpedienteComision
     }
 
      /**
-     * Add dictamen
+     * Set dictamen
      *
-     * @param \AppBundle\Entity\ExpedienteComisionDictamen $dictamen
+     * @param \AppBundle\Entity\Dictamen $dictamen
      *
      * @return ExpedienteComision
      */
-    public function addDictamen(\AppBundle\Entity\ExpedienteComisionDictamen $dictamen)
+    public function setDictamen(\AppBundle\Entity\Dictamen $dictamen)
     {
-        $this->dictamenes[] = $dictamen;
+        $this->dictamen = $dictamen;
 
         return $this;
     }
 
     /**
-     * Remove dictamen
+     * get dictamen
      *
-     * @param \AppBundle\Entity\ExpedienteComisionDictamen $dictamen
+     * @param \AppBundle\Entity\Dictamen $dictamen
      */
-    public function removeDictamen(\AppBundle\Entity\ExpedienteComisionDictamen $dictamen)
+    public function getDictamen()
     {
-        $this->dictamenes->removeElement($dictamen);
+        return $this->dictamen;
     }
-
+    
+    /**
+     * Set asignacionActual
+     *
+     * @param boolean $asignacionActual
+     *
+     * @return ExpedienteComision
+     */
+    public function setAsignacionActual($asignacionActual)
+    {
+    	$this->asignacionActual = $asignacionActual;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Get asignacionActual
+     *
+     * @return boolean
+     */
+    public function getAsignacionActual()
+    {
+    	return $this->asignacionActual;
+    }
    
 }

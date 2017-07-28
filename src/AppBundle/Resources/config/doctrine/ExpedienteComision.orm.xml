@@ -5,27 +5,30 @@
       <index name="expedienteComision_expediente_idx" columns="idExpediente"/>
       <index name="expedienteComision_comision_idx" columns="idComision"/>
     </indexes>
+    <unique-constraints>
+    	<unique-constraint columns="idDictamen" name="UNIQ_expedienteComision_dictamen_idx"/>
+    </unique-constraints>
     <id name="id" type="integer" column="idExpedienteComision">
       <generator strategy="IDENTITY"/>
     </id>
-    <field name="aprobado" type="boolean" column="aprobado" nullable="true">
-      <options>
-        <option name="default">0</option>
-      </options>
-    </field>
     <field name="fechaAsignacion" type="datetime" column="fechaAsignacion" nullable="false">
       <options>
         <option name="default">CURRENT_TIMESTAMP</option>
       </options>
     </field>
-    <field name="fechaAprobacion" type="datetime" column="fechaAprobacion" nullable="true"/>
-    <one-to-many field="dictamenes" target-entity="ExpedienteComisionDictamen" mapped-by="expedienteComision"/>
+    <field name="asignacionActual" type="boolean" column="asignacionActual" nullable="false">
+    </field>
+    <one-to-one field="dictamen" target-entity="Dictamen">
+    	<join-columns>
+    		<join-column name="idDictamen" referenced-column-name="idDictamen"/>
+    	</join-columns>
+    </one-to-one>
     <many-to-one field="comision" target-entity="Comision" inversed-by="expedientesAsignados">
       <join-columns>
         <join-column name="idComision" referenced-column-name="idComision"/>
       </join-columns>
     </many-to-one>
-    <many-to-one field="expediente" target-entity="Expediente">
+    <many-to-one field="expediente" target-entity="Expediente" inversed-by="asignacionComisiones">
       <join-columns>
         <join-column name="idExpediente" referenced-column-name="idExpediente"/> 
       </join-columns>

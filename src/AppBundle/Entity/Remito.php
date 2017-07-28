@@ -21,7 +21,7 @@ class Remito{
 	 *
 	 * @ORM\Column(name="idRemito", type="integer")
 	 * @ORM\Id
-	 * @ORM\GeneratedValue(strategy="IDENTITY")
+	 * @ORM\GeneratedValue (strategy="IDENTITY")
 	 */
 	private $id;
 		
@@ -31,6 +31,13 @@ class Remito{
 	 * @ORM\Column(name="fechaRecepcion", type="datetime", nullable=true)
 	 */
 	private $fechaRecepcion;
+	
+	/**
+	 * @var integer
+	 *
+	 * @ORM\Column(name="numeroRemito", type="integer", nullable=true)
+	 */
+	private $numeroRemito;
 	
 	/**
 	 * @var boolean
@@ -106,6 +113,7 @@ class Remito{
 	public function __construct()
 	{
 		$this->movimientos = new \Doctrine\Common\Collections\ArrayCollection();
+		$this->numeroRemito = 0;
 		$this->anulado=false;
 	}
 	
@@ -142,6 +150,27 @@ class Remito{
 		return $this;
 	}
 	
+	/**
+	 * Set numeroRemito
+	 *
+	 * @return integer
+	 */
+	public function getNumeroRemito() {
+		return $this->numeroRemito;
+	}
+	
+	/**
+	 * Get numeroRemito
+	 *
+	 * @param integer $numeroRemito
+	 *
+	 * @return Remito
+	 */
+	public function setNumeroRemito($numeroRemito) {
+		$this->numeroRemito = $numeroRemito;
+		return $this;
+	}
+		
 	/**
 	 * Set anulado
 	 *
@@ -422,6 +451,8 @@ class Remito{
 		$expedientes="";
 		$movimientosAux=(!is_null($this->getMovimientos())?$this->getMovimientos():[]);
 		foreach ($movimientosAux as $movimiento){
+			if (!$expedientes=="")
+				$expedientes.=" / ";
 			$expedientes.=$movimiento->getExpediente()->getNumeroCompleto();
 		}
 		return $expedientes;

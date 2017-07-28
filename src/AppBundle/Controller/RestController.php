@@ -21,11 +21,12 @@ use AppBundle\Entity\Bloque;
 use AppBundle\Entity\Expediente;
 use AppBundle\Entity\Proyecto;
 use AssistBundle\Entity\AdministracionSesion;
-use AppBundle\Entity\Movimiento;
 use AppBundle\Entity\Remito;
 use AppBundle\Entity\Oficina;
-use AppBundle\Entity\TipoMovimiento;
-
+use AppBundle\Entity\DemandanteParticular;
+use AppBundle\Entity\OrigenExterno;
+use AppBundle\Entity\ExpedienteComision;
+use AppBundle\Entity\Movimiento;
 
 class RestController extends FOSRestController{
 
@@ -130,7 +131,7 @@ class RestController extends FOSRestController{
     		$numero=$request->query->get('q');
     		$usuario=$this->getUser();
     		   	    		
-    		$valorRetorno=null;
+    		$valorRetorno=[];
     		$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
     		$resultado=$expedienteRepository->findNumeroCompletoByNumero($numero,
     																	 $usuario->getRol()->getOficina());
@@ -142,13 +143,11 @@ class RestController extends FOSRestController{
 	    		$valorRetorno=array(array('id' => $resultado["id"],'numeroCompleto' => $numeroCompleto));
 	    		return $this->view($valorRetorno,200);
     		}
-    		else 
-    		{
-    			return $this->view($valorRetorno,404);
-    		}
-    	}catch(\Exception $e)   {
+    		
+    	}catch(\Exception $e){
+    		
     		return $this->view($e->getMessage(),500);
-    		}
+    	}
     }
     		
     
@@ -204,6 +203,63 @@ class RestController extends FOSRestController{
     }
     
     /**
+     * @Rest\Post("/api/expediente/retornoExterno")
+     */
+    public function retornoExpedienteAction(Request $request)
+    {
+    	$idExpediente=$request->request->get('idExpediente');
+    	$folios=$request->request->get('folios');
+    	$fecha=$request->request->get('fecha');
+    	
+    	try {
+    		
+    		$usuario=$this->getUser();
+    		$oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
+    		$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+    		$tipoMovimientoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoMovimiento');
+    		$fechaActual=new \DateTime('now');
+    		$idOficinaMesaEntradas=$this->getParameter('id_mesa_entradas');
+    		$idMovimientoPase=$this->getParameter('id_movimiento_pase');
+    		
+    		$expediente=$expedienteRepository->find($idExpediente);
+    		$tipoMovimiento=$tipoMovimientoRepository->find($idMovimientoPase);
+    		$destino=$oficinaRepository->find($idOficinaMesaEntradas);
+    		$fechaRecepcion= \DateTime::createFromFormat('d/m/Y', $fecha);
+    		
+    		$remito= new Remito();
+    		$origen=$oficinaRepository->find($expediente->getOficinaActual());
+    		$remito->setDestino($destino);
+    		$remito->setOrigen($origen);
+    		$remito->setFechaCreacion($fechaActual);
+    		$remito->setUsuarioCreacion($usuario->getUsuario());
+    		$remito->setFechaRecepcion($fechaRecepcion);
+    		
+    		$em = $this->getDoctrine()->getManager();
+  
+    		$expediente->setOficinaActual($destino); //cambia destino de expediente
+    		$expediente->setFolios($folios); //actualiza los folios del expediente
+    		$em->persist($expediente);
+    				
+    		$movimiento= new Movimiento();
+    		$movimiento->setExpediente($expediente);
+    		$movimiento->setFechaCreacion($fechaActual);
+    		$movimiento->setUsuarioCreacion($usuario->getUsuario());
+    		$movimiento->setFojas($folios);
+    		$movimiento->setObservacion("Autopase por Retorno");
+    		$movimiento->setTipoMovimiento($tipoMovimiento);
+    		$remito->addMovimiento($movimiento);
+    				
+    		$em->persist($remito);
+    		$em->flush();
+    		
+    		return $this->view("El retorno del expediente se generó forma exitosa",200);
+    		
+    	}
+    	catch (\Exception $e){
+    		return $this->view($e->getMessage(),500);
+    	}
+    }
+    /**
      * @Rest\Get("/api/expediente/remito/getAllByCriteria/{tipoCriterio}/{criterio}")
      */
     public function traerGirosPorOficinaAction(Request $request)
@@ -213,7 +269,7 @@ class RestController extends FOSRestController{
 	    	$tipoCriterio=$request->get('tipoCriterio');
 	    	$criterio=$request->get('criterio');
 	    	$oficina=$this->getUser()->getRol()->getOficina();
-	    	$remitoRepository=$this->getDoctrine()->getRepository('AppBundle:RemitoGiros');
+	    	$remitoRepository=$this->getDoctrine()->getRepository('AppBundle:Remito');
 	    	
 	    	$remitos="";
 	    	if ($tipoCriterio=='todo')
@@ -233,9 +289,7 @@ class RestController extends FOSRestController{
 	    		$remitos=$remitoRepository->findByOficinaYFechaRecepcion($oficina,$fecha->format('Y-m-d'));
 	    	}
 	    	if ($tipoCriterio=='busqueda-5'){
-	    		//$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
 	    		$remitos=$remitoRepository->findByNumeroCompleto($oficina,$criterio);
-	    		//$remitos=$expediente->getGiros();
 	    	}
 	    	
 	    	return $this->view($remitos,200);
@@ -252,13 +306,16 @@ class RestController extends FOSRestController{
     {
     	$idOficina=$request->request->get('idDestino');
     	$remitoDetalle=json_decode($request->request->get('remitoDetalle'));
+    	
     	$usuario=$this->getUser();
-    	
     	$oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
+    	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+    	$tipoMovimientoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoMovimiento');
     	$fechaActual=new \DateTime('now');
-    	$remito= new RemitoGiros();
-    	
     	$origen=$usuario->getRol()->getOficina();
+    	$movimientoInforme=$this->getParameter('id_Movimiento_informe');
+    	
+    	$remito= new Remito();
     	$destino=$oficinaRepository->find($idOficina);
     	$remito->setDestino($destino);
     	$remito->setOrigen($origen);
@@ -268,21 +325,33 @@ class RestController extends FOSRestController{
     	$em = $this->getDoctrine()->getManager();
 
     	foreach ($remitoDetalle as $detalle) {
-    		$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
-    		$expediente=$expedienteRepository->find($detalle->id);
-    		$expediente->setOficinaActual($destino);
-    		$em->persist($expediente);
-    		$em->flush();
-    		$giro=new Giro();
-    		$giro->setExpediente($expediente);
-    		$giro->setFechaCreacion($fechaActual);
-    		$giro->setUsuarioCreacion($usuario->getUsuario());
-    		$giro->setFojas($detalle->folios);
-    		$giro->setObservacion($detalle->observaciones);
-    		$remito->addGiro($giro);
     		
-    	}
+    		$expediente=$expedienteRepository->find($detalle->id);
+    		$tipoMovimiento=$tipoMovimientoRepository->find($detalle->idTipoMovimiento);
+    		if ($tipoMovimiento=!$movimientoInforme) 
+    			$expediente->setOficinaActual($destino); //cambia destino de expediente
+    		$em->persist($expediente);
+    		
+    		$movimiento= new Movimiento();
+    		$movimiento->setExpediente($expediente);
+    		$movimiento->setFechaCreacion($fechaActual);
+    		$movimiento->setUsuarioCreacion($usuario->getUsuario());
+    		$movimiento->setFojas($detalle->folios);
+    		$movimiento->setObservacion($detalle->observaciones);
+    		
+    		$movimiento->setTipoMovimiento($tipoMovimiento);
     	
+    		$remito->addMovimiento($movimiento);
+    		if($detalle->incluyeComision){
+    			$expedienteComision=new ExpedienteComision();
+    			$expedienteComision->setExpediente($expediente);
+    			$expedienteComision->setFechaAsignacion($fechaActual);
+    			$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
+    			$comision=$comisionRepository->find($detalle->idComision);
+    			$expedienteComision->setComision($comision);
+    			$em->persist($expedienteComision);
+    		}
+    	}
     	$em->persist($remito);
     	$em->flush();
     	
@@ -294,11 +363,11 @@ class RestController extends FOSRestController{
      * @Rest\Post("/api/expediente/remito/invalidate")
      */
     public function anularRemitoAction(Request $request)
-    {	/*
+    {	
     	$idRemito = $request->request->get('idRemito');
     	$motivoAnulacion = $request->request->get('motivoAnulacion');
     	
-    	$remitoRepository=$this->getDoctrine()->getRepository('AppBundle:RemitoGiros');
+    	$remitoRepository=$this->getDoctrine()->getRepository('AppBundle:Remito');
     	$remito = $remitoRepository->find($idRemito);
     	
     	if($remito->getFechaRecepcion()!=null)
@@ -309,15 +378,15 @@ class RestController extends FOSRestController{
     	
     	$remito->setAnulado(true);
     	$remito->setMotivoAnulacion($motivoAnulacion);
-    	foreach ($remito->getGiros() as $giro) {
-    		$giro->setAnulado(true);
+    	foreach ($remito->getMovimiento() as $movimiento) {
+    		$movimiento->setAnulado(true);
     	}
     	$em = $this->getDoctrine()->getManager();
     	$em->persist($remito);
     	$em->flush();
     	
-    	return $this->view("El remito ".$remito->getId()." se anuló en forma exitosa",200);
-    	*/
+    	return $this->view("El remito se anuló en forma exitosa",200);
+    	
     }
     
     /**
@@ -329,7 +398,7 @@ class RestController extends FOSRestController{
     	$fechaRecepcion = $request->request->get('fechaRecepcion');
     	
     	$fecha = \DateTime::createFromFormat('d/m/Y', $fechaRecepcion);
-    	$remitoRepository=$this->getDoctrine()->getRepository('AppBundle:RemitoGiros');
+    	$remitoRepository=$this->getDoctrine()->getRepository('AppBundle:Remito');
     	$remito = $remitoRepository->find($idRemito);
     	
     	if ($remito->getFechaRecepcion()!=null)
@@ -351,7 +420,7 @@ class RestController extends FOSRestController{
     /**
      * @Rest\Get("/api/expediente/informe/getAllByExpediente/{id}")
      */
-    public function traerInformesPorIdExpediente(Request $request)
+    public function traerInformesPorIdExpedienteAction(Request $request)
     {
     	$id=$request->get('id');
     	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
@@ -360,30 +429,28 @@ class RestController extends FOSRestController{
     }
     
     /**
-     * @Rest\Get("/api/expediente/informe/findOne/{id}")
+     * @Rest\Post("/api/expediente/informe/respuesta/update")
      */
-    public function traerInformePorId(Request $request)
-    {	/*
-    	$id=$request->get('id');
-    	$informeRepository=$this->getDoctrine()->getRepository('AppBundle:Informe');
-   		$informe=$informeRepository->find($id);
-   		return $this->view($informe->getGiros(),200);*/
-    }
-
-    /**
-     * @Rest\Post("/api/expediente/informe/create")
-     */
-    public function crearInforme(Request $request)
+    public function actualizarRespuestaInformeAction(Request $request)
     {
-    	//TODO: implementar metodo crearInforme
-    }
-    
-    /**
-     * @Rest\Post("/api/expediente/informe/update")
-     */
-    public function actualizarInforme(Request $request)
-    {
-    	//TODO: implementar metodo actualizarInforme
+    	$idInforme=$request->request->get('idInforme');
+    	$fecha=$request->request->get('fecha');
+    	
+    	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Movimiento');
+    	$usuario=$this->getUser();
+    	$fechaActual=new \DateTime('now');
+    	
+    	$informe=$expedienteRepository->find($idInforme);
+    	$fechaRespuesta=\DateTime::createFromFormat('d/m/Y', $fecha);
+    	$informe->setFechaRespuestaInforme($fechaRespuesta);
+    	$informe->setFechaModificacion($fechaActual);
+    	$informe->setUsuarioModificacion($usuario->getUsuario());
+    	
+    	$em = $this->getDoctrine()->getManager();
+    	$em->persist($informe);
+    	$em->flush();
+    	
+    	return $this->view("El informe se actualizó en forma exitosa",200);
     }
     
     /**
@@ -741,64 +808,93 @@ class RestController extends FOSRestController{
     public function crearExpedienteAction(Request $request)
     {   
         try{ 
+        	//request params
             $idproyecto=$request->request->get('idProyecto'); 
-            $folios=$request->request->get('folios');  
-            $origen=$request->request->get('origen');
-            $apellidosSiParticular=$request->request->get('apellidosSiParticular');
-            $nombresSiParticular=$request->request->get('nombresSiParticular');           
+            $idTipoExpediente=$request->request->get('idTipoExpediente');
             $numeroExpediente=$request->request->get('numeroExpediente');
-            $idTipoExpediente=$request->request->get('selTipoExpediente');
+            $folios=$request->request->get('folios');
+            $documentoParticular=$request->request->get('documentoParticular');
+            $apellidosParticular=$request->request->get('apellidosParticular');
+            $nombresParticular=$request->request->get('nombresParticular');
+            $idOrigen=$request->request->get('idOrigen');
+            $numeros=json_decode($request->request->get('numeros'));
             $caratula=$request->request->get('caratula');
             $archivos=$request->files->all();
             $usuario=$this->getUser();
-            $idMesaEntradas=$this->getParameter('id_mesa_entradas');
-
+            
+            //repositorios y parámetros de configuración
             $tipoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
             $estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
             $oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
-            $oficina=$oficinaRepository->find($idMesaEntradas);
-            $estadoExpediente=null;
-                       
-            //Compatibilidad al inicio de la etapa de producción
-             $primerExpedienteSistema=$this->getParameter('primer_numero_sistema');
-                          
-             if($numeroExpediente<$primerExpedienteSistema)
-             	$estadoExpediente=$estadoExpedienteRepository->find(1);
-             else 
-             	$estadoExpediente=$estadoExpedienteRepository->find(5);       
-
+            $idMesaEntradas=$this->getParameter('id_mesa_entradas');
+                 
+            //nuevo expediente
             $expediente=new Expediente();
+            
+            //caratulación del HCD
             $expediente->setFolios($folios);
             $expediente->setArchivos($archivos);
             $expediente->setNumeroExpediente($numeroExpediente);
             $expediente->setCaratula($caratula);
-            //todos ingresan por mesa de entradas
+            
+            //establece la oficina actual (todos ingresan por mesa de entradas)
+            $oficina=$oficinaRepository->find($idMesaEntradas);
             $expediente->setOficinaActual($oficina);
-      
+      		
+  			//establece el proyecto
             $proyecto=null;
-            $tipoExpediente=null;
-
             if($idproyecto!=0){
                 $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
-                $proyecto=$proyectoRepository->find($idproyecto);
+                $proyecto=$proyectoRepository->find($idproyecto); 
                 $expediente->setProyecto($proyecto);
             }
-
+            
+			//establece el tipo de expediente
+            $tipoExpediente=null;
             if($proyecto==null)
                 $tipoExpediente=$tipoExpedienteRepository->find($idTipoExpediente);
-            else
-                $tipoExpediente=$proyecto->getTipoProyecto()->getTipoExpediente();
-
-            if ($origen==2){
-                $expediente->setApellidosSiParticular($apellidosSiParticular);
-                $expediente->setNombresSiParticular($nombresSiParticular);
-            }
-
+            else 
+            	$tipoExpediente=$proyecto->getTipoProyecto()->getTipoExpediente();
             $expediente->setTipoExpediente($tipoExpediente);
-            $expediente->setUsuarioCreacion($usuario->getUsername());
-            $expediente->setFechaCreacion(new \DateTime("now"));
+            
+            //si es un expediente particular establece los datos del demandante
+            $demandanteParticular=null;
+            if ($idTipoExpediente==3){
+            	$demandanteParticular= new DemandanteParticular();
+            	$demandanteParticular->setDocumento($documentoParticular);
+            	$demandanteParticular->setApellidos($apellidosParticular);
+            	$demandanteParticular->setNombres($nombresParticular);
+            }
+            $expediente->setDemandanteParticular($demandanteParticular);
+            
+            //si el expediente proviene del ejecutivo establece el origen externo
+            $oficinaOrigen=null;
+            if ($idTipoExpediente==4){
+            	$origenExterno=new OrigenExterno();
+            	$oficinaOrigen=$oficinaRepository->find($idOrigen);
+            	$origenExterno->setOficina($oficinaOrigen);
+            	$origenExterno->setNumeracionOrigen($numeros);
+            }
+            $expediente->setOrigenExterno($origenExterno);
+            
+            //Compatibilidad al inicio de la etapa de producción
+            $primerExpedienteSistema=$this->getParameter('primer_numero_sistema');
+            
+            //setea el estado del expediente
+            $estadoExpediente=null;
+            if($numeroExpediente<$primerExpedienteSistema)
+            		//entrado
+            		$estadoExpediente=$estadoExpedienteRepository->find(1);
+            	else
+            		//incorporado sistema anterior
+            		$estadoExpediente=$estadoExpedienteRepository->find(5);
             $expediente->setEstadoExpediente($estadoExpediente);
 
+            //datos de auditoría
+            $expediente->setUsuarioCreacion($usuario->getUsername());
+            $expediente->setFechaCreacion(new \DateTime("now"));
+
+            //persistencia en BD
             $em = $this->getDoctrine()->getManager();
             $em->persist($expediente);
             $em->flush();
@@ -820,43 +916,59 @@ class RestController extends FOSRestController{
     public function actualizarExpedienteAction(Request $request)
     {   
         try{
-            $id=$request->request->get('id');
-            $folios=$request->request->get('foliosMod'); 
-            $origen=$request->request->get('origen');
-            $apellidosSiParticular=$request->request->get('apellidosSiParticular-mod');
-            $nombresSiParticular=$request->request->get('nombresSiParticular-mod');
-            $numeroExpediente=$request->request->get('numeroExpedienteMod');
-            $idTipoExpediente=$request->request->get('selTipoExpedienteMod');
-            $caratula=$request->request->get('caratulaMod');
-
-
+            
+        	$idExpediente=$request->request->get('idExpediente');
+        	$idTipoExpediente=$request->request->get('idTipoExpediente');
+        	$numeroExpediente=$request->request->get('numeroExpediente');
+            $folios=$request->request->get('folios'); 
+            $documentoParticular=$request->request->get('documentoParticular');
+            $apellidosParticular=$request->request->get('apellidosParticular');
+            $nombresParticular=$request->request->get('nombresParticular');
+            $idOrigen=$request->request->get('idOrigen');
+            $numeros=json_decode($request->request->get('numeros'));           
+            $caratula=$request->request->get('caratula');
             $archivos=$request->files->all();
             $usuario=$this->getUser();
 
             $tipoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
-           
+            $oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
             $expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
-            $expediente=$expedienteRepository->find($id); 
-
-            $expediente->setFolios($folios);
-            $expediente->setArchivos($archivos);
+            $expediente=$expedienteRepository->find($idExpediente); 
+			
+            //datos del HCD
             $expediente->setNumeroExpediente($numeroExpediente);
+            $expediente->setFolios($folios);
             $expediente->setCaratula($caratula);
-
+            $expediente->setArchivos($archivos);
             $proyecto=$expediente->getProyecto();
+            
             $tipoExpediente=null;
-
             if($proyecto==null)
                 $tipoExpediente=$tipoExpedienteRepository->find($idTipoExpediente);
             else
                 $tipoExpediente=$proyecto->getTipoProyecto()->getTipoExpediente();
-
-            if ($origen==2){
-                $expediente->setApellidosSiParticular($apellidosSiParticular);
-                $expediente->setNombresSiParticular($nombresSiParticular);
-            }
-
             $expediente->setTipoExpediente($tipoExpediente);
+                
+           	$demandanteParticular=null;
+           	if ($idTipoExpediente==3){
+            	$demandanteParticular= new DemandanteParticular();
+                $demandanteParticular->setDocumento($documentoParticular);
+                $demandanteParticular->setApellidos($apellidosParticular);
+                $demandanteParticular->setNombres($nombresParticular);
+                $expediente->setOrigenExterno(null);
+            }
+            $expediente->setDemandanteParticular($demandanteParticular);
+                  
+            $origenExterno=null;
+            if ($idTipoExpediente==4){
+            	$origenExterno= new OrigenExterno();
+            	$origenExterno->setNumeracionOrigen($numeros);
+            	$oficinaOrigen = $oficinaRepository->find($idOrigen);
+            	$origenExterno->setOficina($oficinaOrigen);
+            	$expediente->setDemandanteParticular(null);
+            }
+            $expediente->setOrigenExterno($origenExterno);
+
             $expediente->setUsuarioModificacion($usuario->getUsername());
             $expediente->setFechaModificacion(new \DateTime("now"));
 
@@ -917,7 +1029,6 @@ class RestController extends FOSRestController{
     	$idRol=$request->get("idRol");
     	$rolRepository=$this->getDoctrine()->getRepository('AppBundle:Rol');
     	$rol=$rolRepository->find($idRol);
-    	$menus=$rol->getMenus();
     	
     	return $this->view($rol->getMenus(),200);
     }

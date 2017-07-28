@@ -64,11 +64,7 @@
 		#nuevoExpediente{
 			z-index: 10000;
 		}
-			
-		#respuestaInforme{
-			z-index: 10000;
-		}	
-				
+		
 		#numeroExterno{
 			z-index: 15000;
 		}
@@ -267,28 +263,6 @@
     		$("#numeroExterno").modal('show');
 		};
 
-		function validarFolios(control){
-			
-			var valorControl=$(control).val();
-			var idControl=$(control).attr("id");
-			var minimoValor=$(control).attr("min");
-			
-			if (!$.isNumeric(valorControl)){
-				toastr.error("El contenido ingresado en folios del expediente " +idControl+ " no es numérico");
-				setTimeout(function(){
-					   $("#"+idControl).select();
-				},10);
-			}
-			else {
-					if(valorControl<minimoValor){	
-						toastr.error("El contenido ingresado en folios del expediente " +idControl+ " es menor al minimo");
-						setTimeout(function(){
-							   $("#"+idControl).select();
-						},10);
-					}
-			}
-		}
-
 		$(document).ready(function () {
 
 			var tablaProyectos;
@@ -297,7 +271,7 @@
 
 			var tablaInformes;
 			
-		    var tabla=$('#registroExpediente').DataTable({
+		    var tabla=$('#registroAsignaciones').DataTable({
 		    			  "language": {
 				              "infoEmpty": "Sin registros para mostrar",
 				              "paginate": {
@@ -323,7 +297,7 @@
 			          	  },
 					      "processing": false,
 					      "ajax": {
-							        "url": "api/expediente/getByCriteria/"+tipoCriterio()+"/"+criterio(),
+							        "url": "api/expedienteComision/getByCriteria/"+tipoCriterio()+"/"+criterio(),
 			            			"dataSrc": '',
 							    },
 						  "columnDefs": [
@@ -368,10 +342,8 @@
 													              +"'></span>  "+data;
 									            	}
 													else{             
-        									            	if (("{{ app.user.rol.oficina is null}}" || "{{ app.user.rol.oficina.id }}"== "9" ) 
-                									            	&& row.oficina_actual.es_externa && '{{ EXP_RETURN is defined}}'){
-        	    												html+="<button type='button' title='Retornar a HCD' class='btn btn-primary btn-xs btn-retorno'"+
-        	    													  " data-toggle='modal' data-target='#retornoExterno'>" +
+        									            	if (("{{ app.user.rol.oficina is null}}" || "{{ app.user.rol.oficina.id }}"== "9" ) && row.oficina_actual.es_externa){
+        	    												html+="<button type='button' title='Reingresar a HCD' class='btn btn-primary btn-xs btn-reingreso'>"+
         	    						             		  	  	  "<span class='glyphicon glyphicon-repeat'></span></button>  "+data;
         									            	}
         	    						             		else html=data;
@@ -396,7 +368,7 @@
 					      "columns": [
 					      		{ "data": "id" },
 					      		{ "data": "null","width":"7%"},
-					      		{ "data": "numero_completo","width":"10%"},
+					      		{ "data": "expediente.numero_completo","width":"10%"},
 					            { "data": "tipo_expediente.tipo_expediente","width":"8%" },
 					            { "data": "fecha_creacion_formateada","width":"8%" },
 					            { "data": "fecha_modificacion_formateada","width":"8%" },
@@ -412,87 +384,16 @@
 					      "autoWidth": false,
 				});
 		    
-			//EVENTP BOTÓN DESCARGAR EXPEDIENTE
-		    $('#registroExpediente tbody').on( 'click', '.btn-descargar', function () {
+		    $('#registroAsignaciones tbody').on( 'click', '.btn-descargar', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        window.location.href='{{ app.request.getBaseURL() }}'+
 		        					 '/imprimir?tipoDocumento=expediente&id='+
 		        					  data[ "id" ];
 		    } );
-
-			//EVENTO BOTÓN RETORNO EXPEDIENTE
-		    $('#registroExpediente tbody').on( 'click', '.btn-retorno', function () {
-		        var data = tabla.row( $(this).parents('tr') ).data();
-		        $("#retornoExterno").find('input[name="idExpediente"]').val(data[ "id" ]);
-		        var html="<label for='foliosRetorno'>Folios Actuales</label>" +
-			        	 "<input type='number' class='form-control text-center es-numero' min='"+data[ "folios" ]+
-			        	 "' onblur='validarFolios(this);'" +
-				    	 "id='foliosRetorno' name='foliosRetorno' value='"+data[ "folios" ]+"'>";
-				$("#retornoExterno").find('div[id="col-folios"]').html(html);
-				$("#retornoExterno").find('legend[id="leyenda-retorno"]').html("Exp.: " + data[ "numero_completo" ]);
-		    } );
-
-			//EVENTO CERRAR MODAL RETORNO
-		    $('#retornoExterno').on('hidden.bs.modal', function () {
-		    	$("#retornoExterno").find('input[name="idExpediente"]').val("");
-		    	$("#retornoExterno").find('input[name="fechaRetorno"]').val("");
-			});
-
-			//BOTÓN GUARDAR RETORNO
-			$("#btn-retorno-hcd").click(function(){
-
-				$("#btn-retorno-hcd").prop("disabled",true);
-				debugger;
-				var idExpediente=$("#retornoExterno").find('input[name="idExpediente"]').val();
-				var folios=$("#retornoExterno").find('input[name="foliosRetorno"]').val();
-				var fecha=$("#retornoExterno").find('input[name="fechaRetorno"]').val();
-				var formData=new FormData();
-
-				var validacion='';
-
-				formData.append('idExpediente',idExpediente);
-	            	
-				formData.append('folios',folios);
-	            validacion+=((folios=='')?'<li>Debe indicar la cantidad de folios</li>':'');
-	              	
-	            formData.append('fecha',fecha);
-              	validacion+=((fecha=='')
-                      		  ?'<li>Debe indicar la fecha de recepción</li>':'');
-					
-		            if (validacion.length>0) 
-					{
-						validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
-									validacion+'</ul>':'');
-						toastr.error(validacion);
-						$(this).prop("disabled", false);
-						return false;
-					}
-					else{ 
-        				$.ajax({
-        	                async: true,
-        	                url: '{{ app.request.getBaseURL() }}'+'/api/expediente/retornoExterno',
-        	                data: formData,
-        	                contentType: false,
-        	                cache: false,
-    		                processData: false,
-        	                type:  'POST',
-                        success: function(data) {
-                            toastr.success(data);
-        					tabla.ajax.reload();
-        					$("#retornoExterno").modal('hide');
-                        	},
-                        complete:function(){
-                        	$("#btn-retorno-hcd").prop("disabled", false);
-                        },
-                        error: function(jqXHR,textStatus,errorThrown ){
-        					toastr.error(jqXHR.responseText);
-        					}
-                    	});
-					}
-			});
+		    
 		    
 // 			MODIFICAR EXPEDIENTE
-// 				$('#registroExpediente tbody').on( 'click', '.btn-detalle', function () {
+// 				$('#registroAsignaciones tbody').on( 'click', '.btn-detalle', function () {
 // 		        var data = tabla.row( $(this).parents('tr') ).data();
 // 		        $("#revistaExpediente").find('input[name="id"]').val(data[ "id" ]);
 // 		    } );
@@ -624,7 +525,7 @@
 			//---------------------------------------------------------------------------------------------------------------
 
 			//EVENTO BOTON EDITAR EXPEDIENTE EN GRILLA
-		    $('#registroExpediente tbody').on( 'click', '.btn-editar', function () {
+		    $('#registroAsignaciones tbody').on( 'click', '.btn-editar', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        $("#modificacionExpediente").find('input[name="id"]').val(data[ "id" ]);
 		    } );
@@ -1057,7 +958,7 @@
 			//------------------------------------------------------------------------------------------------------------
 
 			//EVENTO BOTON GIROS DE LA GRILLA
-		    $('#registroExpediente tbody').on( 'click', '.btn-giros', function () {
+		    $('#registroAsignaciones tbody').on( 'click', '.btn-giros', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        $("#giros").find('input[name="idExpediente"]').val(data[ "id" ]);
 		    } );
@@ -1144,7 +1045,7 @@
 			//------------------------------------------------------------------------------------------------------------
 
 			//EVENTO BOTON INFORMES DE LA GRILLA
-		    $('#registroExpediente tbody').on( 'click', '.btn-informes', function () {
+		    $('#registroAsignaciones tbody').on( 'click', '.btn-informes', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        $("#informes").find('input[name="idExpediente"]').val(data[ "id" ]);
 		    } );
@@ -1196,35 +1097,14 @@
                         							                return ((!data==0)?data:"");
             										               },
                 						            },
-                						            {
-            							                "targets": [ 6 ],
-            							                "data": 'fecha_respuesta_formateada',
-            							                "visible": true,
-            							                "orderable":true,
-            							                "render": function(data, type, row){
-                							                
-                    							                	if (("{{ app.user.rol.oficina is null}}" || "{{ app.user.rol.oficina.id }}"== "9" ) 
-                        									            	 && data=="" && '{{ EXP_REPORT_RETURN is defined}}'){
-                	    												return "<button type='button' title='Ingresar Fecha Respuesta' "+
-                	    													   "class='btn btn-primary btn-xs btn-respuesta-informe'"+
-                	    													   " data-toggle='modal' data-target='#respuestaInforme'>" +
-                	    						             		  	  	   "<span class='glyphicon glyphicon-paperclip'></span></button>";
-                									            	}
-                    							                	else
-                        							                	return data;
-                							                		 
-            										               },
-                						            }
                 							       
                 				  ],
                 			      "columns": [
                         			      		{ "data": "id" },
-                        			      		{ "data": "remito.numero_remito","width":"9%" },
-                        			      		{ "data": "destino","width":"15%"},
-                        			      		{ "data": "fecha_envio","width":"8%"},
-                        			      		{ "data": "observacion","width":"54%"},
-                        			      		{ "data": "fecha_recepcion","width":"8%"},
-                        			      		{ "data": "fecha_respuesta_formateada","width":"8%"}
+                        			      		{ "data": "expediente.numero_completo","width":"9%" },
+                        			      		{ "data": "comision.comision","width":"15%"},
+                        			      		{ "data": "tieneDictamen","width":"8%"},
+                        			      		{ "data": "dictamen.fecha_dictamen_formateada","width":"8%"},
                             			     ],
                 			      "autoWidth":false,
                 			      "paging": true,
@@ -1235,38 +1115,79 @@
                 		});			
 			});
 
-			//BOTON INGRESAR RESPUESTA DE LA GRILLA DE INFORMES
-			$('#tablaInformes tbody').on( 'click', '.btn-respuesta-informe', function () {
-				debugger;
-		        var data = tablaInformes.row( $(this).parents('tr') ).data();
-		        $("#respuestaInforme").find('input[name="idInforme"]').val(data[ "id" ]);
-		    } );
-
-			//EVENTO CERRAR MODAL RESPUESTA DE INFORMES
-			$('#respuestaInforme').on('hidden.bs.modal', function () {
-				$("#respuestaInforme").find('input[name="fechaRespuesta"]').val("");
-			});
-
 			//EVENTO CERRAR MODAL DE INFORMES
 			$('#informes').on('hidden.bs.modal', function () {
 				tablaInformes.destroy();
 			});
+
+			//------------------------------------------------------------------------------------------------------------
+			//-------------------------------------ALTA Y EDICION DE GIROS------------------------------------------------
+			//------------------------------------------------------------------------------------------------------------
+			
+			//BOTON ALTA GIRO DE LA GRILLA DE GIROS
+			$("#alta-giro").click(function(){
+				$("#giro").modal("show");
+			});
+
+			//BOTON ELIMINAR GIRO DE LA GRILLA DE GIROS
+			$('#tablaGiros tbody').on( 'click', '.btn-eliminar-movimiento', function () {
+		        /*
+		        	ver como implementar solo eliminar el último si:
+	        		el origen es mi oficina
+	        		no tiene fecha de recepcion
+        		*/	
+		    } );
+
+			// EVENTO ABRIR DEL MODAL DE GIRO
+			$('#giro').on('show.bs.modal', function () {
 				
-			//BOTON GUARDAR RESPUESTA DE INFORME
-			$("#btn-respuesta-informe").click(function(){
+				$("#selDestinoGiro").val(0);
+				$("#observacionGiro").val("");
+				$("#fechaRecepcionRemito").val("");
+				$("#fechaIntervencionOficinaActual").val("");
+
+				$.ajax({
+                    url: '{{ app.request.getBaseURL() }}' + '/api/expediente/giro/findLast',
+                    type: 'GET',
+                success: function(data) {
+                    
+                    if (data.destino_giro.id!='{{ idOficinaActual }}'){
+						$("#fechaIntervencionOficinaActual").removeClass('hidden');
+                    	$("#giro").find('input[name="idOficinaActual"]').val(data.destino_giro.id);
+                    }
+                    else{
+                    	$("#fechaIntervencionOficinaActual").addClass('hidden');
+                    	$("#giro").find('input[name="idOficinaActual"]').val(0);
+                    }
+                		
+                },
+                error: function(jqXHR,textStatus,errorThrown ){
+    				toastr.error(jqXHR.responseText);
+    				}
+            	});
+            	
+			});
+
+			$('#giro').on('hidden.bs.modal', function () {
+				$("#guardarGiro").prop("disabled", false);
+			});
+				
+			//BOTON GUARDAR GIRO DEL MODAL DE EDICION DE GIRO
+			$("#guardarGiro").click(function(){
 
 				$(this).prop("disabled", true);
 				
 				var validacion="";
 				var formData=new FormData();
-				debugger;
-				var idInforme =$("#respuestaInforme").find('input[name="idInforme"]').val();
-				var fecha=$("#respuestaInforme").find('input[name="fechaRespuesta"]').val();
 				
+				formData.append('observacion',$("#observacionGiro").val());
+				formData.append('fojas',$("#fojasRespuestaInforme").val());
+				formData.append('idDestino',$("#selDestinoGiro").val());
+				validacion=(($("#selDestinoGiro").val()==0)
+								?'<li>Debe seleccionar un destino</li>':'');
+		
 				
-				formData.append('idInforme',idInforme);
-				formData.append('fecha',fecha);
-				validacion=((fecha=="") ?'<li>Debe seleccionar una fecha</li>':'');
+				formData.append('idExpediente',$("#movimientos").find('input[name="idExpediente"]').val());
 				
                 if (validacion.length>0) 
         		{
@@ -1280,7 +1201,7 @@
         
                 	$.ajax({
                         async: true,
-                        url: '{{ app.request.getBaseURL() }}' + '/api/expediente/informe/respuesta/update' ,
+                        url: '{{ app.request.getBaseURL() }}' + '/api/expediente/giro/create',
                         data: formData,
                         cache: false,
                         contentType: false,
@@ -1288,8 +1209,139 @@
                         type: 'POST',
                     success: function(data) {
                         toastr.success(data);
-                        tablaInformes.ajax.reload();
-        				$('#respuestaInforme').modal('hide');
+        				tabla.ajax.reload();
+        				$('#giros').modal('hide');
+                    	},
+                    complete: function(){
+                    	$(this).prop("disabled", false);
+                    },
+                    error: function(jqXHR,textStatus,errorThrown ){
+        				toastr.error(jqXHR.responseText);
+        				}
+                	});
+                }
+				
+			});
+
+			//------------------------------------------------------------------------------------------------------------
+			//-------------------------------------ALTA Y EDICION DE INFORMES---------------------------------------------
+			//------------------------------------------------------------------------------------------------------------
+			
+			//BOTON ALTA GIRO DE LA GRILLA DE INFORMES
+			$("#alta-informe").click(function(){
+				$("#informe").find('input[name="modoInforme"]').val("alta");
+				$("#informe").modal("show");
+			});
+
+			//BOTON MODIFICAR GIRO DE LA GRILLA DE INFORMES
+			$('#tablaInformes tbody').on( 'click', '.btn-modificar-informe', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+		        $("#informe").find('input[name="idInforme"]').val(data[ "id" ]);
+		        $("#informe").find('input[name="modoInforme"]').val("edicion");
+		        $("#informe").modal("show");
+		    } );
+
+			// EVENTO ABRIR DEL MODAL DE INFORME
+			$('#informe').on('show.bs.modal', function () {
+				var modo = $("#giro").find('input[name="modoInforme"]').val(); 
+
+				$("#selDestinoInforme").val(0);
+				$("#solicitudInforme").val("");
+				$("#fechaEnvioInforme").val("");
+				$("#fechaRespuestaInforme").val("");
+				$("#fojasRespuestaInforme").val("");
+
+				if (modo=="edicion"){
+
+					var idInforme=$("#informe").find('input[name="idInforme"]').val();
+					
+					$.ajax({
+                        url: '{{ app.request.getBaseURL() }}' + '/api/expediente/informe/findOne/'+idInforme,
+                        type: 'GET',
+                    success: function(data) {
+                    	$("#selDestinoInforme").val(data.destino.id);
+                    	$("#solicitudInforme").val(data.solicitud);
+                    	$("#fechaEnvioInforme").val(data.fecha_emision_formateada);
+                    	$("#fechaRespuestaInforme").val(data.fecha_inggreso_repuesta_formateada);
+                    	$("#fojasRespuestaInforme").val(data.fojas);
+                    },
+                    error: function(jqXHR,textStatus,errorThrown ){
+        				toastr.error(jqXHR.responseText);
+        				}
+                	});
+				}
+
+    			if($("#fechaEnvioInforme").val()==''){
+    					$("#fechaRespuestaInforme").prop("disabled", true);
+    					$("#fojasRespuestaInforme").prop("disabled", true);
+    					$("#fechaEnvioInforme").prop("disabled", false);
+    					$("#selDestinoInforme").prop("disabled", false);
+                    	$("#solicitudInforme").prop("disabled", false);                    	
+    			}
+				else {
+					$("#fechaRespuestaInforme").prop("disabled", false);
+					$("#fojasRespuestaInforme").prop("disabled", false);
+					$("#fechaEnvioInforme").prop("disabled", true);
+					$("#selDestinoInforme").prop("disabled", true);
+                	$("#solicitudInforme").prop("disabled",true);
+				}
+			});
+
+			$('#informe').on('hidden.bs.modal', function () {
+				$("#guardarInforme").prop("disabled", false);
+			});
+				
+			//BOTON GUARDAR INFORME DEL MODAL DE EDICION DE INFORME
+			$("#guardarInforme").click(function(){
+
+				$(this).prop("disabled", true);
+				
+				var validacion="";
+				var formData=new FormData();
+				var modo =$("#informe").find('input[name="modoInforme"]').val();
+				var url="";
+				
+				formData.append('solicitud',$("#solicitudInforme").val());
+				formData.append('idDestino',$("#selDestinoInforme").val());
+				validacion=(($("#selDestinoInforme").val()==0)
+								?'<li>Debe seleccionar un destino</li>':'');
+				validacion=(($("#solicitudInforme").val()=="")
+								?'<li>Debe especificar la solicitud</li>':'');
+				validacion+=(($("#fechaRespuestaInforme").val()!="" && $("#fojasRespuestaInforme")=="")
+								?'<li>Debe indicar la ubicacion de las fojas en el expediente</li>':'');
+							
+				if (modo=='alta'){
+					url="/api/expediente/informe/create";
+					formData.append('id',$("#movimientos").find('input[name="idExpediente"]').val());
+				}
+				else{
+					url="/api/expediente/informe/update"
+					formData.append('id',$("#informe").find('input[name="idInforme"]').val());
+				}
+
+
+                if (validacion.length>0) 
+        		{
+        			validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+        						validacion+'</ul>':'');
+        			toastr.error(validacion);
+        			$(this).prop("disabled", false);
+        			return false;
+        		}
+        		else{
+        
+                	$.ajax({
+                        async: true,
+                        url: '{{ app.request.getBaseURL() }}' + url,
+                        data: formData,
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        type: 'POST',
+                    success: function(data) {
+                        toastr.success(data);
+        				tabla.ajax.reload();
+        				$('#informe').modal('hide');
                     	},
                     complete: function(){
                     	$(this).prop("disabled", false);
@@ -1415,8 +1467,8 @@
 		<div class="row pull-right">
 			<ol class="breadcrumb">
 		        <li><a href="#"><i class="fa fa-dashboard"></i> Principal</a></li>
-		        <li>Expedientes</li>
-		        <li class="active">Gestión Expedientes</li>
+		        <li>Comisiones</li>
+		        <li class="active">Expedientes Girados</li>
 		        
 		    </ol>
 		</div>
@@ -1424,7 +1476,7 @@
 		<div class="row">
 			<div class="col-md-3">
 				<h2>
-			        Gestión Expedientes
+			        Expedientes Girados
 			    </h2>
 			</div>
 			<div class="col-md-6 col-md-offset-3">
@@ -1477,32 +1529,30 @@
 	<section class="content">
 	  	<div class="row">
 	    	<div class="col-xs-12">
-              	<table id="registroExpediente" class="table table-striped">
+              	<table id="registroAsignaciones" class="table table-striped">
 	                <thead>
 	                	<tr>
 	                		<th>id</th>
 	                		<th>
 	                			<!-- <div class="text-center"> -->
     	                			<div class="btn-group">
-    	                				{% if EXP_NEW is defined %}
+    	                				{# if EXP_NEW is defined #}
     		                			<button type="button" title="Agregar expediente"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#nuevoExpediente">
     							    			<span class="glyphicon glyphicon-plus"></span>
     							    	</button>
-    							    	{% endif %}
-    							    	{% if EXP_ADD is defined %}
+    							    	{# endif #}
+    							    	{# if EXP_ADD is defined #}
     							    	<button type="button" title="Ingresar proyecto"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#proyectosBusqueda">
     							    			<span class="glyphicon glyphicon-download-alt"></span>
     							    	</button>
-    							    	{% endif %}
+    							    	{# endif #}
     							    </div>
     							<!-- </div> -->
 						    </th>	
 						    <th>Numero</th>
-			                <th>Tipo</th>
-			                <th>F. Ing</th>
-			                <th>F. Mod</th>
-			                <th>Oficina Actual</th>
-			                <th>Caratula</th>
+			                <th>Comision</th>
+			                <th>Tiene Dictame</th>
+			                <th>F. Dictamen</th>
 	                	</tr>
 	                </thead>
 	                <tbody>
@@ -1510,655 +1560,5 @@
                	</table>     
 	        </div> {# col #}
 	    </div> {# row #}
-
-	    <div id="proyectosBusqueda" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false"> 
-		 	<div class="modal-dialog modal-lg">
-			    <!-- Modal content-->
-			    <div class="modal-content">
-				    <div class="modal-header" style="background-color:#666;color:#FFF">
-		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title">Proyectos no entrados</h4>
-				    </div>
-				    <div class="modal-body" style="background-color:#ecf0f5">
-				  
-			        	<div class="row">
-			        		<div class="col-md-12">
-					        	<div class="form-group">
-					        		<table class="table " id="proyectos">
-					        			<thead>
-						                	<tr>
-						                		<th>id</th>
-						                		<th>idTipoProyecto</th>
-						                		<th>Ingresar</th>
-								                <th>Tipo</th>
-								                <th>Autores</th>
-						                	</tr>
-						                </thead>
-						                <tbody>
-						                </tbody>
-						            </table>
-					        	</div>
-					        </div>
-					    </div>
-						
-					</div>
-					<div class="modal-footer" style="background-color:#ecf0f5">  	
-				        <hr>
-				        <div class="row">
-				        	<div class="col-md-12">
-				        		<div class="text-center">
-					    			<div class="btn-group">
-							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cerrar</button>
-							        </div>
-						        </div>
-						    </div>
-			    		</div>
-				     </div>
-			    </div>
-		  	</div>
-		</div>
-		<div id="numeroExterno" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
-			<div class="modal-dialog">
-			    <!-- Modal content-->
-			    <div class="modal-content">
-				    <div class="modal-header" style="background-color:#666	;color:#FFF">
-		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title">Expediente Externo</h4>
-				    </div>
-				    <div class="modal-body" style="background-color:#ecf0f5">
-				    	<form role="form">
-				    		<input type="hidden" id="tabla-destino" name="tabla-destino">
-				    		<input type="hidden" id="idModal" name="idModal">
-				    		<div class="row">
-				    			<div class="col-md-10 col-md-offset-1">
-        				    		<div class="row">
-        				    			<div class="col-md-2 col-nopadding">
-                				    		<div class="form-group text-center">
-                				    			<label for="enteOrigen">Ente</label>
-                				    			<input type="text" maxlength="4" 
-                				    			 class="form-control text-center es-numero" id="enteOrigen" name="enteOrigen">
-                				    		</div>
-                				    	</div>
-                				    	<div class="col-md-4 col-nopadding">
-                				    		<div class="form-group text-center">
-                				    			<label for="numeroOrigen">Numero</label>
-                				    			<input type="text" maxlength="8" 
-                				    			 class="form-control text-center es-numero" id="numeroOrigen" name="numeroOrigen">
-                				    		</div>
-                				    	</div>
-                				    	<div class="col-md-1 col-nopadding">
-                				    		<div class="form-group text-center">
-                				    			<label for="letraOrigen">Letra</label>
-                				    			<input type="text" maxlength="1" 
-                				    			 class="form-control text-center es-letra" id="letraOrigen" name="letraOrigen">
-                				    		</div>
-                				    	</div>
-                				    	<div class="col-md-2 col-nopadding">
-                				    		<div class="form-group text-center">
-                				    			<label for="añoOrigen">Año</label>
-                				    			<input type="text" maxlength="4" 
-                				    			 class="form-control text-center es-numero" id="añoOrigen" name="añoOrigen">
-                				    		</div>
-                				    	</div>
-                				    	<div class="col-md-3 col-nopadding">
-                				    		<div class="form-group text-center">
-                				    			<label for="foliosOrigen">Folios</label>
-                				    			<input type="text" maxlength="3" 
-                				    			 class="form-control text-center es-numero" id="foliosOrigen" name="foliosOrigen">
-                				    		</div>
-                				    	</div>
-                				    </div>
-                				</div>
-                			</div>
-    				    	<div class="row">
-    				    		<div class="col-md-12">
-					        		<div class="text-center">
-						    			<div class="btn-group">
-								        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
-				       			 			<button type="button" class="btn btn-primary" id="btn-agregar-numero">Agregar</button>
-								        </div>
-							        </div>
-							    </div>
-    				    	</div>
-				    	</form>
-				    </div>
-				</div>
-			</div>
-		</div>
-		<div id="retornoExterno" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
-			<div class="modal-dialog modal-sm">
-			    <!-- Modal content-->
-			    <div class="modal-content">
-				    <div class="modal-header" style="background-color:#666	;color:#FFF">
-		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title">Retorno Expediente</h4>
-				    </div>
-				    <div class="modal-body" style="background-color:#ecf0f5">
-				    	<form role="form">
-				    		<legend class="text-center" id="leyenda-retorno"></legend>
-				    		<input type="hidden" id="idExpediente" name="idExpediente">
-				    		<div class="row">
-				    			<div class="col-md-6" id="col-folios">
-				    			</div>
-				    			<div class="col-md-6">
-				    				<label for="fechaRetorno">Fecha Ingreso</label>
-				    				<input type="text" class="form-control text-center campo-fecha"
-				    					   id="fechaRetorno" name="fechaRetorno">
-				    			</div>
-                			</div>
-                			<hr>
-    				    	<div class="row">
-    				    		<div class="col-md-12">
-					        		<div class="text-center">
-						    			<div class="btn-group">
-								        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
-				       			 			<button type="button" class="btn btn-primary" id="btn-retorno-hcd">Aceptar</button>
-								        </div>
-							        </div>
-							    </div>
-    				    	</div>
-				    	</form>
-				    </div>
-				</div>
-			</div>
-		</div>
-		<div id="respuestaInforme" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
-			<div class="modal-dialog modal-sm">
-			    <!-- Modal content-->
-			    <div class="modal-content">
-				    <div class="modal-header" style="background-color:#666	;color:#FFF">
-		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title">Respuesta Informe</h4>
-				    </div>
-				    <div class="modal-body" style="background-color:#ecf0f5">
-				    	<form role="form">
-				    		<input type="hidden" id="idInforme" name="idInforme">
-				    		<div class="row">
-				    			<div class="col-md-8 col-md-offset-2">
-				    				<label for="fechaRespuesta">Fecha Respuesta</label>
-				    				<input type="text" class="form-control text-center campo-fecha"
-				    					   id="fechaRespuesta" name="fechaRespuesta">
-				    			</div>
-                			</div>
-                			<hr>
-    				    	<div class="row">
-    				    		<div class="col-md-12">
-					        		<div class="text-center">
-						    			<div class="btn-group">
-								        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
-				       			 			<button type="button" class="btn btn-primary" id="btn-respuesta-informe">Aceptar</button>
-								        </div>
-							        </div>
-							    </div>
-    				    	</div>
-				    	</form>
-				    </div>
-				</div>
-			</div>
-		</div>
-	   	<div id="nuevoExpediente" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
-		 	<div class="modal-dialog modal-xl">
-			    <!-- Modal content-->
-			    <div class="modal-content">
-				    <div class="modal-header" style="background-color:#666	;color:#FFF">
-		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title">Nuevo Expediente</h4>
-				    </div>
-				    <div class="modal-body" style="background-color:#ecf0f5">
-				        <form id="alta" action="api/expediente/create" method="POST">
-				        	<input type="hidden" id="idProyecto" name="idProyecto" value="0">
-				        	<input type="hidden" id="idTipoExpediente" name="idTipoExpediente" value="0">
-				        	<div class="row">
-			        			<div class="col-md-5">
-		        					<div class="row">
-		        						{# DATOS EXP. HCD #}
-		        						<div class="col-md-5">
-								        	<div class="form-group">
-								        		<label for="selTipoExpediente">Tipo</label>
-								        		<select class="form-control" id="selTipoExpediente" 
-								        				name="selTipoExpediente">
-								        			<option value="0">Seleccione Tipo</option>
-								        			{% for tipo in tipos %}
-										                <option value="{{ tipo.id }}" class="opcion-{{ tipo.letra }}">{{ tipo.tipoExpediente }} - ({{ tipo.letra }})</option>
-										            {% endfor %}
-								        		</select>
-								        	</div>
-								       	</div>
-								       	<div class="col-md-4">
-							        		<div class="form-group">
-								        		<label for="numeroExpediente">N° Exp. HCD</label>
-								        		<input type="text" class="form-control es-numero" id="numeroExpediente"
-								        			   name="numeroExpediente" placeholder="N° Expediente">
-								        	</div>
-								        </div>
-								        <div class="col-md-3">
-    								        <div class="form-group">
-								        		<label for="folios">Folios HCD</label>
-								        		<input type="text" class="form-control es-numero" id="folios"
-								        			   name="folios" placeholder="Folios">
-								        	</div>
-								        </div>
-								        {# DATOS EXP. HCD #}
-							        </div>
-						        </div>
-						        <div class="col-md-7">
-						        	<div class="row hidden expediente-particular">
-						        		{# DATOS DEMANDANTE EXP.PARTICULAR #}
-						        		<div class="col-md-2">
-							        		<div class="form-group">
-								        		<label for="documentoParticular">Documento</label>
-						        				<input type="text" id="documentoParticular" name="documentoParticular"
-						        				 class="form-control text-center es-numero" maxlength="8">
-						        			</div>
-							        	</div>
-							        	<div class="col-md-5">
-							        		<div class="form-group">
-								        		<label for="apellidosParticular">Apellidos</label>
-						        				<input type="text" id="apellidosParticular" name="apellidosParticular"
-						        				 class="form-control">
-						        			</div>
-							        	</div>
-							        	<div class="col-md-5">
-						        			<div class="form-group">
-								        		<label for="nombresParticular">Nombres</label>
-						        				<input type="text" id="nombresParticular" name="nombresParticular"
-						        				 class="form-control">
-						        			</div>
-							        	</div>	
-							        	{# DATOS DEMANDANTE EXP. PARTICULAR #}
-							        </div>
-							        <div class="row hidden proyecto-concejales">
-							        	{# DATOS AUTORES EXP. LEGISLATIVO #}
-							        	<div class="col-md-12">
-							        		<div class="form-group">
-											    <label for="concejales">Concejales</label>
-											    <div class="scrollable-div" id="concejales" name="concejales"></div>
-											</div>
-										</div>
-										{# DATOS AUTORES EXP. LEGISLATIVO #}
-							        </div>
-							        <div class="row hidden ente-externo">
-							        	{# DATOS AUTORES EXP. DEL EJECUTIVO #}
-							        	<div class="col-md-5">
-							        		<div class="form-group">
-    						        			<label for="selOrigen">Origen Externo</label>
-    						        			<select class="form-control" id="selOrigen" name="selOrigen">
-    						        				<option value="0">Seleccione origen</option>
-    						        				{% for oficina in oficinasExternas %}
-    									                <option value="{{ oficina.id }}">{{ oficina.oficina|capitalize }}</option>
-    									            {% endfor %}
-    						        			</select>
-    						        		</div>
-							        	</div>
-							        	<div class="col-md-7">
-							        		<div class="row">
-        						        		<div class="col-md-6">
-        						        			<label>Números Externos</label>
-        						        		</div>
-        						        		<div class="col-md-6">
-        						        			<button type="button" class="btn btn-sm btn-primary pull-right" 
-        						        			 onclick="abrirModalExternos('nuevoExpediente','tabla-numeros');">
-        						        			 Agregar Número</button>
-        						        		</div>
-        						        	</div>
-        						        	<div class="row">
-        						        		<div class="col-md-12">
-                						        	<table class="table table-striped table-fixed" id="tabla-numeros">
-                						        		<thead><th>ente</th><th>nro.</th><th>letra</th><th>año</th><th>folios</th><th></th></thead>
-                						        		<tbody>
-                						        		</tbody>
-                						        	</table>
-                						        </div>
-                                    		</div>
-							        	</div>
-							        	{# DATOS AUTORES EXP. DEL EJECUTIVO #}
-							        </div>
-						        </div>  
-				        	</div>
-				        	<div class="row">
-				        		<div class="col-md-5">
-					        		<div class="form-group">
-						        		<label for="caratula">Caratula</label>
-							        	<textarea class="form-control text-area-caratula" 
-							        	id="caratula" name="caratula" placeholder="Caratula"></textarea>
-							        </div>
-						        </div>
-						        <div class="col-md-7">
-    					        	<div class="form-group">
-    					        		<label for="input-file">Archivos</label>
-    						        	<input id="input-file" accept="image/*,application/pdf" name="input-file" type="file"
-    						        		   multiple class="file-loading">
-    					        	</div>
-						        </div>
-					        </div>
-					         <div class="row">
-					        	<div class="col-md-12">
-					        		<div class="text-center">
-						    			<div class="btn-group">
-								        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
-				       			 			<button type="submit" class="btn btn-primary" id="btn-alta-expediente">Guardar</button>
-								        </div>
-							        </div>
-							    </div>
-				    		</div>					        
-				        </form>
-				     </div>
-			    </div>
-		  	</div>
-		</div>
-		<div id="modificacionExpediente" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
-		 	<div class="modal-dialog modal-xl">
-			    <!-- Modal content-->
-			    <div class="modal-content">
-				    <div class="modal-header" style="background-color:#666	;color:#FFF">
-		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title">Modificación Expediente</h4>
-				    </div>
-				    <div class="modal-body" style="background-color:#ecf0f5">
-				        <form id="modificacion" action="/api/expediente/update" method="POST">
-				        	<input type="hidden" id="id" name="id">
-				        	<div class="row">
-				        		<div class="col-md-5">
-				        			<div class="row">
-				        				<div class="col-md-5">
-    								    {# DATOS EXP. HCD #}
-								        	<div class="form-group">
-								        		<label for="selTipoExpedienteMod">Tipo</label>
-								        		<select class="form-control" id="selTipoExpedienteMod" 
-								        				name="selTipoExpedienteMod">
-								        			<option value="0">Seleccione Tipo</option>
-								        			{% for tipo in tipos %}
-										                <option value="{{ tipo.id }}" class="opcion-{{ tipo.letra }}">{{ tipo.tipoExpediente }} - ({{ tipo.letra }})</option>
-										            {% endfor %}
-								        		</select>
-								        	</div>
-								        </div>
-							        	<div class="col-md-4">
-								        	<div class="form-group">
-								        		<label for="numeroExpedienteMod">N° Exp. HCD</label>
-								        		<input type="text" class="form-control es-numero" id="numeroExpedienteMod"
-								        			   name="numeroExpedienteMod" placeholder="N° Expediente">
-								        	</div>
-								        </div>
-								        <div class="col-md-3">
-								        	<div class="form-group">
-								        		<label for="foliosMod">Folios HCD</label>
-								        		<input type="text" class="form-control es-numero" id="foliosMod"
-								        			   name="foliosMod" placeholder="Cantidad Folios">
-								        	</div>
-								        </div>
-								        {# DATOS EXP. HCD #}		
-								    </div>
-						        </div>
-						        <div class="col-md-7">
-						        	<div class="row hidden expediente-particular">
-						        		{# DATOS DEMANDANTE EXP.PARTICULAR #}
-						        		<div class="col-md-2">
-							        		<div class="form-group">
-								        		<label for="documentoParticularMod">Documento</label>
-						        				<input type="text" id="documentoParticularMod" name="documentoParticularMod"
-						        				 class="form-control text-center es-numero" maxlength="8">
-						        			</div>
-							        	</div>
-							        	<div class="col-md-5">
-							        		<div class="form-group">
-								        		<label for="apellidosParticularMod">Apellidos</label>
-						        				<input type="text" id="apellidosParticularMod" name="apellidosParticularMod"
-						        				 class="form-control">
-						        			</div>
-							        	</div>
-							        	<div class="col-md-5">
-						        			<div class="form-group">
-								        		<label for="nombresParticularMod">Nombres</label>
-						        				<input type="text" id="nombresParticularMod" name="nombresParticularMod"
-						        				 class="form-control">
-						        			</div>
-							        	</div>	
-							        	{# DATOS DEMANDANTE EXP. PARTICULAR #}
-							        </div>
-							        <div class="row hidden proyecto-concejales">
-							        	{# DATOS AUTORES EXP. LEGISLATIVO #}
-							        	<div class="col-md-12">
-							        		<div class="form-group">
-											    <label for="concejalesMod">Concejales</label>
-											    <div class="scrollable-div" id="concejalesMod" name="concejalesMod"></div>
-											</div>
-										</div>
-										{# DATOS AUTORES EXP. LEGISLATIVO #}
-							        </div>
-							        <div class="row hidden ente-externo">
-							        	{# DATOS AUTORES EXP. DEL EJECUTIVO #}
-							        	<div class="col-md-5">
-							        		<div class="form-group">
-    						        			<label for="selOrigenMod">Origen Externo</label>
-    						        			<select class="form-control" id="selOrigenMod" name="selOrigenMod">
-    						        				<option value="0">Seleccione origen</option>
-    						        				{% for oficina in oficinasExternas %}
-    									                <option value="{{ oficina.id }}">{{ oficina.oficina|capitalize }}</option>
-    									            {% endfor %}
-    						        			</select>
-    						        		</div>
-							        	</div>
-							        	<div class="col-md-7">
-							        		<div class="row">
-        						        		<div class="col-md-6">
-        						        			<label>Números Externos</label>
-        						        		</div>
-        						        		<div class="col-md-6">
-        						        			<button type="button" class="btn btn-sm btn-primary pull-right" 
-        						        			 onclick="abrirModalExternos('modificacionExpediente','tabla-numeros-mod');">
-        						        			 Agregar Número</button>
-        						        		</div>
-        						        	</div>
-        						        	<div class="row">
-        						        		<div class="col-md-12">
-                						        	<table class="table table-striped table-fixed" id="tabla-numeros-mod">
-                						        		<thead><th>ente</th><th>nro.</th><th>letra</th><th>año</th><th>folios</th><th></th></thead>
-                						        		<tbody>
-                						        		</tbody>
-                						        	</table>
-                						        </div>
-                                    		</div>
-							        	</div>
-							        	{# DATOS AUTORES EXP. DEL EJECUTIVO #}
-							        </div>
-						        </div>  
-						 	</div>
-						 	<div class="row">
-						 		<div class="col-md-5">
-					        		<div class="form-group">
-						        		<label for="caratulaMod">Caratula</label>
-							        	<textarea class="form-control text-area-caratula" 
-							        	id="caratulaMod" name="caratulaMod" placeholder="Caratula"></textarea>
-							        </div>
-							    </div>
-						        <div class="col-md-7">
-						        	<div class="form-group">
-						        		<label for="input-file-Mod">Archivos</label>
-							        	<input id="input-file-Mod" accept="image/*,application/pdf" name="input-file-Mod" type="file" multiple class="file-loading">
-						        	</div>
-						        </div>
-					        </div>
-					        <div class="row">
-					        	<div class="col-md-12">
-					        		<div class="text-center">
-						    			<div class="btn-group">
-								        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
-				       			 			<button type="submit" class="btn btn-primary" id="btn-Modificacion-expediente">Modificar</button>
-								        </div>
-							        </div>
-							    </div>
-				    		</div>
-				        </form>
-				     </div>
-			    </div>
-		  	</div>
-		</div>
-	{# 	<div id="revistaExpediente" class="modal fade" role="dialog">
-		 	<div class="modal-dialog modal-xl">
-			    <!-- Modal content-->
-			    <div class="modal-content">
-				    <div class="modal-header" style="background-color:#666	;color:#FFF">
-		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title">Revista Expediente</h4>
-				    </div>
-				    <div class="modal-body" style="background-color:#ecf0f5">
-				    	<input type="hidden" id="id" name="id">
-			        	<div class="row">
-			        		<div class="col-md-6">
-			        			<div class="row">
-			        				<div class="col-md-6">
-							        	<div class="form-group">
-							        		<label for="selTipoExpedientePrev">Tipo</label>
-							        		<input class="form-control" readonly id="tipoExpedientePrev" 
-							        				name="tipoExpedienteMod">
-							        	</div>
-							        </div>
-						        	<div class="col-md-6">
-							        	<div class="form-group">
-							        		<label for="numeroExpedientePrev">Número Expediente</label>
-							        		<input type="text" readOnly class="form-control" id="numeroExpedientePrev" name="numeroExpedientePrev" >
-							        	</div>
-							        </div>	
-							    </div>
-					        	<div class="row">
-						        	<div class="col-md-12">
-						        		<div class="form-group">
-							        		<label for="cartulaPrev">Carátula</label>
-								        	<div class="div-Preview" id="cartulaPrev" name="cartulaPrev"></div>
-								        </div>
-								    </div>
-						        </div>
-					        </div>
-					        <div class="col-md-6">
-					        	<div class="row">
-					        		<div class="col-md-12">
-							        	<div class="form-group">
-							        		<label for="input-file-Prev">Archivos</label>
-								        	<input id="input-file-Prev" name="input-file-Prev" type="file" multiple class="file-loading">
-							        	</div>
-							        </div>
-						        </div>
-					        </div>
-				        </div>
-				        <div class="row">
-				        	<div class="col-md-12">
-								<div class="form-group">
-						        	<label for="selAutoresPrev">Autores</label>
-						        	<select class="form-control" data-width="100%" readOnly multiple="multiple" id="selAutoresPrev" name="selAutoresPrev"></select>
-						        </div>
-					        </div>
-				        </div>
-				        <hr>
-				        <div class="row">
-				        	<div class="col-md-12">
-				        		<div class="text-center">
-					    			<div class="btn-group">
-							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cerrar</button>
-							        </div>
-						        </div>
-						    </div>
-			    		</div>
-				     </div>
-			    </div>
-		  	</div>
-		</div> #}
-		<div id="informes" class="modal fade" role="dialog">
-		 	<div class="modal-dialog modal-xl">
-			    <!-- Modal content-->
-			    <div class="modal-content">
-				    <div class="modal-header" style="background-color:#666	;color:#FFF">
-		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title">Informes (CH)</h4>
-				    </div>
-				    <div class="modal-body" style="background-color:#ecf0f5">
-				    	<input type="hidden" id="idExpediente" name="idExpediente">				    	
-        				<div class="row">
-        					<div class="col-md-6">
-                				<h3>
-                			        Informes (CH)
-                			    </h3>
-                			</div>
-            			</div>
-            			<br>
-                		<div class="row">
-                			<div class="col-md-12">
-					        	<table class="table table-striped" id="tablaInformes">
-					        		<thead>
-					        			<th>id</th>
-					        			<th title="Remito">Rto.</th>
-					        			<th>Destino</th>
-					        			<th title="Fecha Emisión">Fec. Em.</th>
-					        			<th>Observación</th>
-					        			<th title="Fecha de Recepción Remito">Fec. Recep.</th>
-					        			<th title="Fecha Respuesta">Fec. Resp.</th>
-					        		</thead>
-					        		<tbody>
-					        		</tbody>
-					        	</table>
-					        </div>
-				        </div>
-				        <hr>
-				        <div class="row">
-				        	<div class="col-md-12">
-				        		<div class="text-center">
-					    			<div class="btn-group">
-							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cerrar</button>
-							        </div>
-						        </div>
-						    </div>
-			    		</div>
-				     </div>
-			    </div>
-		  	</div>
-		</div>
-		<div id="giros" class="modal fade" role="dialog">
-		 	<div class="modal-dialog modal-xl"
-			    <!-- Modal content-->
-			    <div class="modal-content">
-				    <div class="modal-header" style="background-color:#666	;color:#FFF">
-		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title">Giros</h4>
-				    </div>
-				    <div class="modal-body" style="background-color:#ecf0f5">
-				    	<input type="hidden" id="idExpediente" name="idExpediente">				   
-    					<div class="row">
-        					<div class="col-md-6">
-                				<h3>
-                			        Giros
-                			    </h3>
-                			</div>
-            			</div>
-            			<br>
-            			<div class="row">
-            				<div class="col-md-12">
-					        	<table class="table table-striped" id="tablaGiros" width="100%">
-					        		<thead>
-					        			<th>id</th>
-					        			<th title="Remito">Rto.</th>
-					        			<th>Origen</th>
-					        			<th title="Fecha de Envío Remito">Fec. Env.</th>
-					        			<th>Destino</th>
-					        			<th>Observación</th>
-					        			<th>Fojas</th>
-					        			<th title="Fecha de Recepción Remito">Fec. Recep.</th>
-					        		</thead>
-					        	</table>
-				        	</div>
-				        </div>       
-				        <hr>
-				        <div class="row">
-				        	<div class="col-md-12">
-				        		<div class="text-center">
-					    			<div class="btn-group">
-							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cerrar</button>
-							        </div>
-						        </div>
-						    </div>
-			    		</div>
-				     </div>
-			    </div>
-		  	</div>
-		</div>
 	</section>
 {% endblock %}

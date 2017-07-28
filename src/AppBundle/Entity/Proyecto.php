@@ -9,7 +9,9 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Proyecto
  * @ORM\Table(name="proyecto", uniqueConstraints={@ORM\UniqueConstraint(name="UNIQ_proyecto_expediente_idx",
- *                                                 columns={"idExpediente"})},
+ *                                                 columns={"idExpediente"}),
+ *                                           	  @ORM\UniqueConstraint(name="UNIQ_proyecto_ultimaRevision_idx",
+ *                                                 columns={"idUltimaRevision"})},
  *                             indexes={@ORM\Index(name="proyecto_tipoProyecto_idx", columns={"idTipoProyecto"}),
  *                                     
  *                                     }
@@ -23,7 +25,7 @@ class Proyecto
     /**
      * @var integer
      *
-     * @ORM\Column(name="idProyecto", type="smallint")
+     * @ORM\Column(name="idProyecto", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -121,6 +123,16 @@ class Proyecto
      * @ORM\Column(name="usuarioModificacion", type="string", length=70, nullable=false)
      */
     private $usuarioModificacion;
+    
+    /**
+     * @var \AppBundle\Entity\ProyectoRevision
+      *
+     * @ORM\OneToOne(targetEntity="AppBundle\Entity\ProyectoRevision", fetch="LAZY" )
+     * @ORM\JoinColumns({
+     *  @ORM\JoinColumn(name="idProyectoRevision", referencedColumnName="idProyectoRevision")
+     * })
+     */
+    private $ultimaRevision;
 
     //------------------------------------constructor---------------------------------------------
 
@@ -356,6 +368,30 @@ class Proyecto
     public function getFirmas()
     {
         return $this->firmas;
+    }
+    
+    /**
+     * Set ultimaRevision
+     *
+     * @param \AppBundle\Entity\ProyectoRevision $ultimaRevision
+     *
+     * @return Proyecto
+     */
+    public function setUltimaRevision($ultimaRevision)
+    {
+    	$this->ultimaRevision = $ultimaRevision;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Get ultimaRevision
+     *
+     * @return \AppBundle\Entity\ProyectoRevision
+     */
+    public function getTUltimaRevision()
+    {
+    	return $this->ultimaRevision;
     }
 
     /**

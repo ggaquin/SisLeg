@@ -23,6 +23,8 @@
     </field>
     <field name="fechaModificacion" type="datetime" column="fechaModificacion" nullable="true">
     </field>
+    <field name="fechaRespuestaInforme" type="datetime" column="fechaRespuestaInforme" nullable="true">
+    </field>
     <many-to-one field="remito" target-entity="Remito" inversed-by="movimientos">
     	<join-columns>
     		<join-column name="idRemito" referenced-column-name="idRemito"/>

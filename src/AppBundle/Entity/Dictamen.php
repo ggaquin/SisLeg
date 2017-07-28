@@ -5,40 +5,43 @@ namespace AppBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * ExpedienteComisionDictamen
+ * Dictamen
  *
- * @ORM\Table(name="expedienteComisionDictamen", indexes={@ORM\Index(name="expedienteComisionDictamen_expedienteComision_idx", columns={"idExpedienteComision"})})
+ * @ORM\Table(name="dictamen",  uniqueConstraints={@ORM\UniqueConstraint(name="UNIQ_dictamen_proyectoRevision_idx",columns={"idProyectoRevision"})},
+ * 								indexes={@ORM\Index(name="dictamen_tipoDictamen_idx", columns={"idTipoDictamen"})})
  * @ORM\Entity
  */
-class ExpedienteComisionDictamen
+class Dictamen
 {
     //------------------------------atributos de la clase-----------------------------------------
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="idExpedienteComisionDictamen", type="int")
+     * @ORM\Column(name="idDictamen", type="int")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $id;
 
     /**
-     * @var \AppBundle\Entity\ExpedienteComision
+     * @var \AppBundle\Entity\TipoDictamen
      *
-     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\ExpedienteComision")
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\TipoDictamen")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="idExpedienteComision", referencedColumnName="idExpedienteComision")
+     *   @ORM\JoinColumn(name="idTipoDictamen", referencedColumnName="idTipoDictamen")
      * })
      */
-    private $expedienteComision;
-
-   /**
-     * @var string
-     *
-     * @ORM\Column(name="dictamen", length="500", type="string", nullable=false)
+    private $tipoDictamen;
+    
+    /**
+     * @var \AppBundle\Entity\ProyectoRevision
+     * @ORM\ManyToOne(targetEntity="\AppBundle\Entity\ProyectoRevision")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="idProyectoRevision",referencedColumnName="idProyectoRevision")
+     * })
      */
-    private $dictamen;
+    private $revisionDictamen;
 
     /**
      * @var string
@@ -67,51 +70,51 @@ class ExpedienteComisionDictamen
     }
 
     /**
-     * Set expedienteComision
+     * Set tipoDictamen
      *
-     * @param \AppBundle\Entity\ExpedienteComision $expedienteComision
+     * @param \AppBundle\Entity\TipoDictamen $tipoDictamen
      *
-     * @return ExpedienteComisionDictamen
+     * @return Dictamen
      */
-    public function setExpedienteComision(\AppBundle\Entity\ExpedienteComision $expedienteComision = null)
+    public function setTipoDictamen(\AppBundle\Entity\TipoDictamen $tipoDictamen= null)
     {
-        $this->expedienteComision = $expedienteComision;
+    	$this->tipoDictamen= $tipoDictamen;
 
         return $this;
     }
 
     /**
-     * Get expedienteComision
+     * Get tipoDictamen
      *
-     * @return \AppBundle\Entity\ExpedienteComision
+     * @return \AppBundle\Entity\TipoDictamen
      */
-    public function getExpedienteComision()
+    public function getTipoDictamen()
     {
-        return $this->expedienteComisio;
+        return $this->tipoDictamen;
     }
-
+    
     /**
-     * Set dictamen
+     * Set revisionDictamen
      *
-     * @param string $dictamen
+     * @param \AppBundle\Entity\ProyectoRevision $proyectoRevision
      *
-     * @return ExpedienteComisionDictamen
+     * @return Dictamen
      */
-    public function setDictamen($dictamen)
+    public function setRevisionDisctamen(\AppBundle\Entity\ProyectoRevision $proyectoRevision= null)
     {
-        $this->dictamen = $dictamen;
-
-        return $this;
+    	$this->revisionDictamen= $proyectoRevision;
+    	
+    	return $this;
     }
-
+    
     /**
-     * Get dictame
+     * Get revisionDictamen
      *
-     * @return string
+     * @return \AppBundle\Entity\ProyectoRevision
      */
-    public function getDictamen()
+    public function getRevisionDisctamen()
     {
-        return $this->dictamen;
+    	return $this->revisionDictamen;
     }
 
      /**
@@ -119,7 +122,7 @@ class ExpedienteComisionDictamen
      *
      * @param string $usuarioCreacion
      *
-     * @return ExpedienteComisionDictamen
+     * @return Dictamen
      */
     public function setUsuarioCreacion($usuarioCreacion)
     {

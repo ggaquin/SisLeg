@@ -99,7 +99,7 @@ class Expediente
     /**
      * @var \AppBundle\Entity\DemandanteParticular
      *
-     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\DemandanteParticular")
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\DemandanteParticular",cascade={"persist","update"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="idDemandanteParticular", referencedColumnName="idDemandanteParticular")
      * })
@@ -109,7 +109,7 @@ class Expediente
     /**
      * @var \AppBundle\Entity\OrigenExterno
      *
-     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\OrigenExterno")
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\OrigenExterno", cascade={"persist","update"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="idOrigenExterno", referencedColumnName="idOrigenExterno")
      * })
@@ -209,6 +209,14 @@ class Expediente
      * 				  cascade={"persist", "remove"},orphanRemoval=true)
      */
     private $movimientos;
+    
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     *
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\ExpedienteComision", mappedBy="expediente",
+     * 				  cascade={"persist", "remove"},orphanRemoval=true)
+     */
+    private $asignacionComisiones;
    
 
     //------------------------------------constructor---------------------------------------------
@@ -221,6 +229,7 @@ class Expediente
        $this->fechaCreacion=new \DateTime("now");
        $this->archivoBorrado="";
        $this->movimientos = new \Doctrine\Common\Collections\ArrayCollection();
+       $this->proyecto=null;
     }
 
     //-------------------------------setters y getters--------------------------------------------
@@ -638,6 +647,63 @@ class Expediente
     {
     	return $this->movimientos;
     }
+     
+    /**
+     * set asignacionComisiones
+     *
+     * @param array $nuevasAsignacionComisiones
+     *
+     * @return Expediente
+     */
+    public function setAsignacionComisiones($nuevasAsignacionComisiones)
+    {
+    	$collection= new \Doctrine\Common\Collections\ArrayCollection();
+    	foreach ($nuevasAsignacionComisiones as $asignacionComision) {
+    		$asignacionComision->setExpediente($this);
+    		$collection[]=$asignacionComision;
+    	}
+    	$this->comisiones = $collection;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Add asignacionComision
+     *
+     * @param \AppBundle\Entity\ExpedienteComision $$asignacionComision
+     *
+     * @return Expediente
+     */
+    public function addAsignacionComision(\AppBundle\Entity\ExpedienteComision $asignacionComision)
+    {
+    	$asignacionComision->setExpediente($this);
+    	$this->asignacionComisiones[] = $asignacionComision;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Remove asignacionComision
+     *
+     * @param \AppBundle\Entity\ExpedienteComision $asignacionComision
+     *
+     * @return Expediente
+     */
+    public function removeAsignacionComision(\AppBundle\Entity\ExpedienteComision $asignacionComision)
+    {
+    	$this->asignacionComisiones->removeElement($asignacionComision);
+    	return $this;
+    }
+    
+    /**
+     * Get asignacionComisiones
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getAsignacionComisiones()
+    {
+    	return $this->asignacionComisiones;
+    }
     
     //--------------------------------propiedades protegidas---------------------------------------
 
@@ -879,6 +945,22 @@ class Expediente
     public function getFechaModificacionFormateada()
     {
         return (!is_null($this->fechaModificacion)?$this->fechaModificacion->format('d/m/Y'):'');
+    }
+    
+    /**
+     * Get listaComisionesAsignadas
+     *
+     * @return string
+     *
+     * @VirtualProperty
+     */
+    public function getListaComisionesAsignadas()
+    {  	$comisionesAsignadas="A estudio de:";
+    	foreach ($this->getAsignacionComisiones() as $asignacionComision)
+    		if ($asignacionComision->getAsignacionActual()){
+    			$comisionesAsignadas.="\n".$asignacionComision->getComision()->getComision();
+    	}
+    	return $comisionesAsignadas;
     }
 
 

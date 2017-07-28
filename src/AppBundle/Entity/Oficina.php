@@ -3,6 +3,7 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\VirtualProperty;
 
 /**
  * Oficina
@@ -117,5 +118,18 @@ class Oficina {
 		$this->oficina = $tipoOficina	;
 		return $this;
 	}
+	
+	//------------------------------Propiedades virtuales-----------------------------------------
+	
+	
+	/**
+	 * Get esExterna
+	 *
+	 * @return string
+	 *
+	 * @VirtualProperty
+	 */
+	public function getEsExterna()
+	{   return ($this->tipoOficina->getTipoOficina()=="Externa");}
 	
 }
