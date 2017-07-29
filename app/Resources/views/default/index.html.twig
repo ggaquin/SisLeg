@@ -242,10 +242,10 @@
                 <ul class="treeview-menu">
                   <li class="divider"></li>
                   {% if COM_MAIN is defined %}
-                  <li><a href="#" onclick="cargarMenu('/comisiones')"><i class="fa fa-minus"></i>Alta y Modificación</a></li>
+                  <li><a href="#" onclick="cargarMenu('/comisiones');"><i class="fa fa-minus"></i>Alta y Modificación</a></li>
                   {% endif %}
                   {% if COM_EXP_MAIN is defined %}
-                  <!-- <li><a href="#" onclick="noImplementado();"><i class="fa fa-minus"></i>Expedientes Girados</a></li> -->
+                  	<li><a href="#" onclick="cargarMenu('/expedientesComisiones');"><i class="fa fa-minus"></i>Expedientes Girados</a></li>
                   {% endif %}
                 </ul>
               </li>

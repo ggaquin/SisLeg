@@ -27,6 +27,7 @@ use AppBundle\Entity\DemandanteParticular;
 use AppBundle\Entity\OrigenExterno;
 use AppBundle\Entity\ExpedienteComision;
 use AppBundle\Entity\Movimiento;
+use FOS\RestBundle\Controller\Annotations\Get;
 
 class RestController extends FOSRestController{
 
@@ -262,7 +263,7 @@ class RestController extends FOSRestController{
     /**
      * @Rest\Get("/api/expediente/remito/getAllByCriteria/{tipoCriterio}/{criterio}")
      */
-    public function traerGirosPorOficinaAction(Request $request)
+    public function traerRemitosPorOficinayCriterioAction(Request $request)
     {
     	
     	try{
@@ -300,6 +301,96 @@ class RestController extends FOSRestController{
     }
     
     /**
+     * @Rest\Get("api/expedienteComision/getByCriteria/{tipoCriterio}/{criterio}")
+     */
+    public function traerExpedientesComisionPorCriterioAction(Request $request)
+    {
+    	try {
+    		$tipoCriterio=$request->get('tipoCriterio');
+    		$criterio=$request->get('criterio');
+    
+    		$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
+    		$expedientesAsignados=null;
+    		
+    		if ($tipoCriterio=='todo')
+    			$expedientesAsignados=$expedienteComisionRepository->findBy(array('anulado' => false));
+    		if($tipoCriterio=='busqueda-1')
+    			$expedientesAsignados=$expedienteComisionRepository->findByExpediente_Numero($criterio);
+    		if ($tipoCriterio=='busqueda-2'){
+    			$expedientesAsignados=$expedienteComisionRepository->findByComision_Id($criterio);
+    		}
+    		if($tipoCriterio=='busqueda-3')
+    			$expedientesAsignados=$expedienteComisionRepository->findBy(array('publicado' => false, 'anulado' => false));
+    		if ($tipoCriterio=='busqueda-4'){
+    			$expedientesAsignados=$expedienteComisionRepository->findByDictamen(array('dictamen' => null,'anulado' => false));
+    		}
+    		return $this->view($expedientesAsignados,200);
+	    }
+	    catch (\Exception $e){
+	    	return $this->view($e->getMessage(),500);
+	    }
+    }
+    
+    /**
+     * @Rest\Post("/api/expedienteComision/visualizacion/update")
+     */
+    public function cambiarVisualizacionExpedienteComisionAction(Request $request)
+    {
+    	$idAsignacion=$request->request->get('idAsignacion');
+    	$accion=$request->request->get('accion');	
+    	$usuario=$this->getUser();
+    	
+    	//TODO: validar que este recibido
+    	
+    	$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
+    	$expedienteComision=$expedienteComisionRepository->find($idAsignacion);
+    	
+    	if ($accion=="publicar"){
+    		$expedienteComision->setPublicado(true);
+    		$expedienteComision->setFechaPublicacion(new \DateTime());
+    	}
+    	if ($accion=="anular"){
+    		$expedienteComision->setAnulado(true);
+    	}
+    
+    	$expedienteComision->setFechaModificacion(new \DateTime());
+    	$expedienteComision->setUsuarioModificacion($usuario->getUsuario());
+    	
+    	$em = $this->getDoctrine()->getManager();
+    	$em->persist($expedienteComision);
+    	$em->flush();
+    	
+    	return $this->view("La asignación de expediente se logró ".$accion." en forma exitosa",200);
+    }
+    
+    /**
+     * @Rest\Post("/api/expedienteComision/comision/update")
+     */
+    public function actualizarComisionAsignada(Request $request)
+    {
+    	$idAsignacion=$request->request->get('idAsignacion');
+    	$idNuevaComision=$request->request->get('idNuevaComision');
+    	$usuario=$this->getUser();
+    	
+    	//TODO: validar que este recibido y que no exista ya la asignacion de comision para el expediente
+    	
+    	$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
+    	$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
+    	$expedienteComision=$expedienteComisionRepository->find($idAsignacion);
+    	$comision=$comisionRepository->find($idNuevaComision);
+    	    		
+    	$expedienteComision->setComision($comision);
+    	$expedienteComision->setFechaModificacion(new \DateTime());
+    	$expedienteComision->setUsuarioModificacion($usuario->getUsuario());
+    	
+    	$em = $this->getDoctrine()->getManager();
+    	$em->persist($expedienteComision);
+    	$em->flush();
+    	
+    	return $this->view("La comision se cambió en forma exitosa en forma exitosa",200);
+    }
+    
+    /**
      * @Rest\Post("/api/expediente/remito/create")
      */
     public function crearRemitoExpedienteAction(Request $request)
@@ -313,6 +404,7 @@ class RestController extends FOSRestController{
     	$tipoMovimientoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoMovimiento');
     	$fechaActual=new \DateTime('now');
     	$origen=$usuario->getRol()->getOficina();
+ 
     	$movimientoInforme=$this->getParameter('id_Movimiento_informe');
     	
     	$remito= new Remito();
@@ -328,7 +420,7 @@ class RestController extends FOSRestController{
     		
     		$expediente=$expedienteRepository->find($detalle->id);
     		$tipoMovimiento=$tipoMovimientoRepository->find($detalle->idTipoMovimiento);
-    		if ($tipoMovimiento=!$movimientoInforme) 
+    		if (!($tipoMovimiento==$movimientoInforme)) 
     			$expediente->setOficinaActual($destino); //cambia destino de expediente
     		$em->persist($expediente);
     		
@@ -345,7 +437,8 @@ class RestController extends FOSRestController{
     		if($detalle->incluyeComision){
     			$expedienteComision=new ExpedienteComision();
     			$expedienteComision->setExpediente($expediente);
-    			$expedienteComision->setFechaAsignacion($fechaActual);
+    			$expedienteComision->setFechaCreacion($fechaActual);
+    			$expedienteComision->setUsuarioCreacion($usuario->getUsuario());
     			$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
     			$comision=$comisionRepository->find($detalle->idComision);
     			$expedienteComision->setComision($comision);
@@ -624,8 +717,8 @@ class RestController extends FOSRestController{
         if(is_array($bloques)){
             foreach ($bloques as $bloque) {
                 $bloque=$bloqueRepository->find($bloque);
-                $concejales=$bloque->getConcejales();
-                foreach ($concejales as $concejal) {
+                $concejalesBloque=$bloque->getConcejales();
+                foreach ($concejalesBloque as $concejal) {
                 	$proyecto->addConcejal($concejal);
                 	/*
                 	 ---------------------------------------------
@@ -758,8 +851,8 @@ class RestController extends FOSRestController{
         if(is_array($bloques) &&  count($bloques)>0){
             foreach ($bloques as $bloque) {
                 $bloque=$bloqueRepository->find($bloque);
-                $concejales=$bloque->getConcejales();
-                foreach ($concejales as $concejal) {
+                $concejalesBloque=$bloque->getConcejales();
+                foreach ($concejalesBloque as $concejal) {
                 	$nuevosConcejales[]=$concejal;
                 	/*
                 	 ----------------------------------------------

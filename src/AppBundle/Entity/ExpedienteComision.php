@@ -3,6 +3,7 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\VirtualProperty;
 
 /**
  * ExpedienteComision
@@ -12,7 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
  * 										 indexes={@ORM\Index(name="expedienteComision_expediente_idx", columns={"idExpediente"}), 
  *                                                @ORM\Index(name="expedienteComision_comision_idx", columns={"idComision"})
  *                                               })
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="AppBundle\Repository\ExpedienteComisionRepository")
  */
 class ExpedienteComision
 {
@@ -30,9 +31,9 @@ class ExpedienteComision
    /**
      * @var \DateTime
      *
-     * @ORM\Column(name="fechaAsignacion", type="datetime", nullable=false)
+     * @ORM\Column(name="fechaPublicacion", type="datetime", nullable=true)
      */
-    private $fechaAsignacion = 'CURRENT_TIMESTAMP';
+    private $fechaPublicacion;
 
    /**
      * @var \AppBundle\Entity\Expediente
@@ -66,9 +67,55 @@ class ExpedienteComision
     
    /**
     * @var boolean
-    * @ORM\Column(name="asignacionActual", type="boolean", nullable=false)
+    * @ORM\Column(name="publicado", type="boolean", nullable=false)
     */ 
-    private $asignacionActual;
+    private $publicado;
+    
+    /**
+     * @var boolean
+     * @ORM\Column(name="anulado", type="boolean", nullable=false)
+     */
+    private $anulado;
+    
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="fechaCreacion", type="datetime", nullable=false)
+     */
+    private $fechaCreacion;
+    
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="usuarioCreacion", type="string", length=70, nullable=false)
+     */
+    private $usuarioCreacion;
+    
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="fechaModificacion", type="datetime", nullable=true)
+     */
+    private $fechaModificacion;
+    
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="usuarioModificacion", type="string", length=70, nullable=true)
+     */
+    private $usuarioModificacion;
+    
+    //------------------------------------constructor---------------------------------------------
+    
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+    	$this->fechaCreacion=new \DateTime("now");
+    	$this->anulado=false;
+    	$this->publicado = false;
+    }
 
     //--------------------------------------setters y getters----------------------------------------
 
@@ -179,27 +226,197 @@ class ExpedienteComision
     }
     
     /**
-     * Set asignacionActual
+     * Set publicado
      *
-     * @param boolean $asignacionActual
+     * @param boolean $publicado
      *
      * @return ExpedienteComision
      */
-    public function setAsignacionActual($asignacionActual)
+    public function setPublicado($publicado)
     {
-    	$this->asignacionActual = $asignacionActual;
+    	$this->publicado = $publicado;
     	
     	return $this;
     }
     
     /**
-     * Get asignacionActual
+     * Get publicado
      *
      * @return boolean
      */
-    public function getAsignacionActual()
+    public function getPublicado()
     {
-    	return $this->asignacionActual;
+    	return $this->publicado;
     }
+    
+    /**
+     * Set fechaPublicacion
+     *
+     * @param \DateTime $fechaPublicacion
+     *
+     * @return ExpedienteComision
+     */
+    public function setFechaPublicacion($fechaPublicacion)
+    {
+    	$this->fechaPublicacion= $fechaPublicacion;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Get fechaPublicacion
+     *
+     * @return \DateTime
+     */
+    public function getFechaPublicacion()
+    {
+    	return $this->fechaPublicacion;
+    }
+    
+    /**
+     * Set anulado
+     *
+     * @param boolean $anulado
+     *
+     * @return ExpedienteComision
+     */
+    public function setAnulado($anulado)
+    {
+    	$this->anulado= $anulado;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Get anulado
+     *
+     * @return boolean
+     */
+    public function getAnulado()
+    {
+    	return $this->anulado;
+    }
+    
+    /**
+     * Set fechaCreacion
+     *
+     * @param \DateTime $fechaCreacion
+     *
+     * @return ExpedienteComision
+     */
+    public function setFechaCreacion($fechaCreacion)
+    {
+    	$this->fechaCreacion = $fechaCreacion;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Get fechaCreacion
+     *
+     * @return \DateTime
+     */
+    public function getFechaCreacion()
+    {
+    	return $this->fechaCreacion;
+    }
+    
+    /**
+     * Set usuarioCreacion
+     *
+     * @param string $usuarioCreacion
+     *
+     * @return ExpedienteComision
+     */
+    public function setUsuarioCreacion($usuarioCreacion)
+    {
+    	$this->usuarioCreacion = $usuarioCreacion;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Get usuarioCreacion
+     *
+     * @return string
+     */
+    public function getUsuarioCreacion()
+    {
+    	return $this->usuarioCreacion;
+    }
+    
+    /**
+     * Set fechaModificacion
+     *
+     * @param \DateTime $fechaModificacion
+     *
+     * @return ExpedienteComision
+     */
+    public function setFechaModificacion($fechaModificacion)
+    {
+    	$this->fechaModificacion = $fechaModificacion;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Get fechaModificacion
+     *
+     * @return \DateTime
+     */
+    public function getFechaModificacion()
+    {
+    	return $this->fechaModificacion;
+    }
+    
+    /**
+     * Set usuarioModificacion
+     *
+     * @param string $usuarioModificacion
+     *
+     * @return ExpedienteComision
+     */
+    public function setUsuarioModificacion($usuarioModificacion)
+    {
+    	$this->usuarioModificacion = $usuarioModificacion;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Get usuarioModificacion
+     *
+     * @return string
+     */
+    public function getUsuarioModificacion()
+    {
+    	return $this->usuarioModificacion;
+    }
+    
+    //------------------------------Propiedades virtuales-----------------------------------------
    
+    /**
+     * Get fechaPublicacionFormateada
+     *
+     * @return string
+     * 
+     * @VirtualProperty
+     */
+    public function getFechaPublicacionFormateada()
+    {
+    	 return ((!is_null($this->fechaPublicacion))?$this->fechaPublicacion->format('d/m/Y'):'');
+    }
+    
+    /**
+     * Get tieneDictamen
+     *
+     * @return string
+     * 
+     * @VirtualProperty
+     */
+    public function getTieneDictamen()
+    {
+    	return !is_null($this->dictamen);
+    }
+    
 }

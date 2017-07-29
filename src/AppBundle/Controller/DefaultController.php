@@ -172,6 +172,19 @@ class DefaultController extends Controller
     }
     
     /**
+     * @Route("/expedientesComisiones", name="expedientesComisiones")
+     */
+    public function expedientesComisionesAction(Request $request)
+    {
+    	$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
+    	$comisiones=$comisionRepository->findBy(array('activa' => true));
+    	return $this->render('default/expedientes_comisiones.html.twig',array(
+    		   'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
+    		   'comisiones' => $comisiones
+    	));
+    }
+    
+    /**
      * @Route("/movimientos", name="movimientos")
      */
     public function movimientosAction(Request $request)

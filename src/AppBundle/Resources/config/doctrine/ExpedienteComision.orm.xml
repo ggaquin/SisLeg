@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
-  <entity name="AppBundle\Entity\ExpedienteComision" table="expedienteComision">
+  <entity name="AppBundle\Entity\ExpedienteComision" table="expedienteComision" 
+  		  repository-class="AppBundle\Repository\ExpedienteComisionRepository">
     <indexes>
       <index name="expedienteComision_expediente_idx" columns="idExpediente"/>
       <index name="expedienteComision_comision_idx" columns="idComision"/>
@@ -11,12 +12,24 @@
     <id name="id" type="integer" column="idExpedienteComision">
       <generator strategy="IDENTITY"/>
     </id>
-    <field name="fechaAsignacion" type="datetime" column="fechaAsignacion" nullable="false">
+    <field name="publicado" type="boolean" column="publicado" nullable="false">
+    </field>
+    <field name="fechaPublicacion" type="datetime" column="fechaPublicacion" nullable="true">
+    </field>	
+    <field name="anulado" type="boolean" column="anulado" nullable="false">
+    </field>
+    <field name="fechaCreacion" type="datetime" column="fechaCreacion" nullable="false"/>
+    <field name="usuarioCreacion" type="string" column="usuarioCreacion" length="70" 
+           nullable="false">
       <options>
-        <option name="default">CURRENT_TIMESTAMP</option>
+        <option name="fixed"/>
       </options>
     </field>
-    <field name="asignacionActual" type="boolean" column="asignacionActual" nullable="false">
+    <field name="fechaModificacion" type="datetime" column="fechaModificacion" nullable="true"/>
+     <field name="usuarioModificacion" type="string" column="usuarioModificacion" length="70" nullable="true">
+      <options>
+        <option name="fixed"/>
+      </options>
     </field>
     <one-to-one field="dictamen" target-entity="Dictamen">
     	<join-columns>

@@ -957,7 +957,7 @@ class Expediente
     public function getListaComisionesAsignadas()
     {  	$comisionesAsignadas="A estudio de:";
     	foreach ($this->getAsignacionComisiones() as $asignacionComision)
-    		if ($asignacionComision->getAsignacionActual()){
+    		if (is_null($asignacionComision->getDictamen()) && !$asignacionComision->getAnulado()){
     			$comisionesAsignadas.="\n".$asignacionComision->getComision()->getComision();
     	}
     	return $comisionesAsignadas;
