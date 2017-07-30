@@ -58,7 +58,7 @@ class ExpedienteComision
     /**
      * @var \AppBundle\Entity\Dictamen
      *
-     * @ORM\OneToOne(targetEntity="AppBundle\Entity\Dictamen")
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Dictamen", inversedBy="asignacionesDeEstudio")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="idDictamen", referencedColumnName="idDictamen")
      * })

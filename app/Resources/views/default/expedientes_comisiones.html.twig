@@ -24,113 +24,76 @@
 		    max-width:1600px;
 		  }
 		}
-
-		.select2-selection--multiple { max-height: 10rem; overflow-y: auto }
-
-		.file-preview {
-			max-height: 371px;
-			height: 370px;
-			background-color: #fff;
-			display: inline-block;
-			overflow-y: auto;
+		.custom-modal{
+			height: 2000%!important;
 		}
-
-		.scrollable-div{
-			min-height: 39px;
-			max-height: 40px;
-			overflow-y: auto;
-			/*background: #fff;*/
-			border: 1px solid #ccc;
-		}
-
-		.div-Preview{
-			max-height: 194px;
-			height: 194px;
-			padding-left: 10px;
-			padding-right: 10px;
-			background-color: #fff;	
-			overflow-y: scroll;
-		}
-
-		#proyectosBusqueda .modal-body{
-			height: 600px;
-			max-height: 600px;
-		}
-
-		.text-area-caratula{
-			height: 370px!important;
-		}
-
-		#nuevoExpediente{
-			z-index: 10000;
+				
+		.text-area-larga{
+			height: 467px!important;
 		}
 		
-		#numeroExterno{
-			z-index: 15000;
+		.text-area-corta{
+			height: 200px!important;
 		}
 		
-		#kvFileinputModal{
-			z-index: 15000;
+		.text-area-mini{
+			height: 80px!important;
+		}
+		
+		.numero-fila{
+			font-size: 150%;
+			font-weight: bold;
+			vertical-align: middle!important;
+		}
+		.herramienta-fila{
+			vertical-align: middle!important;
+		}
+		
+		.div-articulos{
+			max-height: 449px;
+			overflow-y:auto;
+			overflow-x: hidden; 
+		}
+		
+		.div-incisos{
+			height: 250px;
+			max-height: 260px;
+			overflow-y:scroll;
+			overflow-x: hidden; 
 		}
 
 		.tab{
-			height: 545px;
-			max-height:545px;
-			overflow-y: auto; 
+			height: 502px;
+			max-height:503px;
+			/* overflow-y: auto;  */
 		}
 		
 		.tab-active{
-			/* font-style: oblique;*/
-			font-weight: bold;
-			color: #0000ff;
-			padding-left: 10px;
+			background-color: #f8f8ff;
 		}
-		
-		.tab-active::before{
-			content: "- ";
-			font-weight: bold;
-		}
-		
+			
 		.toggle-on.btn{
 			line-height: 22.5px!important;
 		}
 		.toggle-off.btn{
 			line-height: 22.5px!important;
 		}
-					
-		table {
-            table-layout:fixed;
-            width:100%;
-            word-wrap:break-word;
-        }
-                      
-        .table-fixed thead, .table-fixed tbody, .table-fixed tr, 
-        .table-fixed td, .table-fixed th { 
-        	display: block; 
-        }
-        .table-fixed tr:after {
-            content: ' ';
-            display: block;
-            visibility: hidden;
-            clear: both;
-        }
-        .table-fixed thead th {
-            height: 30px;
-        }
-        .table-fixed tbody {
-            height: 70px;
-            overflow-y: auto;
-        }
-      	.table-fixed tbody tr td, .table-fixed thead th {
-            width: 16.6%;
-            float: left;
-        }
-        
+					    
         .col-nopadding {
            padding: 0 !important;
            margin: 0 !important;
         }
-              
+           
+        .selConcejales{
+			height: 182px!important;
+		    max-height: 183px!important;
+		    overflow-y: auto!important;
+		}
+		.selComisiones{
+		    min-height: 120px!important;
+		    max-height: 121px!important;
+		    overflow-y: auto!important;
+		}     
 	</style>
 	<script type="text/javascript">
 	
@@ -140,6 +103,33 @@
     			html = event.clipboardData.getData('text/plain');
 		  	}
 		  	return html;
+		};
+
+		Array.prototype.reemplazar  = function(objeto, clave){
+			   var array = $.map(this, function(v,i){
+			      	return v[clave] == objeto[clave] ? objeto : v;
+			   });
+			   this.length = 0;
+			   this.push.apply(this, array);
+		};
+
+		Array.prototype.renumerar  = function(clave,numeracion){
+			   var semilla=(numeracion=='digito')?0:64;
+			   var array = $.map(this, function(v,i){
+			   		v[clave]=((numeracion=='digito')?(semilla+1):String.fromCharCode(semilla+1));
+			   		semilla++;
+			      	return v;
+			   });
+			   this.length = 0;
+			   this.push.apply(this, array);
+		};
+
+		Array.prototype.eliminar  = function(clave,valor){
+			    var array = $.map(this, function(v,i){
+			      	return v[clave] == valor ? null : v;
+			   });
+			   this.length = 0;
+			   this.push.apply(this, array);
 		};
 
 		function criterio(){
@@ -185,7 +175,128 @@
            	});
 		}
 
+		function addClasssToSelect2(div,clase){
+			$("#"+div).find('span[class="select2-selection select2-selection--multiple"]').addClass(clase);
+		}
+
+		function traerArticuloPorNumero(numero,articulosIngresados){
+			var articuloBuscado;
+			$.each(articulosIngresados,function(index,articulo){
+				if(articulo.numero==numero) articuloBuscado=articulo;
+			});
+			return articuloBuscado;
+		}
+
+		function actualizarArticulo(articulo){
+
+			numero=articulo.numero;
+			var cuerpoArticulo='<div class="well well-sm">' +
+							   '<div class="btn-group pull-right">'+
+							   '<button type="button" class="btn btn-sm btn-primary btn-editar-articulo" title="Editar artículo">'+
+							   		'Editar</button>'+
+							   '<button type="button" class="btn btn-sm btn-warning" title="Cambiar orden" onClick="noImplementado();">'+
+							   		'Mover</button>'+
+							   '<button type="button" class="btn btn-sm btn-danger btn-eliminar-articulo" title="Eliminar artículo">'+
+							   		'Eliminar</button></div>'+
+							   '<div>'+articulo.texto+'<br><ul class="list-unstyled">';
+							   
+			$.each(articulo.incisos,function(index,inciso){
+				texto=inciso.texto.replace(/<p>/g,'').replace(/<\/p>/g,'<br>');
+				cuerpoArticulo+='<li style="padding-left:30px">'+inciso.orden+') - '+texto+'</li>';
+			});
+
+			cuerpoArticulo+='</ul></div>';
+
+			var nuevoContenido='<td class="numero-fila">'+numero+'</td>'+
+	        			 	   '<td>'+cuerpoArticulo+'</td>';
+
+			$("#articulos > tbody > tr").each(function(){
+
+				if($(this).find('td:first').html()==numero)
+					$(this).html(nuevoContenido);
+			});
+
+		}
+		
+		function agregarArticulo(articulo){
+			var numero=((articulo.hasOwnProperty('numero'))?articulo.numero:$("#articulos> tbody > tr").length+1);
+			var cuerpoArticulo='<div class="well well-sm">' +
+							   '<div class="btn-group pull-right">'+
+							   '<button type="button" class="btn btn-sm btn-primary btn-editar-articulo" title="Editar artículo">'+
+							   		'Editar</button>'+
+							   '<button type="button" class="btn btn-sm btn-warning" title="Cambiar orden" onClick="noImplementado();">'+
+							   		'Mover</button>'+
+							   '<button type="button" class="btn btn-sm btn-danger btn-eliminar-articulo" title="Eliminar artículo">'+
+							   		'Eliminar</button></div>'+
+							   '<div>'+articulo.texto+'<br><ul class="list-unstyled">';
+							   
+			$.each(articulo.incisos,function(index,inciso){
+				texto=inciso.texto.replace(/<p>/g,'').replace(/<\/p>/g,'<br>');
+				cuerpoArticulo+='<li style="padding-left:30px">'+inciso.orden+') - '+texto+'</li>';
+			});
+		
+			cuerpoArticulo+='</ul></div>';
+
+			var nuevoArticulo='<tr>'+
+	        			 	  '<td class="numero-fila">'+numero+'</td>' +
+	        			 	  '<td>'+cuerpoArticulo+'</td>'+
+	        			 	  '</tr>';
+
+	        $("#articulos > tbody").append(nuevoArticulo);
+	        $("#div-articulos").animate({ scrollTop: $("#div-articulos")[0].scrollHeight}, 1000);
+	        articulo.numero=numero;
+	        return articulo;
+	        
+		}
+
+		function cargarInciso(nuevoInciso){
+			var orden=nuevoInciso.orden;
+			var inciso='<tr>'+
+	        		   '<td class="numero-fila">'+orden+') -</td>' +
+	        		   '<td><textarea class="form-control text-area text-area-mini" id="inciso-'+orden+'" '+
+	        		   'name="inciso" placeholder="Inciso"></textarea></td>'+
+	        		   '<td class="herramienta-fila"><div class="row text-center">'+
+	        		   '<button type="button" class="btn btn-sm btn-info" onClick="noImplementado();"><span class="glyphicon glyphicon-tasks"></button>'+
+	        		   '</div><div class="row text-center"><button type="button" class="btn btn-sm btn-danger btn-eliminar-inciso">'+
+	        		   '<span class="glyphicon glyphicon-remove"></button></div></td>'+
+	        		   '</tr>';
+
+	        $("#incisos > tbody").append(inciso);
+	        $("#inciso-"+orden).wysihtml5({
+				toolbar: {
+				    "image": false,
+					"size": "xs",
+				},
+			});
+			$("#inciso-"+orden).data("wysihtml5").editor.setValue(nuevoInciso.texto);
+		}
+		
+		
+		function agregarInciso(){
+			var letra=String.fromCharCode($("#incisos").find('tr').length+65);
+			var inciso='<tr>'+
+	        		   '<td class="numero-fila">'+letra.toLowerCase()+') -</td>' +
+	        		   '<td><textarea class="form-control text-area text-area-mini" id="inciso-'+letra+'" '+
+	        		   'name="inciso" placeholder="Inciso"></textarea></td>'+
+	        		   '<td class="herramienta-fila"><div class="text-center">'+
+	        		   '<button type="button" class="btn btn-sm btn-info" onClick="noImplementado();"><span class="glyphicon glyphicon-tasks"></button>'+
+	        		   '</div><div class="row text-center"><button type="button" class="btn btn-sm btn-danger btn-eliminar-inciso">'+
+	        		   '<span class="glyphicon glyphicon-remove"></button></div></td>'+
+	        		   '</tr>';
+
+	        $("#incisos > tbody").append(inciso);
+	        $("#inciso-"+letra).wysihtml5({
+				toolbar: {
+				    "image": false,
+					"size": "xs",
+				},
+			});
+			$("#div-incisos").animate({ scrollTop: $("#div-incisos")[0].scrollHeight}, 1000);
+		}
+
 		$(document).ready(function () {
+
+			var articulosIngresados=[];
 
 			var tablaVersionesProyectos;
 			
@@ -261,17 +372,15 @@
 									            "render": function(data, type, row){
 													var html="<div class='btn-group'style='margin-left:5px'>";
 													if (row.tiene_dictamen==false){
-														var revision="<span class='label label-danger'>Sin Dictamen</span>";
-														html=revision+html+"<button type='button' title='Agregar Dictamen' class='btn btn-primary btn-xs btn-dictamen' data-toggle='modal' data-target='#'><span class='glyphicon glyphicon-paperclip'></span></button>";
+														html+="<span class='label label-danger'>Sin Dictamen</span>";
+														html+="<button type='button' title='Agregar Dictamen' class='btn btn-primary btn-xs btn-nuevo-dictamen' data-toggle='modal' data-target='#modalDictamen'><span class='glyphicon glyphicon-paperclip'></span></button>";
 													}
 													else{
-															var revision="<span class='label label-success'>Rev.:"+
-														 				 row.dictamen.id+"</span>";
-															html=revision+html;
-															html+="<button type='button' title='Cambiar Dictamen' class='btn btn-info btn-xs btn-dictamen' data-toggle='modal' data-target='#'><span class='glyphicon glyphicon-pencil'></span></button>";
-															html+="<button type='button' title='Descargar Revision' class='btn btn-info btn-xs btn-descargar'><span class='glyphicon glyphicon-save-file'></span></button>";
+															html+="<span class='label label-success'>Con Dictamen</span>";
+															html+="<button type='button' title='Editar Dictamen' class='btn btn-info btn-xs btn-editar-dictamen' data-toggle='modal' data-target='#'><span class='glyphicon glyphicon-pencil'></span></button>";
+															html+="<button type='button' title='Descargar Dictamen' class='btn btn-info btn-xs btn-descargar'><span class='glyphicon glyphicon-save-file'></span></button>";
 														}
-									            	return html+"</div>";
+									            	return html+"</div>";	
 									            }
 									        }	       
 						  ],
@@ -299,10 +408,84 @@
 		        					 '/imprimir?tipoDocumento=expediente&id='+
 		        					  data[ "id" ];
 		    } );
+
+			//EVENTO EDITAR DICTAMEN DE LA GRILLA DE ASIGNACIONES
+		    $('#registroAsignaciones tbody').on( 'click', '.btn-editar-dictamen', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+		        $("#modalDictamen").find('input[name="idAsignacion"]').val(data[ "id" ]);
+		        $("#modalDictamen").find('input[name="idDictamen"]').val(data[ "dictamen.id" ]);
+		    });
+
+			/*
+			$("#modalDictamen").on('show.bs.modal', function () {
+
+				var idAsignacion=$("#modalDictamen").find('input[name="idAsignacion"]').val();
+				var idDictamen=$("#modalDictamen").find('input[name="idDictamen"]').val();
+				
+				if (idDictamen==0){
+					$("#selTipoRedaccion").val("basico");
+			        $("#selTipoRedaccion").change();
+			        $("#selNumeroDictaminantes").val(0)
+			        $("#selConcejales").empty().change();
+			        $("#selComisiones").empty().change();
+			        $("#texto").data("wysihtml5").editor.setValue('');
+			        $("#articulos > tbody").html('');
+				}
+				else{
+            		    $.ajax({
+            				type:'Get',
+            				dataType: 'json	',
+            				url:'{{ app.request.getBaseURL() }}'+'/api/expedienteComision/dictamen/getOne/'+idDictamen,
+            				success: function(data){
+            
+            					$("#selTipoRedaccion").val(data.clase_dictamen);
+            					$("#selTipoRedaccion").change();
+
+            					if (data.clase_dictamen=="articulado")
+            						$("#selTipoDictamen").val(data.tipo_dictamen);
+
+            					$("#selNumeroDictaminantes").val(data.tipo_numero_dictamen);           			
+            					$("#texto").data("wysihtml5").editor.setValue(data.textoLibre);
+            
+            				 	var concejales=data.concejales;
+            
+            				 	//selección de los concejales almacenados
+            				 	$.each(concejales, function(index,concejal){
+            				 		var newOption = new Option(concejal.descripcion, concejal.id, true, true);
+            					   	$("#selConcejales").append(newOption).trigger('change');
+            					 });
+            
+            				 	var comisiones=data.comisiones;
+            
+            				 	//selección de los bloques almacenados
+            				 	$.each(comisiones, function(index,comision){
+            				 		var newOption = new Option(comisiones.comision, comision.id, true, true);
+            					   	$("#selComisiones").append(newOption).trigger('change');
+            					 });
+            				 
+            				    $.each(data.articulos,function(index,articulo){
+            						agregarArticulo(articulo,'articulos');
+            					});
+            
+            				    articulosIngresados=data.articulos;            				    
+            				},
+            				error: function(jqXHR,textStatus,errorThrown ){
+            					//var response=JSON.parse(jqXHR.responseText)
+            					toastr.error(jqXHR.responseText);
+            				}
+            	      	});
+				}
+		        
+		    } );
+		    */
 		    
-			
+			//EVENTO NUEVO DICTAMEN DE LA GRILLA DE ASIGNACIONES	
+		    $('#registroAsignaciones tbody').on( 'click', '.btn-nuevo-dictamen', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+		        $("#modalDictamen").find('input[name="idAsignacion"]').val(data[ "id" ]);
+		    } );
 			//---------------------------------------------------------------------------------------------------------------
-			//---------------------------------------PUBLICACIÓN y ANULACION-------------------------------------------------
+			//---------------------------------------PUBLICACIÓN y ANULACIÓN-------------------------------------------------
 			//---------------------------------------------------------------------------------------------------------------
 						
 			$('#registroAsignaciones tbody').on( 'click', '.btn-publicar', function () {			
@@ -318,7 +501,7 @@
 			}); 
 			
 			//---------------------------------------------------------------------------------------------------------------
-			//---------------------------------------EDICIÓN DE LA COMISION--------------------------------------------------
+			//---------------------------------------EDICIÓN DE LA COMISIÓN--------------------------------------------------
 			//---------------------------------------------------------------------------------------------------------------
 
 			//EVENTO BOTON EDITAR COMISION EN GRILLA
@@ -376,835 +559,193 @@
 			    
 			 });
 
-		    //EVENTO ABRIR MODAL MODIFICAR EXPEDIENTE
-			$('#modificacionExpediente').on('show.bs.modal', function () {
+		  //---------------------------------------------------------------------------------------------------------------
+		  //----------------------------------------------ARTICULADO-------------------------------------------------------
+		  //---------------------------------------------------------------------------------------------------------------
 
-		    	var id= $("#modificacionExpediente").find('input[name="id"]').val();
+			//EVENTO CLICK DEL BOTON DE NUEVO ARTICULO EN EL MODAL DE DICTAMEN
+			$("#btn-nuevo-articulo").click(function(){
+				$("#modalArticulo").find('input[name="id"]').val(0);
+				$("#modalArticulo").modal('show');	
+			});		  	
+		  
+			//EVENTO CLICK DEL BOTON EDITAR DE LAS FILAS EN LA TABLA DE ARTICULOS
+			$("#articulos > tbody").on('click','.btn-editar-articulo',function(){
+				var numero=$(this).parents("tr").find('td:first').text();
+				$("#modalArticulo").find('input[name="id"]').val(numero);
+				$("#modalArticulo").modal('show');	
+			});
 
-		    	//Obtención de los datos del expediente a modificar -----------------
+			//EVENTO MOSTRAR DEL MODAL DEL MODAL DE ARTICULO
+			$("#modalArticulo").on('show.bs.modal', function () {
+				var numeroArticulo= $("#modalArticulo").find('input[name="id"]').val();
+				$("#articulo").data("wysihtml5").editor.setValue('');
+				$("#incisos > tbody").html('');
+				if (numeroArticulo!=0){
+    				var articulo=traerArticuloPorNumero(numeroArticulo,articulosIngresados);
+    				$("#articulo").data("wysihtml5").editor.setValue(articulo.texto);
+    				
+    				$.each(articulo.incisos,function(index,inciso){
+    					cargarInciso(inciso);
+    				});
+				}
+			});
 
-		    	$.ajax({
-					type:'Get',
-					dataType: 'json	',
-					url:'{{ app.request.getBaseURL() }}'+'/api/expediente/getOne/'+id,
-					success: function(data){
+			//EVENTO CLICK DEL BOTON ELIMINAR DE LAS FILAS EN LA TABLA DE ARTICULOS
+			$("#articulos > tbody").on('click','.btn-eliminar-articulo',function(){
+				var numero=$(this).parents("tr").find('td:first').text();
+				articulosIngresados.eliminar('numero',numero);
+				articulosIngresados.renumerar('numero','digito');
+				$("#articulos > tbody").html('');
+				$.each(articulosIngresados,function(i,articulo){
+					agregarArticulo(articulo,'articulos');
+				});
+			});
+			
+			//EVENTO CLICK DEL BOTON ELIMINAR DE LAS FILAS EN LA TABLA DE INCISOS
+			$("#incisos > tbody").on('click','.btn-eliminar-inciso',function(){
+				var orden=$(this).parents("tr").remove();
+				orden=64;
+				$("#incisos > tbody > tr").each(function(){
+					orden++;
+					$(this).find("td:first").text(String.fromCharCode(orden).toLowerCase() + ") -");
+				})
+			});
 
-						var tipoExpediente=data.tipo_expediente.id;
-						$("#selTipoExpedienteMod").val(tipoExpediente);
-						mostrarOrigenParaEdicion(tipoExpediente);
-						$("#numeroExpedienteMod").val(data.numero_expediente);
-						$("#caratulaMod").data("wysihtml5").editor.setValue(data.caratula);
-						$("#foliosMod").val(data.folios);
-
-						if(data.proyecto!=null){
-							$("#selTipoExpedienteMod").prop( "disabled", true );
-							$("#concejalesMod").html(data.lista_autores);
-							mostrarTiposPara("proyectos");
-						}
-						else{
-							$("#selTipoExpedienteMod").prop( "disabled", false );
-							mostrarTiposPara("no-proyectos");
-						}
+			//EVENTO ACEPTAR DEL MODAL DE ARTICULOS
+			$("#btn-agregar-articulo").click(function(){
+				
+				var validacion='';
+				var incisos=[];
 	
-						if (tipoExpediente==3 && data.demandante_particular!=null){
-    						$("#documentoParticularMod").val(data.demandante_particular.documento);
-    						$("#apellidosParticularMod").val(data.demandante_particular.apellidos);
-    						$("#nombresParticularMod").val(data.demandante_particular.nombres);
-						}
-					    
-						if (tipoExpediente==4 && data.origen_externo!=null){
-							$("#selOrigenMod").val(data.origen_externo.oficina.id);
-							var numeros=data.origen_externo.numeracion_origen;
-							var html='';
-							$.each(numeros,function(index,numero){
-								html+="<tr><td>"+numero.ente+"</td><td>"+numero.numero+"</td><td>"+numero.letra+
-									  "</td><td>"+numero.año+"</td><td>"+numero.folios+"</td><td>"+
-							 	 	  "<button type='button' class='btn btn-danger btn-xs btn-eliminar-numero'>"+
-							 	 	  "<span class='glyphicon glyphicon-remove'/></button></td></tr>";
-							});
-							$("#tabla-numeros-mod > tbody").append(html);
-						}
+				$("#incisos").find('tr').each(function(i,row){
+					var textarea=$(row).find("textarea");
+					var	orden=$(row).find("td:first").text().replace(/ |\)|-/g,'');
+					var texto=$(textarea).val();
 
-					    var config=[];
-					    $.each(data.lista_imagenes, function(index,imagen){
-					    	config.push(imagen.image_config);
-					    });
+					if(texto.length==0)
+						validacion+='<li>El inciso '+ orden +' no posee texto</li>';
 
-					    //recuperacion de los archivos subidos
-					    $("#input-file-Mod").fileinput({
-				    		language: "es",
-			                initialPreview: data.rutas_web_expediente,
-			                showUpload: false,
-			                initialPreviewAsData: true,
-			                initialPreviewConfig:config,			                
-			                overwriteInitial: false,
-			                deleteUrl:'{{ app.request.getBaseURL() }}'+'/api/expediente/archivo/remove',
-			                maxFileSize: 10240,
-			                
-			                initialCaption: "Archivos Expediente " + data.numero_expediente
-			                
-			            });		    			
-					},
-					error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(jqXHR.responseText);
+					if (validacion.length==0){
+						inciso={
+							orden: orden,
+							texto: texto
+						}
+						incisos.push(inciso);
 					}
-		      	});
-			});
+					else{
+						if (incisos.length>0)
+							incisos=[];
+					}
+				});
 
-			//EVENTO CERRAR MODAL MODIFICAR EXPEDIENTE
-			$('#modificacionExpediente').on('hidden.bs.modal', function () {
-				$('#input-file-Mod').fileinput('destroy');
-				archivosASubir.length=0;	
-			});
+				if($("#articulo").val().length==0){
+					validacion='<li>El artículo no posee texto</li>'+validacion;
 
-			//GUARDAR MODIFICACION DEL EXPEDIENTE
-			$("#modificacion").on('submit',function(e){
+				}
 
-				e.preventDefault();
-				$("#btn-Modificacion-expediente").prop("disabled",true);
-             	var form=$(e.target);
-              	var formData=new FormData();
-
-				var idExpediente=$("#modificacionExpediente").find('input[name="id"]').val();
-              	var idTipoExpediente=$("#selTipoExpedienteMod").val();
-              	var numeroExpediente=$("#numeroExpedienteMod").val();
-              	var folios=$("#foliosMod").val();
-              	var documentoParticular=$("#documentoParticularMod").val();
-              	var apellidosParticular=$("#apellidosParticularMod").val();
-              	var nombresParticular=$("#nombresParticularMod").val();
-              	var idOrigen=$("#selOrigenMod").val();
-
-				var numeros=[];
-              	$("#tabla-numeros-mod > tbody > tr").each(function(){ 
-                  	var numero = { 
-                          			ente:$(this).find("td:eq(0)").html(), 
-                              		numero:$(this).find("td:eq(1)").html(), 
-                              		letra:$(this).find("td:eq(2)").html(), 
-                              		año: $(this).find("td:eq(3)").html(), 
-                              		folios:$(this).find("td:eq(4)").html()
-                              	  }; 
-                	 numeros.push(numero);
-                });
-
-                var caratula=$("#caratulaMod").val();
-                var archivos=$(form).find('[name="input-file-Mod"]')[0].files;
-
-                var validacion='';
-
-                formData.append('idExpediente',idExpediente);
-            	
-              	formData.append('idTipoExpediente',idTipoExpediente);
-              	validacion+=((idTipoExpediente==0)?'<li>Debe seleccionar un tipo de expediente</li>':'');
-              	
-              	formData.append('numeroExpediente',numeroExpediente);
-              	validacion+=((numeroExpediente.replace(/ /g, '').length==0)?'<li>El expediente debe tener un número</li>':'');
-              	validacion+=((!$.isNumeric(numeroExpediente))?'<li>El número de expediente no puede contener letras ni espacios</li>':'');
-              	
-              	formData.append('folios',folios);
-              	validacion+=((folios.replace(/ |\n/g, '').length==0)?'<li>Debe especificar la cantidad de folios</li>':'');
-              	validacion+=((!$.isNumeric(folios))?'<li>la número de folios no puede contener letras ni espacios</li>':'');
-              	
-              	formData.append('documentoParticular',documentoParticular);
-              	validacion+=((idTipoExpediente==3 && folios.replace(/ |\n/g, '').length!=0 && !$.isNumeric(documentoParticular))
-                      		  ?'<li>la número de documento no puede contener letras ni espacios</li>':'');
-				formData.append('apellidosParticular',apellidosParticular);
-				validacion+=((idTipoExpediente==3 && apellidosParticular.replace(/ |\n/g, '').length==0)
-							  ?'<li>Debe especificar un apellido para el demandante particular</li>':'');
-				  
-				formData.append('nombresParticular',nombresParticular);
-				validacion+=((idTipoExpediente==3 && apellidosParticular.replace(/ |\n/g, '').length==0)
-						  	  ?'<li>Debe especificar un nombre para el demandante particular</li>':'');
-			  	  
-				formData.append('idOrigen',idOrigen);
-				validacion+=((idTipoExpediente==4 && idOrigen==0)
-					  	  	  ?'<li>Debe especificar el origen del expediente</li>':'');
-		  	  	  
-				formData.append('numeros',JSON.stringify(numeros));
-				validacion+=((idTipoExpediente==4 && numeros.length==0)
-				  	  	  	  ?'<li>Debe especificar el/los numero/s de origen del expediente</li>':'');	
-	  	  	  	  		
-				formData.append('caratula',caratula);
-				validacion+=((caratula.replace(/ |\n/g, '').length==0)
-							  ?'<li>Debe especificar un texto para la caratula</li>':'');
-				  
-				$.each(archivos, function(i, archivo) {
-                	formData.append('uploadedFiles-' + i, archivo);
-            	});
-				
-	            if (validacion.length>0) 
+				if (validacion.length>0) 
 				{
-					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+					Validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
 								validacion+'</ul>':'');
 					toastr.error(validacion);
-					$('#btn-Modificacion-expediente').prop("disabled", false);
 					return false;
 				}
 				else{
-
-	            	$.ajax({
-		                async: true,
-		                url: '{{ app.request.getBaseURL() }}'+'/api/expediente/update',
-		                data: formData,
-		                cache: false,
-		                contentType: false,
-		                processData: false,
-		                type:  $(form).attr('method'),
-	                success: function(data) {
-	                    toastr.success(data);
-						tabla.ajax.reload();
-						$('#modificacionExpediente').modal('hide');
-	                	},
-	                complete:function(){
-	                	$('#btn-Modificacion-expediente').prop("disabled", false);
-	                },
-	                error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(jqXHR.responseText);
-						}
-	            	});
-	            }
-			});
-
-			//--------------------------------------------------------------------------------------------------------------
-			//-------------------------------------------NUEVO EXPEDIENTE----------------------------------------------------
-			//--------------------------------------------------------------------------------------------------------------
-
-			//EVENTO ABRIR MODAL NUEVO EXPEDIENTE
-		    $('#nuevoExpediente').on('show.bs.modal', function () {
-
-		    	$("#input-file").fileinput({
-		    		language: "es",
-	                showUpload: false,               
-	                overwriteInitial: false,
-	                maxFileSize: 10240,                
-	            });
-		    	
-			  	if ($("#idProyecto").val()==0){
-			  		$("#selTipoExpediente").val(0).change();
-			  		$("#selTipoExpediente").prop( "disabled", false );
-			  		mostrarTiposPara("no-proyectos");
-			  	}
-			  	else{ 
-			  		$("#selTipoExpediente").prop( "disabled", true );
-			  		$("#selTipoExpediente").val($("#idTipoExpediente").val());
-			  		mostrarTiposPara("proyectos");
-				}
-				mostrarOrigenParaNuevo($("#selTipoExpediente").val());
-				$("#numeroExpediente").val('');
-				$("folios").val('');
-				$("#caratula").data("wysihtml5").editor.setValue('');
-
-			});
-			
-			//EVENTO CERRAR MODAL NUEVO EXPEDIENTE
-			$('#nuevoExpediente').on('hidden.bs.modal', function () {
-				$('#input-file').fileinput('destroy');
-				$("#idProyecto").val('');
-				$("#idTipoProyecto").val(0);
-				if ( $('#proyectosBusqueda').hasClass('in') )
-					$('#proyectosBusqueda').modal('hide');
-			});
-			
-			//GUARDAR ALTA EXPEDIENTE
-			$("#alta").on('submit',function(e){
-				
-				e.preventDefault();
-				$("#btn-nuevo-expediente").prop("disabled",true);
-             	var form=$(e.target);
-              	var formData=new FormData();
-                var idProyecto=$("#nuevoExpediente").find('input[name="idProyecto"]').val();
-              	var idTipoExpediente=$("#selTipoExpediente").val();
-              	var numeroExpediente=$("#numeroExpediente").val();
-              	var folios=$("#folios").val();
-              	var documentoParticular=$("#documentoParticular").val();
-              	var apellidosParticular=$("#apellidosParticular").val();
-              	var nombresParticular=$("#nombresParticular").val();
-              	var idOrigen=$("#selOrigen").val();
-
-              	debugger;
-				var numeros=[];
-              	$("#tabla-numeros > tbody > tr").each(function(){ 
-                  	var numero = { 
-                          			ente:$(this).find("td:eq(0)").html(), 
-                              		numero:$(this).find("td:eq(1)").html(), 
-                              		letra:$(this).find("td:eq(2)").html(), 
-                              		año: $(this).find("td:eq(3)").html(), 
-                              		folios:$(this).find("td:eq(4)").html()
-                              	  }; 
-                	 numeros.push(numero);
-                });
-
-                var caratula=$("#caratula").val();
-                var archivos=$(form).find('[name="input-file"]')[0].files;
-
-                var validacion='';
-
-                formData.append('idProyecto',idProyecto);
-              	formData.append('idTipoExpediente',idTipoExpediente);
-              	validacion+=((idTipoExpediente==0)?'<li>Debe seleccionar un tipo de expediente</li>':'');
-              	
-              	formData.append('numeroExpediente',numeroExpediente);
-              	validacion+=((numeroExpediente.replace(/ /g, '').length==0)?'<li>El expediente debe tener un número</li>':'');
-              	validacion+=((!$.isNumeric(numeroExpediente))?'<li>El número de expediente no puede contener letras ni espacios</li>':'');
-              	
-              	formData.append('folios',folios);
-              	validacion+=((folios.replace(/ |\n/g, '').length==0)?'<li>Debe especificar la cantidad de folios</li>':'');
-              	validacion+=((!$.isNumeric(folios))?'<li>la número de folios no puede contener letras ni espacios</li>':'');
-              	
-              	formData.append('documentoParticular',documentoParticular);
-              	validacion+=((idTipoExpediente==3 && folios.replace(/ |\n/g, '').length!=0 && !$.isNumeric(documentoParticular))
-                      		  ?'<li>la número de documento no puede contener letras ni espacios</li>':'');
-				formData.append('apellidosParticular',apellidosParticular);
-				validacion+=((idTipoExpediente==3 && apellidosParticular.replace(/ |\n/g, '').length==0)
-							  ?'<li>Debe especificar un apellido para el demandante particular</li>':'');
-				  
-				formData.append('nombresParticular',nombresParticular);
-				validacion+=((idTipoExpediente==3 && apellidosParticular.replace(/ |\n/g, '').length==0)
-						  	  ?'<li>Debe especificar un nombre para el demandante particular</li>':'');
-			  	  
-				formData.append('idOrigen',idOrigen);
-				validacion+=((idTipoExpediente==4 && idOrigen==0)
-					  	  	  ?'<li>Debe especificar el origen del expediente</li>':'');
-		  	  	  
-				formData.append('numeros',JSON.stringify(numeros));
-				validacion+=((idTipoExpediente==4 && numeros.length==0)
-				  	  	  	  ?'<li>Debe especificar el/los numero/s de origen del expediente</li>':'');	
-	  	  	  	  		
-				formData.append('caratula',caratula);
-				validacion+=((caratula.replace(/ |\n/g, '').length==0)
-							  ?'<li>Debe especificar un texto para la caratula</li>':'');
-				  
-				$.each(archivos, function(i, archivo) {
-                	formData.append('uploadedFiles-' + i, archivo);
-            	});
-				
-	            if (validacion.length>0) 
-				{
-					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
-								validacion+'</ul>':'');
-					toastr.error(validacion);
-					$('#btn-nuevo-expediente').prop("disabled", false);
-					return false;
-				}
-				else{
-
-	            	$.ajax({
-		                async: true,
-		                url: $(form).attr('action'),
-		                data: formData,
-		                cache: false,
-		                contentType: false,
-		                processData: false,
-		                type: $(form).attr('method'),
-	                success: function(data) {
-	                    toastr.success(data);
-						tabla.ajax.reload();
-						$('#nuevoExpediente').modal('hide');
-	                	},
-	                complete: function(){
-	                	$('#btn-nuevo-expediente').prop("disabled", false);
-	                },
-	                error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(jqXHR.responseText);
-						}
-	            	});
-	            }
-			});
-
-			//------------------------------------------------------------------------------------------------------------
-			//--------------------------------------INGRESO DE PROYECTO---------------------------------------------------
-			//------------------------------------------------------------------------------------------------------------
-
-			//BOTON INGRESAR DE LA TABLA DE EXPEDIENTES
-			$('#proyectos tbody').on( 'click', '.btn-ingresar', function () {
-		        var data = tablaProyectos.row( $(this).parents('tr') ).data();
-		        $("#nuevoExpediente").find('input[name="idProyecto"]').val(data[ "id" ]);
-		        var tipoExpediente=data[ "tipo_proyecto"].tipo_expediente.id;
-		        $("#nuevoExpediente").find('input[name="idTipoExpediente"]').val(tipoExpediente);
-		        $("#nuevoExpediente").find('div[name="concejales"]').html(data[ "lista_concejales"]);
-		        $("#nuevoExpediente").modal('show');
-		    } );
-
-			//EVENTO MOSTRAR DEL MODAL DE BUSQUEDA DE PROYECTOS
-			$('#proyectosBusqueda').on('show.bs.modal', function () {
-
-		    	tablaProyectos=$('#proyectos').DataTable({
-					    			  "language": {
-							              "infoEmpty": "Sin registros para mostrar",
-							              "paginate": {
-									          	"last": "Ultima Página",
-									          	"first": "Primer página",
-									          	"next": "Siguiente",
-									          	"previous": "Anterior"
-									       },
-									       "search":"Búsqueda rápida",
-									       "emptyTable": "Sin Datos",
-									       "lengthMenu": 'Registros Listados <select class="form-control input-sm">'+
-											             '<option value="10">10</option>'+
-											             '<option value="20">20</option>'+
-											             '<option value="30">30</option>'+
-											             '<option value="40">40</option>'+
-											             '<option value="50">50</option>'+
-											             '<option value="-1">Todos</option>'+
-											             '</select>',
-											"loadingRecords": "Espere...cargando datos",
-											"processing": "Procesando...",
-											"sInfo": "Mostrando  _START_ a _END_ de _TOTAL_ registros",
-
-						          	  },
-								      "processing": false,
-								      "ajax": {
-										        "url": "api/proyecto/getByCriteria/busqueda-5/0",
-						            			"dataSrc": '',
-										    },
-									  "columnDefs": [
-											            {
-											                "targets": [ 0 ],
-											                "visible": false,
-											                "searchable": false
-											            },
-											            {
-											                "targets": [ 1 ],
-											                "visible": false,
-											                "searchable": false
-											            },
-											            {
-												            "targets": [ 2 ],
-												            "data": null,
-												            "orderable":false,
-												            "render": function(data, type, row){
-												            	return "<button type='button' class='btn btn-primary btn-xs btn-ingresar'><span class='glyphicon glyphicon-check'></span></button>";
-												            }
-												        }
-												       
-									  ],
-								      "columns": [
-								      		{ "data": "id" },
-								      		{ "data": "tipo_proyecto.tipo_expediente.id"},
-								      		{ "data": "null","width":"12%"},
-								      		{ "data": "tipo_proyecto.tipo_proyecto","width":"20%"},
-								            { "data": "lista_concejales","className": "for-mobile","width":"70%" },
-								        ],
-								      "autoWidth":false,
-								      "paging": true,
-								      "lengthChange": true,
-								      "searching": true,
-								      "ordering": true,
-								      "info": true,
-							});
-
-			});
-
-			//EVENTO CERRAR DEL MODAL DE BUSQUEDA DE PROYECTOS
-			$('#proyectosBusqueda').on('hidden.bs.modal', function () {
-				tablaProyectos.destroy();
-			});
-
-			//------------------------------------------------------------------------------------------------------------
-			//----------------------------------GIROS DE LOS EXPEDIENTES--------------------------------------------------
-			//------------------------------------------------------------------------------------------------------------
-
-			//EVENTO BOTON GIROS DE LA GRILLA
-		    $('#registroAsignaciones tbody').on( 'click', '.btn-giros', function () {
-		        var data = tabla.row( $(this).parents('tr') ).data();
-		        $("#giros").find('input[name="idExpediente"]').val(data[ "id" ]);
-		    } );
-			
-		  	//EVENTO ABRIR MODAL DE GIROS
-			$('#giros').on('show.bs.modal', function () {
-
-				tablaGiros=$('#tablaGiros').DataTable({
-        	    			"language": {
-        			              "infoEmpty": "Sin registros para mostrar",
-        			              "paginate": {
-        					          	"last": "Ultima Página",
-        					          	"first": "Primer página",
-        					          	"next": "Siguiente",
-        					          	"previous": "Anterior"
-        					       },
-        					       "search":"Búsqueda rápida",
-        					       "emptyTable": "Sin Datos",
-        					       "lengthMenu": 'Registros Listados <select class="form-control input-sm">'+
-        							             '<option value="10">10</option>'+
-        							             '<option value="20">20</option>'+
-        							             '<option value="30">30</option>'+
-        							             '<option value="40">40</option>'+
-        							             '<option value="50">50</option>'+
-        							             '<option value="-1">Todos</option>'+
-        							             '</select>',
-        							"loadingRecords": "Espere...cargando datos",
-        							"processing": "Procesando...",
-        							"sInfo": "Mostrando  _START_ a _END_ de _TOTAL_ registros",
-        
-        		          	  },
-        				      "processing": false,
-        				      "ajax": {
-        						        "url": "api/expediente/giro/getAllByExpediente/"+traerIdParaMovimientos("giros"),
-        		            			"dataSrc": '',
-        						    },
-        					  "columnDefs": [
-        							            {
-        							                "targets": [ 0 ],
-        							                "visible": false,
-        							                "searchable": false
-        							            },
-        							            {
-        							                "targets": [ 1 ],
-        							                "data": 'remito.numero_remito',
-        							                "visible": true,
-        							                "orderable":true,
-        							                "render": function(data, type, row){
-        							                	return ((!data==0)?data:"");
-										            },
-        							                
-        							            },
-        							            
-        					  ],
-        				      "columns": [
-        				      		{ "data": "id" },
-        				      		{ "data": "remito.numero_remito","width":"9%"},
-        				      		{ "data": "origen","width":"15%"},
-        				      		{ "data": "fecha_envio","width":"8%"},
-        				      		{ "data": "destino","width":"15%"},
-        				      		{ "data": "observacion","className": "for-mobile","width":"40%" },
-        				      		{ "data": "fojas","width":"5%" },
-        				            { "data": "fecha_recepcion","className": "for-mobile","width":"8%" },
-        				        ],
-        				      "autoWidth":false,
-        				      "paging": true,
-        				      "lengthChange": true,
-        				      "searching": true,
-        				      "ordering": true,
-        				      "info": true,
-        			});
-
-				
-                				
-			});
-
-			//EVENTO CERRAR MODAL DE GIROS
-			$('#giros').on('hidden.bs.modal', function () {
-				tablaGiros.destroy();
-			});
-
-			//------------------------------------------------------------------------------------------------------------
-			//-----------------------------SOLICITUD DE INFORMES LOS EXPEDIENTES------------------------------------------
-			//------------------------------------------------------------------------------------------------------------
-
-			//EVENTO BOTON INFORMES DE LA GRILLA
-		    $('#registroAsignaciones tbody').on( 'click', '.btn-informes', function () {
-		        var data = tabla.row( $(this).parents('tr') ).data();
-		        $("#informes").find('input[name="idExpediente"]').val(data[ "id" ]);
-		    } );
-			
-		  	//EVENTO ABRIR MODAL INFORMES
-			$('#informes').on('show.bs.modal', function () {
-
-				tablaInformes=$('#tablaInformes').DataTable({
-                   			  	  "language": {
-                		              "infoEmpty": "Sin registros para mostrar",
-                		              "paginate": {
-                				          	"last": "Ultima Página",
-                				          	"first": "Primer página",
-                				          	"next": "Siguiente",
-                				          	"previous": "Anterior"
-                				       },
-                				       "search":"Búsqueda rápida",
-                				       "emptyTable": "Sin Datos",
-                				       "lengthMenu": 'Registros Listados <select class="form-control input-sm">'+
-                						             '<option value="10">10</option>'+
-                						             '<option value="20">20</option>'+
-                						             '<option value="30">30</option>'+
-                						             '<option value="40">40</option>'+
-                						             '<option value="50">50</option>'+
-                						             '<option value="-1">Todos</option>'+
-                						             '</select>',
-                						"loadingRecords": "Espere...cargando datos",
-                						"processing": "Procesando...",
-                						"sInfo": "Mostrando  _START_ a _END_ de _TOTAL_ registros",
-                
-                	          	  },
-                			      "processing": false,
-                			      "ajax": {
-                					        "url": "api/expediente/informe/getAllByExpediente/"+traerIdParaMovimientos("informes"),
-                	            			"dataSrc": '',
-                					    },
-                				  "columnDefs": [
-                						            {
-                						                "targets": [ 0 ],
-                						                "visible": false,
-                						                "searchable": false
-                						            },
-                						            {
-            							                "targets": [ 1 ],
-            							                "data": 'remito.numero_remito',
-            							                "visible": true,
-            							                "orderable":true,
-            							                "render": function(data, type, row){
-                        							                return ((!data==0)?data:"");
-            										               },
-                						            },
-                							       
-                				  ],
-                			      "columns": [
-                        			      		{ "data": "id" },
-                        			      		{ "data": "expediente.numero_completo","width":"9%" },
-                        			      		{ "data": "comision.comision","width":"15%"},
-                        			      		{ "data": "tieneDictamen","width":"8%"},
-                        			      		{ "data": "dictamen.fecha_dictamen_formateada","width":"8%"},
-                            			     ],
-                			      "autoWidth":false,
-                			      "paging": true,
-                			      "lengthChange": true,
-                			      "searching": true,
-                			      "ordering": true,
-                			      "info": true,
-                		});			
-			});
-
-			//EVENTO CERRAR MODAL DE INFORMES
-			$('#informes').on('hidden.bs.modal', function () {
-				tablaInformes.destroy();
-			});
-
-			//------------------------------------------------------------------------------------------------------------
-			//-------------------------------------ALTA Y EDICION DE GIROS------------------------------------------------
-			//------------------------------------------------------------------------------------------------------------
-			
-			//BOTON ALTA GIRO DE LA GRILLA DE GIROS
-			$("#alta-giro").click(function(){
-				$("#giro").modal("show");
-			});
-
-			//BOTON ELIMINAR GIRO DE LA GRILLA DE GIROS
-			$('#tablaGiros tbody').on( 'click', '.btn-eliminar-movimiento', function () {
-		        /*
-		        	ver como implementar solo eliminar el último si:
-	        		el origen es mi oficina
-	        		no tiene fecha de recepcion
-        		*/	
-		    } );
-
-			// EVENTO ABRIR DEL MODAL DE GIRO
-			$('#giro').on('show.bs.modal', function () {
-				
-				$("#selDestinoGiro").val(0);
-				$("#observacionGiro").val("");
-				$("#fechaRecepcionRemito").val("");
-				$("#fechaIntervencionOficinaActual").val("");
-
-				$.ajax({
-                    url: '{{ app.request.getBaseURL() }}' + '/api/expediente/giro/findLast',
-                    type: 'GET',
-                success: function(data) {
-                    
-                    if (data.destino_giro.id!='{{ idOficinaActual }}'){
-						$("#fechaIntervencionOficinaActual").removeClass('hidden');
-                    	$("#giro").find('input[name="idOficinaActual"]').val(data.destino_giro.id);
-                    }
-                    else{
-                    	$("#fechaIntervencionOficinaActual").addClass('hidden');
-                    	$("#giro").find('input[name="idOficinaActual"]').val(0);
-                    }
-                		
-                },
-                error: function(jqXHR,textStatus,errorThrown ){
-    				toastr.error(jqXHR.responseText);
-    				}
-            	});
-            	
-			});
-
-			$('#giro').on('hidden.bs.modal', function () {
-				$("#guardarGiro").prop("disabled", false);
-			});
-				
-			//BOTON GUARDAR GIRO DEL MODAL DE EDICION DE GIRO
-			$("#guardarGiro").click(function(){
-
-				$(this).prop("disabled", true);
-				
-				var validacion="";
-				var formData=new FormData();
-				
-				formData.append('observacion',$("#observacionGiro").val());
-				formData.append('fojas',$("#fojasRespuestaInforme").val());
-				formData.append('idDestino',$("#selDestinoGiro").val());
-				validacion=(($("#selDestinoGiro").val()==0)
-								?'<li>Debe seleccionar un destino</li>':'');
-		
-				
-				formData.append('idExpediente',$("#movimientos").find('input[name="idExpediente"]').val());
-				
-                if (validacion.length>0) 
-        		{
-        			validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
-        						validacion+'</ul>':'');
-        			toastr.error(validacion);
-        			$(this).prop("disabled", false);
-        			return false;
-        		}
-        		else{
-        
-                	$.ajax({
-                        async: true,
-                        url: '{{ app.request.getBaseURL() }}' + '/api/expediente/giro/create',
-                        data: formData,
-                        cache: false,
-                        contentType: false,
-                        processData: false,
-                        type: 'POST',
-                    success: function(data) {
-                        toastr.success(data);
-        				tabla.ajax.reload();
-        				$('#giros').modal('hide');
-                    	},
-                    complete: function(){
-                    	$(this).prop("disabled", false);
-                    },
-                    error: function(jqXHR,textStatus,errorThrown ){
-        				toastr.error(jqXHR.responseText);
-        				}
-                	});
-                }
-				
-			});
-
-			//------------------------------------------------------------------------------------------------------------
-			//-------------------------------------ALTA Y EDICION DE INFORMES---------------------------------------------
-			//------------------------------------------------------------------------------------------------------------
-			
-			//BOTON ALTA GIRO DE LA GRILLA DE INFORMES
-			$("#alta-informe").click(function(){
-				$("#informe").find('input[name="modoInforme"]').val("alta");
-				$("#informe").modal("show");
-			});
-
-			//BOTON MODIFICAR GIRO DE LA GRILLA DE INFORMES
-			$('#tablaInformes tbody').on( 'click', '.btn-modificar-informe', function () {
-		        var data = tabla.row( $(this).parents('tr') ).data();
-		        $("#informe").find('input[name="idInforme"]').val(data[ "id" ]);
-		        $("#informe").find('input[name="modoInforme"]').val("edicion");
-		        $("#informe").modal("show");
-		    } );
-
-			// EVENTO ABRIR DEL MODAL DE INFORME
-			$('#informe').on('show.bs.modal', function () {
-				var modo = $("#giro").find('input[name="modoInforme"]').val(); 
-
-				$("#selDestinoInforme").val(0);
-				$("#solicitudInforme").val("");
-				$("#fechaEnvioInforme").val("");
-				$("#fechaRespuestaInforme").val("");
-				$("#fojasRespuestaInforme").val("");
-
-				if (modo=="edicion"){
-
-					var idInforme=$("#informe").find('input[name="idInforme"]').val();
 					
-					$.ajax({
-                        url: '{{ app.request.getBaseURL() }}' + '/api/expediente/informe/findOne/'+idInforme,
-                        type: 'GET',
-                    success: function(data) {
-                    	$("#selDestinoInforme").val(data.destino.id);
-                    	$("#solicitudInforme").val(data.solicitud);
-                    	$("#fechaEnvioInforme").val(data.fecha_emision_formateada);
-                    	$("#fechaRespuestaInforme").val(data.fecha_inggreso_repuesta_formateada);
-                    	$("#fojasRespuestaInforme").val(data.fojas);
-                    },
-                    error: function(jqXHR,textStatus,errorThrown ){
-        				toastr.error(jqXHR.responseText);
-        				}
-                	});
-				}
+ 					var numero=$("#modalArticulo").find('input[name="id"]').val();	
+					var texto=$("#articulo").val();
 
-    			if($("#fechaEnvioInforme").val()==''){
-    					$("#fechaRespuestaInforme").prop("disabled", true);
-    					$("#fojasRespuestaInforme").prop("disabled", true);
-    					$("#fechaEnvioInforme").prop("disabled", false);
-    					$("#selDestinoInforme").prop("disabled", false);
-                    	$("#solicitudInforme").prop("disabled", false);                    	
-    			}
-				else {
-					$("#fechaRespuestaInforme").prop("disabled", false);
-					$("#fojasRespuestaInforme").prop("disabled", false);
-					$("#fechaEnvioInforme").prop("disabled", true);
-					$("#selDestinoInforme").prop("disabled", true);
-                	$("#solicitudInforme").prop("disabled",true);
-				}
-			});
+					if(numero==0){
+						var articuloActual={
+            								texto: texto,
+            								incisos:incisos
+                							}
 
-			$('#informe').on('hidden.bs.modal', function () {
-				$("#guardarInforme").prop("disabled", false);
-			});
-				
-			//BOTON GUARDAR INFORME DEL MODAL DE EDICION DE INFORME
-			$("#guardarInforme").click(function(){
-
-				$(this).prop("disabled", true);
-				
-				var validacion="";
-				var formData=new FormData();
-				var modo =$("#informe").find('input[name="modoInforme"]').val();
-				var url="";
-				
-				formData.append('solicitud',$("#solicitudInforme").val());
-				formData.append('idDestino',$("#selDestinoInforme").val());
-				validacion=(($("#selDestinoInforme").val()==0)
-								?'<li>Debe seleccionar un destino</li>':'');
-				validacion=(($("#solicitudInforme").val()=="")
-								?'<li>Debe especificar la solicitud</li>':'');
-				validacion+=(($("#fechaRespuestaInforme").val()!="" && $("#fojasRespuestaInforme")=="")
-								?'<li>Debe indicar la ubicacion de las fojas en el expediente</li>':'');
+						articuloActual=agregarArticulo(articuloActual);
+						articulosIngresados.push(articuloActual);
+					}
+					else{
+							var articuloActual={
+                								numero: numero,
+                								texto: texto,
+                								incisos:incisos
+                    							}
 							
-				if (modo=='alta'){
-					url="/api/expediente/informe/create";
-					formData.append('id',$("#movimientos").find('input[name="idExpediente"]').val());
+							actualizarArticulo(articuloActual);
+							articulosIngresados.reemplazar(articuloActual,'numero'); 
+						}
+					
+					$('#modalArticulo').modal('hide');
 				}
-				else{
-					url="/api/expediente/informe/update"
-					formData.append('id',$("#informe").find('input[name="idInforme"]').val());
-				}
-
-
-                if (validacion.length>0) 
-        		{
-        			validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
-        						validacion+'</ul>':'');
-        			toastr.error(validacion);
-        			$(this).prop("disabled", false);
-        			return false;
-        		}
-        		else{
-        
-                	$.ajax({
-                        async: true,
-                        url: '{{ app.request.getBaseURL() }}' + url,
-                        data: formData,
-                        cache: false,
-                        contentType: false,
-                        processData: false,
-                        type: 'POST',
-                    success: function(data) {
-                        toastr.success(data);
-        				tabla.ajax.reload();
-        				$('#informe').modal('hide');
-                    	},
-                    complete: function(){
-                    	$(this).prop("disabled", false);
-                    },
-                    error: function(jqXHR,textStatus,errorThrown ){
-        				toastr.error(jqXHR.responseText);
-        				}
-                	});
-                }
-				
 			});
-		
-			
+
 		    //------------------------------------------------------------------------------------------------------------
 			//---------------------------------INICIALIZACIÓN DE CONTROLES------------------------------------------------
 			//------------------------------------------------------------------------------------------------------------
+							
+			$(".text-area").wysihtml5({
+				toolbar: {
+				    "image": false,
+					"size": "xs",
+				},
+			});
 
+			$("#selConcejales").select2({
+				ajax: {
+			    url: '{{ app.request.getBaseURL() }}'+"/api/legislador/nombre/getByCriteria",
+			    dataType: 'json',
+			    delay: 250,
+			    cache: false,
+			    data: function (params) {
+			      return {
+			        q: params.term, // search term
+			        page: params.page
+			      };
+			    },
+			    processResults: function (data) {
+			       var dato=data;
+		           return {
+				        results: $.map(dato, function(item) {
+				            return { id: item.id, text: item.descripcion };
+				        })
+				    };
+		        },
+			  },
+			  language: "es",
+			  minimumInputLength: 3,
+			  theme: "bootstrap",
+			});
+
+			$("#selComisiones").select2({
+				ajax: {
+			    url: '{{ app.request.getBaseURL() }}'+"#",//"/api/comisiones/getByCriteria",
+			    dataType: 'json',
+			    delay: 250,
+			    cache: false,
+			    data: function (params) {
+			      return {
+			        q: params.term, // search term
+			        page: params.page
+			      };
+			    },
+			    processResults: function (data) {
+			       var dato=data;
+		           return {
+				        results: $.map(dato, function(item) {
+				            return { id: item.id, text: item.comision };
+				        })
+				    };
+		        },
+			  },
+			  language: "es",
+			  minimumInputLength: 3,
+			  theme: "bootstrap",
+			});
+
+			addClasssToSelect2("group-selComisiones","selComisiones");
+			addClasssToSelect2("group-selConcejales","selConcejales");
+			
 			$('#estadoFiltro').bootstrapToggle({
 		      on:  'Activo',
 		      off: 'Inactivo',
@@ -1250,6 +791,19 @@
 					tabla.ajax.url("api/expedienteComision/getByCriteria/"+tipoCriterio()+"/"+criterio()).load();
 					$(this).bootstrapToggle('disable');
 					
+				}
+			});
+
+			$("#selTipoRedaccion").change(function(){
+				if ($(this).val()=="basico"){
+					$("#group-tipoDictamen").addClass("hidden");
+					$("#link-tab-2").addClass("hidden");
+					habilitar("tab-1");	
+				}
+				else {
+					$("#group-tipoDictamen").removeClass("hidden");
+					$("#link-tab-2").removeClass("hidden");
+					$("#selTipoDictamen").val(0);
 				}
 			});
 
@@ -1329,7 +883,7 @@
 			                <th>Comision</th>
 			                <th>Publicado</th>
 			                <th title="Fecha Publicacion">F. Pub.</th>
-			                <th title="Revision que Establece Dictamen">Rev. Dic.</th>
+			                <th>Dictamen</th>
 	                	</tr>
 	                </thead>
 	                <tbody>
@@ -1374,6 +928,177 @@
 				    </div>
 				</div>
 			</div>
+		</div>
+		<div id="modalDictamen" class="modal fade custom-modal" role="dialog" data-backdrop="static" 
+   data-keyboard="false">
+		 	<div class="modal-dialog modal-xl">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Nuevo Dictamen</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				    	<input type="hidden" id="idAsignacion" name="idAsignacion"> 
+				    	<input type="hidden" id="idDictamen" name="idDictamen"> 
+					    <div class="row">
+					    	<div class="col-md-3">
+					    		<div class="form-group">
+					        		<label for="selTipoRedaccion">Tipo Redacción</label>
+					        		<select class="form-control" id="selTipoRedaccion" 
+					        				name="selTipoRedaccion">
+						        		<option value="basico" selected="selected">Básico</option>
+						        		<option value="articulado">Articulado</option>		
+					        		</select>
+					        	</div>
+					        	<div style="min-height: 68.78px">
+    					    		<div class="form-group hidden" style="margin-bottom: 0px!important" id="group-tipoDictamen">
+    					        		<label for="selTipoDictamen">Tipo Dictamen</label>
+    					        		<select class="form-control" id="selTipoDictamen" 
+    					        				name="selTipoDictamen">
+    					        			<option value="0">Seleccione Tipo Dictamen</option>
+    					        			{% for tipo in tipoProyectos %}
+    							                <option value="{{ tipo.id }}">{{ tipo.tipoProyecto }}</option>
+    							            {% endfor %}
+    					        		</select>
+    					        	</div>
+    					        </div>
+					        	<div class="form-group">
+					        		<label for="selNumeroDictaminantes">Número Dictaminantes</label>
+					        		<select class="form-control" id="selNumeroDictaminantes" 
+					        				name="selNumeroDictaminantes">
+					        			<option value="0">Seleccione Numero</option>
+					        			{% for numero in numeroDictaminantes %}
+							                <option value="{{ numero.id }}">{{ numero.tipoNumeroDictamen }}</option>
+							            {% endfor %}
+					        		</select>
+					        	</div>
+					        	<div class="form-group" id="group-selComisiones">
+						        	<label for="selComisiones">Comisiones:</label>
+						        	<select class="form-control" multiple="multiple" data-width="100%" 
+						        			id="selComisiones" name="selComisiones">
+						        	</select>
+						        </div>
+					    		<div class="form-group" id="group-selConcejales">
+						        	<label for="selConcejales">Concejales:</label>
+						        	<select class="form-control" multiple="multiple" data-width="100%" 
+						        			id="selConcejales" name="selConcejales"></select>
+						        </div>
+					    	</div>
+					    	<div class="col-md-9">
+					    		<div class="row">
+					    			<div class="col-md-12">
+					    				<nav>
+        								    <ul class="nav nav-pills">
+        									    <li role="presentation"><a href="#" id="link-tab-1" class="selectable" onclick = "habilitar('tab-1')" ><h4>Texto</h4></h4></a></li>
+        										<li role="presentation"><a href="#" id="link-tab-2" class="selectable hidden" onclick = "habilitar('tab-2')"><h4>Artículos</h4></a></li>
+        									</ul>
+        								</nav>
+					    			</div>		
+					    		</div>
+					    		<br>
+							    <div class="row tab" id="tab-1">
+							    	<div class="col-md-12">
+									    <div class="row">
+									    	<div class="col-md-12">
+								        		<textarea class="form-control text-area text-area-larga" 
+								        		id="texto" name="texto" placeholder="Texto Libre"></textarea>
+									        </div>
+								        </div> 
+							        </div> 
+					        	</div>
+						        <div class="row tab hidden" id="tab-2">
+					        		<div class="col-md-12">
+							        	<div class="row" style="padding-top:5px">
+							        		<div class="col-md-12">
+									        	<div class="div-articulos" id="div-articulos">
+									        		<table class="table table-striped" id="articulos">
+									        			<tbody>
+										        		</tbody> 
+									        		</table> 	
+										        </div>
+										    </div>
+										</div>
+										<th>	
+										<div class="row" style="padding-top: 15px;">
+											<div class="col-md-12">
+								        		<button type="button" class="btn btn-primary btn-sm" id="btn-nuevo-articulo"
+								        		        style="margin-left:15px" >Nuevo Artículo</button>
+								        	</div>
+										</div>
+								    </div>
+						        </div>
+					        </div>
+					    </div>
+				        <hr>
+				        <div class="row">
+				        	<div class="col-md-12">
+				        		<div class="text-center">
+					    			<div class="btn-group">
+							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+						       			 <button type="button" class="btn btn-primary" id="btn-guardar-dictamen">Guardar</button>
+							        </div>
+						        </div>
+						    </div>
+			    		</div>
+				    </div>
+			    </div>
+		  	</div>
+		</div>
+
+		<div id="modalArticulo" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
+		 	<div class="modal-dialog modal-xl">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Nuevo Artículo</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+			        	<input type="hidden" id="id" name="id">
+			        	<div class="row">
+			        		<div class="col-md-12">
+			        			<div class="form-group">
+					        		<label for="articulo">Articulo:</label>
+					        		<textarea class="form-control text-area text-area-corta" 
+					        		id="articulo" name="articulo" placeholder="articulo"></textarea>
+					        	</div>
+					        </div>
+					    </div>
+					    <div class="row">
+			        		<div class="col-md-12">
+			        			<div class="row">
+			        				<div class="col-md-12">
+								        <label>Incisos:</label>
+								        <button type="button" onClick="agregarInciso();" class="btn btn-primary btn-sm pull-right">Agregar Inciso</button>
+								    </div>
+								</div>
+								<div class="row" style="padding-top:5px">
+									<div class="col-md-12">
+								        <div class="div-incisos" id="div-incisos">
+							        		<table class="table table-striped" id="incisos">
+							        			<tbody>
+								        		</tbody> 
+							        		</table> 	
+								        </div>
+								    </div>
+								</div>		
+					        </div> 
+					    </div>
+				        <hr>
+				        <div class="row">
+				        	<div class="col-md-12">
+				        		<div class="text-center">
+					    			<div class="btn-group">
+							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+			       			 			<button type="submit" class="btn btn-primary" id="btn-agregar-articulo">Aceptar</button>
+							        </div>
+						        </div>
+						    </div>
+			    		</div>
+				     </div>
+			    </div>
+		  	</div>
 		</div>
 	</section>
 {% endblock %}

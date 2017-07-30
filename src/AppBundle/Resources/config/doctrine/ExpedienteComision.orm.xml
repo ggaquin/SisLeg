@@ -31,11 +31,11 @@
         <option name="fixed"/>
       </options>
     </field>
-    <one-to-one field="dictamen" target-entity="Dictamen">
+    <many-to-one field="dictamen" target-entity="Dictamen" inversed-by="asignacionesDeEstudio">
     	<join-columns>
     		<join-column name="idDictamen" referenced-column-name="idDictamen"/>
     	</join-columns>
-    </one-to-one>
+    </many-to-one>
     <many-to-one field="comision" target-entity="Comision" inversed-by="expedientesAsignados">
       <join-columns>
         <join-column name="idComision" referenced-column-name="idComision"/>

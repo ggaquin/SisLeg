@@ -5,19 +5,19 @@ namespace AppBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * TipoDictamen
+ * TipoNumeroDictamen
  *
- * @ORM\Table(name="tipoDictamen")
+ * @ORM\Table(name="tipoNumeroDictamen")
  * @ORM\Entity()
  */
-class TipoDictamen
+class TipoNumeroDictamen
 {
 	//-----------------------------------------atributos de la clase-------------------------------
 	
 	/**
 	 * @var integer
 	 *
-	 * @ORM\Column(name="idTipoDictamen", type="smallint")
+	 * @ORM\Column(name="idTipoNumeroDictamen", type="smallint")
 	 * @ORM\Id
 	 * @ORM\GeneratedValue(strategy="IDENTITY")
 	 */
@@ -26,9 +26,9 @@ class TipoDictamen
 	/**
 	 * @var string
 	 *
-	 * @ORM\Column(name="tipoDictamen", type="string", length=15, nullable=false)
+	 * @ORM\Column(name="tipoNumeroDictamen", type="string", length=15, nullable=false)
 	 */
-	private $tipoDictamen;
+	private $tipoNumeroDictamen;
 	
 	//-------------------------------------setters y getters--------------------------------------
 	
@@ -44,27 +44,27 @@ class TipoDictamen
 	}
 	
 	/**
-	 * Set tipoDictamen
+	 * Set tipoNumeroDictamen
 	 *
-	 * @param string $tipoDictamen
+	 * @param string $tipoNumeroDictamen
 	 *
-	 * @return TipoDictamen
+	 * @return TipoNumeroDictamen
 	 */
-	public function setTipoDictamen($tipoDictamen)
+	public function setTipoNumeroDictamen($tipoNumeroDictamen)
 	{
-		$this->tipoDictamen= $tipoDictamen;
+		$this->tipoNumeroDictamen= $tipoNumeroDictamen;
 		
 		return $this;
 	}
 	
 	/**
-	 * Get $tipoDictamen
+	 * Get $tipoNumeroDictamen
 	 *
 	 * @return string
 	 */
-	public function getTipoDictamen()
+	public function getTipoNumeroDictamen()
 	{
-		return $this->tipoDictamen;
+		return $this->tipoNumeroDictamen;
 	}
 	
 }

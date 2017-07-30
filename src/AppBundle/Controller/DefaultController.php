@@ -177,10 +177,15 @@ class DefaultController extends Controller
     public function expedientesComisionesAction(Request $request)
     {
     	$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
+    	$tipoProyectoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoProyecto');
+    	$tipoNumeroDictamenRepository=$this->getDoctrine()->getRepository('AppBundle:TipoNumeroDictamen');
     	$comisiones=$comisionRepository->findBy(array('activa' => true));
+    	$tipoProyectos=$tipoProyectoRepository->findAll();
+    	$numeroDictaminantes=$tipoNumeroDictamenRepository->findAll();
     	return $this->render('default/expedientes_comisiones.html.twig',array(
     		   'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
-    		   'comisiones' => $comisiones
+    		   'comisiones' => $comisiones, 'tipoProyectos'=> $tipoProyectos,
+    		   'numeroDictaminantes' => $numeroDictaminantes
     	));
     }
     

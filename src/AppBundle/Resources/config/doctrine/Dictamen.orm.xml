@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
-  <entity name="AppBundle\Entity\Dictamen" table="dictamen">
+  <entity name="AppBundle\Entity\Dictamen" table="dictamen" inheritance-type="SINGLE_TABLE">
     <indexes>
-      <index name="dictamen_tipoDictamen_idx" columns="idTipoDictamen"/>
+      <index name="dictamen_tipoNumeroDictamen_idx" columns="idTipoNumeroDictamen"/>
+      <index name="dictamen_proyectoRevision_idx" columns="idProyectoRevision"/>
+      <index name="dictamen_tipoProyecto_idx" columns="idTipoDictamen"/>
     </indexes>
-    <unique-constraints>
-    	<unique-constraint columns="idProyectoRevision" name="UNIQ_dictamen_proyectoRevision_idx"/>
-    </unique-constraints>
+    <discriminator-column name="discriminador" type="string" length="15"/>
+    <discriminator-map>
+        <discriminator-mapping value="basico" class="AppBundle\Entity\Dictamen" />
+        <discriminator-mapping value="articulado" class="AppBundle\Entity\DictamenArticulado" />
+    </discriminator-map>
     <id name="id" type="integer" column="idDictamen">
       <generator strategy="IDENTITY"/>
     </id>
@@ -17,14 +21,17 @@
         <option name="default">CURRENT_TIMESTAMP</option>
       </options>
     </field> 
+    <field name="textoLibre" type="text" column="textoLibre" nullable="false">
+    </field>
+    <one-to-many field="asignacionesDeEstudio" mapped-by="dictamen" target-entity="ExpedienteComision"/>
     <many-to-one field="revisionDictamen" target-entity="ProyectoRevision">
     	<join-columns>
     		<join-column name="idProyectoRevision" referenced-column-name="idProyectoRevision"/>
     	</join-columns>
     </many-to-one>
-    <many-to-one field="tipoDictamen" target-entity="TipoDictamen" fetch="LAZY">
+    <many-to-one field="tipoNumeroDictamen" target-entity="TipoNumeroDictamen" fetch="LAZY">
       <join-columns>
-        <join-column name="idTipoDictamen" referenced-column-name="idTipoDictamen"/> 
+        <join-column name="idTipoNumeroDictamen" referenced-column-name="idTipoNumeroDictamen"/> 
       </join-columns>
     </many-to-one> 
   </entity>  

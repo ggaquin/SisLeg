@@ -3,13 +3,20 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\VirtualProperty;
 
 /**
  * Dictamen
- *
- * @ORM\Table(name="dictamen",  uniqueConstraints={@ORM\UniqueConstraint(name="UNIQ_dictamen_proyectoRevision_idx",columns={"idProyectoRevision"})},
- * 								indexes={@ORM\Index(name="dictamen_tipoDictamen_idx", columns={"idTipoDictamen"})})
+ * 
+ * @ORM\Table(name="dictamen",  indexes={@ORM\Index(name="dictamen_tipoNumeroDictamen_idx", columns={"idTipoNumeroDictamen"}),
+ * 										 @ORM\index(name="dictamen_proyectoRevision_idx",columns={"idProyectoRevision"}),
+ * 										 @ORM\index(name="dictamen_tipoProyecto_idx",columns={"idTipoDictamen"})
+ * 										})
  * @ORM\Entity
+ * @ORM\InheritanceType("SINGLE_TABLE")
+ * @ORM\DiscriminatorColumn(name="discriminador", type="string", length=15)
+ * @ORM\DiscriminatorMap({"basico" = "AppBundle\Entity\Dictamen", 
+ *                        "articulado" = "AppBundle\Entity\DictamenArticulado"})
  */
 class Dictamen
 {
@@ -25,14 +32,20 @@ class Dictamen
     private $id;
 
     /**
-     * @var \AppBundle\Entity\TipoDictamen
+     * @var \AppBundle\Entity\TipoNumeroDictamen
      *
-     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\TipoDictamen")
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\TipoNumeroDictamen")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="idTipoDictamen", referencedColumnName="idTipoDictamen")
+     *   @ORM\JoinColumn(name="idTipoNumeroDictamen", referencedColumnName="idTipoNumeroDictamen")
      * })
      */
-    private $tipoDictamen;
+    private $tipoNumeroDictamen;
+    
+    /**
+     * @var string
+     * @ORM\Column(name="textoLibre",type="text",nullable=true)
+     */
+    private $textoLibre;
     
     /**
      * @var \AppBundle\Entity\ProyectoRevision
@@ -42,6 +55,14 @@ class Dictamen
      * })
      */
     private $revisionDictamen;
+    
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     *
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\ExpedienteComision", mappedBy="dictamen",
+     * 				  cascade={"persist"})
+     */
+    private $asignacionesDeEstudio;
 
     /**
      * @var string
@@ -70,27 +91,48 @@ class Dictamen
     }
 
     /**
-     * Set tipoDictamen
+     * Set tipoNumeroDictamen
      *
-     * @param \AppBundle\Entity\TipoDictamen $tipoDictamen
+     * @param \AppBundle\Entity\TipoNumeroDictamen $tipoNumeroDictamen
      *
      * @return Dictamen
      */
-    public function setTipoDictamen(\AppBundle\Entity\TipoDictamen $tipoDictamen= null)
+    public function setTipoNumeroDictamen(\AppBundle\Entity\TipoNumeroDictamen $tipoNumeroDictamen= null)
     {
-    	$this->tipoDictamen= $tipoDictamen;
+    	$this->tipoNumeroDictamen= $tipoNumeroDictamen;
 
         return $this;
     }
 
     /**
-     * Get tipoDictamen
+     * Get tipoNumeroDictamen
      *
-     * @return \AppBundle\Entity\TipoDictamen
+     * @return \AppBundle\Entity\TipoNumeroDictamen
      */
-    public function getTipoDictamen()
+    public function getTipoNumeroDictamen()
     {
-        return $this->tipoDictamen;
+        return $this->tipoNumeroDictamen;
+    }
+    
+    /**
+     * Get textoLibre
+     *
+     * @return string
+     */
+    public function getTextoLibre() {
+    	return $this->textoLibre;
+    }
+    
+    /**
+     * Set textoLibre
+     *
+     * @param string $textoLibre
+     *
+     * @return Dictamen
+     */
+    public function setTextoLibre($textoLibre) {
+    	$this->textoLibre = $textoLibre;
+    	return $this;
     }
     
     /**
@@ -116,8 +158,43 @@ class Dictamen
     {
     	return $this->revisionDictamen;
     }
-
-     /**
+    
+    /**
+     * Add asignacionDeEstudio
+     *
+     * @param \AppBundle\Entity\ExpedienteComision $asignacionDeEstudio
+     *
+     * @return Dictamen
+     */
+    public function addAsignacionDeEstudio(\AppBundle\Entity\ExpedienteComision $asignacionDeEstudio)
+    {
+    	$asignacionDeEstudio->setDictamen($this);
+    	$this->asignacionesDeEstudio[] = $asignacionDeEstudio;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Remove asignacionDeEstudio
+     *
+     * @param \AppBundle\Entity\ExpedienteComision $asignacionDeEstudio
+     */
+    public function removeAsignacionDeEstudio(\AppBundle\Entity\ExpedienteComision $asignacionDeEstudio)
+    {
+    	$this->asignacionesDeEstudio->removeElement($asignacionDeEstudio);
+    }
+    
+    /**
+     * Get expedienteAsignado
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getAsignacionDeEstudio()
+    {
+    	return $this->asignacionesDeEstudio;
+    }
+   
+    /**
      * Set usuarioCreacion
      *
      * @param string $usuarioCreacion
@@ -165,5 +242,15 @@ class Dictamen
         return $this->fechaCreacion;
     }
 
-   
+    //------------------------------Propiedades virtuales-----------------------------------------
+    
+    /**
+     * get claseDictamen
+     * 
+     * @return string
+     * @VirtualProperty()
+     */
+    public function getClaseDictamen(){
+    	return "basico";
+    }
 }
