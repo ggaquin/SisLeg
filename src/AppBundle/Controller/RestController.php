@@ -1266,7 +1266,7 @@ class RestController extends FOSRestController{
 
                 $perfil=$usuario->getPerfil();
 
-                if($perfil instanceof PerfilLegislador){
+                if(!($perfil instanceof PerfilLegislador)){
 
                     if($perfil instanceof PerfilPublico){
 

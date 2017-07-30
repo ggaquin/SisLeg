@@ -120,28 +120,6 @@ class Perfil
      */
     private $correoElectronico;
 
-    /*
-     * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Expediente", inversedBy="autores", fetch="EAGER")
-     * @ORM\JoinTable(name="autores_expedientes",
-     *   joinColumns={
-     *     @ORM\JoinColumn(name="idPerfil", referencedColumnName="idPerfil")
-     *   },
-     *   inverseJoinColumns={
-     *     @ORM\JoinColumn(name="idExpediente", referencedColumnName="idExpediente")
-     *   }
-     * )
-     */
-
-    /*
-     * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Proyecto", mappedBy="autores")
-     *
-     *   private $proyectos;
-     */
-
     /**
      * @var \DateTime
      *
