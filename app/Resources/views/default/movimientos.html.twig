@@ -542,8 +542,16 @@
 
 			$("#btn-generar-remito").click(function(){
 
+				if($("#selDestino").val()==0){
+					toastr.error("Debe seleccionar una oficina de destino para generar el detalle");
+					 return false;
+				}
+				if($("#selExpedientes").val().length==0){
+					toastr.error("Debe indicar al menos un expediente para generar el detalle");
+					 return false;
+				}
+				
 				var filas=$('#detalleRemito >tbody >tr').length;
-				debugger;
 				var oficinas={{ oficinas|serialize("json")|raw }};
 				var comisiones="{{ comisiones|raw }}";
 				var movimientosCompletos="{{ movimientosCompletos|raw }}";
@@ -582,8 +590,10 @@
     				$("#total-filas").val("Expedientes en movimiento:"+filas);
     				$("#total-filas").removeClass("hidden");
 				}
-				else toastr.error("El remito ya posee expedientes oprima <strong>'Reiniciar'</strong>, para volver a generar el detalle");
-				
+				else{
+					 toastr.error("El remito ya posee expedientes oprima <strong>'Reiniciar'</strong>, para volver a generar el detalle");
+					 return false;
+				}
 			});
 
 			$("#btn-borrar-remito").click(function(){

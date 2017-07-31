@@ -4,6 +4,8 @@ namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\VirtualProperty;
+use JMS\Serializer\Annotation\Exclude;
+use Doctrine\ORM\Mapping\JoinTable;
 
 /**
  * Dictamen
@@ -55,6 +57,17 @@ class Dictamen
      * })
      */
     private $revisionDictamen;
+    
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     * 
+     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\PerfilLegislador")
+     * @JoinTable(name="dictamen_legislador",
+     * 			 joinColumns={@ORM\JoinColumn(name="idDictamen", referencedColumnName="idDictamen")},
+     * 			 inverseJoinColumns={@ORM\JoinColumn(name="idPerfil", referencedColumnName="idPerfil")}
+     * 			 )
+     */
+    private $concejales;
     
     /**
      * @var \Doctrine\Common\Collections\Collection
@@ -160,11 +173,66 @@ class Dictamen
     }
     
     /**
+     * set concejales
+     *
+     * @param array $nuevosConcejales
+     *
+     * @return Dictamen
+     */
+    public function setConcejales($nuevosConcejales)
+    {
+    	$collection= new \Doctrine\Common\Collections\ArrayCollection();
+    	foreach ($nuevosConcejales as $concejal) {
+    		$collection[]=$concejal;
+    	}
+    	$this->concejales = $collection;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Add concejal
+     *
+     * @param \AppBundle\Entity\Perfil $concejal
+     *
+     * @return Dictamen
+     */
+    public function addConcejal(\AppBundle\Entity\PerfilLegislador $concejal)
+    {
+    	$this->concejales[] = $concejal;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Remove concejal
+     *
+     * @param \AppBundle\Entity\PerfilLegislador $concejal
+     *
+     * @return Proyecto
+     */
+    public function removeConcejal(\AppBundle\Entity\PerfilLegislador $concejal)
+    {
+    	$this->concejales->removeElement($concejal);
+    	return $this;
+    }
+    
+    /**
+     * Get concejales
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getConcejales()
+    {
+    	return $this->concejales;
+    }
+    
+    /**
      * Add asignacionDeEstudio
      *
      * @param \AppBundle\Entity\ExpedienteComision $asignacionDeEstudio
      *
-     * @return Dictamen
+     * @return Dictamen 
      */
     public function addAsignacionDeEstudio(\AppBundle\Entity\ExpedienteComision $asignacionDeEstudio)
     {
@@ -188,6 +256,7 @@ class Dictamen
      * Get expedienteAsignado
      *
      * @return \Doctrine\Common\Collections\Collection
+     * @Exclude()
      */
     public function getAsignacionDeEstudio()
     {
@@ -252,5 +321,20 @@ class Dictamen
      */
     public function getClaseDictamen(){
     	return "basico";
+    }
+    
+    /**
+     * get comisiones
+     *
+     * @return array
+     * @VirtualProperty()
+     */
+    public function getComisiones(){
+    	$comisiones=[];
+    	$asignaciones=$this->getAsignacionDeEstudio();
+    	foreach ($asignaciones as $asignacion){
+    		$comisiones[]=$asignacion->getComision();
+    	}
+    	return $comisiones;
     }
 }

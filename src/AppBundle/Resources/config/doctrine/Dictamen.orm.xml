@@ -33,6 +33,16 @@
       <join-columns>
         <join-column name="idTipoNumeroDictamen" referenced-column-name="idTipoNumeroDictamen"/> 
       </join-columns>
-    </many-to-one> 
+    </many-to-one>
+    <many-to-many field="concejales" target-entity="PerfilLegislador">
+    	<join-table name="dictamen_legislador">
+    		<join-columns>
+    			<join-column name="idDictamen" referenced-column-name="idDictamen"/>
+    		</join-columns>
+    		<inverse-join-columns>
+    			<join-column name="idPerfil" referenced-column-name="idPerfil"/>
+    		</inverse-join-columns>
+    	</join-table>
+    </many-to-many> 
   </entity>  
 </doctrine-mapping>

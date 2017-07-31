@@ -409,6 +409,16 @@
 		        					  data[ "id" ];
 		    } );
 
+		  //-----------------------------------------------------------------------------------------------------------------
+		  //-------------------------------------ALTA Y MODIFICACION DE DICTAMENES-------------------------------------------
+		  //-----------------------------------------------------------------------------------------------------------------
+
+		  //EVENTO NUEVO DICTAMEN DE LA GRILLA DE ASIGNACIONES	
+		    $('#registroAsignaciones tbody').on( 'click', '.btn-nuevo-dictamen', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+		        $("#modalDictamen").find('input[name="idAsignacion"]').val(data[ "id" ]);
+		    } );
+		    
 			//EVENTO EDITAR DICTAMEN DE LA GRILLA DE ASIGNACIONES
 		    $('#registroAsignaciones tbody').on( 'click', '.btn-editar-dictamen', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
@@ -416,7 +426,7 @@
 		        $("#modalDictamen").find('input[name="idDictamen"]').val(data[ "dictamen.id" ]);
 		    });
 
-			/*
+			//EVENTO MOSTRAR DEL MODAL DE DICTAMEN
 			$("#modalDictamen").on('show.bs.modal', function () {
 
 				var idAsignacion=$("#modalDictamen").find('input[name="idAsignacion"]').val();
@@ -470,20 +480,88 @@
             				    articulosIngresados=data.articulos;            				    
             				},
             				error: function(jqXHR,textStatus,errorThrown ){
-            					//var response=JSON.parse(jqXHR.responseText)
             					toastr.error(jqXHR.responseText);
             				}
             	      	});
 				}
 		        
 		    } );
-		    */
-		    
-			//EVENTO NUEVO DICTAMEN DE LA GRILLA DE ASIGNACIONES	
-		    $('#registroAsignaciones tbody').on( 'click', '.btn-nuevo-dictamen', function () {
-		        var data = tabla.row( $(this).parents('tr') ).data();
-		        $("#modalDictamen").find('input[name="idAsignacion"]').val(data[ "id" ]);
-		    } );
+
+		    //GUARDAR DE DICTAMEN
+		    $("#btn-guardar-dictamen").click(function(){
+
+		    	$(this).prop("disabled",true);
+		    	
+		    	var idAsignacion=$("#modalDictamen").find('input[name="idAsignacion"]').val();
+				var idDictamen=$("#modalDictamen").find('input[name="idDictamen"]').val();
+				var tipoRedaccion= $("#selTipoRedaccion").val();
+				var tipoDictamen=$("#selTipoDictamen").val();
+		        var tipoNumeroDictamen=$("#selNumeroDictaminantes").val(0)
+		        var concejales=$("#selConcejales").va();
+		        var comisiones=$("#selComisiones").val();
+		        var texto=$("#texto").val();
+		        var articulos=articulosIngresados;
+
+		        var validacion='';
+				var formData=new FormData();
+
+				validacion+=((tipoDictamen==0 && tipoRedaccion=="articulado")
+							 ?'<li>Debe especificar el tipo de dictamen</li>':'');
+				validacion+=((tipoNumeroDictamen==0)
+							 ?'<li>Debe especificar el número de dictaminantes</li>':'');
+				validacion+=((concejales.length==0)
+							 ?'<li>Debe indicar los concejales firmantes</li>':''); 
+				validacion+=((texto.replace(/ /g, '').length==0)
+							 ?'<li>Debe poveer un texto para el dictamen</li>':'');
+				validacion+=((tipoRedaccion=="articulado" &&  articulos.length==0)
+							 ? '<li>Debe poveer los articulos para el dictamen</li>':'') 
+
+				formData.append('idAsignacion',idAsignacion);
+				formData.append('idDictamen',idDictamen);
+				formData.append('tipoRedaccion',tipoRedaccion);
+				formData.append('tipoDictamen',tipoDictamen);
+				formData.append('tipoNumeroDictamen',tipoNumeroDictamen);
+				formData.append('concejales',concejales);
+				formData.append('comisiones',comisiones);
+				formData.append('texto',texto);
+				formData.append('articulos',JSON.stringify(articulos));
+
+				if (validacion.length>0) 
+				{
+					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+								validacion+'</ul>':'');
+					$(this).prop("disabled",false);
+					toastr.error(validacion);
+					return false;
+				}
+				else{
+
+					var url=(idDictamen==0)?'/api/expedienteComision/dictamen/create'
+										   :'/api/expedienteComision/dictamen/update';
+
+	            	$.ajax({
+		                async: true,
+		                url: '{{ app.request.getBaseURL() }}'+ url,
+		                data: formData,
+		                type: 'post',
+		                cache: false,
+		                contentType: false,
+		                processData: false,
+	                success: function(data) {
+	                    toastr.success(data);
+						tabla.ajax.reload();
+						$('#modalDictamen').modal('hide');
+	                	},
+	                complete: function(){
+	                	$(this).prop("disabled",false);
+	                	},
+	                error: function(jqXHR,textStatus,errorThrown ){
+						toastr.error(jqXHR.responseText);
+						}
+	            	});
+	            }  
+			});
+		    		    
 			//---------------------------------------------------------------------------------------------------------------
 			//---------------------------------------PUBLICACIÓN y ANULACIÓN-------------------------------------------------
 			//---------------------------------------------------------------------------------------------------------------
@@ -608,7 +686,7 @@
 				orden=64;
 				$("#incisos > tbody > tr").each(function(){
 					orden++;
-					$(this).find("td:first").text(String.fromCharCode(orden).toLowerCase() + ") -");
+					$(this).find("td:first").text(String.fromCharCode(orden).toLowerCase() + ') -');
 				})
 			});
 
