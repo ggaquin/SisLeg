@@ -73,6 +73,10 @@
 			z-index: 15000;
 		}
 		
+		#modalSesion{
+			z-index: 15000;
+		}
+		
 		#kvFileinputModal{
 			z-index: 15000;
 		}
@@ -289,6 +293,28 @@
 			}
 		}
 
+		function actualizarSesiones(control,valorSeleccionado){
+
+			$.ajax({
+				type:'Get',
+				dataType: 'json	',
+				url:'{{ app.request.getBaseURL() }}'+'/api/session/getLastByType',
+				success: function(data){
+					$(control).html('');
+					var html='<option value="0">Seleccione Sesion</option>'
+					$.each(data, function(index,sesion){
+						html+='<option value="'+sesion.id+'" '+
+							  ((valorSeleccionado==sesion.id)?'selected':'') +'>'+sesion.fecha_formateada+'-('+
+							 sesion.tipo_sesion.abreviacion+')</option>';
+					});
+					$(control).html(html);    			
+				},
+				error: function(jqXHR,textStatus,errorThrown ){
+					toastr.error(jqXHR.responseText);
+				}
+	      	});
+		}
+
 		$(document).ready(function () {
 
 			var tablaProyectos;
@@ -444,7 +470,6 @@
 			$("#btn-retorno-hcd").click(function(){
 
 				$("#btn-retorno-hcd").prop("disabled",true);
-				debugger;
 				var idExpediente=$("#retornoExterno").find('input[name="idExpediente"]').val();
 				var folios=$("#retornoExterno").find('input[name="foliosRetorno"]').val();
 				var fecha=$("#retornoExterno").find('input[name="fechaRetorno"]').val();
@@ -676,6 +701,8 @@
 						$("#foliosMod").val(data.folios);
 						$("#numerosancionMod").val(data.numero_sancion);
 						$("#añoIngresoMod").val(data.año);
+						debugger;
+						actualizarSesiones($("#selSesionMod"),data.sesion.id);
 
 						if(data.proyecto!=null){
 							$("#selTipoExpedienteMod").prop( "disabled", true );
@@ -755,7 +782,7 @@
               	var apellidosParticular=$("#apellidosParticularMod").val();
               	var nombresParticular=$("#nombresParticularMod").val();
               	var idOrigen=$("#selOrigenMod").val();
-              	var idSesion=$("selSesionMod").val();
+              	var idSesion=$("#selSesionMod").val();
 				var numeroSancion=$("#numeroSancion").val();
 				var año=$("#añoIngresoMod").val();
 				var numeros=[];
@@ -821,6 +848,8 @@
 				formData.append('numeroSancion',numeroSancion);
 
 				formData.append('idSesion',idSesion);
+				validacion+=((idSesion==0)
+				  		 	  ?'<li>Debe especificar una sesion para el expediente</li>':'');
 				  
 				$.each(archivos, function(i, archivo) {
                 	formData.append('uploadedFiles-' + i, archivo);
@@ -883,9 +912,12 @@
 			  		$("#selTipoExpediente").val($("#idTipoExpediente").val());
 			  		mostrarTiposPara("proyectos");
 				}
+			  	
+			  	actualizarSesiones($("#selSesion"),0);
 				mostrarOrigenParaNuevo($("#selTipoExpediente").val());
 				$("#numeroExpediente").val('');
-				$("folios").val('');
+				$("#folios").val('');
+				$("#añoIngreso").val((new Date()).getFullYear());
 				$("#caratula").data("wysihtml5").editor.setValue('');
 
 			});
@@ -914,7 +946,7 @@
               	var apellidosParticular=$("#apellidosParticular").val();
               	var nombresParticular=$("#nombresParticular").val();
               	var idOrigen=$("#selOrigen").val();
-              	var idSesion=$("selSesion").val();
+              	var idSesion=$("#selSesion").val();
               	var año=$("#añoIngreso").val();
 				var numeros=[];
               	$("#tabla-numeros > tbody > tr").each(function(){ 
@@ -975,7 +1007,9 @@
 				validacion+=((parseInt(año)>(new Date()).getFullYear())
 					  	 	  ?'<li>El año del expediente no puede ser mayor que el actual</li>':'');
 
-				//formData.append('idSesion',idSesion);  
+				formData.append('idSesion',idSesion); 
+				validacion+=((idSesion==0)
+					  		 ?'<li>Debe especificar una sesion para el expediente</li>':'');
 								  
 				$.each(archivos, function(i, archivo) {
                 	formData.append('uploadedFiles-' + i, archivo);
@@ -1348,7 +1382,7 @@
         				$('#respuestaInforme').modal('hide');
                     	},
                     complete: function(){
-                    	$(this).prop("disabled", false);
+                    	$("#btn-respuesta-informe").prop("disabled", false);
                     },
                     error: function(jqXHR,textStatus,errorThrown ){
         				toastr.error(jqXHR.responseText);
@@ -1357,12 +1391,87 @@
                 }
 				
 			});
-		
+
+			//------------------------------------------------------------------------------------------------------------
+			//-------------------------------------------ALTA DE SESIÓN---------------------------------------------------
+			//------------------------------------------------------------------------------------------------------------
+
+			$("#modalSesion").on('show.bs.modal', function () {
+				$("#selTipoSesion").val(0);
+				$("#fecha").val("");
+				$("#descripcion").val("");
+			});
+
+			$("#btn-guardar-sesion").click(function(){
+
+				$(this).prop("disabled",true);
+				var formData=new FormData();
+
+				var control=$("#modalSesion").find('input[name="control"]').val();
+				var idSesion=$("#modalSesion").find('input[name="id"]').val();
+				var idTipoSesion=$("#selTipoSesion").val();
+              	var fecha=$("#fecha").val();
+              	var descripcion=$("#descripcion").val();
+              	
+                var validacion='';
+                
+                formData.append('idTipoSesion',idTipoSesion);
+                validacion+=((idTipoSesion==0)?'<li>Debe seleccionar un tipo de sesion</li>':'');
+            	
+              	formData.append('fecha',fecha);
+              	validacion+=((fecha=="")?'<li>Debe indicar una fecha para la sesión</li>':'');
+                            	
+              	formData.append('descripcion',descripcion);
+              	validacion+=((descripcion.replace(/ |\n/g, '').length==0)
+                      		 ?'<li>Debe especificar una descripción</li>':'');
+            				  				
+	            if (validacion.length>0) 
+				{
+					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+								validacion+'</ul>':'');
+					toastr.error(validacion);
+					$(this).prop("disabled", false);
+					return false;
+				}
+				else{
+
+	            	$.ajax({
+		                async: true,
+		                url: '{{ app.request.getBaseURL() }}'+'/api/sesion/save',
+		                data: formData,
+		                cache: false,
+		                contentType: false,
+		                processData: false,
+		                type:  'POST',
+	                success: function(data) {
+	                    toastr.success(data);
+	                    actualizarSesiones($("#"+control),0);
+						$('#modalSesion').modal('hide');
+	                	},
+	                complete:function(){
+	                	$("#btn-guardar-sesion").prop("disabled", false);
+	                },
+	                error: function(jqXHR,textStatus,errorThrown ){
+						toastr.error(jqXHR.responseText);
+						}
+	            	});
+	            }
+			});
 			
 		    //------------------------------------------------------------------------------------------------------------
 			//---------------------------------INICIALIZACIÓN DE CONTROLES------------------------------------------------
 			//------------------------------------------------------------------------------------------------------------
 
+			$("#btn-nueva-sesion-alta").click(function(){
+				$("#modalSesion").find('input[name="control"]').val("selSesion");
+				$("#modalSesion").modal('show');
+			});
+
+			$("#btn-nueva-sesion-modificacion").click(function(){
+				$("#modalSesion").find('input[name="control"]').val("selSesionMod");
+				$("#modalSesion").modal('show');
+			});
+			
 			$("#selTipoExpediente").change(function(){
 				mostrarOrigenParaNuevo($(this).val());
 			});
@@ -1447,6 +1556,12 @@
 		    	locale: 'es',
 		    	format:'DD/MM/YYYY',
 		    	maxDate : 'now'
+		    });
+
+			$(".campo-fecha-futura").datetimepicker({
+		    	locale: 'es',
+		    	format:'DD/MM/YYYY',
+		    	minDate : 'now'
 		    });
 
 		    $(".es-numero").on('keypress',function(event){
@@ -1837,14 +1952,22 @@
 							        <div class="row">
 							        	<div class="col-md-5">
 							        		<div class="form-group">
-								        		<label for="selSesion">Sesion</label>
+							        			<label for="selSesion">Sesion</label>
+							        		 	<div class="input-group">
+                                                  	<select class="form-control" id="selSesion" 
+								        					name="selSesion">
+								        					<option value="0">Seleccione Sesion</option>
+								        			</select>
+                                                  	<span class="input-group-btn">
+                                                    	<button class="btn btn-primary" type="button"
+                                                    			id="btn-nueva-sesion-alta" >Agregar</button>
+                                                  	</span>
+                                                </div>
+								        		<!-- <label for="selSesion">Sesion</label>
 								        		<select class="form-control" id="selSesion" 
 								        				name="selSesion">
 								        			<option value="0">Seleccione Sesion</option>
-								        			{# for sesion in sesiones #}
-										                <!-- <option value="{{ sesion.id }}">{{ session.sesion }}</option> --> 
-										            {# endfor #}
-								        		</select>
+								        		</select> -->
 								        	</div>
 							        	</div>
 							        </div>
@@ -2014,14 +2137,17 @@
 								    <div class="row">
 							        	<div class="col-md-5">
 							        		<div class="form-group">
-								        		<label for="selSesionMod">Sesion</label>
-								        		<select class="form-control" id="selSesionMod" 
-								        				name="selSesionMod">
-								        			<option value="0">Seleccione Sesion</option>
-								        			{# for sesion in sesiones #}
-										                <!-- <option value="{{ sesion.id }}">{{ session.sesion }}</option> --> 
-										            {# endfor #}
-								        		</select>
+							        			<label for="selSesionMod">Sesion</label>
+							        		 	<div class="input-group">
+                                                  	<select class="form-control" id="selSesionMod" 
+								        					name="selSesionMod">
+								        					<option value="0">Seleccione Sesion</option>
+								        			</select>
+                                                  	<span class="input-group-btn">
+                                                    	<button class="btn btn-primary" type="button"
+                                                    			id="btn-nueva-sesion-modificacion" >Agregar</button>
+                                                  	</span>
+                                                </div>
 								        	</div>
 							        	</div>
 							        	<div class="col-md-4">
@@ -2313,5 +2439,58 @@
 			    </div>
 		  	</div>
 		</div>
+		<div id="modalSesion" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
+		 	<div class="modal-dialog">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666;color:#FFF">
+				        <button type="button" class="close" data-dismiss="modal" >&times;</button>
+				        <h4 class="modal-title" id="tituloModal"><strong>Nueva Sesión</strong></h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				        <form role="form">
+				        	<input type="hidden" name="control" id="control">
+				        	<div class="row">
+				        		<div class="col-md-8">	
+						        	<div class="form-group">
+						        		<label for="selTipoSesion">TipoSesion</label>
+						        		<select class="form-control" id="selTipoSesion" name="selTipoSesion">
+						        			<option value="0">Seleccione Tipo</option>
+						        			{% for tipoSesion in tiposSesion %}
+						        				<option value="{{ tipoSesion.id }}">{{ tipoSesion.tipoSesion }} - ({{ tipoSesion.abreviacion }})</option>
+						        			{% endfor %}
+						        		</select>
+						        	</div>
+						        </div>
+					        	<div class="col-md-4">	
+						        	<div class="form-group">
+						        		<label for="fecha">Fecha</label>
+						        		<input type= "text" class="form-control input-sm campo-fecha-futura" id="fecha" name="fecha" 
+						        			   placeholder="Fecha Sesion">
+						        	</div>
+						        </div>
+							</div>
+							<div class="row">
+								<div class="col-md-12">
+    								<div class="form-group">
+    									<label for="descripcion">Descripción</label>
+    									<input type="text" class="form-control" id="descripcion" name="descripcion">
+    								</div>
+    							</div>
+							</div>
+					        <hr>
+					        <div class="row">
+					        	<div class="text-center">
+							        <div class="btn-group">
+							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+						       			 <button type="button" class="btn btn-primary" id="btn-guardar-sesion">Guardar</button>
+						        	</div>
+						        </div>
+					        </div>	
+				        </form>
+				     </div>
+			    </div>
+		  	</div>
+		</div> 
 	</section>
 {% endblock %}

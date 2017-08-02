@@ -1,0 +1,341 @@
+{% extends 'layout.html.twig' %}
+
+{% block stylesheets %}
+	{# parent() #}
+  	{% stylesheets '@css_datatables' %}
+      	<link rel="stylesheet" href="{{ asset_url }}" /></link>
+  	{% endstylesheets %}
+{% endblock %}
+
+{% block javascripts %}
+	{# parent() #}
+    {% javascripts '@js_datatables'%}
+        <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+{% endblock %}
+
+{% block body %}
+
+	<style type="text/css">
+	
+		.image-container{
+			padding-top: 30px;
+			min-height: 343px;
+			width:350px;
+			padding-left: 40px;
+		}
+
+	</style>
+	<script type="text/javascript">
+
+		$(document).ready(function () {
+			
+		    var tabla=$('#registroSesiones').DataTable({
+		    			  "language": {
+				              "infoEmpty": "Sin registros para mostrar",
+				              "paginate": {
+						          	"last": "Ultima Página",
+						          	"first": "Primer página",
+						          	"next": "Siguiente",
+						          	"previous": "Anterior"
+						       },
+						       "emptyTable": "Sin Datos",
+						       "lengthMenu": 'Registros Listados <select class="form-control input-sm">'+
+								             '<option value="10">10</option>'+
+								             '<option value="20">20</option>'+
+								             '<option value="30">30</option>'+
+								             '<option value="40">40</option>'+
+								             '<option value="50">50</option>'+
+								             '<option value="-1">Todos</option>'+
+								             '</select>',
+								"loadingRecords": "Espere...cargando datos",
+								"processing": "Procesando...",
+								"sInfo": "Mostrando  _START_ a _END_ de _TOTAL_ registros",
+
+			          	  },
+					      "processing": false,
+					      "ajax": {
+							        "url": '{{ app.request.getBaseURL() }}'+"/api/sesion/getByCriteria/actuales",
+			            			"dataSrc": '',
+							    },
+						  "columnDefs": [
+								            {
+								                "targets": [ 0 ],
+								                "visible": false,
+								                "searchable": false
+								            },
+								            {
+									            "targets": [ 1 ],
+									            "data": null,
+									            "orderable":false,
+									            "defaultContent": "<div class='btn-group'>"+
+									            	"<button type='button'  title='Editar Sesion' class='btn btn-primary btn-xs btn-editar'><span class='glyphicon glyphicon-pencil'></span>"+
+									            	"</button>"+
+									            	"</div>"
+									         }
+
+						  ],
+					      "columns": [
+					      		{ "data": "id" },
+					      		{ "data": "" ,"width":"10%" },
+					      		{ "data": "tipo_sesion.tipo_sesion","width":"20%" },
+					            { "data": "descripcion","width":"50%" },
+					            { "data": "fecha_formateada","width":"10%"},
+					            { "data": "año","width":"10%"},
+					        ],
+					      "autoWidth":false,
+					      "paging": true,
+					      "lengthChange": true,
+					      "searching": false,
+					      "ordering": false,
+					      "info": true,
+					      "autoWidth": false,
+			});
+
+			$(".btn-alta").click(function(){
+				$("#modalSesion").find('input[name="id"]').val(0);
+				$("#tituloModal").html('<strong>Nueva Sesión</strong>');
+				$('#modalSesion').modal('show');
+			});
+
+			$('#registroSesiones tbody').on( 'click', '.btn-editar', function () {
+			     var data = tabla.row( $(this).parents('tr') ).data();
+			     $("#modalSesion").find('input[name="id"]').val(data[ "id" ]);
+			     $("#tituloModal").html('<strong>Editar Sesión</strong>');
+			     $('#modalSesion').modal('show');
+			} );
+
+			$("#modalSesion").on('show.bs.modal', function () {
+				debugger;
+				var idSesion=$("#modalSesion").find('input[name="id"]').val();
+
+				if(idSesion==0){
+					$("#selTipoSesion").val(0);
+					$("#fecha").val("");
+					$("#descripcion").val("");
+				}
+				else{
+
+    					$.ajax({
+    						type:'Get',
+    						dataType: 'json	',
+    						url:'{{ app.request.getBaseURL() }}'+'/api/sesion/getOne/'+idSesion,
+    						success: function(data){
+    							$("#selTipoSesion").val(data.tipo_sesion.id);
+    							$("#fecha").val(data.fecha_formateada);
+    							$("#descripcion").val(data.descripcion);	    			
+    						},
+    						error: function(jqXHR,textStatus,errorThrown ){
+    							toastr.error(jqXHR.responseText);
+    						}
+    			      	});
+					}
+			});
+
+			$("#btn-guardar-sesion").click(function(){
+
+				$(this).prop("disabled",true);
+				var formData=new FormData();
+
+				var idSesion=$("#modalSesion").find('input[name="id"]').val();
+				var idTipoSesion=$("#selTipoSesion").val();
+              	var fecha=$("#fecha").val();
+              	var descripcion=$("#descripcion").val();
+              	
+                var validacion='';
+
+                formData.append('idSesion',idSesion);
+                
+                formData.append('idTipoSesion',idTipoSesion);
+                validacion+=((idTipoSesion==0)?'<li>Debe seleccionar un tipo de sesion</li>':'');
+            	
+              	formData.append('fecha',fecha);
+              	validacion+=((fecha=="")?'<li>Debe indicar una fecha para la sesión</li>':'');
+                            	
+              	formData.append('descripcion',descripcion);
+              	validacion+=((descripcion.replace(/ |\n/g, '').length==0)
+                      		 ?'<li>Debe especificar una descripción</li>':'');
+            				  				
+	            if (validacion.length>0) 
+				{
+					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+								validacion+'</ul>':'');
+					toastr.error(validacion);
+					$(this).prop("disabled", false);
+					return false;
+				}
+				else{
+
+	            	$.ajax({
+		                async: true,
+		                url: '{{ app.request.getBaseURL() }}'+'/api/sesion/save',
+		                data: formData,
+		                cache: false,
+		                contentType: false,
+		                processData: false,
+		                type:  'POST',
+	                success: function(data) {
+	                    toastr.success(data);
+						tabla.ajax.reload();
+						$('#modalSesion').modal('hide');
+	                	},
+	                complete:function(){
+	                	$("#btn-guardar-sesion").prop("disabled", false);
+	                },
+	                error: function(jqXHR,textStatus,errorThrown ){
+						toastr.error(jqXHR.responseText);
+						}
+	            	});
+	            }
+
+				
+			});
+				
+			//-------------------------------INICIALIZACION DE CONTROLES-------------------------------------
+
+		    $(".es-numero").on('keypress',function(event){
+			    console.log(event.which);
+		    	if ( ( event.which < 48 || event.which > 57 ) &&  
+				      event.which != 0  &&
+				      event.which != 8) 
+				 {
+		    		return false;
+		    	 }
+			});
+		    
+		    $('.campo-fecha').datetimepicker({
+		    	locale: 'es',
+		    	format:'DD/MM/YYYY',
+		    	minDate : 'now'
+		    });
+		    
+		    $('.datetimepicker').datetimepicker().on('dp.change', function(e){
+			    $(this).data('DateTimePicker').hide();
+			});
+
+
+		 	$("#selBusqueda").change(function(){
+				var control=$(this).val();
+				tabla.ajax.url("/api/sesion/getByCriteria/"+control).load();
+			}); 
+		});
+
+	</script>
+	<section class="content-header">
+		<div class="row pull-right">
+		    <ol class="breadcrumb">
+		        <li><a href="#"><i class="fa fa-dashboard"></i> Principal</a></li>
+	        	<li class="active">Sesiones</li>
+		    </ol>
+		</div>
+		<hr>
+		<div class="row">
+			<div class="col-md-3">
+				<h2>
+			        Sesiones
+			    </h2>
+			</div>
+		    <div class="col-md-3 col-md-offset-6">
+				<nav class="navbar navbar-default">
+					<div class="container-fluid">
+						<div class="navbar-header">
+							<label class="navbar-brand">Filtro</label>
+						</div>
+						<div class="collapse navbar-collapse">
+							<div>
+								<form class="navbar-form navbar-left">
+									<div class="form-group">
+										<select class="form-control filtro" id="selBusqueda">
+											<option value="actuales">Actuales</option>
+											<option value="todos">Todos</option>
+										</select>
+									<div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</nav>
+			</div>
+		</div>   
+	</section>
+	<section class="content">
+	  	<div class="row">
+	    	<div class="col-xs-12">
+              	<table id="registroSesiones" class="table table-striped">
+	                <thead>
+	                	<tr>
+	                		<th>id</th>
+	                		<th class="text-center">
+	                			<button type="button" title="Agregar Sesion"class="btn btn-primary btn-xs 
+	                					btn-alta"><span class="glyphicon glyphicon-plus"></span>
+						    	</button>
+						    </th>
+						    <th>Tipo Sesion</th>
+			                <th>Descripcion</th>
+			                <th>Fecha</th>
+			                <th>Año</th>
+			            </tr>
+	                </thead>
+	                <tbody>
+	                </tbody>
+               	</table>
+	        </div> {# col #}
+	    </div> {# row #}
+	    <div id="modalSesion" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
+		 	<div class="modal-dialog ">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666;color:#FFF">
+				        <button type="button" class="close" data-dismiss="modal" >&times;</button>
+				        <h4 class="modal-title" id="tituloModal"></h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				        <form role="form">
+				        	<input type="hidden" name="id" id="id">
+				        	<div class="row">
+				        		<div class="col-md-8">	
+						        	<div class="form-group">
+						        		<label for="selTipoSesion">TipoSesion</label>
+						        		<select class="form-control" id="selTipoSesion" name="selTipoSesion">
+						        			<option value="0">Seleccione Tipo</option>
+						        			{% for tipoSesion in tiposSesion %}
+						        				<option value="{{ tipoSesion.id }}">{{ tipoSesion.tipoSesion }} - ({{ tipoSesion.abreviacion }})</option>
+						        			{% endfor %}
+						        		</select>
+						        	</div>
+						        </div>
+					        	<div class="col-md-4">	
+						        	<div class="form-group">
+						        		<label for="fecha">Fecha</label>
+						        		<input type= "text" class="form-control input-sm campo-fecha" id="fecha" name="fecha" 
+						        			   placeholder="Fecha Sesion">
+						        	</div>
+						        </div>
+							</div>
+							<div class="row">
+								<div class="col-md-12">
+    								<div class="form-group">
+    									<label for="descripcion">Descripción</label>
+    									<input type="text" class="form-control" id="descripcion" name="descripcion">
+    								</div>
+    							</div>
+							</div>
+					        <hr>
+					        <div class="row">
+					        	<div class="text-center">
+							        <div class="btn-group">
+							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+						       			 <button type="button" class="btn btn-primary" id="btn-guardar-sesion">Guardar</button>
+						        	</div>
+						        </div>
+					        </div>	
+				        </form>
+				     </div>
+			    </div>
+		  	</div>
+		</div> 
+	</section>
+{% endblock %}
+
+
+		

@@ -1,25 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
-  <entity name="AppBundle\Entity\Sesion" table="sesion">
+  <entity name="AppBundle\Entity\Sesion" table="sesion" repository-class="AppBundle\Repository\SesionRepository">
+  	<indexes>
+  		<index columns="idTipoSesion" name="sesion_tipoSesion_idx"/>
+  	</indexes>
     <id name="id" type="integer" column="idSesion">
       <generator strategy="IDENTITY"/>
     </id>
+    <field name="descripcion" type="string" column="descripcion" length="50" nullable="false">
+    </field>
     <field name="fecha" type="datetime" column="fecha" nullable="false">
-      <options>
-        <option name="default">CURRENT_TIMESTAMP</option>
-      </options>
     </field>
-    <field name="presentes" type="smallint" column="presentes" nullable="false">
+    <field name="presentes" type="smallint" column="presentes" nullable="true">
       <options>
         <option name="unsigned"/>
       </options>
     </field>
-    <field name="quorum" type="boolean" column="quorum" nullable="false"/>
-    <field name="periodo" type="smallint" column="periodo" nullable="false">
+    <field name="quorum" type="boolean" column="quorum" nullable="true"/>
+    <field name="año" type="smallint" column="año" nullable="false">
       <options>
         <option name="unsigned"/>
       </options>
     </field>
-   <one-to-many field="ordenDelDia" target-entity="AgendaSesion" mapped-by="sesion"/>
+   	<one-to-many field="ordenDelDia" target-entity="AgendaSesion" mapped-by="sesion"/>
+   	<many-to-one field="tipoSesion" target-entity="TipoSesion">
+   		<join-columns>
+   			<join-column name="idTipoSesion" referenced-column-name="idTipoSesion"/>
+   		</join-columns>
+   	</many-to-one>
   </entity>
 </doctrine-mapping>

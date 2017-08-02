@@ -231,6 +231,7 @@
               <li><a href="#" onclick="cargarMenu('/legisladores')"><i class="fa fa-address-card-o"></i><span>Concejales</span></a></li>
               {% endif %}
               {% if COM_MAIN is defined or COM_EXP_MAIN is defined %}
+               <li><a href="#" onclick="cargarMenu('/sesion')"><i class="fa fa-university"></i><span>Sesiones</span></a></li> 
               <li class="treeview">
                 <a href="#">
                   <i class="fa fa-users"></i>
@@ -273,7 +274,7 @@
                {% if PROJ_MAIN is defined %}
               <li><a href="#" onclick="cargarMenu('/proyectos')"><i class="fa fa-cogs"></i><span>Proyectos</span></a></li>
               {% endif %}
-              {#  <li><a href="#"><i class="fa fa-university"></i><span>Sesiones</span></a></li> #}
+             
               {# <li class="treeview">
                 <a href="#">
                   <i class="fa fa-university"></i>

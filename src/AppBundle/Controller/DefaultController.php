@@ -12,6 +12,7 @@ use AppBundle\Entity\Rol;
 use AppBundle\Entity\Bloque;
 use AppBundle\Entity\Proyecto;
 use AppBundle\Entity\Comision;
+use AppBundle\Entity\TipoSesion;
 
 
 class DefaultController extends Controller
@@ -151,6 +152,7 @@ class DefaultController extends Controller
         $estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
         $tipoOficinaRepository=$this->getDoctrine()->getRepository('AppBundle:TipoOficina');
         $oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
+        $tipoSeionRepository=$this->getDoctrine()->getRepository('AppBundle:TipoSesion');
         $idOficinaExterna=$this->getParameter('id_oficina_externa');
         
         $tiposExpediente=$tiposExpedienteRepository->findBy(array(),array('tipoExpediente' => 'ASC'));
@@ -168,6 +170,7 @@ class DefaultController extends Controller
         $array['tipos']=$tiposExpediente;
         $array['estados']=$estadosExpediente;
         $array['oficinasExternas']=$oficinasExternas;
+        $array['tiposSesion']=$tipoSeionRepository->findAll();
         return $this->render('default/expediente.html.twig', $array);
     }
     
@@ -322,6 +325,21 @@ class DefaultController extends Controller
         ));
 
     }
+    
+    /**
+     * @Route("/sesion", name="sesiones")
+     */
+    public function sesionAction(Request $request){
+    	
+    	$tipoSeionRepository=$this->getDoctrine()->getRepository('AppBundle:TipoSesion');
+    	$tiposSesion=$tipoSeionRepository->findAll();
+    	
+    	return $this->render('default/sesion.html.twig', array(
+    			'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
+    			'tiposSesion' => $tiposSesion
+    	));
+    }
+    
     
     /**
      * @Route("/imprimir/remito")

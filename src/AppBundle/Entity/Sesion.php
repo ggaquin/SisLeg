@@ -3,12 +3,13 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\VirtualProperty;
 
 /**
  * Sesion
  *
- * @ORM\Table(name="sesion")
- * @ORM\Entity
+ * @ORM\Table(name="sesion", indexes={@ORM\Index(name="sesion_tipoSesion_idx", columns={"idTipoSesion"})})
+ * @ORM\Entity(repositoryClass="AppBundle\Repository\SesionRepository")
  */
 class Sesion
 {
@@ -23,34 +24,51 @@ class Sesion
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $id;
+    
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="descripcion", type="string", length=50, nullable=false)
+     */
+    private $descripcion;
 
     /**
      * @var \DateTime
      *
      * @ORM\Column(name="fecha", type="datetime", nullable=false)
      */
-    private $fecha = 'CURRENT_TIMESTAMP';
+    private $fecha;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="presentes", type="smallint", nullable=false)
+     * @ORM\Column(name="presentes", type="smallint", nullable=true)
      */
     private $presentes;
 
     /**
      * @var boolean
      *
-     * @ORM\Column(name="quorum", type="boolean", nullable=false)
+     * @ORM\Column(name="quorum", type="boolean", nullable=true)
      */
     private $quorum;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="periodo", type="smallint", nullable=false)
+     * @ORM\Column(name="año", type="smallint", nullable=false)
      */
-    private $periodo;
+    private $año;
+    
+    /**
+     * @var \AppBundle\Entity\TipoSesion
+     * 
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\TipoSesion")
+     * @ORM\JoinColumns({
+     * 		@ORM\JoinColumn(name="idTipoSesion", referencedColumnName="idTipoSesion")
+     * })
+     */
+    private $tipoSesion;
 
     /**
      * @var \Doctrine\Common\Collections\Collection
@@ -67,6 +85,8 @@ class Sesion
     public function __construct()
     {
         $this->ordenDelDia = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->quorum=false;
+        $this->presentes=0;
     }
 
     //------------------------------------setters y getters----------------------------------------
@@ -79,6 +99,30 @@ class Sesion
     public function getId()
     {
         return $this->id;
+    }
+    
+    /**
+     * Set descripcion
+     *
+     * @param string $descripcion
+     *
+     * @return Sesion
+     */
+    public function setDescripcion($descripcion)
+    {
+    	$this->descripcion = $descripcion;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Get descripcion
+     *
+     * @return string
+     */
+    public function getDescripcion()
+    {
+    	return $this->descripcion;
     }
 
     /**
@@ -154,27 +198,51 @@ class Sesion
     }
 
     /**
-     * Set periodo
+     * Set año
      *
-     * @param integer $periodo
+     * @param integer $año
      *
      * @return Sesion
      */
-    public function setPeriodo($periodo)
+    public function setAño($año)
     {
-        $this->periodo = $periodo;
+    	$this->año = $año;
 
         return $this;
     }
 
     /**
-     * Get periodo
+     * Get año
      *
      * @return integer
      */
-    public function getPeriodo()
+    public function getAño()
     {
-        return $this->periodo;
+        return $this->año;
+    }
+    
+    /**
+     * Set tipoSesion
+     *
+     * @param \AppBundle\Entity\TipoSesion $tipoSesion
+     *
+     * @return Sesion
+     */
+    public function setTipoSesion($tipoSesion)
+    {
+    	$this->tipoSesion = $tipoSesion;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Get tipoSesion
+     *
+     * @return \AppBundle\Entity\TipoSesion $tipoSesion
+     */
+    public function getTipoSesion()
+    {
+    	return $this->tipoSesion;
     }
 
     /**
@@ -209,5 +277,19 @@ class Sesion
     public function getOrdenDelDia()
     {
         return $this->ordenDelDia;
+    }
+    
+    //--------------------------------Propiedades Virtuales-----------------------------------
+    
+    /**
+     * Get fechaFormateada
+     *
+     * @return string
+     *
+     * @VirtualProperty
+     */
+    public function getFechaFormateada()
+    {
+    	return $this->fecha->format('d/m/Y');
     }
 }

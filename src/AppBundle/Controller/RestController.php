@@ -28,6 +28,7 @@ use AppBundle\Entity\OrigenExterno;
 use AppBundle\Entity\ExpedienteComision;
 use AppBundle\Entity\Movimiento;
 use FOS\RestBundle\Controller\Annotations\Get;
+use AppBundle\Entity\Sesion;
 
 class RestController extends FOSRestController{
 
@@ -921,13 +922,13 @@ class RestController extends FOSRestController{
             $idOrigen=$request->request->get('idOrigen');
             $numeros=json_decode($request->request->get('numeros'));
             $caratula=$request->request->get('caratula');
-            //$idSesion=$request->request->get('numeroSancion');
+            $idSesion=$request->request->get('idSesion');
             $archivos=$request->files->all();
             $usuario=$this->getUser();
             
             //repositorios y parámetros de configuración
             $tipoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
-            //$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+            $sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
             $estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
             $oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
             $idMesaEntradas=$this->getParameter('id_mesa_entradas');
@@ -941,8 +942,8 @@ class RestController extends FOSRestController{
             $expediente->setNumeroExpediente($numeroExpediente);
             $expediente->setAño($año);
             $expediente->setCaratula($caratula);
-            //$sesion=$sesionRepository->find($idSesion);
-            //$expediente->setSesion($sesion);
+            $sesion=$sesionRepository->find($idSesion);
+            $expediente->setSesion($sesion);
             
             
             //establece la oficina actual (todos ingresan por mesa de entradas)
@@ -1010,10 +1011,10 @@ class RestController extends FOSRestController{
             return $this->view('El expediente '.$numeroExpediente.' se guardó en forma exitosa',200);
 
         }catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e){ 
-            return $this->view('El expediente '.$numeroExpediente.' ya existe');
+            return $this->view('El expediente '.$numeroExpediente.' ya existe',500);
         
         }catch(\Exception $e){
-            return $this->view($e->getMessage());            
+            return $this->view($e->getMessage(),500);            
         }
 
     }
@@ -1036,13 +1037,13 @@ class RestController extends FOSRestController{
             $numeros=json_decode($request->request->get('numeros'));           
             $caratula=$request->request->get('caratula');
             $año=$request->request->get('año');
-            //$idSesion=$request->request->get('numeroSancion');
+            $idSesion=$request->request->get('idSesion');
             $numeroSancion=$request->request->get('numeroSancion');
             $archivos=$request->files->all();
             $usuario=$this->getUser();
 
             $tipoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
-            //$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+            $sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
             $oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
             $expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
             $expediente=$expedienteRepository->find($idExpediente); 
@@ -1052,8 +1053,8 @@ class RestController extends FOSRestController{
             $expediente->setAño($año);
             $expediente->setFolios($folios);
             $expediente->setCaratula($caratula);
-            //$sesion=$sesionRepository->find($idSesion);
-            //$expediente->setSesion($sesion);
+            $sesion=$sesionRepository->find($idSesion);
+            $expediente->setSesion($sesion);
             $expediente->setNumeroSancion($numeroSancion);
             $expediente->setArchivos($archivos);
             $proyecto=$expediente->getProyecto();
@@ -1095,10 +1096,10 @@ class RestController extends FOSRestController{
             return $this->view('El expediente '.$numeroExpediente.' se modificó en forma exitosa',200);
 
          }catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e){ 
-            return $this->view('El expediente '.$numeroExpediente.' ya existe');
+            return $this->view('El expediente '.$numeroExpediente.' ya existe',500);
 
         }catch(\Exception $e){
-            return $this->view($e->getMessage());
+            return $this->view($e->getMessage(),500);
             
         }
     }
@@ -1488,6 +1489,103 @@ class RestController extends FOSRestController{
         catch(\Exception $e){
             return $this->view($e->getMessage());
         }
+    }
+    
+    /**
+     * @Rest\Get("/api/sesion/getByCriteria/{criterio}")
+     */
+    public function traerSesionesPorCriterioAction(Request $request){
+    	
+    	$criterio=$request->get('criterio');
+    	
+    	$sesionReposiory=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+    	$sesiones=[];
+    	if ($criterio=="actuales"){
+    		$fecha=new \DateTime('now');
+    		$año = substr($fecha->format("Y"),2,2);    		
+    		$sesiones=$sesionReposiory->findBy(array('año' => $año));
+    	}
+    	else
+    		$sesiones=$sesionReposiory->findAll();
+    	
+    	return $this->view($sesiones,200);
+    }
+    
+    /**
+     * @Rest\Get("/api/sesion/getOne/{id}")
+     */
+    public function traerSesionPorId(Request $request){
+    	
+    	$idSesion=$request->get('id');
+    	
+    	$sesionReposiory=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+    	$sesion=$sesionReposiory->find($idSesion);
+   
+    	return $this->view($sesion,200);
+    }
+    
+    /**
+     * @Rest\Post("/api/sesion/save")
+     */
+    public function guardarSesion(Request $request){
+    	
+    	try{
+	    	$idSesion=$request->request->get('idSesion');
+	    	$idTipoSesion=$request->request->get('idTipoSesion');
+	    	$fecha=$request->request->get('fecha');
+	    	$descripcion=$request->request->get('descripcion');
+	    	$fecha.=' 00:00:00';
+	    	$fechaSesion =\DateTime::createFromFormat('d/m/Y H:i:s',$fecha);
+	    	$año=substr($fechaSesion->format("Y"),2,2);
+	    	
+	    	$sesionReposiory=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+	    	$tipoSesionReposiory=$this->getDoctrine()->getRepository('AppBundle:TipoSesion');
+	    	$tipoSesion=$tipoSesionReposiory->find($idTipoSesion);
+	    	$sesionPersistida=$sesionReposiory->findBy(array('tipoSesion' => $tipoSesion, 
+	    													 'fecha' => $fechaSesion
+	    													)
+	    											  );
+	    	if (count($sesionPersistida)>0)
+	    		return $this->view('Ya existe una sesion del tipo '.
+	    						   $tipoSesion->getTipoSesion().
+	    						   ' creada para la fecha dada',500);
+	    	
+	    	$sesion=null;
+	    	$mensaje="";
+	    	
+	    	if($idSesion==0){
+	    		$sesion=new Sesion();
+	    		$mensaje='La sesion fue creó en forma exitosa';
+	    	}
+	    	else {
+	    		$sesion=$sesionReposiory->find($idSesion);
+	    		$mensaje='La sesión se modifico en forma exitosa';
+	    	}
+	    	
+	    	$sesion->setTipoSesion($tipoSesion);
+	    	$sesion->setFecha($fechaSesion);
+	    	$sesion->setAño($año);
+	    	$sesion->setDescripcion($descripcion);
+	    	
+	    	$em = $this->getDoctrine()->getManager();
+	    	$em->persist($sesion);
+	    	$em->flush();
+	    
+	    	return $this->view($mensaje,200);
+    	}
+    	catch(\Exception $e){
+    		return $this->view($e->getMessage(),500);
+    	}
+    }
+    
+    /**
+     * @Rest\Get("/api/session/getLastByType")
+     */
+    public function  traerUltimasSesionesPorTipoAction(Request $request){
+    	
+    	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+    	$sesionesValidas=$sesionRepository->findLastActivoByTipo();
+    	return $this->view($sesionesValidas,200);
     }
 
     /**
