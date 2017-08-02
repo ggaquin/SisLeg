@@ -412,7 +412,7 @@
 					      "autoWidth": false,
 				});
 		    
-			//EVENTP BOTÓN DESCARGAR EXPEDIENTE
+			//EVENTO BOTÓN DESCARGAR EXPEDIENTE
 		    $('#registroExpediente tbody').on( 'click', '.btn-descargar', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        window.location.href='{{ app.request.getBaseURL() }}'+
@@ -424,10 +424,12 @@
 		    $('#registroExpediente tbody').on( 'click', '.btn-retorno', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        $("#retornoExterno").find('input[name="idExpediente"]').val(data[ "id" ]);
-		        var html="<label for='foliosRetorno'>Folios Actuales</label>" +
+		        var html="<div class='form-group'>"+
+			        	 "<label for='foliosRetorno'>Folios Actuales</label>" +
 			        	 "<input type='number' class='form-control text-center es-numero' min='"+data[ "folios" ]+
 			        	 "' onblur='validarFolios(this);'" +
-				    	 "id='foliosRetorno' name='foliosRetorno' value='"+data[ "folios" ]+"'>";
+				    	 "id='foliosRetorno' name='foliosRetorno' value='"+data[ "folios" ]+"'>"+
+				    	 "</div>";
 				$("#retornoExterno").find('div[id="col-folios"]').html(html);
 				$("#retornoExterno").find('legend[id="leyenda-retorno"]').html("Exp.: " + data[ "numero_completo" ]);
 		    } );
@@ -446,6 +448,8 @@
 				var idExpediente=$("#retornoExterno").find('input[name="idExpediente"]').val();
 				var folios=$("#retornoExterno").find('input[name="foliosRetorno"]').val();
 				var fecha=$("#retornoExterno").find('input[name="fechaRetorno"]').val();
+				var numeroRemito=$("#retornoExterno").find('input[name="numeroRemitoRetorno"]').val();
+				
 				var formData=new FormData();
 
 				var validacion='';
@@ -458,6 +462,10 @@
 	            formData.append('fecha',fecha);
               	validacion+=((fecha=='')
                       		  ?'<li>Debe indicar la fecha de recepción</li>':'');
+
+      		  	formData.append('numeroRemito',numeroRemito);
+      		  	validacion+=((numeroRemito.length==0)
+      	      		  		  ?'<li>Debe indicar un numero de remito</li>':'');
 					
 		            if (validacion.length>0) 
 					{
@@ -597,6 +605,7 @@
 	    		$("#numeroExterno").find('input[name="letraOrigen"]').val("");
 	    		$("#numeroExterno").find('input[name="añoOrigen"]').val("");
 	    		$("#numeroExterno").find('input[name="foliosOrigen"]').val("");
+	    		$("#numeroExterno").find('input[name="cuerpos"]').val("");
 					 
 			 });
 			 
@@ -609,14 +618,31 @@
 	    		var letra=$("#numeroExterno").find('input[name="letraOrigen"]').val();
 	    		var año=$("#numeroExterno").find('input[name="añoOrigen"]').val();
 	    		var folios=$("#numeroExterno").find('input[name="foliosOrigen"]').val();
+	    		var cuerpos=$("#numeroExterno").find('input[name="cuerpos"]').val();
+	    		var ingresado=false
 
-				var html="<tr><td>"+ente+"</td><td>"+numero+"</td><td>"+letra+"</td>"+
-					 	 "<td>"+año+"</td><td>"+folios+"</td><td>"+
-					 	 "<button type='button' class='btn btn-danger btn-xs btn-eliminar-numero'>"+
-					 	 "<span class='glyphicon glyphicon-remove'/></button></td></tr>";
-				
-	    		$("#"+tabla+" > tbody").append(html);
-	    		$("#numeroExterno").modal('hide');
+	    		$("#"+tabla+" > tbody > tr").each(function(){
+					if ($(this).find("td:eq(0)").text()==ente &&
+						$(this).find("td:eq(1)").text()==numero &&
+						$(this).find("td:eq(2)").text().toLowerCase()==letra.toLowerCase() &&
+						$(this).find("td:eq(3)").text()==año)
+
+					ingresado=true;
+		    	});
+
+		    	if (ingresado){
+			    	toastr.error("El número ya se encuentra ingresado");
+		    	}
+		    	else{
+        				var html="<tr><td style='width:15%'>"+ente+"</td><td style='width:20%'>"+numero+"</td>"+
+        						 "<td style='width:10%''>"+letra+"</td><td style='width:15%''>"+año+"</td>"+
+        						 "<td style='width:15%'>"+folios+"</td><td style='width:15%''>"+cuerpos+"</td>"+
+        						 "<td style='width:10%''><button type='button' class='btn btn-danger btn-xs btn-eliminar-numero'>"+
+        					 	 "<span class='glyphicon glyphicon-remove'/></button></td></tr>";
+        				
+        	    		$("#"+tabla+" > tbody").append(html);
+        	    		$("#numeroExterno").modal('hide');
+		    	}
 			}); 
 			
 			//---------------------------------------------------------------------------------------------------------------
@@ -648,6 +674,8 @@
 						$("#numeroExpedienteMod").val(data.numero_expediente);
 						$("#caratulaMod").data("wysihtml5").editor.setValue(data.caratula);
 						$("#foliosMod").val(data.folios);
+						$("#numerosancionMod").val(data.numero_sancion);
+						$("#añoIngresoMod").val(data.año);
 
 						if(data.proyecto!=null){
 							$("#selTipoExpedienteMod").prop( "disabled", true );
@@ -670,9 +698,10 @@
 							var numeros=data.origen_externo.numeracion_origen;
 							var html='';
 							$.each(numeros,function(index,numero){
-								html+="<tr><td>"+numero.ente+"</td><td>"+numero.numero+"</td><td>"+numero.letra+
-									  "</td><td>"+numero.año+"</td><td>"+numero.folios+"</td><td>"+
-							 	 	  "<button type='button' class='btn btn-danger btn-xs btn-eliminar-numero'>"+
+								html+="<tr><td style='width:15%'>"+numero.ente+"</td><td style='width:20%'>"+numero.numero+"</td>"+
+									  "<td style='width:10%'>"+numero.letra+"</td><td style='width:15%'>"+numero.año+"</td>"+
+									  "<td style='width:15%'>"+numero.folios+"</td><td style='width:15%'>"+numero.cuerpos+"</td>"+
+									  "<td style='width:10%'><button type='button' class='btn btn-danger btn-xs btn-eliminar-numero'>"+
 							 	 	  "<span class='glyphicon glyphicon-remove'/></button></td></tr>";
 							});
 							$("#tabla-numeros-mod > tbody").append(html);
@@ -726,7 +755,9 @@
               	var apellidosParticular=$("#apellidosParticularMod").val();
               	var nombresParticular=$("#nombresParticularMod").val();
               	var idOrigen=$("#selOrigenMod").val();
-
+              	var idSesion=$("selSesionMod").val();
+				var numeroSancion=$("#numeroSancion").val();
+				var año=$("#añoIngresoMod").val();
 				var numeros=[];
               	$("#tabla-numeros-mod > tbody > tr").each(function(){ 
                   	var numero = { 
@@ -734,7 +765,8 @@
                               		numero:$(this).find("td:eq(1)").html(), 
                               		letra:$(this).find("td:eq(2)").html(), 
                               		año: $(this).find("td:eq(3)").html(), 
-                              		folios:$(this).find("td:eq(4)").html()
+                              		folios:$(this).find("td:eq(4)").html(),
+                              		cuerpos:$(this).find("td:eq(5)").html()
                               	  }; 
                 	 numeros.push(numero);
                 });
@@ -779,6 +811,16 @@
 				formData.append('caratula',caratula);
 				validacion+=((caratula.replace(/ |\n/g, '').length==0)
 							  ?'<li>Debe especificar un texto para la caratula</li>':'');
+
+				formData.append('año',año);
+				validacion+=((año.replace(/ |\n/g, '').length==0)
+						  	 ?'<li>Debe especificar un año para el expediente</li>':'');
+				validacion+=((parseInt(año)>(new Date()).getFullYear())
+					  	 	  ?'<li>El año del expediente no puede ser mayor que el actual</li>':'');
+
+				formData.append('numeroSancion',numeroSancion);
+
+				formData.append('idSesion',idSesion);
 				  
 				$.each(archivos, function(i, archivo) {
                 	formData.append('uploadedFiles-' + i, archivo);
@@ -872,8 +914,8 @@
               	var apellidosParticular=$("#apellidosParticular").val();
               	var nombresParticular=$("#nombresParticular").val();
               	var idOrigen=$("#selOrigen").val();
-
-              	debugger;
+              	var idSesion=$("selSesion").val();
+              	var año=$("#añoIngreso").val();
 				var numeros=[];
               	$("#tabla-numeros > tbody > tr").each(function(){ 
                   	var numero = { 
@@ -881,7 +923,8 @@
                               		numero:$(this).find("td:eq(1)").html(), 
                               		letra:$(this).find("td:eq(2)").html(), 
                               		año: $(this).find("td:eq(3)").html(), 
-                              		folios:$(this).find("td:eq(4)").html()
+                              		folios:$(this).find("td:eq(4)").html(),
+                              		cuerpos:$(this).find("td:eq(5)").html()
                               	  }; 
                 	 numeros.push(numero);
                 });
@@ -925,7 +968,15 @@
 				formData.append('caratula',caratula);
 				validacion+=((caratula.replace(/ |\n/g, '').length==0)
 							  ?'<li>Debe especificar un texto para la caratula</li>':'');
-				  
+
+				formData.append('año',año);
+				validacion+=((año.replace(/ |\n/g, '').length==0)
+						  	 ?'<li>Debe especificar un año para el expediente</li>':'');
+				validacion+=((parseInt(año)>(new Date()).getFullYear())
+					  	 	  ?'<li>El año del expediente no puede ser mayor que el actual</li>':'');
+
+				//formData.append('idSesion',idSesion);  
+								  
 				$.each(archivos, function(i, archivo) {
                 	formData.append('uploadedFiles-' + i, archivo);
             	});
@@ -1118,9 +1169,10 @@
         				      		{ "data": "origen","width":"15%"},
         				      		{ "data": "fecha_envio","width":"8%"},
         				      		{ "data": "destino","width":"15%"},
-        				      		{ "data": "observacion","className": "for-mobile","width":"40%" },
+        				      		{ "data": "observacion","className": "for-mobile","width":"32%" },
         				      		{ "data": "fojas","width":"5%" },
         				            { "data": "fecha_recepcion","className": "for-mobile","width":"8%" },
+        				            { "data": "remito_retorno","width":"8%"}
         				        ],
         				      "autoWidth":false,
         				      "paging": true,
@@ -1222,9 +1274,10 @@
                         			      		{ "data": "remito.numero_remito","width":"9%" },
                         			      		{ "data": "destino","width":"15%"},
                         			      		{ "data": "fecha_envio","width":"8%"},
-                        			      		{ "data": "observacion","width":"54%"},
+                        			      		{ "data": "observacion","width":"46%"},
                         			      		{ "data": "fecha_recepcion","width":"8%"},
-                        			      		{ "data": "fecha_respuesta_formateada","width":"8%"}
+                        			      		{ "data": "fecha_respuesta_formateada","width":"8%"},
+                        			      		{ "data": "remito_retorno","width":"8%"}
                             			     ],
                 			      "autoWidth":false,
                 			      "paging": true,
@@ -1262,11 +1315,14 @@
 				debugger;
 				var idInforme =$("#respuestaInforme").find('input[name="idInforme"]').val();
 				var fecha=$("#respuestaInforme").find('input[name="fechaRespuesta"]').val();
-				
-				
+				var numeroRemito=$("#respuestaInforme").find('input[name="numeroRemitoInforme"]').val();
+								
 				formData.append('idInforme',idInforme);
 				formData.append('fecha',fecha);
 				validacion=((fecha=="") ?'<li>Debe seleccionar una fecha</li>':'');
+				formData.append('numeroRemito',numeroRemito);
+				validacion+=((numeroRemito.length==0)
+						 	  ?'<li>Debe indicar un numero de remito</li>':'');
 				
                 if (validacion.length>0) 
         		{
@@ -1389,7 +1445,8 @@
 
 			$(".campo-fecha").datetimepicker({
 		    	locale: 'es',
-		    	format:'DD/MM/YYYY'
+		    	format:'DD/MM/YYYY',
+		    	maxDate : 'now'
 		    });
 
 		    $(".es-numero").on('keypress',function(event){
@@ -1447,6 +1504,8 @@
 											<option value="busqueda-2">Estado</option>
 											<option value="busqueda-3">Número Expediente</option>
 											<option value="busqueda-4">Tipo de Expediente</option>
+											<option value="busqueda-5">Nombres Particular</option>
+											<option value="busqueda-6">DNI Particular</option>
 										</select>
 										<input class="form-control busqueda hidden filtro" id="busqueda-1"/>
 										<select class="form-control busqueda hidden filtro" id="busqueda-2">
@@ -1462,7 +1521,8 @@
 								                <option value="{{ tipo.id }}">{{ tipo.tipoExpediente }} - ({{ tipo.letra }})</option>
 								            {% endfor %}
 										</select>
-										
+										<input class="form-control busqueda hidden filtro" id="busqueda-5"/>
+										<input class="form-control busqueda hidden filtro" id="busqueda-6"/>
 									</div>
 								</form>
 							</div>
@@ -1607,6 +1667,13 @@
                 				    			 class="form-control text-center es-numero" id="foliosOrigen" name="foliosOrigen">
                 				    		</div>
                 				    	</div>
+                				    	<div class="col-md-3 col-nopadding">
+                				    		<div class="form-group text-center">
+                				    			<label for="cuerpos">Cuerpos</label>
+                				    			<input type="text" maxlength="2" 
+                				    			 class="form-control text-center es-numero" id="cuerpos" name="cuerpos">
+                				    		</div>
+                				    	</div>
                 				    </div>
                 				</div>
                 			</div>
@@ -1626,7 +1693,7 @@
 			</div>
 		</div>
 		<div id="retornoExterno" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
-			<div class="modal-dialog modal-sm">
+			<div class="modal-dialog modal-sm>
 			    <!-- Modal content-->
 			    <div class="modal-content">
 				    <div class="modal-header" style="background-color:#666	;color:#FFF">
@@ -1638,13 +1705,24 @@
 				    		<legend class="text-center" id="leyenda-retorno"></legend>
 				    		<input type="hidden" id="idExpediente" name="idExpediente">
 				    		<div class="row">
-				    			<div class="col-md-6" id="col-folios">
-				    			</div>
-				    			<div class="col-md-6">
-				    				<label for="fechaRetorno">Fecha Ingreso</label>
-				    				<input type="text" class="form-control text-center campo-fecha"
-				    					   id="fechaRetorno" name="fechaRetorno">
-				    			</div>
+				    			<!-- <div class="col-md-12">	 -->
+    				    			<div class="col-md-4" id="col-folios">
+    				    			</div>
+    				    			<div class="col-md-4">
+    				    				<div class="form-group">
+        				    				<label for="fechaRetorno">Fecha Ingreso</label>
+        				    				<input type="text" class="form-control text-center campo-fecha"
+        				    					   id="fechaRetorno" name="fechaRetorno">
+        				    			</div>
+    				    			</div>
+    				    			<div class="col-md-4">
+    				    				<div class="form-group">
+        				    				<label for="numeroRemitoRetorno">N° Remito</label>
+        				    				<input type="text" class="form-control text-center es-numero"
+        				    					   id="numeroRemitoRetorno" name="numeroRemitoRetorno">
+        				    			</div>
+    				    			</div>
+    				    		<!-- </div> -->
                 			</div>
                 			<hr>
     				    	<div class="row">
@@ -1674,10 +1752,19 @@
 				    	<form role="form">
 				    		<input type="hidden" id="idInforme" name="idInforme">
 				    		<div class="row">
-				    			<div class="col-md-8 col-md-offset-2">
-				    				<label for="fechaRespuesta">Fecha Respuesta</label>
-				    				<input type="text" class="form-control text-center campo-fecha"
-				    					   id="fechaRespuesta" name="fechaRespuesta">
+				    			<div class="col-md-6">
+				    				<div class="form-group">
+    				    				<label for="fechaRespuesta">Fecha Respuesta</label>
+    				    				<input type="text" class="form-control text-center campo-fecha"
+    				    					   id="fechaRespuesta" name="fechaRespuesta">
+    				    			</div>
+				    			</div>
+				    			<div class="col-md-6">
+				    				<div class="form-group">
+    				    				<label for="numeroRemitoInforme">N° Remito</label>
+    				    				<input type="text" class="form-control text-center es-numero"
+    				    					   id="numeroRemitoInforme" name="numeroRemitoInforme">
+    				    			</div>
 				    			</div>
                 			</div>
                 			<hr>
@@ -1724,21 +1811,42 @@
 								        		</select>
 								        	</div>
 								       	</div>
-								       	<div class="col-md-4">
+								       	<div class="col-md-3">
 							        		<div class="form-group">
 								        		<label for="numeroExpediente">N° Exp. HCD</label>
 								        		<input type="text" class="form-control es-numero" id="numeroExpediente"
 								        			   name="numeroExpediente" placeholder="N° Expediente">
 								        	</div>
 								        </div>
-								        <div class="col-md-3">
+								        <div class="col-md-2">
     								        <div class="form-group">
 								        		<label for="folios">Folios HCD</label>
 								        		<input type="text" class="form-control es-numero" id="folios"
 								        			   name="folios" placeholder="Folios">
 								        	</div>
 								        </div>
+								        <div class="col-md-2">
+    								        <div class="form-group">
+								        		<label for="añoIngreso">Año</label>
+								        		<input type="text" class="form-control es-numero" id="añoIngreso"
+								        			   name="añoIngreso" placeholder="Año" maxlength="4">
+								        	</div>
+								        </div>
 								        {# DATOS EXP. HCD #}
+							        </div>
+							        <div class="row">
+							        	<div class="col-md-5">
+							        		<div class="form-group">
+								        		<label for="selSesion">Sesion</label>
+								        		<select class="form-control" id="selSesion" 
+								        				name="selSesion">
+								        			<option value="0">Seleccione Sesion</option>
+								        			{# for sesion in sesiones #}
+										                <!-- <option value="{{ sesion.id }}">{{ session.sesion }}</option> --> 
+										            {# endfor #}
+								        		</select>
+								        	</div>
+							        	</div>
 							        </div>
 						        </div>
 						        <div class="col-md-7">
@@ -1779,7 +1887,7 @@
 							        </div>
 							        <div class="row hidden ente-externo">
 							        	{# DATOS AUTORES EXP. DEL EJECUTIVO #}
-							        	<div class="col-md-5">
+							        	<div class="col-md-4">
 							        		<div class="form-group">
     						        			<label for="selOrigen">Origen Externo</label>
     						        			<select class="form-control" id="selOrigen" name="selOrigen">
@@ -1790,7 +1898,7 @@
     						        			</select>
     						        		</div>
 							        	</div>
-							        	<div class="col-md-7">
+							        	<div class="col-md-8">
 							        		<div class="row">
         						        		<div class="col-md-6">
         						        			<label>Números Externos</label>
@@ -1804,7 +1912,14 @@
         						        	<div class="row">
         						        		<div class="col-md-12">
                 						        	<table class="table table-striped table-fixed" id="tabla-numeros">
-                						        		<thead><th>ente</th><th>nro.</th><th>letra</th><th>año</th><th>folios</th><th></th></thead>
+                						        		<thead><th style="width:15%">Ente</th>
+                						        			   <th style="width:20%">Numero</th>
+                						        			   <th style="width:10%">Letra</th>
+                						        			   <th style="width:15%">Año</th>
+                						        			   <th style="width:15%">Folios</th>
+                						        			   <th style="width:15%">Cuerpos</th>
+                						        			   <th style="width:10%"></th>
+                						        		</thead>
                 						        		<tbody>
                 						        		</tbody>
                 						        	</table>
@@ -1873,22 +1988,50 @@
 								        		</select>
 								        	</div>
 								        </div>
-							        	<div class="col-md-4">
+							        	<div class="col-md-3">
 								        	<div class="form-group">
 								        		<label for="numeroExpedienteMod">N° Exp. HCD</label>
 								        		<input type="text" class="form-control es-numero" id="numeroExpedienteMod"
 								        			   name="numeroExpedienteMod" placeholder="N° Expediente">
 								        	</div>
 								        </div>
-								        <div class="col-md-3">
+								        <div class="col-md-2">
 								        	<div class="form-group">
 								        		<label for="foliosMod">Folios HCD</label>
 								        		<input type="text" class="form-control es-numero" id="foliosMod"
 								        			   name="foliosMod" placeholder="Cantidad Folios">
 								        	</div>
 								        </div>
+								        <div class="col-md-2">
+    								        <div class="form-group">
+								        		<label for="añoIngresoMod">Año</label>
+								        		<input type="text" class="form-control es-numero" id="añoIngresoMod"
+								        			   name="añoIngresoMod" placeholder="Año" maxlength="4">
+								        	</div>
+								        </div>
 								        {# DATOS EXP. HCD #}		
 								    </div>
+								    <div class="row">
+							        	<div class="col-md-5">
+							        		<div class="form-group">
+								        		<label for="selSesionMod">Sesion</label>
+								        		<select class="form-control" id="selSesionMod" 
+								        				name="selSesionMod">
+								        			<option value="0">Seleccione Sesion</option>
+								        			{# for sesion in sesiones #}
+										                <!-- <option value="{{ sesion.id }}">{{ session.sesion }}</option> --> 
+										            {# endfor #}
+								        		</select>
+								        	</div>
+							        	</div>
+							        	<div class="col-md-4">
+							        		<div class="form-group">
+								        		<label for="numerosancionMod">N° Sanción</label>
+								        		<input type="text" class="form-control es-numero" id="numerosancionMod"
+								        			   name="numerosancionMod" placeholder="N° Sancion">
+								        	</div>
+								        </div>
+							        </div>
 						        </div>
 						        <div class="col-md-7">
 						        	<div class="row hidden expediente-particular">
@@ -1953,7 +2096,15 @@
         						        	<div class="row">
         						        		<div class="col-md-12">
                 						        	<table class="table table-striped table-fixed" id="tabla-numeros-mod">
-                						        		<thead><th>ente</th><th>nro.</th><th>letra</th><th>año</th><th>folios</th><th></th></thead>
+                						        		<thead>
+                						        			<th style="width:15%">Ente</th>
+                						        			<th style="width:20%">Numero</th>
+                						        			<th style="width:10%">Letra</th>
+                						        			<th	style="width:15%">Año</th>
+                						        			<th style="width:15%">Folios</th>
+                						        			<th style="width:15%">Cuerpos</th>
+                						        			<th style="width:10%"></th>
+                						        		</thead>
                 						        		<tbody>
                 						        		</tbody>
                 						        	</table>
@@ -2092,6 +2243,7 @@
 					        			<th>Observación</th>
 					        			<th title="Fecha de Recepción Remito">Fec. Recep.</th>
 					        			<th title="Fecha Respuesta">Fec. Resp.</th>
+					        			<th title="Remito Externo">Rem. Ext.</th>
 					        		</thead>
 					        		<tbody>
 					        		</tbody>
@@ -2142,6 +2294,7 @@
 					        			<th>Observación</th>
 					        			<th>Fojas</th>
 					        			<th title="Fecha de Recepción Remito">Fec. Recep.</th>
+					        			<th title="Remito Externo">Rem. Ext.</th>
 					        		</thead>
 					        	</table>
 				        	</div>

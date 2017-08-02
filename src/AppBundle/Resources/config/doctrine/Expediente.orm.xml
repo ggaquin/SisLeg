@@ -5,6 +5,7 @@
       <index name="expediente_tipoExpediente_idx" columns="idTipoExpediente"/>
       <index name="expediente_estadoExpediente_idx" columns="idEstadoExpediente"/>
       <index name="expediente_oficina_idx" columns="idOficina"/>
+      <index name="expediente_sesion_idx" columns="idSesion"/>
     </indexes>
     <unique-constraints>
             <unique-constraint columns="numeroExpediente" name="numeroExpediente_idx" />
@@ -32,6 +33,8 @@
         <option name="fixed"/>
       </options>
     </field>
+    <field name="año" type="string" column="año" length="4" nullable="false">
+    </field>
     <field name="caratula" type="string" column="caratula" length="500" nullable="false">
       <options>
         <option name="fixed"/>
@@ -43,6 +46,8 @@
       </options>
     </field>
     <field name="listaImagenes" type="object" column="listaImagenes" nullable="true">
+    </field>
+    <field name="numeroSancion" column="numeroSancion" type="string" length="20" nullable="true">
     </field>
     <field name="fechaCreacion" type="datetime" column="fechaCreacion" nullable="false"/>
     <field name="usuarioCreacion" type="string" column="usuarioCreacion" length="70" 
@@ -88,6 +93,11 @@
     		<cascade-remove/>
     	</cascade>
     </one-to-many>
+    <many-to-one field="sesion" target-entity="Sesion">
+    	<join-columns>
+    		<join-column name="idSesion" referenced-column-name="idSesion"/>
+    	</join-columns>
+    </many-to-one>
     <many-to-one field="estadoExpediente" target-entity="EstadoExpediente" fetch="LAZY">
       <join-columns>
         <join-column name="idEstadoExpediente" referenced-column-name="idEstadoExpediente"/>

@@ -49,28 +49,46 @@ class ExpedienteRepository extends EntityRepository{
 	public function findByAutor_Nombres($patronBusqueda){
 
 		$qb = $this->createQueryBuilder('e');
-		$qb -> leftJoin('e.proyecto','p')
-		    -> leftJoin('p.concejales','c',
+		$qb -> innerJoin('e.proyecto','p')
+		    -> innerJoin('p.concejales','c',
 						'with',$qb->expr()->orX(
 								       $qb->expr()->like('c.nombres', '?1'),
 								       $qb->expr()->like('c.apellidos','?1')
 									)
 		   		  		)
-   		  	-> leftJoin('e.demandanteParticular','d',
-   		  				'with',$qb->expr()->orX(
-   		  						$qb->expr()->like('d.nombres', '?1'),
-   		  						$qb->expr()->like('d.apellidos','?1')
-   		  						)
-   		  				)
-   		  	->where($qb->expr()->orX(
-				   		  				$qb->expr()->isNotNull('c.id'),
-				   		  				$qb->expr()->isNotNull('d.id')
-				   		  			)
-   		  			)
+   		  	
 		    ->distinct()
   		    ->setParameter(1, '%'.$patronBusqueda.'%');
 	        return $qb->getQuery()->getResult();
 	  
+	}
+	
+	public function findByParticular_Nombres($patronBusqueda){
+		
+		$qb = $this->createQueryBuilder('e');
+		$qb -> innerJoin('e.demandanteParticular','d',
+						 'with',$qb->expr()->orX(
+								$qb->expr()->like('d.nombres', '?1'),
+								$qb->expr()->like('d.apellidos','?1')
+								)
+						)
+						
+			->distinct()
+			->setParameter(1, '%'.$patronBusqueda.'%');
+			return $qb->getQuery()->getResult();
+								
+	}
+	
+	public function findByParticular_DNI($patronBusqueda){
+		
+		$qb = $this->createQueryBuilder('e');
+		$qb -> innerJoin('e.demandanteParticular','d',
+						 'with',$qb->expr()->eq('d.documento', '?1')
+						)
+			->distinct()
+			->setParameter(1, $patronBusqueda);
+			return $qb->getQuery()->getResult();
+				
 	}
 	
 	public function findNumeroCompletoByNumero($numero,$oficina){

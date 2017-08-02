@@ -173,6 +173,10 @@ class RestController extends FOSRestController{
                 $expedientes=$expedienteRepository->findBy(array('numeroExpediente'=>$criterio));
             if ($tipoCriterio=='busqueda-4')
                 $expedientes=$expedienteRepository->findByTipoExpediente_Id($criterio);
+            if ($tipoCriterio=='busqueda-5')
+                	$expedientes=$expedienteRepository->findByParticular_Nombres($criterio);
+            if ($tipoCriterio=='busqueda-6')
+                	$expedientes=$expedienteRepository->findByParticular_DNI($criterio);
 			
             return $this->view($expedientes,200);
 
@@ -211,6 +215,7 @@ class RestController extends FOSRestController{
     	$idExpediente=$request->request->get('idExpediente');
     	$folios=$request->request->get('folios');
     	$fecha=$request->request->get('fecha');
+    	$numeroRemito=$request->request->get('numeroRemito');
     	
     	try {
     		
@@ -245,6 +250,7 @@ class RestController extends FOSRestController{
     		$movimiento->setExpediente($expediente);
     		$movimiento->setFechaCreacion($fechaActual);
     		$movimiento->setUsuarioCreacion($usuario->getUsuario());
+    		$movimiento->setRemitoRetorno($numeroRemito);
     		$movimiento->setFojas($folios);
     		$movimiento->setObservacion("Autopase por Retorno");
     		$movimiento->setTipoMovimiento($tipoMovimiento);
@@ -528,6 +534,7 @@ class RestController extends FOSRestController{
     {
     	$idInforme=$request->request->get('idInforme');
     	$fecha=$request->request->get('fecha');
+    	$numeroRemito=$request->request->get('numeroRemito');
     	
     	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Movimiento');
     	$usuario=$this->getUser();
@@ -536,6 +543,7 @@ class RestController extends FOSRestController{
     	$informe=$expedienteRepository->find($idInforme);
     	$fechaRespuesta=\DateTime::createFromFormat('d/m/Y', $fecha);
     	$informe->setFechaRespuestaInforme($fechaRespuesta);
+    	$informe->setRemitoRetorno($numeroRemito);
     	$informe->setFechaModificacion($fechaActual);
     	$informe->setUsuarioModificacion($usuario->getUsuario());
     	
@@ -905,6 +913,7 @@ class RestController extends FOSRestController{
             $idproyecto=$request->request->get('idProyecto'); 
             $idTipoExpediente=$request->request->get('idTipoExpediente');
             $numeroExpediente=$request->request->get('numeroExpediente');
+            $año=$request->request->get('año');
             $folios=$request->request->get('folios');
             $documentoParticular=$request->request->get('documentoParticular');
             $apellidosParticular=$request->request->get('apellidosParticular');
@@ -912,11 +921,13 @@ class RestController extends FOSRestController{
             $idOrigen=$request->request->get('idOrigen');
             $numeros=json_decode($request->request->get('numeros'));
             $caratula=$request->request->get('caratula');
+            //$idSesion=$request->request->get('numeroSancion');
             $archivos=$request->files->all();
             $usuario=$this->getUser();
             
             //repositorios y parámetros de configuración
             $tipoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
+            //$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
             $estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
             $oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
             $idMesaEntradas=$this->getParameter('id_mesa_entradas');
@@ -928,7 +939,11 @@ class RestController extends FOSRestController{
             $expediente->setFolios($folios);
             $expediente->setArchivos($archivos);
             $expediente->setNumeroExpediente($numeroExpediente);
+            $expediente->setAño($año);
             $expediente->setCaratula($caratula);
+            //$sesion=$sesionRepository->find($idSesion);
+            //$expediente->setSesion($sesion);
+            
             
             //establece la oficina actual (todos ingresan por mesa de entradas)
             $oficina=$oficinaRepository->find($idMesaEntradas);
@@ -1020,18 +1035,26 @@ class RestController extends FOSRestController{
             $idOrigen=$request->request->get('idOrigen');
             $numeros=json_decode($request->request->get('numeros'));           
             $caratula=$request->request->get('caratula');
+            $año=$request->request->get('año');
+            //$idSesion=$request->request->get('numeroSancion');
+            $numeroSancion=$request->request->get('numeroSancion');
             $archivos=$request->files->all();
             $usuario=$this->getUser();
 
             $tipoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
+            //$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
             $oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
             $expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
             $expediente=$expedienteRepository->find($idExpediente); 
 			
             //datos del HCD
             $expediente->setNumeroExpediente($numeroExpediente);
+            $expediente->setAño($año);
             $expediente->setFolios($folios);
             $expediente->setCaratula($caratula);
+            //$sesion=$sesionRepository->find($idSesion);
+            //$expediente->setSesion($sesion);
+            $expediente->setNumeroSancion($numeroSancion);
             $expediente->setArchivos($archivos);
             $proyecto=$expediente->getProyecto();
             

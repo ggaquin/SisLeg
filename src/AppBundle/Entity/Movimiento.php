@@ -108,6 +108,13 @@ class Movimiento {
 	 */
 	private $fechaRespuestaInforme;
 	
+	/**
+	 * @var integer
+	 * 
+	 * @ORM\Column(name="remitoRetorno", type="datetime", nullable=true)
+	 */
+	private $remitoRetorno;
+	
 	//------------------------------------constructor---------------------------------------------
 	
 	/**
@@ -383,6 +390,28 @@ class Movimiento {
 		return $this->fechaRespuestaInforme;
 	}
 	
+	/**
+	 * Get remitoRetorno
+	 *
+	 * @return integer
+	 */
+	public function getRemitoRetorno() {
+		return $this->remitoRetorno;
+	}
+	
+	/**
+	 * Set remitoRetorno
+	 *
+	 * @param integer $remitoRetorno
+	 *
+	 * @return Movimiento
+	 */
+	public function setRemitoRetorno($remitoRetorno) {
+		$this->remitoRetorno = $remitoRetorno;
+		return $this;
+	}
+	
+		
 	//------------------------------Propiedades Virtuales -------------------------------------
 	
 	/**

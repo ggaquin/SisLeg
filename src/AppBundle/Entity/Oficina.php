@@ -132,4 +132,21 @@ class Oficina {
 	public function getEsExterna()
 	{   return ($this->tipoOficina->getTipoOficina()=="Externa");}
 	
+	/**
+	 * Get descripcion
+	 * 
+	 * @return string 
+	 * 
+	 * @VirtualProperty
+	 */
+	public function getDescripcion(){
+		$descripcion="";
+		if ($this->tipoOficina->getTipoOficina()=="Externa")
+			$descripcion=$this->getOficina()."- (".$this->getCodigo().")";
+		else 
+			$descripcion=$this->getOficina();
+		
+		return  $descripcion;
+	}
+			
 }

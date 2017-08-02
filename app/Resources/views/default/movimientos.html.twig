@@ -604,7 +604,8 @@
 
 			$(".campo-fecha").datetimepicker({
 		    	locale: 'es',
-		    	format:'DD/MM/YYYY'
+		    	format:'DD/MM/YYYY',
+		    	maxDate : 'now'
 		    });
 					
 	});
@@ -728,7 +729,7 @@
         						        		<option value="0">Seleccione Destino</option>
         						        		{% for oficina in oficinas %}
         						        			{% if app.user.rol.oficina.id != oficina.id  %}
-        							                	<option value="{{ oficina.id }}">{{ oficina.oficina }}</option>
+        							                	<option value="{{ oficina.id }}">{{ oficina.descripcion }}</option>
         							                {% endif %}
         							            {% endfor %}
         						        	</select>

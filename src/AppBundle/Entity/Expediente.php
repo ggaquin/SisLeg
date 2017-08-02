@@ -12,7 +12,8 @@ use AppBundle\Popo\Image;
  *
  * @ORM\Table(name="expediente", indexes={@ORM\Index(name="expediente_estadoExpediente_idx", columns={"idEstadoExpediente"}), 
  *                                        @ORM\Index(name="expediente_tipoExpediente_idx", columns={"idTipoExpediente"}),
- *                                        @ORM\Index(name="expediente_oficina_idx", columns={"idOficina"})
+ *                                        @ORM\Index(name="expediente_oficina_idx", columns={"idOficina"}),
+ *                                        @ORM\Index(name="expediente_sesion_idx", columns={"idSesion"})
  *                                       },
  *            uniqueConstraints={@ORM\UniqueConstraint(name="numeroExpediente_idx", columns={"numeroExpediente"}),
  *            					 @ORM\UniqueConstraint(name="expediente_origenExterno_idx", columns={"idOrigenExterno"}),
@@ -97,6 +98,13 @@ class Expediente
     private $numeroExpediente;
     
     /**
+     * @var string
+     *
+     * @ORM\Column(name="año", type="string", length=4, nullable=false)
+     */
+    private $año;
+    
+    /**
      * @var \AppBundle\Entity\DemandanteParticular
      *
      * @ORM\ManyToOne(targetEntity="AppBundle\Entity\DemandanteParticular",cascade={"persist","update"})
@@ -135,6 +143,17 @@ class Expediente
      * })
      */
     private $tipoExpediente;
+    
+    
+    /**
+     * @var \AppBundle\Entity\Sesion
+     *
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Sesion")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="idSesion", referencedColumnName="idSesion")
+     * })
+     */
+    private $sesion;
 
     /**
      * @var string
@@ -166,6 +185,13 @@ class Expediente
      * @ORM\Column(name="listaImagenes", type="object", nullable=true)
      */
     private $listaImagenes =[];
+    
+    /**
+     * @var string
+     * 
+     * @ORM\Column(name="numeroSancion", type="string", length=20, nullable=false)
+     */
+    private $numeroSancion;
 
     /**
      * @var \DateTime
@@ -279,6 +305,30 @@ class Expediente
     }
     
     /**
+     * Set año
+     *
+     * @param string $año
+     *
+     * @return Expediente
+     */
+    public function setAño($año)
+    {
+    	$this->año = $año;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Get año
+     *
+     * @return string
+     */
+    public function getAño()
+    {
+    	return $this->año;
+    }
+    
+    /**
      * Set demandanteParticular
      *
      * @param \AppBundle\Entity\DemandanteParticular $demandanteParticular
@@ -372,6 +422,30 @@ class Expediente
     public function getTipoExpediente()
     {
         return $this->tipoExpediente;
+    }
+    
+    /**
+     * Set sesion
+     *
+     * @param \AppBundle\Entity\Sesion $sesion
+     *
+     * @return Expediente
+     */
+    public function setSesion(\AppBundle\Entity\Sesion $sesion= null)
+    {
+    	$this->sesion = $sesion;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Get sesion
+     *
+     * @return \AppBundle\Entity\Sesion
+     */
+    public function getSesion()
+    {
+    	return $this->sesion;
     }
 
     /**
@@ -493,6 +567,30 @@ class Expediente
     public function getProyecto()
     {
         return $this->proyecto;
+    }
+    
+    /**
+     * Set numeroSancion
+     *
+     * @param string $numeroSancion
+     *
+     * @return Expediente
+     */
+    public function setNumeroSancion($numeroSancion)
+    {
+    	$this->numeroSancion = $numeroSancion;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Get numeroSancion
+     *
+     * @return string
+     */
+    public function getNumeroSancion()
+    {
+    	return $this->numeroSancion;
     }
 
     /**
@@ -766,7 +864,8 @@ class Expediente
      * @VirtualProperty
      */
     public function getNumeroCompleto()
-    {   $año = $this->fechaCreacion->format("Y");
+    {   
+    	$año = ((is_null($this->año))?"":$this->año);
         return $this->numeroExpediente.'-'.($this->tipoExpediente->getLetra()).'-'.substr($año,2,2);
     }
 
@@ -778,8 +877,8 @@ class Expediente
      * @VirtualProperty
      */
     public function getEjercicio()
-    {   $año=$this->fechaCreacion->format("Y");
-        return substr($año,2,2);
+    {  
+        return substr($this->año,2,2);
     }
 
     /**
