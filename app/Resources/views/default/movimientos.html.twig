@@ -175,7 +175,7 @@
 			          	  },
 					      "processing": false,
 					      "ajax": {
-							        "url": "api/expediente/remito/getAllByCriteria/"+tipoCriterio()+"/"+criterio(),
+							        "url": "api/expediente/getRemitosByCriteria/"+tipoCriterio()+"/"+criterio(),
 			            			"dataSrc": '',
 							    },
 						  "columnDefs": [
@@ -236,9 +236,9 @@
 					      		{ "data": "id"},
 					      		{ "data": "null","width":"7%"},
 					     		{ "data": "numero_remito", "width":"7%"},
-					      		{ "data": "origen.oficina","width":"18%"},
+					      		{ "data": "oficina_origen","width":"18%"},
 					      		{ "data": "fecha_movimiento_formateada","width":"9%"},
-					            { "data": "destino.oficina", "width": "18%" },
+					            { "data": "oficina_destino", "width": "18%" },
 					            { "data": "null","width":"5%"},
 					            { "data": "fecha_recepcion_formateada", "width": "9%" },
 					            { "data": "lista_expedientes","width": "25%" }
@@ -285,7 +285,7 @@
 				formData.append("motivoAnulacion",motivoAnulacion);
 				
 				$.ajax({
-    	                url: '{{ app.request.getBaseURL() }}'+'/api/expediente/remito/invalidate',
+    	                url: '{{ app.request.getBaseURL() }}'+'/api/expediente/invalidateRemito',
     	                data: formData,
     	                type: 'post',
     	                cache: false,
@@ -343,7 +343,7 @@
 
 	            	$.ajax({
 		                async: true,
-		                url: '{{ app.request.getBaseURL() }}'+'/api/expediente/remito/update',
+		                url: '{{ app.request.getBaseURL() }}'+'/api/expediente/updateRemito',
 		                data: formData,
 		                type: 'post',
 		                cache: false,
@@ -421,7 +421,7 @@
 
 	            	$.ajax({
 		                async: true,
-		                url: '{{ app.request.getBaseURL() }}'+'/api/expediente/remito/create',
+		                url: '{{ app.request.getBaseURL() }}'+'/api/expediente/createRemito',
 		                data: formData,
 		                type: 'post',
 		                cache: false,
@@ -480,7 +480,7 @@
 								
 				if($("#selBusqueda").val()!="todo" && criterio()!="" && criterio()!="0")
 				{
-					tabla.ajax.url("api/expediente/remito/getAllByCriteria/"+tipoCriterio()+"/"+criterio()).load();
+					tabla.ajax.url("api/expediente/getRemitosByCriteria/"+tipoCriterio()+"/"+criterio()).load();
 					$(".filtro").prop('disabled',true);
 					$('#estadoFiltro').bootstrapToggle('enable');
 					$("#estadoFiltro").bootstrapToggle('on');
@@ -493,7 +493,7 @@
 					$(".filtro").prop('disabled',false);
 					$("#selBusqueda").val("todo").change();
 					$(".filtro").prop('disabled',false);
-					tabla.ajax.url("api/expediente/remito/getAllByCriteria/"+tipoCriterio()+"/"+criterio()).load();
+					tabla.ajax.url("api/expediente/getRemitosByCriteria/"+tipoCriterio()+"/"+criterio()).load();
 					$(this).bootstrapToggle('disable');
 					
 				}

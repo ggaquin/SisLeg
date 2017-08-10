@@ -353,7 +353,7 @@
 					      		{ "data": "id" },
 					      		{ "data": "null","width":"10%"},
 					      		{ "data": "numero_expediente","width":"5%"},
-					      		{ "data": "tipo_proyecto.tipo_proyecto","width":"5%"},
+					      		{ "data": "tipo_proyecto","width":"5%"},
 					            { "data": "fecha_creacion_formateada", "width": "15%" },
 					            { "data": "fecha_entrada_formateada", "width": "15%" },
 					            { "data": "estado_expediente","width":"10%" },
@@ -494,7 +494,7 @@
 					url:'{{ app.request.getBaseURL() }}'+'/api/proyecto/getOne/'+id,
 					success: function(data){
 
-						$("#selTipoProyectoMod").val(data.tipo_proyecto.id);
+						$("#selTipoProyectoMod").val(data.id_tipo_proyecto);
 						$("#vistoMod").data("wysihtml5").editor.setValue(data.visto);
 						$("#considerandoMod").data("wysihtml5").editor.setValue(data.considerandos);
 
@@ -504,14 +504,6 @@
 					 	$.each(concejales, function(index,concejal){
 					 		var newOption = new Option(concejal.descripcion, concejal.id, true, true);
 						   	$("#selConcejalesMod").append(newOption).trigger('change');
-						 });
-
-					 	var bloques=data.bloques;
-
-					 	//selección de los bloques almacenados
-					 	$.each(bloques, function(index,bloque){
-					 		var newOption = new Option(bloque.bloque, bloque.id, true, true);
-						   	$("#selBloquesMod").append(newOption).trigger('change');
 						 });
 					 
 					    $.each(data.articulos,function(index,articulo){
@@ -1331,10 +1323,12 @@
 											    </div>
 										    </div>
 										    <div class="row">
-								        		<div class="form-group">
-									        		<label for="vistoMod">Visto:</label>
-									        		<textarea class="form-control text-area text-area-media" 
-									        		id="vistoMod" name="vistoMod" placeholder="Vistos"></textarea>
+										    	<div class="col-md-12">
+    								        		<div class="form-group">
+    									        		<label for="vistoMod">Visto:</label>
+    									        		<textarea class="form-control text-area text-area-media" 
+    									        		id="vistoMod" name="vistoMod" placeholder="Vistos"></textarea>
+    									        	</div>
 									        	</div>
 									        </div> 
 								        </div> 

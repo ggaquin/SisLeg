@@ -33,6 +33,9 @@
     	</join-columns>
     </many-to-one>
     <many-to-one field="expediente" target-entity="Expediente" inversed-by="movimientos">
+    	<cascade>
+    		<cascade-persist/>
+    	</cascade>
     	<join-columns>
     		<join-column name="idExpediente" referenced-column-name="idExpediente"/>
     	</join-columns>

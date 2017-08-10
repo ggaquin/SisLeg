@@ -12,7 +12,7 @@ use JMS\Serializer\Annotation\VirtualProperty;
                                        @ORM\Index(name="comision_perfilPresidente_idx", columns={"idPerfilPresidente"}),
                                        @ORM\Index(name="comision_perfilVicePresidente_idx", columns={"idPerfilVicePresidente"})
                                        })
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="AppBundle\Repository\ComisionRepository")
  */
 class Comision
 {

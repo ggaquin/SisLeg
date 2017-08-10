@@ -86,7 +86,7 @@
 
 				type:'Get',
 				dataType: 'json	',
-				url:'/api/usuario/estado/'+id+'/'+estado,
+				url:'/api/usuario/setEstado/'+id+'/'+estado,
 				success: function(data){
 					toastr.succes(data);
 				},
@@ -124,7 +124,7 @@
 				async:false,
 				type:'Get',
 				dataType: 'json	',
-				url:'{{ app.request.getBaseURL() }}'+'/api/roles/getByTipoPerfil/'+idTipoPerfil,
+				url:'{{ app.request.getBaseURL() }}'+'/api/usuario/getRolesByTipoPerfil/'+idTipoPerfil,
 				success: function(data){
 					var roles=data.roles;
 					var html='<option value=0>Seleccione Rol</option>';
@@ -197,7 +197,7 @@
     				async:true,
     				type:'Get',
     				dataType: 'json	',
-    				url:'{{ app.request.getBaseURL() }}'+'/api/rol/permisos/getByRol/'+controlValor,
+    				url:'{{ app.request.getBaseURL() }}'+'/api/usuario/getPermisosByRol/'+controlValor,
     				success: function(data){
     					var menus=data;
 						$.each(menus,function(index,menu){
@@ -320,10 +320,10 @@
 		      		{ "data": "id" ,"width":"10%" },
 		            { "data": "usuario","width":"10%" },
 		            { "data": "activo","width":"5%" },
-		            { "data": "perfil.nombre_completo", "width": "35%" },
-		            { "data": "rol.rol_como_string","width":"10%" },
-		            { "data": "perfil.tipo_perfil","className": "for-mobile","width":"10%" },
-		            { "data": "perfil.bloque.bloque", "className": "for-mobile", "defaultContent":"---","width":"25%" }
+		            { "data": "nombre_completo", "width": "35%" },
+		            { "data": "rol_como_string","width":"10%" },
+		            { "data": "tipo_perfil","className": "for-mobile","width":"10%" },
+		            { "data": "bloque", "className": "for-mobile", "defaultContent":"---","width":"25%" }
 		            
 		        ],
 		      	"autoWidth":false,
@@ -346,7 +346,7 @@
 
 					type:'Put',
 					dataType: 'json	',
-					url:'{{ app.request.getBaseURL() }}'+'/api/usuario/estado/'+id+'/'+0,
+					url:'{{ app.request.getBaseURL() }}'+'/api/usuario/setEstado/'+id+'/'+0,
 					success: function(data){
 						toastr.success(data);
 					},
@@ -370,7 +370,7 @@
 
 					type:'Put',
 					dataType: 'json	',
-					url:'{{ app.request.getBaseURL() }}'+'/api/usuario/estado/'+id+'/'+1,
+					url:'{{ app.request.getBaseURL() }}'+'/api/usuario/setEstado/'+id+'/'+1,
 					success: function(data){
 						toastr.success(data);
 						tabla.ajax.reload();;
@@ -457,7 +457,7 @@
 	                showCaption: false,               
 	                overwriteInitial: true,
 	                previewSettings:{image: {height: "220", width:"155px"}},
-	                deleteUrl:'{{ app.request.getBaseURL() }}'+'/api/perfil/imagen/remove',
+	                deleteUrl:'{{ app.request.getBaseURL() }}'+'/api/usuario/removeImagenPerfil',
 	                maxFileSize: 10240,                
         		});
 
@@ -911,7 +911,7 @@
 				                showCaption: false,               
 				                overwriteInitial: true,
 				                previewSettings:{image: {height: "220", width:"155px"}},
-				                deleteUrl:'{{ app.request.getBaseURL() }}'+'/api/perfil/imagen/remove',
+				                deleteUrl:'{{ app.request.getBaseURL() }}'+'/api/usuario/removeImagenPerfil',
 				                maxFileSize: 10240,                
 			        		});
 						},
@@ -1124,7 +1124,7 @@
 				        <h4 class="modal-title"><strong>Nuevo Usuario</strong></h4>
 				    </div>
 				    <div class="modal-body" style="background-color:#ecf0f5">
-				        <form role="form" id="modificacion" action="api/usuario/perfil/update" method="POST">
+				        <form role="form" id="modificacion" action="api/usuario/updatePerfil" method="POST">
 				        	<input type="hidden" id="id" name="id">		
 				        	<div class="row">
     				        	<div class="col-md-12">

@@ -2,7 +2,6 @@
 <doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
   <entity name="AppBundle\Entity\Dictamen" table="dictamen" inheritance-type="SINGLE_TABLE">
     <indexes>
-      <index name="dictamen_tipoNumeroDictamen_idx" columns="idTipoNumeroDictamen"/>
       <index name="dictamen_proyectoRevision_idx" columns="idProyectoRevision"/>
       <index name="dictamen_tipoProyecto_idx" columns="idTipoDictamen"/>
     </indexes>
@@ -10,6 +9,7 @@
     <discriminator-map>
         <discriminator-mapping value="basico" class="AppBundle\Entity\Dictamen" />
         <discriminator-mapping value="articulado" class="AppBundle\Entity\DictamenArticulado" />
+        <discriminator-mapping value="revision" class="AppBundle\Entity\DictamenRevision"/>
     </discriminator-map>
     <id name="id" type="integer" column="idDictamen">
       <generator strategy="IDENTITY"/>
@@ -23,17 +23,23 @@
     </field> 
     <field name="textoLibre" type="text" column="textoLibre" nullable="false">
     </field>
-    <one-to-many field="asignacionesDeEstudio" mapped-by="dictamen" target-entity="ExpedienteComision"/>
-    <many-to-one field="revisionDictamen" target-entity="ProyectoRevision">
-    	<join-columns>
-    		<join-column name="idProyectoRevision" referenced-column-name="idProyectoRevision"/>
-    	</join-columns>
-    </many-to-one>
-    <many-to-one field="tipoNumeroDictamen" target-entity="TipoNumeroDictamen" fetch="LAZY">
-      <join-columns>
-        <join-column name="idTipoNumeroDictamen" referenced-column-name="idTipoNumeroDictamen"/> 
-      </join-columns>
-    </many-to-one>
+    <one-to-many field="asignacionesPorMayoria" mapped-by="dictamenMayoria" target-entity="ExpedienteComision">
+	    <cascade>
+	    	<cascade-persist/>
+	    </cascade>
+    </one-to-many>
+    <one-to-many field="asignacionesPorPrimeraMinoria" mapped-by="dictamenPrimeraMinoria" 
+    			 target-entity="ExpedienteComision">
+	    <cascade>
+	    	<cascade-persist/>
+	    </cascade>
+    </one-to-many>
+    <one-to-many field="asignacionesPorSegundaMinoria" mapped-by="dictamenSegundaMinoria" 
+    			 target-entity="ExpedienteComision">
+	    <cascade>
+	    	<cascade-persist/>
+	    </cascade>
+    </one-to-many>
     <many-to-many field="concejales" target-entity="PerfilLegislador">
     	<join-table name="dictamen_legislador">
     		<join-columns>

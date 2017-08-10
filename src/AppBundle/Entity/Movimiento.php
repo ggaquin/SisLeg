@@ -46,7 +46,7 @@ class Movimiento {
 	/**
 	 * @var \AppBundle\Entity\Expediente
 	 *
-	 * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Expediente", inversedBy="movimientos")
+	 * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Expediente", inversedBy="movimientos", cascade={"persist"})
 	 * @ORM\JoinColumns({@ORM\JoinColumn(name="idExpediente", referencedColumnName="idExpediente")})
 	 */
 	private $expediente;

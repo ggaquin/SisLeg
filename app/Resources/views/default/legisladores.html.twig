@@ -247,10 +247,10 @@
 					var modo= $("#modalLegislador").find('input[name="modo"]').val()
 
 			    	if (modo=="ALTA")
-			    		urlAction='{{ app.request.getBaseURL() }}'+'/api/perfilLegislador/create';
+			    		urlAction='{{ app.request.getBaseURL() }}'+'/api/Usuario/createPerfilLegislador';
 			    	else {
 			    		var id= $("#modalLegislador").find('input[name="id"]').val();
-						urlAction='{{ app.request.getBaseURL() }}'+'/api/perfilLegislador/update';
+						urlAction='{{ app.request.getBaseURL() }}'+'/api/usuario/updatePerfilLegislador';
 			    	}
 
 	            	$.ajax({

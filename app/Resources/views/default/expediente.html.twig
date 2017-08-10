@@ -316,7 +316,7 @@
 		}
 
 		$(document).ready(function () {
-
+			
 			var tablaProyectos;
 
 			var tablaGiros;
@@ -384,18 +384,18 @@
 									        },
 								            {
 									            "targets": [ 6 ],
-									            "data": 'oficina_actual.oficina',
+									            "data": 'oficina_actual',
 									            "orderable":true,
 									            "render": function(data, type, row){
 									            	var html="";
-									            	if(data=="COMISIONES"){
+									            	if(data=="COMISIONES" && row.lista_comisiones_asignadas.length>0){
 											        	html= "<span style='color:#367fa9' class='glyphicon glyphicon-info-sign' title='"
 													              +row.lista_comisiones_asignadas
 													              +"'></span>  "+data;
 									            	}
 													else{             
         									            	if (("{{ app.user.rol.oficina is null}}" || "{{ app.user.rol.oficina.id }}"== "9" ) 
-                									            	&& row.oficina_actual.es_externa && '{{ EXP_RETURN is defined}}'){
+                									            	&& row.oficina_actual_externa && '{{ EXP_RETURN is defined}}'){
         	    												html+="<button type='button' title='Retornar a HCD' class='btn btn-primary btn-xs btn-retorno'"+
         	    													  " data-toggle='modal' data-target='#retornoExterno'>" +
         	    						             		  	  	  "<span class='glyphicon glyphicon-repeat'></span></button>  "+data;
@@ -407,7 +407,7 @@
 									        },
 								            {
 									            "targets": [ 7 ],
-									            "data": 'caratula',
+									            "data": 'caratula_muestra',
 									            "orderable":true,
 									            "render": function(data, type, row){
 										            var html="";
@@ -423,10 +423,10 @@
 					      		{ "data": "id" },
 					      		{ "data": "null","width":"7%"},
 					      		{ "data": "numero_completo","width":"10%"},
-					            { "data": "tipo_expediente.tipo_expediente","width":"8%" },
+					            { "data": "tipo_expediente","width":"8%" },
 					            { "data": "fecha_creacion_formateada","width":"8%" },
 					            { "data": "fecha_modificacion_formateada","width":"8%" },
-					            { "data": "oficina_actual.oficina","width":"25%" },
+					            { "data": "oficina_actual","width":"25%" },
 					            { "data": "caratula_muestra", "width": "34%"},
 					        ],
 					      "autoWidth":false,
@@ -503,7 +503,7 @@
 					else{ 
         				$.ajax({
         	                async: true,
-        	                url: '{{ app.request.getBaseURL() }}'+'/api/expediente/retornoExterno',
+        	                url: '{{ app.request.getBaseURL() }}'+'/setRetornoExterno',
         	                data: formData,
         	                contentType: false,
         	                cache: false,
@@ -747,7 +747,7 @@
 			                initialPreviewAsData: true,
 			                initialPreviewConfig:config,			                
 			                overwriteInitial: false,
-			                deleteUrl:'{{ app.request.getBaseURL() }}'+'/api/expediente/archivo/remove',
+			                deleteUrl:'{{ app.request.getBaseURL() }}'+'/api/expediente/removeArchivo',
 			                maxFileSize: 10240,
 			                
 			                initialCaption: "Archivos Expediente " + data.numero_expediente
@@ -1176,7 +1176,7 @@
         		          	  },
         				      "processing": false,
         				      "ajax": {
-        						        "url": "api/expediente/giro/getAllByExpediente/"+traerIdParaMovimientos("giros"),
+        						        "url": "api/expediente/getGirosByExpediente_Id/"+traerIdParaMovimientos("giros"),
         		            			"dataSrc": '',
         						    },
         					  "columnDefs": [
@@ -1187,7 +1187,7 @@
         							            },
         							            {
         							                "targets": [ 1 ],
-        							                "data": 'remito.numero_remito',
+        							                "data": 'numero_remito',
         							                "visible": true,
         							                "orderable":true,
         							                "render": function(data, type, row){
@@ -1199,7 +1199,7 @@
         					  ],
         				      "columns": [
         				      		{ "data": "id" },
-        				      		{ "data": "remito.numero_remito","width":"9%"},
+        				      		{ "data": "numero_remito","width":"9%"},
         				      		{ "data": "origen","width":"15%"},
         				      		{ "data": "fecha_envio","width":"8%"},
         				      		{ "data": "destino","width":"15%"},
@@ -1264,7 +1264,7 @@
                 	          	  },
                 			      "processing": false,
                 			      "ajax": {
-                					        "url": "api/expediente/informe/getAllByExpediente/"+traerIdParaMovimientos("informes"),
+                					        "url": "api/expediente/getInformesByExpediente_Id/"+traerIdParaMovimientos("informes"),
                 	            			"dataSrc": '',
                 					    },
                 				  "columnDefs": [
@@ -1275,7 +1275,7 @@
                 						            },
                 						            {
             							                "targets": [ 1 ],
-            							                "data": 'remito.numero_remito',
+            							                "data": 'numero_remito',
             							                "visible": true,
             							                "orderable":true,
             							                "render": function(data, type, row){
@@ -1305,7 +1305,7 @@
                 				  ],
                 			      "columns": [
                         			      		{ "data": "id" },
-                        			      		{ "data": "remito.numero_remito","width":"9%" },
+                        			      		{ "data": "numero_remito","width":"9%" },
                         			      		{ "data": "destino","width":"15%"},
                         			      		{ "data": "fecha_envio","width":"8%"},
                         			      		{ "data": "observacion","width":"46%"},
@@ -1370,7 +1370,7 @@
         
                 	$.ajax({
                         async: true,
-                        url: '{{ app.request.getBaseURL() }}' + '/api/expediente/informe/respuesta/update' ,
+                        url: '{{ app.request.getBaseURL() }}' + '/api/expediente/updateRespuestaInforme' ,
                         data: formData,
                         cache: false,
                         contentType: false,

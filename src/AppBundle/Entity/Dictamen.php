@@ -10,15 +10,15 @@ use Doctrine\ORM\Mapping\JoinTable;
 /**
  * Dictamen
  * 
- * @ORM\Table(name="dictamen",  indexes={@ORM\Index(name="dictamen_tipoNumeroDictamen_idx", columns={"idTipoNumeroDictamen"}),
- * 										 @ORM\index(name="dictamen_proyectoRevision_idx",columns={"idProyectoRevision"}),
- * 										 @ORM\index(name="dictamen_tipoProyecto_idx",columns={"idTipoDictamen"})
+ * @ORM\Table(name="dictamen",  indexes={@ORM\Index(name="dictamen_proyectoRevision_idx",columns={"idProyectoRevision"}),
+ * 										 @ORM\Index(name="dictamen_tipoProyecto_idx",columns={"idTipoDictamen"})
  * 										})
  * @ORM\Entity
  * @ORM\InheritanceType("SINGLE_TABLE")
  * @ORM\DiscriminatorColumn(name="discriminador", type="string", length=15)
  * @ORM\DiscriminatorMap({"basico" = "AppBundle\Entity\Dictamen", 
- *                        "articulado" = "AppBundle\Entity\DictamenArticulado"})
+ *                        "articulado" = "AppBundle\Entity\DictamenArticulado",
+ *                        "revision" = "AppBundle\Entity\DictamenRevision"})
  */
 class Dictamen
 {
@@ -32,31 +32,12 @@ class Dictamen
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $id;
-
-    /**
-     * @var \AppBundle\Entity\TipoNumeroDictamen
-     *
-     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\TipoNumeroDictamen")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="idTipoNumeroDictamen", referencedColumnName="idTipoNumeroDictamen")
-     * })
-     */
-    private $tipoNumeroDictamen;
     
     /**
      * @var string
      * @ORM\Column(name="textoLibre",type="text",nullable=true)
      */
     private $textoLibre;
-    
-    /**
-     * @var \AppBundle\Entity\ProyectoRevision
-     * @ORM\ManyToOne(targetEntity="\AppBundle\Entity\ProyectoRevision")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="idProyectoRevision",referencedColumnName="idProyectoRevision")
-     * })
-     */
-    private $revisionDictamen;
     
     /**
      * @var \Doctrine\Common\Collections\Collection
@@ -71,16 +52,29 @@ class Dictamen
     
     /**
      * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\OneToMany(targetEntity="AppBundle\Entity\ExpedienteComision", mappedBy="dictamen",
-     * 				  cascade={"persist"})
+     * 
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\ExpedienteComision", cascade={"persist"}, mappedBy="dictamenMayoria")
      */
-    private $asignacionesDeEstudio;
-
+    private $asignacionesPorMayoria;
+    
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     *
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\ExpedienteComision", cascade={"persist"}, mappedBy="dictamenPrimeraMinoria")
+     */
+    private $asignacionesPorPrimeraMinoria;
+    
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     *
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\ExpedienteComision", cascade={"persist"}, mappedBy="dictamenSegundaMinoria")
+     */
+    private $asignacionesPorSegundaMinoria;
+	
     /**
      * @var string
      *
-     * @ORM\Column(name="usuarioCreacion", length="70", type="string", nullable=false)
+     * @ORM\Column(name="usuarioCreacion", length=70, type="string", nullable=false)
      */
     private $usuarioCreacion;
 
@@ -90,6 +84,20 @@ class Dictamen
      * @ORM\Column(name="fechaCreacion", type="datetime", nullable=false)
      */
     private $fechaCreacion;
+    
+    //------------------------------------constructor---------------------------------------------
+    
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+    	$this->concejales = new \Doctrine\Common\Collections\ArrayCollection();
+    	$this->asignacionesPorMayoria = new \Doctrine\Common\Collections\ArrayCollection();
+    	$this->asignacionesPorPrimeraMinoria = new \Doctrine\Common\Collections\ArrayCollection();
+    	$this->asignacionesPorSegundaMinoria = new \Doctrine\Common\Collections\ArrayCollection();
+    	
+    }
 
     //-------------------------------------setters y getters------------------------------------
 
@@ -102,31 +110,7 @@ class Dictamen
     {
         return $this->id;
     }
-
-    /**
-     * Set tipoNumeroDictamen
-     *
-     * @param \AppBundle\Entity\TipoNumeroDictamen $tipoNumeroDictamen
-     *
-     * @return Dictamen
-     */
-    public function setTipoNumeroDictamen(\AppBundle\Entity\TipoNumeroDictamen $tipoNumeroDictamen= null)
-    {
-    	$this->tipoNumeroDictamen= $tipoNumeroDictamen;
-
-        return $this;
-    }
-
-    /**
-     * Get tipoNumeroDictamen
-     *
-     * @return \AppBundle\Entity\TipoNumeroDictamen
-     */
-    public function getTipoNumeroDictamen()
-    {
-        return $this->tipoNumeroDictamen;
-    }
-    
+   
     /**
      * Get textoLibre
      *
@@ -146,30 +130,6 @@ class Dictamen
     public function setTextoLibre($textoLibre) {
     	$this->textoLibre = $textoLibre;
     	return $this;
-    }
-    
-    /**
-     * Set revisionDictamen
-     *
-     * @param \AppBundle\Entity\ProyectoRevision $proyectoRevision
-     *
-     * @return Dictamen
-     */
-    public function setRevisionDisctamen(\AppBundle\Entity\ProyectoRevision $proyectoRevision= null)
-    {
-    	$this->revisionDictamen= $proyectoRevision;
-    	
-    	return $this;
-    }
-    
-    /**
-     * Get revisionDictamen
-     *
-     * @return \AppBundle\Entity\ProyectoRevision
-     */
-    public function getRevisionDisctamen()
-    {
-    	return $this->revisionDictamen;
     }
     
     /**
@@ -226,43 +186,180 @@ class Dictamen
     {
     	return $this->concejales;
     }
-    
+   
     /**
-     * Add asignacionDeEstudio
+     * set asignacionesPorMayoria
      *
-     * @param \AppBundle\Entity\ExpedienteComision $asignacionDeEstudio
+     * @param array $asignacionesPorMayoria
      *
-     * @return Dictamen 
+     * @return Dictamen
      */
-    public function addAsignacionDeEstudio(\AppBundle\Entity\ExpedienteComision $asignacionDeEstudio)
+    public function setAsignacionesPorMayoria($asignacionesPorMayoria)
     {
-    	$asignacionDeEstudio->setDictamen($this);
-    	$this->asignacionesDeEstudio[] = $asignacionDeEstudio;
+    	$collection= new \Doctrine\Common\Collections\ArrayCollection();
+    	foreach ($asignacionesPorMayoria as $asignacionPorMayoria) {
+    		$collection[]=$asignacionPorMayoria;
+    	}
+    	$this->asignacionesPorMayoria = $collection;
     	
     	return $this;
     }
     
     /**
-     * Remove asignacionDeEstudio
+     * Add asignacionPorMayoria
      *
-     * @param \AppBundle\Entity\ExpedienteComision $asignacionDeEstudio
+     * @param \AppBundle\Entity\ExpedienteComision $asignacionPorMayoria
+     *
+     * @return Dictamen
      */
-    public function removeAsignacionDeEstudio(\AppBundle\Entity\ExpedienteComision $asignacionDeEstudio)
+    public function addAsignacionPorMayoria(\AppBundle\Entity\ExpedienteComision $asignacionPorMayoria)
     {
-    	$this->asignacionesDeEstudio->removeElement($asignacionDeEstudio);
+    	$asignacionPorMayoria->setDictamenMayoria($this);
+    	$this->asignacionesPorMayoria[] = $asignacionPorMayoria;
+    	
+    	return $this;
     }
     
     /**
-     * Get expedienteAsignado
+     * Remove asignacionPorMayoria
+     *
+     * @param \AppBundle\Entity\ExpedienteComision $asignacionPorMayoria
+     *
+     * @return Dictamen
+     */
+    public function removeAsignacionPorMayoria(\AppBundle\Entity\ExpedienteComision $asignacionPorMayoria)
+    {
+    	$this->asignacionesPorMayoria->removeElement($asignacionPorMayoria);
+    	return $this;
+    }
+    
+    /**
+     * Get asignacionesPorMayoria
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     * 
+     * @Exclude()
+     */
+    public function getAsignacionesPorMayoria()
+    {
+    	return $this->asignacionesPorMayoria;
+    }
+   
+    /**
+     * set asignacionesPorPrimeraMinoria
+     *
+     * @param array $asignacionesPorPrimeraMinoria
+     *
+     * @return Dictamen
+     */
+    public function setAsignacionesPorPrimeraMinoria($asignacionesPorPrimeraMinoria)
+    {
+    	$collection= new \Doctrine\Common\Collections\ArrayCollection();
+    	foreach ($asignacionesPorPrimeraMinoria as $asignacionPorPrimeraMinoria) {
+    		$collection[]=$asignacionPorPrimeraMinoria;
+    	}
+    	$this->asignacionesPorPrimeraMinoria = $collection;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Add asignacionPorPrimeraMinoria
+     *
+     * @param \AppBundle\Entity\ExpedienteComision $asignacionPorPrimeraMinoria
+     *
+     * @return Dictamen
+     */
+    public function addAsignacionPorPrimeraMinoria(\AppBundle\Entity\ExpedienteComision $asignacionPorPrimeraMinoria)
+    {
+    	$asignacionPorPrimeraMinoria->setDictamenPrimeraMinoria($this);
+    	$this->asignacionesPorPrimeraMinoria[] = $asignacionPorPrimeraMinoria;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Remove asignacionPorPrimeraMinoria
+     *
+     * @param \AppBundle\Entity\ExpedienteComision $asignacionPorPrimeraMinoria
+     *
+     * @return Dictamen
+     */
+    public function removeAsignacionPorPrimeraMinoria(\AppBundle\Entity\ExpedienteComision $asignacionPorPrimeraMinoria)
+    {	
+    	$this->asignacionesPorPrimeraMinoria->removeElement($asignacionPorPrimeraMinoria);
+    	return $this;
+    }
+    
+    /**
+     * Get asignacionesPorPrimeraMinoria
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     * 
+     * @Exclude()
+     */
+    public function getAsignacionesPorPrimeraMinoria()
+    {
+    	return $this->asignacionesPorPrimeraMinoria;
+    }
+    
+    /**
+     * set asignacionesPorSegundaMinoria
+     *
+     * @param array $asignacionesPorSegundaMinoria
+     *
+     * @return Dictamen
+     */
+    public function setAsignacionesPorSegundaMinoria($asignacionesPorSegundaMinoria)
+    {
+    	$collection= new \Doctrine\Common\Collections\ArrayCollection();
+    	foreach ($asignacionesPorSegundaMinoria as $asignacionPorSegundaMinoria) {
+    		$collection[]=$asignacionPorSegundaMinoria;
+    	}
+    	$this->asignacionesPorSegundaMinoria = $collection;
+    	
+    	return $this;
+    }
+  
+    /**
+     * Add asignacionPorSegundaMinoria
+     *
+     * @param \AppBundle\Entity\ExpedienteComision $asignacionPorSegundaMinoria
+     *
+     * @return Dictamen
+     */
+    public function addAsignacionPorSegundaMinoria(\AppBundle\Entity\ExpedienteComision $asignacionPorSegundaMinoria)
+    {
+    	$this->asignacionesPorSegundaMinoria[] = $asignacionPorSegundaMinoria;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Remove asignacionPorSegundaMinoria
+     *
+     * @param \AppBundle\Entity\ExpedienteComision $asignacionPorSegundaMinoria
+     *
+     * @return Dictamen
+     */
+    public function removeAsignacionPorSegundaMinoria(\AppBundle\Entity\ExpedienteComision $asignacionPorSegundaMinoria)
+    {
+    	$asignacionPorSegundaMinoria->setDictamenSegundaMinoria(null);
+    	$this->asignacionesPorSegundaMinoria->removeElement($asignacionPorSegundaMinoria);
+    	return $this;
+    }
+    
+    /**
+     * Get asignacionesPorSegundaMinoria
      *
      * @return \Doctrine\Common\Collections\Collection
      * @Exclude()
      */
-    public function getAsignacionDeEstudio()
+    public function getAsignacionesPorSegundaMinoria()
     {
-    	return $this->asignacionesDeEstudio;
+    	return $this->asignacionesPorSegundaMinoria;
     }
-   
+    
     /**
      * Set usuarioCreacion
      *
@@ -310,6 +407,19 @@ class Dictamen
     {
         return $this->fechaCreacion;
     }
+    
+    
+    /**
+     * Get tieneAsignaciones
+     * 
+     * @return boolean
+     */
+    public function getTieneAsignaciones()
+    {
+    	return (count($this->asignacionesPorMayoria)>0 ||
+    			count($this->asignacionesPorPrimeraMinoria)>0 ||
+    			count($this->asignacionesPorSegundaMinoria)>0);
+    }
 
     //------------------------------Propiedades virtuales-----------------------------------------
     
@@ -322,19 +432,5 @@ class Dictamen
     public function getClaseDictamen(){
     	return "basico";
     }
-    
-    /**
-     * get comisiones
-     *
-     * @return array
-     * @VirtualProperty()
-     */
-    public function getComisiones(){
-    	$comisiones=[];
-    	$asignaciones=$this->getAsignacionDeEstudio();
-    	foreach ($asignaciones as $asignacion){
-    		$comisiones[]=$asignacion->getComision();
-    	}
-    	return $comisiones;
-    }
+  
 }

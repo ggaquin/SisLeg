@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\VirtualProperty;
 use \DateTime;
 use AppBundle\Popo\Image;
+use JMS\Serializer\Annotation\Exclude;
 
 /**
  * Expediente
@@ -797,6 +798,8 @@ class Expediente
      * Get asignacionComisiones
      *
      * @return \Doctrine\Common\Collections\Collection
+     * 
+     * @Exclude()
      */
     public function getAsignacionComisiones()
     {
@@ -1054,12 +1057,12 @@ class Expediente
      * @VirtualProperty
      */
     public function getListaComisionesAsignadas()
-    {  	$comisionesAsignadas="A estudio de:";
+    {  	$comisionesAsignadas="";
     	foreach ($this->getAsignacionComisiones() as $asignacionComision)
-    		if (is_null($asignacionComision->getDictamen()) && !$asignacionComision->getAnulado()){
+    		if (is_null($asignacionComision->getDictamenMayoria()) && !$asignacionComision->getAnulado()){
     			$comisionesAsignadas.="\n".$asignacionComision->getComision()->getComision();
     	}
-    	return $comisionesAsignadas;
+    	return ((strlen($comisionesAsignadas)>0)?("A estudio de:".$comisionesAsignadas):'');
     }
 
 

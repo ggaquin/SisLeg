@@ -28,7 +28,7 @@ class ProyectoRevision
     private $id;
 
     /**
-     * @var \AppBundle\Entity\Expediente
+     * @var \AppBundle\Entity\Proyecto
      *
      * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Proyecto", fetch="LAZY")
      * @ORM\JoinColumns({
@@ -46,7 +46,14 @@ class ProyectoRevision
      * })
      */
      private $oficina;
-
+     
+     /**
+      * @var boolean
+      *
+      * @ORM\Column(name="incluyeVistosYConsiderandos", type="boolean", nullable=false)
+      */
+     private $incluyeVistosYConsiderandos;
+     
     /**
      * @var text
      *
@@ -97,6 +104,17 @@ class ProyectoRevision
      * @ORM\Column(name="usuarioModificacion", type="string", length=70, nullable=false)
      */
     private $usuarioModificacion;
+    
+    //------------------------------------constructor---------------------------------------------
+    
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+    	$this->incluyeVistosYConsiderandos=1;
+    }
+    
 
     //-------------------------------------setters y getters--------------------------------------
  
@@ -110,6 +128,18 @@ class ProyectoRevision
         return $this->id;
     }
 
+    /**
+     * Set id
+     *
+     * @param integer $id
+     *
+     * @return ProyectoRevision
+     */
+    public function setId($id)
+    {
+    	return $this->id=$id;
+    }
+    
     /**
      * Set proyecto
      *
@@ -157,7 +187,26 @@ class ProyectoRevision
     {
         return $this->oficina;
     }
-
+    
+    /**
+     * Get ncluyeVistosYConsiderandos
+     * 
+     * @return boolean
+     */
+	public function getIncluyeVistosYConsiderandos() {
+		return $this->incluyeVistosYConsiderandos;
+	}
+	
+	/**
+	 * Set ncluyeVistosYConsiderandos
+	 * @param boolean $incluyeVistosYConsiderandos
+	 * @return ProyectoRevision
+	 */
+	public function setIncluyeVistosYConsiderandos($incluyeVistosYConsiderandos) {
+		$this->incluyeVistosYConsiderandos = $incluyeVistosYConsiderandos;
+		return $this;
+	}
+	
     /**
      * Set visto
      *

@@ -8,6 +8,9 @@
     <id name="id" type="integer" column="idProyectoRevision">
       <generator strategy="IDENTITY"/>
     </id>
+    <field name="incluyeVistosYConsiderandos" type="boolean" column="incluyeVistosYConsiderandos" 
+    		nullable="false">
+    </field>
     <field name="visto" type="text" column="visto" nullable="false">
     </field>
     <field name="considerandos" type="text" column="considerandos" nullable="false">

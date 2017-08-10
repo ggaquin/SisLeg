@@ -5,10 +5,10 @@
     <indexes>
       <index name="expedienteComision_expediente_idx" columns="idExpediente"/>
       <index name="expedienteComision_comision_idx" columns="idComision"/>
+      <index name="expedienteComision_dictamenMayoria_idx" columns="idDictamenMayoria"/>
+      <index name="expedienteComision_dictamenPrimeraMinoria_idx" columns="idDictamenPrimeraMinoria"/>
+      <index name="expedienteComision_dictamenSegundaMinoria_idx" columns="idDictamenSegundaMinoria"/>
     </indexes>
-    <unique-constraints>
-    	<unique-constraint columns="idDictamen" name="UNIQ_expedienteComision_dictamen_idx"/>
-    </unique-constraints>
     <id name="id" type="integer" column="idExpedienteComision">
       <generator strategy="IDENTITY"/>
     </id>
@@ -31,9 +31,28 @@
         <option name="fixed"/>
       </options>
     </field>
-    <many-to-one field="dictamen" target-entity="Dictamen" inversed-by="asignacionesDeEstudio">
+     <many-to-one field="dictamenMayoria" target-entity="Dictamen" inversed-by="asignacionesPorMayoria">
+     	<cascade>
+     		<cascade-persist/>
+     	</cascade>
     	<join-columns>
-    		<join-column name="idDictamen" referenced-column-name="idDictamen"/>
+    		<join-column name="idDictamenMayoria" referenced-column-name="idDictamen"  />
+    	</join-columns>
+    </many-to-one>
+    <many-to-one field="dictamenPrimeraMinoria" target-entity="Dictamen" inversed-by="asignacionesPorPrimeraMinoria">
+    	<cascade>
+     		<cascade-persist/>
+     	</cascade>
+    	<join-columns>
+    		<join-column name="idDictamenPrimeraMinoria" referenced-column-name="idDictamen"/>
+    	</join-columns>
+    </many-to-one>
+    <many-to-one field="dictamenSegundaMinoria" target-entity="Dictamen" inversed-by="asignacionesPorSegundaMinoria">
+    	<cascade>
+     		<cascade-persist/>
+     	</cascade>
+    	<join-columns>
+    		<join-column name="idDictamenSegundaMinoria" referenced-column-name="idDictamen"/>
     	</join-columns>
     </many-to-one>
     <many-to-one field="comision" target-entity="Comision" inversed-by="expedientesAsignados">
@@ -42,6 +61,9 @@
       </join-columns>
     </many-to-one>
     <many-to-one field="expediente" target-entity="Expediente" inversed-by="asignacionComisiones">
+    	<cascade>
+    		<cascade-persist/>
+    	</cascade>
       <join-columns>
         <join-column name="idExpediente" referenced-column-name="idExpediente"/> 
       </join-columns>

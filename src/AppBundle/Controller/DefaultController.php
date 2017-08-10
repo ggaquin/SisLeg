@@ -181,14 +181,20 @@ class DefaultController extends Controller
     {
     	$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
     	$tipoProyectoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoProyecto');
-    	$tipoNumeroDictamenRepository=$this->getDoctrine()->getRepository('AppBundle:TipoNumeroDictamen');
+    	/*
+    	 dictaminantes_en_mayoria: 1
+    	 dictaminantes_en_primer_minoria: 2  
+    	 dictaminantes_en_segunda_minoria: 
+    	*/
+    	
     	$comisiones=$comisionRepository->findBy(array('activa' => true));
     	$tipoProyectos=$tipoProyectoRepository->findAll();
-    	$numeroDictaminantes=$tipoNumeroDictamenRepository->findAll();
     	return $this->render('default/expedientes_comisiones.html.twig',array(
     		   'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
     		   'comisiones' => $comisiones, 'tipoProyectos'=> $tipoProyectos,
-    		   'numeroDictaminantes' => $numeroDictaminantes
+    		   'MAYORIA' => $this->getParameter('dictaminantes_en_mayoria'),
+    		   'PRIMERA_MINORIA' => $this->getParameter('dictaminantes_en_primer_minoria'),
+    		   'SEGUNDA_MINORIA' => $this->getParameter('dictaminantes_en_segunda_minoria')
     	));
     }
     
