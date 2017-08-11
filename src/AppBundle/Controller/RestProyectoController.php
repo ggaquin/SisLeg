@@ -387,18 +387,34 @@ class RestProyectoController extends FOSRestController{
     	
     	$proyecto=$proyectoRepository->find($idProyecto);
     	$revisiones=$proyectoRevisionRepository->findAll(array('proyecto' => $proyecto), array('id' => 'ASC'));
-    	$revisionOriginal=new ProyectoRevision();
-    	$revisionOriginal->setArticulos($proyecto->getArticulos());
-    	$revisionOriginal->setVisto($proyecto->getVisto());
-    	$revisionOriginal->setConsiderandos($proyecto->getConsiderandos());
-    	$revisionOriginal->setIncluyeVistosYConsiderandos(true);
-    	$revisionOriginal->setId(0);
-    	$revisionOriginal->setUsuarioCreacion($proyecto->getUsuarioCreacion());
-    	$revisionOriginal->setFechaCreacion($proyecto->getFechaCreacion());
-    	$revisionOriginal->setOficina(null);
-    	array_unshift($revisiones, $revisionOriginal);
     	
-    	return $this->view($revisiones,200);
+    	$resultado=[];
+    	foreach ($revisiones as $revision){
+    		$registro=array(
+    						'id'=>$revision->getId(),
+    						'incluye_vistos_y_considerandos'=>$revision->getIncluyeVistosYConsiderandos(),
+    						'fecha_creacion_formateada'=>$revision->getFechaCreacionFormateada(),
+    						'usuario_creacion'=>$revision->getUsuarioCreacion(),
+    						'oficina'=>$revision->getOficina(),
+    						'visto'=>$revision->getVisto(), 'considerandos'=>$revision->getConsiderandos(),
+    						'articulos'=>$revision->getArticulos()
+    					   );
+    		$resultado[]=$registro;
+    	}
+    	
+    	$registro=array(
+		    			'id'=>0,
+		    			'incluye_vistos_y_considerandos'=>true,
+    					'fecha_creacion_formateada'=>$proyecto->getFechaCreacion()->format('d-m-Y'),
+    					'usuario_creacion'=>$proyecto->getUsuarioCreacion(),
+		    			'oficina'=>null,
+		    			'visto'=>$proyecto->getVisto(), 
+		    			'considerandos'=>$proyecto->getConsiderandos(),
+		    			'articulos'=>$proyecto->getArticulos()
+				    	);
+    	array_unshift($resultado, $registro);
+    	
+    	return $this->view($resultado,200);
   	
     }
 }

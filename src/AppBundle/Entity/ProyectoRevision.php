@@ -112,7 +112,7 @@ class ProyectoRevision
      */
     public function __construct()
     {
-    	$this->incluyeVistosYConsiderandos=1;
+    	$this->incluyeVistosYConsiderandos=true;
     }
     
 

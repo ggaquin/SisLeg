@@ -145,7 +145,38 @@ class RestExpedienteController extends FOSRestController{
         $id=$request->get('id');
         $expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
         $expediente=$expedienteRepository->find($id);
-        return $this->view($expediente,200);
+        $resultado=array(
+        				 'tipo_expediente'=>$expediente->getTipoExpediente()->getId(),
+        				 'numero_expediente'=>$expediente->getNumeroExpediente(),
+        				 'caratula'=>$expediente->getCaratula(),
+        				 'folios'=>$expediente->getFolios(),
+        				 'numero_sancion'=>$expediente->getNumeroSancion(),
+        				 'año'=>$expediente->getAño(), 
+        				 'sesion'=>(($expediente->getSesion()!=null)?$expediente->getSesion()->getId():0),
+        				 'lista_autores'=>$expediente->getListaAutores(),
+        				 'proyecto'=>(($expediente->getProyecto()!=null)?$expediente->getProyecto()->getId():0),
+        				 'demandante_documento'=>(($expediente->getDemandanteParticular()!=null)
+        				 							?$expediente->getDemandanteParticular()->getDocumento()
+        				 							:""),
+        				 'demandante_apellidos'=>(($expediente->getDemandanteParticular()!=null)
+        				 							?$expediente->getDemandanteParticular()->getApellidos()
+        				 							:""),
+        				 'demandante_nombres'=>(($expediente->getDemandanteParticular()!=null)
+        				 							?$expediente->getDemandanteParticular()->getNombres()
+        				 							:""),
+        				'demandante_id'=>(($expediente->getDemandanteParticular()!=null)
+        									?$expediente->getDemandanteParticular()->getId()
+        									:0),
+        				'origen_id'=>(($expediente->getOrigenExterno()!=null)
+        								?$expediente->getOrigenExterno()->getId():0),
+        				'origen_externo_id'=>(($expediente->getOrigenExterno()!=null)
+        										?$expediente->getOrigenExterno()->getOficina()->getId():0),
+        				'origen_numeracion'=>(($expediente->getOrigenExterno()!=null)
+        										?$expediente->getOrigenExterno()->getNumeracionOrigen():[]),
+        				'lista_imagenes'=>$expediente->getListaImagenes(),
+        				'rutas_web_expediente'=>$expediente->getRutasWebExpediente()
+        				);
+        return $this->view($resultado,200);
     }
     
     /**

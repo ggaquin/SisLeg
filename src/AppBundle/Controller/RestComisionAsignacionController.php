@@ -193,9 +193,6 @@ class RestComisionAsignacionController extends FOSRestController{
      */
     public function guardarDictamen(Request $request)
     {
-    	
-//     	$idAsignacion=$request->request->get('idAsignacion');
-//     	$idDictamen=$request->request->get('idDictamen');
     	$idExpediente=$request->request->get('idExpediente');
     	$idProyecto=$request->request->get('idProyecto');
     	$numeroDictaminantes=$request->request->get('numeroDictaminantes');
@@ -273,7 +270,7 @@ class RestComisionAsignacionController extends FOSRestController{
     			$revision->setConsiderandos($considerandos);
     			$revision->setVisto($vistos);
     			$revision->setFechaCreacion(new \DateTime('now'));
-    			$revision->setIncluyeVistosYConsiderandos($vistosYConsiderandos);
+    			$revision->setIncluyeVistosYConsiderandos(true);
     			$revision->setOficina($usuario->getRol()->getOficina);
     			$revision->setProyecto($proyecto);
     			$revision->setUsuarioCreacion($usuario->getUsuario());
@@ -323,6 +320,8 @@ class RestComisionAsignacionController extends FOSRestController{
       	$em->persist($expediente);
        	$em->persist($dictamen);  
        	$em->flush();
+       	
+       	return $this->view("El Dictamen se ha guardado de manera exitosa",200);
       }
       
       /**

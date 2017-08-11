@@ -166,14 +166,14 @@
 		}
 	
 		function aplicarAccion(accion, idAsignacion, tabla){
-		 
+
 			var formData= new FormData();
 			formData.append("accion",accion);
 			formData.append("idAsignacion",idAsignacion);
 		
     		$.ajax({
                    async: true,
-                   url: '{{ app.request.getBaseURL() }}'+'api/comisionAsignacion/updateVisualizacion',
+                   url: '{{ app.request.getBaseURL() }}'+'/api/comisionAsignacion/updateVisualizacion',
                    data: formData,
                    cache: false,
                    contentType: false,
@@ -514,8 +514,8 @@
 									            "orderable":false,
 									            "render": function(data, type, row){
 										            var html="<div class='btn-group'>";
-											        html+="<button type='button' title='Publicar' class='btn btn-primary btn-xs' data-toggle='modal' data-target='#'><span class='glyphicon glyphicon-eye-open'></span></button>";
-											        html+="<button type='button' title='Anular Asignación' class='btn btn-danger btn-xs btn-anular' data-toggle='modal' data-target='#'><span class='glyphicon glyphicon-minus-sign'></span></button>";
+											        html+="<button type='button' title='Publicar' class='btn btn-primary btn-xs btn-publicar'><span class='glyphicon glyphicon-eye-open'></span></button>";
+											        html+="<button type='button' title='Anular Asignación' class='btn btn-danger btn-xs btn-anular'><span class='glyphicon glyphicon-minus-sign'></span></button>";
 													html+="</div>";
 									            	return html;
 									            }
@@ -546,7 +546,8 @@
 												var html="<div class='btn-group'style='margin-left:5px'>";
     												if (row.tiene_dictamen_mayoria==false){
     													html+="<span class='label label-danger'>Sin Dictamen</span>";
-    													html+="<button type='button' title='Agregar Dictamen' class='btn btn-primary btn-xs btn-nuevo-dictamen-mayoria' data-toggle='modal' data-target='#modalDictamen'><span class='glyphicon glyphicon-paperclip'></span></button>";
+    													if (row.publicado==true)
+    														html+="<button type='button' title='Agregar Dictamen' class='btn btn-primary btn-xs btn-nuevo-dictamen-mayoria' data-toggle='modal' data-target='#modalDictamen'><span class='glyphicon glyphicon-paperclip'></span></button>";
     												}
     												else{
     														html+="<span class='label label-success'>Con Dictamen</span>";
@@ -564,7 +565,8 @@
 												var html="<div class='btn-group'style='margin-left:5px'>";
     												if (row.tiene_dictamen_primera_minoria==false){
     													html+="<span class='label label-danger'>Sin Dictamen</span>";
-    													html+="<button type='button' title='Agregar Dictamen' class='btn btn-primary btn-xs btn-nuevo-dictamen-primera-minoria' data-toggle='modal' data-target='#modalDictamen'><span class='glyphicon glyphicon-paperclip'></span></button>";
+    													if (row.publicado==true)
+    														html+="<button type='button' title='Agregar Dictamen' class='btn btn-primary btn-xs btn-nuevo-dictamen-primera-minoria' data-toggle='modal' data-target='#modalDictamen'><span class='glyphicon glyphicon-paperclip'></span></button>";
     												}
     												else{
     														html+="<span class='label label-success'>Con Dictamen</span>";
@@ -582,7 +584,8 @@
 													var html="<div class='btn-group'style='margin-left:5px'>";
 													if (row.tiene_dictamen_segunda_minoria==false){
 														html+="<span class='label label-danger'>Sin Dictamen</span>";
-														html+="<button type='button' title='Agregar Dictamen' class='btn btn-primary btn-xs btn-nuevo-dictamen-segunda-minoria' data-toggle='modal' data-target='#modalDictamen'><span class='glyphicon glyphicon-paperclip'></span></button>";
+														if (row.publicado==true)
+															html+="<button type='button' title='Agregar Dictamen' class='btn btn-primary btn-xs btn-nuevo-dictamen-segunda-minoria' data-toggle='modal' data-target='#modalDictamen'><span class='glyphicon glyphicon-paperclip'></span></button>";
 													}
 													else{
 															html+="<span class='label label-success'>Con Dictamen</span>";
@@ -737,11 +740,11 @@
 								//caso particular dictamen por revision
             					if (data.clase_dictamen=="revision"){
                 					//var revision=data.revision_proyecto;
-            					    $("#vistos").html(data.visto);
+            					    $("#vistos").html(data.vistos);
             				        $("#considerandos").html(data.considerandos);
             				        
-            				        $.each(revision.articulos,function(index,articulo){
-                						agregarArticulo(articulo,'articulos');
+            				        $.each(data.articulos,function(index,articulo){
+                						agregarArticulo(articulo,'articulos-revision');
                 					});
             
             				    	articulosRevision=data.articulos; 
@@ -751,7 +754,7 @@
 									else
 										$("#vistosYConsiderandos").bootstrapToggle('off');
 
-            				    	$("#modalDictamen").find('input[name="idRevision"]').val(revision.id);
+            				    	$("#modalDictamen").find('input[name="idRevision"]').val(data.revision_id);
             					   	
                 				} 
 
@@ -786,6 +789,7 @@
 		        	articulos=((tipoRedaccion=="articulado")?articulosDictamen:articulosRevision);
 	        	var vistosYConsiderandos= $("#vistosYConsiderandos").is(":checked");
 	        	var editaRevision=$("#editaRevision").is(":checked");
+	        	debugger;
 	        	var idRevision=$("#idRevision").val();
 		        var vistos=$("#vistos").html();
 		        var considerandos=$("#considerandos").html();
@@ -1217,12 +1221,14 @@
 				debugger;
 		        var data = tablaRevisiones.row( $(this).parents('tr') ).data();
 		        $("#modalDictamen").find('div[id="vistos"]').html(data[ "visto" ]);
+		        $("#modalDictamen").find('input[id="idRevision"]').val(data[ "id" ]);
 		        $("#modalDictamen").find('div[id="considerandos"]').html(data[ "considerandos" ]);
 		        $("#articulos-revision > tbody	").html('');
 		        articulosRevision=data[ "articulos" ];
 		        $.each(articulosRevision,function(index,articulo){
 					agregarArticulo(articulo,'articulos-revision');
 				});
+				$('#modalRevisiones').modal('hide');
 		       
 		    } );
 

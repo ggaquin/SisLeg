@@ -15,7 +15,7 @@ class DictamenRevision extends Dictamen
 	
 	 /**
      * @var \AppBundle\Entity\ProyectoRevision
-     * @ORM\ManyToOne(targetEntity="\AppBundle\Entity\ProyectoRevision")
+     * @ORM\ManyToOne(targetEntity="\AppBundle\Entity\ProyectoRevision", cascade={"persist"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="idProyectoRevision",referencedColumnName="idProyectoRevision")
      * })
@@ -26,27 +26,27 @@ class DictamenRevision extends Dictamen
 	
 	
     /**
-     * Set revisionDictamen
+     * Set revisionProyecto
      *
-     * @param \AppBundle\Entity\ProyectoRevision $proyectoRevision
+     * @param \AppBundle\Entity\ProyectoRevision $revisionProyecto
      *
      * @return Dictamen
      */
-    public function setRevisionProyecto(\AppBundle\Entity\ProyectoRevision $proyectoRevision= null)
+    public function setRevisionProyecto(\AppBundle\Entity\ProyectoRevision $revisionProyecto= null)
     {
-    	$this->revisionDictamen= $proyectoRevision;
+    	$this->revisionProyecto= $revisionProyecto;
     	
     	return $this;
     }
     
     /**
-     * Get revisionDictamen
+     * Get revisionProyecto
      *
      * @return \AppBundle\Entity\ProyectoRevision
      */
     public function getRevisionProyecto()
     {
-    	return $this->revisionDictamen;
+    	return $this->revisionProyecto;
     }
 	
 	//------------------------------Propiedades virtuales-----------------------------------------

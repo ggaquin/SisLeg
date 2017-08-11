@@ -619,6 +619,12 @@
 			//---------------------------------------------------------------------------------------------------------------
 						
 			 $('#tabla-numeros tbody').on( 'click', '.btn-eliminar-numero', function () {
+				 debugger;
+		        $(this).parents('tr').remove()
+		     });
+
+			 $('#tabla-numeros-mod tbody').on( 'click', '.btn-eliminar-numero-mod', function () {
+				 debugger;
 		        $(this).parents('tr').remove()
 		     });
 
@@ -660,9 +666,10 @@
 		    	}
 		    	else{
         				var html="<tr><td style='width:15%'>"+ente+"</td><td style='width:20%'>"+numero+"</td>"+
-        						 "<td style='width:10%''>"+letra+"</td><td style='width:15%''>"+año+"</td>"+
+        						 "<td style='width:10%''>"+letra+"</td><td style='width:15%''>"+año+"</td>"+ 
         						 "<td style='width:15%'>"+folios+"</td><td style='width:15%''>"+cuerpos+"</td>"+
-        						 "<td style='width:10%''><button type='button' class='btn btn-danger btn-xs btn-eliminar-numero'>"+
+        						 "<td style='width:10%''><button type='button' class='btn btn-danger btn-xs "+
+        						 	((tabla=="tabla-numeros-mod")?"btn-eliminar-numero-mod":"btn-eliminar-numero")+"'>"+
         					 	 "<span class='glyphicon glyphicon-remove'/></button></td></tr>";
         				
         	    		$("#"+tabla+" > tbody").append(html);
@@ -693,7 +700,7 @@
 					url:'{{ app.request.getBaseURL() }}'+'/api/expediente/getOne/'+id,
 					success: function(data){
 
-						var tipoExpediente=data.tipo_expediente.id;
+						var tipoExpediente=data.tipo_expediente;
 						$("#selTipoExpedienteMod").val(tipoExpediente);
 						mostrarOrigenParaEdicion(tipoExpediente);
 						$("#numeroExpedienteMod").val(data.numero_expediente);
@@ -702,9 +709,9 @@
 						$("#numerosancionMod").val(data.numero_sancion);
 						$("#añoIngresoMod").val(data.año);
 						debugger;
-						actualizarSesiones($("#selSesionMod"),data.sesion.id);
+						actualizarSesiones($("#selSesionMod"),data.sesion);
 
-						if(data.proyecto!=null){
+						if(data.proyecto!=0){
 							$("#selTipoExpedienteMod").prop( "disabled", true );
 							$("#concejalesMod").html(data.lista_autores);
 							mostrarTiposPara("proyectos");
@@ -714,21 +721,21 @@
 							mostrarTiposPara("no-proyectos");
 						}
 	
-						if (tipoExpediente==3 && data.demandante_particular!=null){
-    						$("#documentoParticularMod").val(data.demandante_particular.documento);
-    						$("#apellidosParticularMod").val(data.demandante_particular.apellidos);
-    						$("#nombresParticularMod").val(data.demandante_particular.nombres);
+						if (tipoExpediente==3 && data.demandante_id!=0){
+    						$("#documentoParticularMod").val(data.demandante_documento);
+    						$("#apellidosParticularMod").val(data.demandante_apellidos);
+    						$("#nombresParticularMod").val(data.demandante_nombres);
 						}
 					    
-						if (tipoExpediente==4 && data.origen_externo!=null){
-							$("#selOrigenMod").val(data.origen_externo.oficina.id);
-							var numeros=data.origen_externo.numeracion_origen;
+						if (tipoExpediente==4 && data.origen_id!=0){
+							$("#selOrigenMod").val(data.origen_externo_id);
+							var numeros=data.origen_numeracion;
 							var html='';
 							$.each(numeros,function(index,numero){
 								html+="<tr><td style='width:15%'>"+numero.ente+"</td><td style='width:20%'>"+numero.numero+"</td>"+
 									  "<td style='width:10%'>"+numero.letra+"</td><td style='width:15%'>"+numero.año+"</td>"+
 									  "<td style='width:15%'>"+numero.folios+"</td><td style='width:15%'>"+numero.cuerpos+"</td>"+
-									  "<td style='width:10%'><button type='button' class='btn btn-danger btn-xs btn-eliminar-numero'>"+
+									  "<td style='width:10%'><button type='button' class='btn btn-danger btn-xs btn-eliminar-numero-mod'>"+
 							 	 	  "<span class='glyphicon glyphicon-remove'/></button></td></tr>";
 							});
 							$("#tabla-numeros-mod > tbody").append(html);
@@ -1746,51 +1753,55 @@
 				    		<input type="hidden" id="idModal" name="idModal">
 				    		<div class="row">
 				    			<div class="col-md-10 col-md-offset-1">
-        				    		<div class="row">
-        				    			<div class="col-md-2 col-nopadding">
-                				    		<div class="form-group text-center">
-                				    			<label for="enteOrigen">Ente</label>
-                				    			<input type="text" maxlength="4" 
-                				    			 class="form-control text-center es-numero" id="enteOrigen" name="enteOrigen">
-                				    		</div>
-                				    	</div>
-                				    	<div class="col-md-4 col-nopadding">
-                				    		<div class="form-group text-center">
-                				    			<label for="numeroOrigen">Numero</label>
-                				    			<input type="text" maxlength="8" 
-                				    			 class="form-control text-center es-numero" id="numeroOrigen" name="numeroOrigen">
-                				    		</div>
-                				    	</div>
-                				    	<div class="col-md-1 col-nopadding">
-                				    		<div class="form-group text-center">
-                				    			<label for="letraOrigen">Letra</label>
-                				    			<input type="text" maxlength="1" 
-                				    			 class="form-control text-center es-letra" id="letraOrigen" name="letraOrigen">
-                				    		</div>
-                				    	</div>
-                				    	<div class="col-md-2 col-nopadding">
-                				    		<div class="form-group text-center">
-                				    			<label for="añoOrigen">Año</label>
-                				    			<input type="text" maxlength="4" 
-                				    			 class="form-control text-center es-numero" id="añoOrigen" name="añoOrigen">
-                				    		</div>
-                				    	</div>
-                				    	<div class="col-md-3 col-nopadding">
-                				    		<div class="form-group text-center">
-                				    			<label for="foliosOrigen">Folios</label>
-                				    			<input type="text" maxlength="3" 
-                				    			 class="form-control text-center es-numero" id="foliosOrigen" name="foliosOrigen">
-                				    		</div>
-                				    	</div>
-                				    	<div class="col-md-3 col-nopadding">
-                				    		<div class="form-group text-center">
-                				    			<label for="cuerpos">Cuerpos</label>
-                				    			<input type="text" maxlength="2" 
-                				    			 class="form-control text-center es-numero" id="cuerpos" name="cuerpos">
-                				    		</div>
-                				    	</div>
-                				    </div>
-                				</div>
+				    				<div class="row">
+        				    			<div class="col-md-12">
+                				    		<div class="row">
+                				    			<div class="col-md-2 col-nopadding">
+                        				    		<div class="form-group text-center">
+                        				    			<label for="enteOrigen">Ente</label>
+                        				    			<input type="text" maxlength="4" 
+                        				    			 class="form-control text-center es-numero" id="enteOrigen" name="enteOrigen">
+                        				    		</div>
+                        				    	</div>
+                        				    	<div class="col-md-4 col-nopadding">
+                        				    		<div class="form-group text-center">
+                        				    			<label for="numeroOrigen">Numero</label>
+                        				    			<input type="text" maxlength="8" 
+                        				    			 class="form-control text-center es-numero" id="numeroOrigen" name="numeroOrigen">
+                        				    		</div>
+                        				    	</div>
+                        				    	<div class="col-md-1 col-nopadding">
+                        				    		<div class="form-group text-center">
+                        				    			<label for="letraOrigen">Letra</label>
+                        				    			<input type="text" maxlength="1" 
+                        				    			 class="form-control text-center es-letra" id="letraOrigen" name="letraOrigen">
+                        				    		</div>
+                        				    	</div>
+                        				    	<div class="col-md-2 col-nopadding">
+                        				    		<div class="form-group text-center">
+                        				    			<label for="añoOrigen">Año</label>
+                        				    			<input type="text" maxlength="4" 
+                        				    			 class="form-control text-center es-numero" id="añoOrigen" name="añoOrigen">
+                        				    		</div>
+                        				    	</div>
+                        				    	<div class="col-md-2 col-nopadding">
+                        				    		<div class="form-group text-center">
+                        				    			<label for="foliosOrigen">Folios</label>
+                        				    			<input type="text" maxlength="3" 
+                        				    			 class="form-control text-center es-numero" id="foliosOrigen" name="foliosOrigen">
+                        				    		</div>
+                        				    	</div>
+                        				    	<div class="col-md-1 col-nopadding">
+                        				    		<div class="form-group text-center">
+                        				    			<label for="cuerpos">Cuerpos</label>
+                        				    			<input type="text" maxlength="2" 
+                        				    			 class="form-control text-center es-numero" id="cuerpos" name="cuerpos">
+                        				    		</div>
+                        				    	</div>
+                        				    </div>
+                        				</div>
+                        			</div>
+                        		</div>
                 			</div>
     				    	<div class="row">
     				    		<div class="col-md-12">

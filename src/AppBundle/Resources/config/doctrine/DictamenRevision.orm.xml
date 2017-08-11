@@ -2,6 +2,9 @@
 <doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
   <entity name="AppBundle\Entity\DictamenRevision">
      <many-to-one field="revisionProyecto" target-entity="ProyectoRevision">
+     	<cascade>
+     		<cascade-persist/>
+     	</cascade>
     	<join-columns>
     		<join-column name="idProyectoRevision" referenced-column-name="idProyectoRevision"/>
     	</join-columns>
