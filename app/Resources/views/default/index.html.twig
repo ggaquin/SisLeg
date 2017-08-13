@@ -224,55 +224,65 @@
             <!-- sidebar menu: : style can be found in sidebar.less -->
             <ul class="sidebar-menu">
               <li class="header text-center"><h5>Principal</h5></li>
-              {% if USR_MAIN is defined %}
-              <li><a href='#' onclick="cargarMenu('/usuarios')"><i class="fa fa-user-circle"></i><span>Usuarios</span></a></li>
-              {% endif %}
-               {% if CON_MAIN is defined %}
-              <li><a href="#" onclick="cargarMenu('/legisladores')"><i class="fa fa-address-card-o"></i><span>Concejales</span></a></li>
-              {% endif %}
+              
+              <li><a href="#" onclick="cargarMenu('/bloques')"><i class="fa fa-sitemap"></i><span>Bloques</span></a></li>
+              
               {% if COM_MAIN is defined or COM_EXP_MAIN is defined %}
-               <li><a href="#" onclick="cargarMenu('/sesion')"><i class="fa fa-university"></i><span>Sesiones</span></a></li> 
-              <li class="treeview">
-                <a href="#">
-                  <i class="fa fa-users"></i>
-                  <span>Comisiones</span>
-                  <span class="pull-right-container">
-                    <i class="fa fa-angle-left pull-right"></i>
-                  </span>
-                </a>
-                <ul class="treeview-menu">
-                  <li class="divider"></li>
-                  {% if COM_MAIN is defined %}
-                  <li><a href="#" onclick="cargarMenu('/comisiones');"><i class="fa fa-minus"></i>Alta y Modificación</a></li>
-                  {% endif %}
-                  {% if COM_EXP_MAIN is defined %}
-                  	<li><a href="#" onclick="cargarMenu('/expedientesComisiones');"><i class="fa fa-minus"></i>Expedientes Girados</a></li>
-                  {% endif %}
-                </ul>
-              </li>
+                  <li class="treeview">
+                    <a href="#">
+                      <i class="fa fa-users"></i>
+                      <span>Comisiones</span>
+                      <span class="pull-right-container">
+                        <i class="fa fa-angle-left pull-right"></i>
+                      </span>
+                    </a>
+                    <ul class="treeview-menu">
+                      <li class="divider"></li>
+                      {% if COM_MAIN is defined %}
+                      <li><a href="#" onclick="cargarMenu('/comisiones');"><i class="fa fa-minus"></i>Alta y Modificación</a></li>
+                      {% endif %}
+                      {% if COM_EXP_MAIN is defined %}
+                      	<li><a href="#" onclick="cargarMenu('/expedientesComisiones');"><i class="fa fa-minus"></i>Expedientes Girados</a></li>
+                      {% endif %}
+                    </ul>
+                  </li>
               {% endif %}
+              
+              {% if CON_MAIN is defined %}
+              	<li><a href="#" onclick="cargarMenu('/legisladores')"><i class="fa fa-address-card-o"></i><span>Concejales</span></a></li>
+              {% endif %}
+              
               {% if EXP_MAIN is defined or MOV_MAIN is defined or REP_MAIN is defined %}
-              <li class="treeview">
-                <a href="#">
-                  <i class="fa fa-inbox"></i>
-                  <span>Expedientes</span>
-                  <span class="pull-right-container">
-                    <i class="fa fa-angle-left pull-right"></i>
-                  </span>
-                </a>
-                <ul class="treeview-menu">
-                  <li class="divider"></li>
-                  {# {% if EXP_MAIN is defined %} #}
-                  <li><a href="#" onclick="cargarMenu('/expedientes')"><i class="fa fa-minus"></i>Gestión de Expedientes</a></li>
-                  {# {% endif %} #}
-                  {% if  MOV_MAIN is defined%}
-                  <li><a href="#" onclick="cargarMenu('/movimientos')"><i class="fa fa-minus"></i>Movimientos</a></li>
-                  {% endif %}
-                </ul>
-              </li>
+                  <li class="treeview">
+                    <a href="#">
+                      <i class="fa fa-inbox"></i>
+                      <span>Expedientes</span>
+                      <span class="pull-right-container">
+                        <i class="fa fa-angle-left pull-right"></i>
+                      </span>
+                    </a>
+                    <ul class="treeview-menu">
+                      <li class="divider"></li>
+                      {# {% if EXP_MAIN is defined %} #}
+                      <li><a href="#" onclick="cargarMenu('/expedientes')"><i class="fa fa-minus"></i>Gestión de Expedientes</a></li>
+                      {# {% endif %} #}
+                      {% if  MOV_MAIN is defined%}
+                      <li><a href="#" onclick="cargarMenu('/movimientos')"><i class="fa fa-minus"></i>Movimientos</a></li>
+                      {% endif %}
+                    </ul>
+                  </li>
               {% endif %}
-               {% if PROJ_MAIN is defined %}
-              <li><a href="#" onclick="cargarMenu('/proyectos')"><i class="fa fa-cogs"></i><span>Proyectos</span></a></li>
+              
+              <li><a href="#" onclick="cargarMenu('/oficinas')"><i class="fa fa-address-book-o"></i><span>Oficinas</span></a></li>
+  
+              {% if PROJ_MAIN is defined %}
+              	<li><a href="#" onclick="cargarMenu('/proyectos')"><i class="fa fa-file-text"></i><span>Proyectos</span></a></li>
+              {% endif %}
+              
+              <li><a href="#" onclick="cargarMenu('/sesion')"><i class="fa fa-calendar"></i><span>Sesiones</span></a></li>
+              
+              {% if USR_MAIN is defined %}
+              	<li><a href='#' onclick="cargarMenu('/usuarios')"><i class="fa fa-user-circle"></i><span>Usuarios</span></a></li>
               {% endif %}
              
               {# <li class="treeview">

@@ -1,0 +1,273 @@
+{% extends 'layout.html.twig' %}
+
+
+
+{% block stylesheets %}
+	{# parent() #}
+  	{% stylesheets '@css_datatables' %}
+      	<link rel="stylesheet" href="{{ asset_url }}" /></link>
+  	{% endstylesheets %}
+{% endblock %}
+
+{% block javascripts %}
+	{# parent() #}
+    {% javascripts '@js_datatables'%}
+        <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+{% endblock %}
+
+{% block body %}
+	
+	<style type="text/css">
+	
+    	.selGrupoConcejales{
+    		    min-height: 150px!important;
+    		    max-height: 151px!important;
+    		    overflow-y: auto!important;
+    	} 	
+
+	</style>
+
+	<script type="text/javascript">
+
+		$(document).ready(function () {
+			
+		    var tabla=$('#registroBloques').DataTable({
+		    			  "language": {
+				              "infoEmpty": "Sin registros para mostrar",
+				              "paginate": {
+						          	"last": "Ultima Página",
+						          	"first": "Primer página",
+						          	"next": "Siguiente",
+						          	"previous": "Anterior"
+						       },
+						       "emptyTable": "Sin Datos",
+						       "lengthMenu": 'Registros Listados <select class="form-control input-sm">'+
+						       				 '<option value="-1">Todos</option>'+
+								             '<option value="10">10</option>'+
+								             '<option value="20">20</option>'+
+								             '<option value="30">30</option>'+
+								             '<option value="40">40</option>'+
+								             '<option value="50">50</option>'+
+								             '</select>',
+								"loadingRecords": "Espere...cargando datos",
+								"processing": "Procesando...",
+								"sInfo": "Mostrando  _START_ a _END_ de _TOTAL_ registros",
+
+			          	  },
+					      "processing": false,
+					      "ajax": {
+							        "url": "api/bloque/getAll",
+			            			"dataSrc": '',
+							    },
+						  "columnDefs": [
+								            {
+								                "targets": [ 0 ],
+								                "visible": false,
+								                "searchable": false
+								            },
+								            {
+									            "targets": [ 1 ],
+									            "data": null,
+									            "orderable":false,
+									            "render": function(data, type, row){
+										            var html="<div class='btn-group'>";
+										            html+="<button type='button'  title='Editar Bloque' class='btn btn-primary btn-xs btn-editar'><span class='glyphicon glyphicon-pencil'></span>"+
+									            		  "</button>";
+									       
+									            	html+="<button type='button'  class='btn btn-danger btn-xs btn-eliminar' title='Eliminar Bloque'><span class='glyphicon glyphicon-erase'></span>"+
+									            		  "</button>";
+									            	return html+"</div>";
+									            }
+									        }
+						  ],
+					      "columns": [
+					      		{ "data": "id" },
+					      		{ "data": "" ,"width":"5%" },
+					            { "data": "bloque","width":"20%" },
+					            { "data": "lista_concejales","width":"60%"},
+					            { "data": "fecha_creacion_formateada","width":"15%"},
+					            
+					        ],
+					      "autoWidth":false,
+					      "paging": true,
+					      "lengthChange": true,
+					      "searching": false,
+					      "ordering": false,
+					      "info": true,
+					      "autoWidth": false,
+			});
+
+		    $('.btn-alta').click( function () {
+		       $("#modalBloque").find('input[name="idBloque"]').val(0);
+		       $("#modalBloque").find('input[name="nombreBloque"]').val('');
+		       $("#modalBloque").modal("show");
+		    } );
+
+		    $('#registroBloques tbody').on( 'click', '.btn-editar', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+			    $("#modalBloque").find('input[name="idBloque"]').val(data[ "id" ]);
+			    $("#modalBloque").find('input[name="nombreBloque"]').val(data[ "bloque" ]);
+			    $("#modalBloque").modal("show");
+		    });
+
+		    $('#registroBloques tbody').on( 'click', '.btn-eliminar', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+			    var idBloque=data[ "id" ];
+
+			    $.ajax({
+			    	async: true,
+	                data: null,
+	                url:'{{ app.request.getBaseURL() }}/api/bloque/remove/'+idBloque,
+	                cache: false,
+	                contentType: false,
+	                processData: false,
+	                type: 'POST',
+    				success: function(data){
+    					toastr.success(data);
+  						tabla.ajax.reload();
+    				},
+    				error: function(jqXHR,textStatus,errorThrown ){
+    					toastr.error(jqXHR.responseText);
+    				}
+    	      	});
+		    });
+
+		    $("#modalBloque").on('show.bs.modal', function () {
+			    
+			    var idBloque=$("#modalBloque").find('input[name="idBloque"]').val();
+			    if (idBloque!=0)
+				    $("#titulo-modal-bloque").html("Editar Bloque");
+			    else $("#titulo-modal-bloque").html("Nuevo Bloque");
+
+			 });
+			 
+			$("#btn-alta-bloque").click(function(){
+
+				$("#btn-alta-bloque").prop("disabled", true);
+				
+				var idBloque = $("#idBloque").val();
+				var nombreBloque = $("#nombreBloque").val();
+			
+				var formData=new FormData();
+                var validacion='';
+
+                validacion+=((nombreBloque.replace(/ /g,'')==0)
+                        		?'<li>Debe especificar un nombre para el bloque</li>':'');
+                              	
+              	if (validacion.length>0) 
+ 				{
+ 					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+ 								validacion+'</ul>':'');
+ 					toastr.error(validacion);
+ 					$("#btn-alta-bloque").prop("disabled", false);
+ 					return false;
+ 				}
+ 				else{
+
+ 					formData.append('idBloque',idBloque);
+ 	              	formData.append('nombreBloque',nombreBloque);
+
+ 	            	$.ajax({
+ 		                async: true,
+ 		                url: '{{ app.request.getBaseURL() }}/api/bloque/save',
+ 		                data: formData,
+ 		                cache: false,
+ 		                contentType: false,
+ 		                processData: false,
+ 		                type: 'POST',
+ 	                success: function(data) {
+ 	                    toastr.success(data);
+ 						tabla.ajax.reload();
+ 						$('#modalBloque').modal('hide');
+ 	                	},
+ 	                complete:function(){
+ 	                	$("#btn-alta-bloque").prop("disabled", false);
+ 	                },
+ 	                error: function(jqXHR,textStatus,errorThrown ){
+ 						toastr.error(jqXHR.responseText);
+ 						}
+ 	            	});
+ 	            }
+			}); 
+			
+			
+	});
+	</script>
+	
+	<section class="content-header">
+		<div class="row pull-right">
+		    <ol class="breadcrumb">
+		        <li><a href="#"><i class="fa fa-dashboard"></i> Principal</a></li>
+	        	<li class="active">Bloques</li>
+		    </ol>
+		</div>
+		<hr>
+		<div class="row">
+			<div class="col-md-4">
+				<h2>
+			        Bloques
+			    </h2>
+			</div>
+	    </div>  
+	</section>
+	<section class="content">
+	  	<div class="row">
+	    	<div class="col-xs-12">
+	     		{# <div class="box">
+		            <div class="box-body"> #}
+		              	<table id="registroBloques" class="table table-striped">
+			                <thead>
+			                	<tr>
+			                		<th>id</th>
+    		                		<th>
+    		                			<button type="button" title="Agregar Bloque"class="btn btn-primary btn-xs btn-alta">
+    							    			<span class="glyphicon glyphicon-plus"></span>
+    							    	</button>
+    							    </th>
+					                <th>Bloque</th>
+					                <th>Concejales</th>
+					                <th>Fecha Creacion</th>
+					            </tr>
+			                </thead>
+			                <tbody>
+			                </tbody>
+		               	</table>
+		            {# </div> #} {# box-body #}
+		        {# </div> #} {# box #}
+	        </div> {# col #}
+	    </div> {# row #}
+	   	<div id="modalBloque" class="modal fade" role="dialog" data-backdrop="static" 
+   data-keyboard="false">
+		 	<div class="modal-dialog modal-lg">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+				        <button type="button" class="close" data-dismiss="modal">&times;</button>
+				        <h4 class="modal-title" id="titulo-modal-bloque"></h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				        <form>
+				        	<input type="hidden" id="idBloque" name="idBloque">
+				        	<div class="row">
+				        		<div class="col-md-12">
+        				        	<div class="form-group">
+        				        		<label for="nombreBloque">Nombre</label>
+        				        		<input id="nombreBloque" class="form-control" name="nombreBloque" 
+        				        			   placeholder="Nombre del Bloque">
+        				        	</div>
+        				        </div>
+    				        </div>
+					        <hr>
+					        <div class="btn-group">
+					        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+				       			 <button type="button" class="btn btn-primary" id="btn-alta-bloque">Guardar</button>
+					        </div>
+				        </form>
+				     </div>
+			    </div>
+		  	</div>
+		</div>
+	</section>
+	
+{% endblock %}

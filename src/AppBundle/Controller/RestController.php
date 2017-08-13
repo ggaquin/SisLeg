@@ -37,6 +37,7 @@ use AppBundle\Entity\DictamenRevision;
 use AppBundle\Entity\TipoProyecto;
 use AppBundle\AppBundle;
 use AppBundle\Entity\EstadoExpediente;
+use AppBundle\Entity\TipoComision;
 
 
 class RestController extends FOSRestController{
@@ -104,6 +105,171 @@ class RestController extends FOSRestController{
         $bloques=$bloqueRepository->findBloqueByNombre_Patron($term);
         return $this->view($bloques,200);
     }
+    
+    
+    /**
+     * @Rest\Get("/api/bloque/getAll")
+     */
+    public function traerTodosLosBloquesAction(Request $request)
+    {
+    	$bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
+    	$bloques=$bloqueRepository->findBy(array('activo'=>true));
+    	
+    	$resultado=[];
+    	foreach ($bloques as $bloque){
+    		$resultado[]=array(
+    							'id'=>$bloque->getId(),
+    							'bloque'=>$bloque->getBloque(),
+    							'lista_concejales'=>$bloque->getListaConcejales(),
+    							'fecha_creacion_formateada'=>$bloque->getFechaCreacionFormateada()
+    						  );
+    	}
+    	
+    	return $this->view($resultado,200);
+    }
+    
+    /**
+     * @Rest\Post("/api/bloque/save")
+     */
+    public function guardarBloqueAction(Request $request)
+    {
+    	$idBloque=$request->request->get('idBloque');
+    	$nombreBloque=$request->request->get('nombreBloque');
+    	$usuarioSesion=$this->getUser();
+    	
+    	$bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
+    	$bloque=null;
+    	$mensaje="";
+    	   	
+    	if ($idBloque!=0){
+    		$bloque=$bloqueRepository->find($idBloque);
+    		$bloque->setUsuarioModificacion($usuarioSesion->getUsername());
+    		$bloque->setFechaModificacion(new \DateTime("now"));
+    		$mensaje="El bloque se actualizó con éxito";
+    	}
+    	else {
+    			$bloque=new Bloque();
+    			$bloque->setUsuarioCreacion($usuarioSesion->getUsername());
+    			$bloque->setFechaCreacion(new \DateTime("now"));
+    			$mensaje="El bloque se agregó con éxito";
+    	}
+    	
+    	$bloque->setBloque($nombreBloque);
+    	$em = $this->getDoctrine()->getManager();
+    	$em->persist($bloque);
+    	$em->flush();
+    	
+    	return $this->view($mensaje,200);
+    	
+    }
+    
+    /**
+     * @Rest\Post("/api/bloque/remove/{id}")
+     */
+    public function eliminarBloqueAction(Request $request)
+    {
+    	$idBloque=$request->get('id');
+    	$usuarioSesion=$this->getUser();
+    	
+    	$bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
+    	$bloque=$bloqueRepository->find($idBloque);
+    	
+    	$bloque->setActivo(false);
+    	$bloque->setUsuarioModificacion($usuarioSesion->getUsername());
+    	$bloque->setFechaModificacion(new \DateTime("now"));
+    	
+    	$em = $this->getDoctrine()->getManager();
+    	$em->persist($bloque);
+    	$em->flush();
+    	
+    	return $this->view("El bloque se eliminó en forma exitosa",200);
+    }
+    
+    /**
+     * @Rest\Get("/api/oficina/getAll")
+     */
+    public function traerTodosLasOficinasAction(Request $request)
+    {
+    	$oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
+    	$oficinas=$oficinaRepository->findBy(array('activa'=>true),array('oficina'=>'ASC'));
+    	
+    	$resultado=[];
+    	foreach ($oficinas as $oficina){
+    		$resultado[]=array(
+    				'id'=>$oficina->getId(),
+    				'oficina'=>$oficina->getOficina(),
+    				'tipo_oficina'=>$oficina->getTipoOficina()->getTipoOficina(),
+    				'id_tipo_oficina'=>$oficina->getTipoOficina()->getId(),
+    				'codigo'=>$oficina->getCodigo()
+    		);
+    	}
+    	
+    	return $this->view($resultado,200);
+    }
+    
+    /**
+     * @Rest\Post("/api/oficina/save")
+     */
+    public function guardarOficinaAction(Request $request)
+    {
+    	$idOficina=$request->request->get('idOficina');
+    	$idTipoOficina=$request->request->get('idTipoOficina');
+    	$nombreOficina=$request->request->get('nombreOficina');
+    	$codigoOficina=$request->request->get('codigoOficina');
+    	$usuarioSesion=$this->getUser();
+    	
+    	$oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
+    	$tipoOficinaRepository=$this->getDoctrine()->getRepository('AppBundle:TipoOficina');
+    	$oficina=null;
+    	$mensaje="";
+    	
+    	if ($idOficina!=0){
+    		$oficina=$oficinaRepository->find($idOficina);
+    		$oficina->setUsuarioModificacion($usuarioSesion->getUsername());
+    		$oficina->setFechaModificacion(new \DateTime("now"));
+    		$mensaje="La oficina se actualizó con éxito";
+    	}
+    	else {
+    		$oficina=new Oficina();
+    		$oficina->setUsuarioCreacion($usuarioSesion->getUsername());
+    		$oficina->setFechaCreacion(new \DateTime("now"));
+    		$mensaje="La oficina se agregó con éxito";
+    	}
+    	
+    	$oficina->setOficina($nombreOficina);
+    	$tipoOficina=$tipoOficinaRepository->find($idTipoOficina);
+    	$oficina->setTipoOficina($tipoOficina);
+    	$oficina->setCodigo($codigoOficina);
+    	
+    	$em = $this->getDoctrine()->getManager();
+    	$em->persist($oficina);
+    	$em->flush();
+    	
+    	return $this->view($mensaje,200);
+    	
+    }
+    
+    /**
+     * @Rest\Post("/api/oficina/remove/{id}")
+     */
+    public function eliminarOficinaAction(Request $request)
+    {
+    	$idOficina=$request->get('id');
+    	$usuarioSesion=$this->getUser();
+    	
+    	$oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
+    	$oficina=$oficinaRepository->find($idOficina);
+    	
+    	$oficina->setActiva(false);
+    	$oficina->setUsuarioModificacion($usuarioSesion->getUsername());
+    	$oficina->setFechaModificacion(new \DateTime("now"));
+    	
+    	$em = $this->getDoctrine()->getManager();
+    	$em->persist($oficina);
+    	$em->flush();
+    	
+    	return $this->view("La oficina se eliminó en forma exitosa",200);
+    }
 
     /**
      * @Rest\Get("/api/comision/getAll")
@@ -112,7 +278,7 @@ class RestController extends FOSRestController{
     {
         
         $comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
-        $comisiones=$comisionRepository->findBy(array(),array('comision' => 'ASC'));
+        $comisiones=$comisionRepository->findBy(array('activa'=>true),array('comision' => 'ASC'));
         $resultado=[];
         foreach ($comisiones as $comision){
         	$registro=array(
@@ -120,11 +286,146 @@ class RestController extends FOSRestController{
         					'presidente'=>$comision->getPresidente()->getNombreCompleto(),
         					'vice_presidente'=>$comision->getVicePresidente()->getNombreCompleto(),
         					'lista_titulares'=>$comision->getListaTitulares(),
-        					'lista_suplentes'=>$comision->getListaSuplentes()
+        					'lista_suplentes'=>$comision->getListaSuplentes(),
+        					'tipo_comision'=>$comision->getTipoComision()->getTipoComision()
         					);
         	$resultado[]=$registro;
         }
         return $this->view($resultado,200);
+    }
+    
+    /**
+     * @Rest\Get("/api/comision/getOne/{id}")
+     */
+    public function traerComisionPorIdAction(Request $request)
+    {
+    	$idComision=$request->get('id');
+    	$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
+    	$comision=$comisionRepository->find($idComision);
+    	$titulares=[];
+    	foreach ($comision->getTitulares() as $titular){
+    		$registro=array('id'=>$titular->getId(), 'nombre_completo'=>$titular->getNombreCompleto());
+    		$titulares[]=$registro;
+    	}
+    	$suplentes=[];
+    	foreach ($comision->getSuplentes() as $suplente){
+    		$registro=array('id'=>$suplente->getId(), 'nombre_completo'=>$suplente->getNombreCompleto());
+    		$suplentes[]=$registro;
+    	}
+    	$resultado=array('comision'=>$comision->getComision(),
+				    	 'presidente'=>array(
+				    					 	 'id'=>$comision->getPresidente()->getId(),
+				    					 	 'nombre_completo'=>$comision->getPresidente()->getNombreCompleto()
+				    					 	 ),
+    					 'vice_presidente'=>array(
+							    				  'id'=>$comision->getVicePresidente()->getId(),
+							    				  'nombre_completo'=>$comision->getVicePresidente()->getNombreCompleto()
+							    			),
+    					 'titulares'=>$titulares,
+    					 'suplentes'=>$suplentes,
+    					 'tipo_comision'=>$comision->getTipoComision()->getId()
+    	);
+    	
+    	return $this->view($resultado,200);
+    }
+    
+    /**
+     * @Rest\Post("/api/comision/remove/{id}")
+     */
+    public function eliminarComisionAction(Request $request){
+    	
+    	try {
+		    	$idComision=$request->get('id');
+		    	$comisionReposiory=$this->getDoctrine()->getRepository('AppBundle:Comision');
+		    	$comision=$comisionReposiory->find($idComision);
+		    	$usuarioSesion=$this->getUser();
+		    	
+		    	$comision->setActiva(false);
+		    	$comision->setUsuarioModificacion($usuarioSesion->getUsername());
+		    	$comision->setFechaModificacion(new \DateTime("now"));
+		    	
+		    	$em = $this->getDoctrine()->getManager();
+		    	$em->persist($comision);
+		    	$em->flush();
+		    	
+		    	return $this->view("La comisión ".$comision->getComision()." se eliminó exitosamente",200);
+		    	
+    	}catch (\Exception $e){
+    		return $this->view($e->getMessage(),500);
+    	}
+    }
+    
+    /**
+     * @Rest\Post("/api/comision/save")
+     */
+    public function guardarCommisionAction(Request $request){
+    	
+    	$idTipoComision=$request->request->get('idTipoComision');
+    	$descripcion=$request->request->get('descripcion');
+    	$presidente=$request->request->get('presidente');
+    	$vicePresidente=$request->request->get('vicePresidente');
+    	$titulares=$request->request->get('titulares');
+    	$suplentes=$request->request->get('suplentes');
+    	$idComision=$request->request->get('idComision');
+    	$usuarioSesion=$this->getUser();
+    	
+    	$mensaje="";
+    	
+    	try{
+		    	$comisionReposiory=$this->getDoctrine()->getRepository('AppBundle:Comision');
+		    	$perfilReposiory=$this->getDoctrine()->getRepository('AppBundle:Perfil');
+		    	$tipoComisionReposiory=$this->getDoctrine()->getRepository('AppBundle:TipoComision');
+		    	$tipoComision=$tipoComisionReposiory->find($idTipoComision);
+		    	
+		    	$comision=null;
+		    	
+		    	if($idComision!=0){
+		    		$comision=$comisionReposiory->find($idComision);
+		    		$comision->setUsuarioModificacion($usuarioSesion->getUsername());
+		    		$comision->setFechaModificacion(new \DateTime("now"));
+		    		$mensaje="La comisión ".$comision->getComision()." se modificó con éxito";
+		    	}
+		    	else {
+		    			$comision= new Comision();
+		    			$comision->setUsuarioCreacion($usuarioSesion->getUsername());
+		    			$comision->setFechaCreacion(new \DateTime("now"));
+		    			$mensaje="La comisión de agregó con éxito";
+		    	}
+		    	
+		    	$perfilPresidente=$perfilReposiory->find($presidente);
+		    	$perfilVicePresidente=$perfilReposiory->find($vicePresidente);
+		    	$concejalesTitulares=explode(',',$titulares);
+		    	$nuevosTitulares=[];
+		    	foreach ($concejalesTitulares as $titular){
+		    		$perfilTitular=$perfilReposiory->find($titular);
+		    		$nuevosTitulares[]=$perfilTitular;	
+		    	}
+		    	$concejalesSuplentes=explode(',',$suplentes);
+		    	$nuevosSuplentes=[];
+		    	foreach ($concejalesSuplentes as $suplente){
+		    		$perfilSuplente=$perfilReposiory->find($suplente);
+		    		$nuevosSuplentes[]=$perfilSuplente;
+		    	}
+		    	
+		    	$comision->setActiva(true);
+		    	$comision->setComision($descripcion);
+		    	$comision->setTipoComision($tipoComision);
+		    	$comision->setPresidente($perfilPresidente);
+		    	$comision->setVicePresidente($perfilVicePresidente);
+		    	$comision->setTitulares($nuevosTitulares);
+		    	$comision->setSuplentes($nuevosSuplentes);
+		    	
+		    	$em = $this->getDoctrine()->getManager();
+		    	$em->persist($comision);
+		    	$em->flush();
+		    	
+		    	return $this->view($mensaje,200);
+		    	
+	    }catch(\Exception $e){
+	    	
+	    	return $this->view($e->getMessage(),500);
+	    }
+    	
     }
     
     /**

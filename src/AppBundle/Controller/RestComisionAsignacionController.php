@@ -270,7 +270,7 @@ class RestComisionAsignacionController extends FOSRestController{
     			$revision->setConsiderandos($considerandos);
     			$revision->setVisto($vistos);
     			$revision->setFechaCreacion(new \DateTime('now'));
-    			$revision->setIncluyeVistosYConsiderandos(true);
+    			$revision->setIncluyeVistosYConsiderandos((($vistosYConsiderandos=="true")?true:false));
     			$revision->setOficina($usuario->getRol()->getOficina);
     			$revision->setProyecto($proyecto);
     			$revision->setUsuarioCreacion($usuario->getUsuario());

@@ -17,8 +17,44 @@
 {% endblock %}
 
 {% block body %}
+	
+	<style type="text/css">
+	
+    	.selGrupoConcejales{
+    		    min-height: 150px!important;
+    		    max-height: 151px!important;
+    		    overflow-y: auto!important;
+    	} 	
+
+	</style>
 
 	<script type="text/javascript">
+
+    	function addClasssToSelect2(div,clase){
+    		$("#"+div).find('span[class="select2-selection select2-selection--multiple"]').addClass(clase);
+    	}
+
+	
+        function verificarConcejales(select,idItem){
+
+    		var controles=["selPresidente","selVicePresidente","selTitulares","selSuplentes"];
+    
+    		$.each(controles,function(index, valor){
+    			if (valor!=select){
+        			
+            		var elementos=$("#"+valor)[0].children.length;
+            		
+            		for (var i = elementos-1; i > -1; i--) {
+            			if ($("#"+valor)[0].children[i].value==idItem){
+            				$("#"+valor)[0].children[i].remove();
+            				toastr.warning("El concejal fue movido desde el apartado de "
+                    						+valor.substr(3,valor.length-3));
+            			}
+            		}
+    			}
+    		});	
+		
+    	}
 
 		$(document).ready(function () {
 			
@@ -60,20 +96,22 @@
 									            "targets": [ 1 ],
 									            "data": null,
 									            "orderable":false,
-									            "defaultContent": "<div class='btn-group'>"+
-									            	"<button type='button'  title='Editar comision' class='btn btn-primary btn-xs btn-editar' data-toggle='modal' data-target='#' onclick='noImplementado();'><span class='glyphicon glyphicon-pencil'></span>"+
-									            	"</button>"+
-									            	"<button type='button'  class='btn btn-danger btn-xs btn-eliminar' title='Elimnar comisión' onclick='noImplementado();'><span class='glyphicon glyphicon-erase'></span>"+
-									            	"</button></div>"+
-									            	"<button type='button' title='Ver Proyectos Asignados' class='btn btn-info btn-xs btn-detalle' onclick='noImplementado();'><span class='glyphicon glyphicon-eye-open'></span>"+
-									            	"</button></div>"
+									            "render": function(data, type, row){
+										            debugger;
+										            var html="<div class='btn-group'>";
+										            html+="<button type='button'  title='Editar Comision' class='btn btn-primary btn-xs btn-editar'><span class='glyphicon glyphicon-pencil'></span>"+
+									            		  "</button>";
+									            	if(row.tipo_comision=="Transitoria")
+										            	html+="<button type='button'  class='btn btn-danger btn-xs btn-eliminar' title='Eliminar Comisión'><span class='glyphicon glyphicon-erase'></span>"+
+										            		  "</button>";
+									            	return html+"</div>";
+									            }
 									        }
-
 						  ],
 					      "columns": [
 					      		{ "data": "id" },
-					      		{ "data": "" ,"width":"10%" },
-					            { "data": "comision","width":"20%" },
+					      		{ "data": "" ,"width":"5%" },
+					            { "data": "comision","width":"25%" },
 					            { "data": "presidente","width":"10%"},
 					            { "data": "vice_presidente","width":"10%"},
 					            { "data": "lista_titulares","className": "for-mobile","width":"20%" },
@@ -86,16 +124,96 @@
 					      "ordering": false,
 					      "info": true,
 					      "autoWidth": false,
-					    });
+			});
+
+		    $('.btn-alta').click( function () {
+		       $("#modalComision").find('input[name="idComision"]').val(0);
+		       $("#modalComision").modal("show");
+		    } );
 
 		    $('#registroComisiones tbody').on( 'click', '.btn-editar', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
-		    } );
+			    $("#modalComision").find('input[name="idComision"]').val(data[ "id" ]);
+			    $("#modalComision").modal("show");
+		    });
 
-			/*
-			$("#selIntegrantes").select2({
+		    $('#registroComisiones tbody').on( 'click', '.btn-eliminar', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+			    var idComision=data[ "id" ];
+
+			    $.ajax({
+			    	async: true,
+	                data: null,
+	                url:'{{ app.request.getBaseURL() }}/api/comision/remove/'+idComision,
+	                cache: false,
+	                contentType: false,
+	                processData: false,
+	                type: 'POST',
+    				success: function(data){
+    					toastr.success(data);
+  						tabla.ajax.reload();
+    				},
+    				error: function(jqXHR,textStatus,errorThrown ){
+    					toastr.error(jqXHR.responseText);
+    				}
+    	      	});
+		    });
+
+		    $("#modalComision").on('show.bs.modal', function () {
+			    
+		    	$("#modalComision").find('input[name="descripcion"]').val("");
+			    $("#modalComision").find('select[name="selPresidente"]').empty().change();
+			    $("#modalComision").find('select[name="selVicePresidente"]').empty().change();
+			    $("#modalComision").find('select[name="selTitulares"]').empty().change();
+			    $("#modalComision").find('select[name="selSuplentes"]').empty().change();
+			    $("#modalComision").find('select[name="selTipoComision"]').val();
+
+			    var idComision=$("#modalComision").find('input[name="idComision"]').val();
+			    if (idComision!=0){
+				    
+			    	$("#titulo-modal-comision").html("Editar Comisión");
+			    	
+			    	$.ajax({
+        				type:'Get',
+        				dataType: 'json	',
+        				url:'{{ app.request.getBaseURL() }}/api/comision/getOne/'+idComision,
+        				success: function(data){
+            				
+        					$("#modalComision").find('input[name="descripcion"]').val(data.comision);
+        					var newOption=null;
+        					
+        					newOption = new Option(data.presidente.nombre_completo, 
+                								   data.presidente.id, true, true);
+        				   	$("#selPresidente").append(newOption).trigger('change');
+
+        				   	newOption = new Option(data.vice_presidente.nombre_completo, 
+ 								   				   data.vice_presidente.id, true, true);
+			   				$("#selVicePresidente").append(newOption).trigger('change');
+        				   	
+							$.each(data.titulares,function(index,titular){
+            				    newOption = new Option(titular.nombre_completo, titular.id, true, true);
+            				   	$("#selTitulares").append(newOption).trigger('change');
+							});
+							
+							$.each(data.suplentes,function(index,suplente){
+            				    newOption = new Option(suplente.nombre_completo, suplente.id, true, true);
+            				   	$("#selSuplentes").append(newOption).trigger('change');
+							});
+							
+        				    $("#selTipoComision").val(data.tipo_comision);	
+        				},
+        				error: function(jqXHR,textStatus,errorThrown ){
+        					toastr.error(jqXHR.responseText);
+        				}
+        	      	});
+				}
+			    else $("#titulo-modal-comision").html("Nueva Comisión");
+
+			 });
+			
+			$(".select2-control	").select2({
 				ajax: {
-			    url: "api/legislador/getAll",
+			    url: '{{ app.request.getBaseURL() }}/api/legislador/nombre/getByCriteria',
 			    dataType: 'json',
 			    delay: 250,
 			    data: function (params) {
@@ -115,45 +233,110 @@
 			    cache: true
 			  },
 			  language: "es",
-			  minimumInputLength: 1,
+			  minimumInputLength: 2,
 			  theme: "bootstrap",
 			});
-			$('.text-area').wysihtml5({
-				toolbar: {
-				    "image": false,
-					"size": "xs",
-				}
-				
+
+			
+			$("#selPresidente").on('select2:selecting',function(evt){
+				debugger;
+				var idItem=evt.params.args.data.id;
+				verificarConcejales("selPresidente",idItem);				
 			});
 
-			$("#btn-alta-proyecto").click(function(){
-				var data={
-					idTipoProyecto: $("#selTipoProyecto").val(),
-					titulo: $("#titulo").val(),
-					texto: $("#texto").val(),
-					resumen:$("#resumen").val(),
-					Autores: $("#selAutores").val()
+			$("#selVicePresidente").on('select2:selecting',function(evt){
+				debugger;
+				var idItem=evt.params.args.data.id;
+				verificarConcejales("selVicePresidente",idItem);				
+			});
 
-				};
-				$.ajax({
-					type:'POST',
-					dataType: 'application/json	',
-					url:'#',
-					data: data,
-					success: function(data){
-						toastr.success(data);
-						tabla.ajax.reload();
-					},
-					error: function(jqXHR,textStatus,errorThrown ){
-						var response=JSON.parse(jqXHR.responseText)
-						toastr.error(response.error.throwCause);
-					}
+			$("#selTitulares").on('select2:selecting',function(evt){
+				debugger;
+				var idItem=evt.params.args.data.id;
+				verificarConcejales("selTitulares",idItem);				
+			});
 
-				});
-				console.log(data);
-			});*/
+			$("#selTitulares").on('select2:selecting',function(evt){
+				debugger;
+				var idItem=evt.params.args.data.id;
+				verificarConcejales("selSuplentes",idItem);				
+			});
+			
+			addClasssToSelect2("group-selTitulares","selGrupoConcejales");
+		    addClasssToSelect2("group-selSuplentes","selGrupoConcejales");
+		    
+
+			$("#btn-alta-comision").click(function(){
+
+				$("#btn-alta-comision").prop("disabled", true);
+				
+				var idTipoComision = $("#selTipoComision").val();
+				var descripcion = $("#descripcion").val();
+				var presidente = $("#selPresidente").val();
+				var vicePresidente = $("#selVicePresidente").val();
+				var titulares = $("#selTitulares").val();
+				var suplentes = $("#selSuplentes").val();
+				var idComision = $("#idComision").val();
+
+				var formData=new FormData();
+                var validacion='';
+
+                validacion+=((idTipoComision==0)?'<li>Debe seleccionar el tipo de comisión</li>':'');
+                validacion+=((descripcion.replace(/ /g,'').length==0)
+                				?'<li>Debe indicar un nombre para la comisión</li>':'');
+				validacion+=((presidente==null || presidente.length==0)
+								?'<li>Debe indicar un presidente</li>':'');
+				validacion+=((vicePresidente==null || vicePresidente.length==0)
+								?'<li>Debe indicar un Vice Presidente</li>':'');
+				validacion+=((titulares==null || titulares.length==0)
+								?'<li>Debe indicar los titulares</li>':'');
+				validacion+=((suplentes==null || suplentes.length==0)
+								?'<li>Debe indicar los suplentes</li>':'');
+              	
+              	if (validacion.length>0) 
+ 				{
+ 					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+ 								validacion+'</ul>':'');
+ 					toastr.error(validacion);
+ 					$(this).prop("disabled", false);
+ 					return false;
+ 				}
+ 				else{
+
+ 					formData.append('idTipoComision',idTipoComision);
+ 	              	formData.append('descripcion',descripcion);
+ 	              	formData.append('presidente',presidente);
+ 	              	formData.append('vicePresidente',vicePresidente);
+ 	              	formData.append('titulares',titulares);
+ 	              	formData.append('suplentes',suplentes);
+ 	              	formData.append('idComision',idComision);
+
+ 	            	$.ajax({
+ 		                async: true,
+ 		                url: '{{ app.request.getBaseURL() }}'+'/api/comision/save',
+ 		                data: formData,
+ 		                cache: false,
+ 		                contentType: false,
+ 		                processData: false,
+ 		                type: 'POST',
+ 	                success: function(data) {
+ 	                    toastr.success(data);
+ 						tabla.ajax.reload();
+ 						$('#modalComision').modal('hide');
+ 	                	},
+ 	                complete:function(){
+ 	                	$("#btn-alta-comision").prop("disabled", false);
+ 	                },
+ 	                error: function(jqXHR,textStatus,errorThrown ){
+ 						toastr.error(jqXHR.responseText);
+ 						}
+ 	            	});
+ 	            }
+			}); 
+			
 	});
 	</script>
+	
 	<section class="content-header">
 		<div class="row pull-right">
 		    <ol class="breadcrumb">
@@ -180,9 +363,8 @@
 			                <thead>
 			                	<tr>
 			                		<th>id</th>
-    		                		<th class="text-center">
-    		                			<button type="button" title="Agregar Comisión"class="btn btn-primary btn-xs" 
-    							    			data-toggle="modal" data-target="#" onclick='noImplementado();'>
+    		                		<th>
+    		                			<button type="button" title="Agregar Comisión"class="btn btn-primary btn-xs btn-alta">
     							    			<span class="glyphicon glyphicon-plus"></span>
     							    	</button>
     							    </th>
@@ -200,30 +382,79 @@
 		        {# </div> #} {# box #}
 	        </div> {# col #}
 	    </div> {# row #}
-	   	<div id="nuevaComision" class="modal fade" role="dialog">
-		 	<div class="modal-dialog">
+	   	<div id="modalComision" class="modal fade" role="dialog" data-backdrop="static" 
+   data-keyboard="false">
+		 	<div class="modal-dialog modal-lg">
 			    <!-- Modal content-->
 			    <div class="modal-content">
 				    <div class="modal-header" style="background-color:#666	;color:#FFF">
 				        <button type="button" class="close" data-dismiss="modal">&times;</button>
-				        <h4 class="modal-title">Nueva Comisión</h4>
+				        <h4 class="modal-title" id="titulo-modal-comision"></h4>
 				    </div>
 				    <div class="modal-body" style="background-color:#ecf0f5">
 				        <form>
-				        	<div class="form-group">
-				        		<label for="txtDescripcion">Nombre de la comision</label>
-				        		<textarea id="txtDescripcion" class="form-control" name="txtDescripcion" placeholder="Descripcion de la comision"></textarea>
-				        	</div>
-						  
-				    		<div class="form-group">
-					        	<label for="selIntegrantes">Integrantes</label>
-					        	<select class="form-control" data-width="100%" multiple="multiple" id="selAutores"></select>
-					        </div>
-	
+				        	<input type="hidden" id="idComision" name="idComision">
+				        	<div class="row">
+				        		<div class="col-md-12">
+        				        	<div class="form-group">
+        				        		<label for="descripcion">Nombre de la comision</label>
+        				        		<input id="descripcion" class="form-control" name="descripcion" 
+        				        			   placeholder="Nombre de la comision">
+        				        	</div>
+        				        </div>
+    				        </div>
+    				        <div class="row">
+    				        	<div class="col-md-4">
+        						  	<div class="form-group" id="group-selPresidente">
+        					        	<label for="selPresidente">Presidente:</label>
+        					        	<select class="form-control select2-control" data-width="100%" 
+        					        			id="selPresidente" name="selPresidente">
+        					        	</select>
+        					        </div>
+        					    </div>
+        					    <div class="col-md-4">
+        					        <div class="form-group" id="group-selVicePresidente">
+        					        	<label for="selVicePresidente">Vice Presidente:</label>
+        					        	<select class="form-control select2-control" data-width="100%" 
+        					        			id="selVicePresidente" name="selVicePresidente">
+        					        	</select>
+        					        </div>
+        					    </div>
+        					    <div class="col-md-4">
+        					    	<div class="form-group">
+        					    	<label for="selTipoComision">Tipo Comisión:</label>
+        					    		<select class="form-control" id="selTipoComision" 
+        					    				name="selTipoComision">
+        					    			<option value="0">Seleccione un tipo</option>
+        					    			{% for tipoComision in tiposComision %}
+        						                <option value="{{ tipoComision.id }}">{{ tipoComision.tipoComision }}</option>
+        						            {% endfor %}
+        					        	</select>
+        					    	</div>
+        					    </div>
+        					</div>
+        					<div class="row">
+        						<div class="col-md-6">
+        				    		<div class="form-group" id="group-selTitulares">
+        					        	<label for="selTitulares">Titulares:</label>
+        					        	<select class="form-control select2-control" multiple="multiple" data-width="100%" 
+        					        			id="selTitulares" name="selTitulares">
+        					        	</select>
+        					        </div>
+        					   	</div>
+        					   	<div class="col-md-6">
+        					        <div class="form-group" id="group-selSuplentes">
+        					        	<label for="selSuplentes">Suplentes:</label>
+        					        	<select class="form-control select2-control" multiple="multiple" data-width="100%" 
+        					        			id="selSuplentes" name="selSuplentes">
+        					        	</select>
+        					        </div>
+        					    </div>
+        					</div>
 					        <hr>
 					        <div class="btn-group">
 					        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
-				       			 <button type="button" class="btn btn-primary" id="btn-alta-proyecto">Guardar</button>
+				       			 <button type="button" class="btn btn-primary" id="btn-alta-comision">Guardar</button>
 					        </div>
 				        </form>
 				     </div>

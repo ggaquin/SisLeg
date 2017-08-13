@@ -1,0 +1,302 @@
+{% extends 'layout.html.twig' %}
+
+
+
+{% block stylesheets %}
+	{# parent() #}
+  	{% stylesheets '@css_datatables' %}
+      	<link rel="stylesheet" href="{{ asset_url }}" /></link>
+  	{% endstylesheets %}
+{% endblock %}
+
+{% block javascripts %}
+	{# parent() #}
+    {% javascripts '@js_datatables'%}
+        <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+{% endblock %}
+
+{% block body %}
+	
+	<style type="text/css">
+	
+    	.selGrupoConcejales{
+    		    min-height: 150px!important;
+    		    max-height: 151px!important;
+    		    overflow-y: auto!important;
+    	} 	
+
+	</style>
+
+	<script type="text/javascript">
+
+		$(document).ready(function () {
+			
+		    var tabla=$('#registroOficinas').DataTable({
+		    			  "language": {
+				              "infoEmpty": "Sin registros para mostrar",
+				              "paginate": {
+						          	"last": "Ultima Página",
+						          	"first": "Primer página",
+						          	"next": "Siguiente",
+						          	"previous": "Anterior"
+						       },
+						       "emptyTable": "Sin Datos",
+						       "lengthMenu": 'Registros Listados <select class="form-control input-sm">'+
+						       				 '<option value="-1">Todos</option>'+
+								             '<option value="10">10</option>'+
+								             '<option value="20">20</option>'+
+								             '<option value="30">30</option>'+
+								             '<option value="40">40</option>'+
+								             '<option value="50">50</option>'+
+								             '</select>',
+								"loadingRecords": "Espere...cargando datos",
+								"processing": "Procesando...",
+								"sInfo": "Mostrando  _START_ a _END_ de _TOTAL_ registros",
+
+			          	  },
+					      "processing": false,
+					      "ajax": {
+							        "url": "api/oficina/getAll",
+			            			"dataSrc": '',
+							    },
+						  "columnDefs": [
+								            {
+								                "targets": [ 0 ],
+								                "visible": false,
+								                "searchable": false
+								            },
+								            {
+									            "targets": [ 1 ],
+									            "data": null,
+									            "orderable":false,
+									            "render": function(data, type, row){
+										            var html="<div class='btn-group'>";
+										            html+="<button type='button'  title='Editar Oficina' class='btn btn-primary btn-xs btn-editar'><span class='glyphicon glyphicon-pencil'></span>"+
+									            		  "</button>";
+									       
+									            	html+="<button type='button'  class='btn btn-danger btn-xs btn-eliminar' title='Eliminar Oficina'><span class='glyphicon glyphicon-erase'></span>"+
+									            		  "</button>";
+									            	return html+"</div>";
+									            }
+									        }
+						  ],
+					      "columns": [
+					      		{ "data": "id" },
+					      		{ "data": "" ,"width":"5%" },
+					            { "data": "tipo_oficina","width":"20%" },
+					            { "data": "oficina","width":"60%"},
+					            { "data": "codigo","width":"15%"},
+					            
+					        ],
+					      "autoWidth":false,
+					      "paging": true,
+					      "lengthChange": true,
+					      "searching": false,
+					      "ordering": false,
+					      "info": true,
+					      "autoWidth": false,
+			});
+
+		   
+		    $('.btn-alta').click( function () {
+		       $("#modalOficina").find('input[name="idOficina"]').val(0);
+		       $("#modalOficina").find('select[name="selTipoOficina"]').val(0);
+			   $("#modalOficina").find('input[name="nombreOficina"]').val('');
+			   $("#modalOficina").find('input[name="codigoOficina"]').val('');
+		       $("#modalOficina").modal("show");
+		    } );
+
+		    $('#registroOficinas tbody').on( 'click', '.btn-editar', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+			    $("#modalOficina").find('input[name="idOficina"]').val(data[ "id" ]);
+			    $("#modalOficina").find('select[name="selTipoOficina"]').val(data[ "id_tipo_oficina" ]);
+			    $("#modalOficina").find('input[name="nombreOficina"]').val(data[ "oficina" ]);
+			    $("#modalOficina").find('input[name="codigoOficina"]').val(data[ "codigo" ]);
+			    $("#modalOficina").modal("show");
+		    });
+
+		    $('#registroOficinas tbody').on( 'click', '.btn-eliminar', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+			    var idOficina=data[ "id" ];
+
+			    $.ajax({
+			    	async: true,
+	                data: null,
+	                url:'{{ app.request.getBaseURL() }}/api/oficina/remove/'+idOficina,
+	                cache: false,
+	                contentType: false,
+	                processData: false,
+	                type: 'POST',
+    				success: function(data){
+    					toastr.success(data);
+  						tabla.ajax.reload();
+    				},
+    				error: function(jqXHR,textStatus,errorThrown ){
+    					toastr.error(jqXHR.responseText);
+    				}
+    	      	});
+		    });
+			 
+			$("#btn-alta-oficina").click(function(){
+
+				$("#btn-alta-oficina").prop("disabled", true);
+				
+				var idTipoOficina = $("#selTipoOficina").val();
+				var nombreOficina = $("#nombreOficina").val();
+				var codigoOficina = $("#codigoOficina").val();
+				var idOficina = $("#idOficina").val();
+
+				var formData=new FormData();
+                var validacion='';
+
+                validacion+=((idTipoOficina==0)?'<li>Debe seleccionar el tipo de oficina</li>':'');
+                validacion+=((nombreOficina.replace(/ /g,'').length==0)
+                				?'<li>Debe indicar un nombre para la oficina</li>':'');
+				validacion+=(($("#selTipoOficina option:selected").text()=='Externa' &&
+							  codigoOficina.replace(/ /g,'').length==0)
+								?'<li>Debe indicar un código para a oficina</li>':'');
+              	
+              	if (validacion.length>0) 
+ 				{
+ 					validacion=((validacion.length>0)?'<strong>Validación de Datos</strong><br><ul>'+
+ 								validacion+'</ul>':'');
+ 					toastr.error(validacion);
+ 					$("#btn-alta-oficina").prop("disabled", false);
+ 					return false;
+ 				}
+ 				else{
+
+ 					formData.append('idTipoOficina',idTipoOficina);
+ 	              	formData.append('nombreOficina',nombreOficina);
+ 	              	formData.append('codigoOficina',codigoOficina);
+ 	              	formData.append('idOficina',idOficina);
+
+ 	            	$.ajax({
+ 		                async: true,
+ 		                url: '{{ app.request.getBaseURL() }}'+'/api/oficina/save',
+ 		                data: formData,
+ 		                cache: false,
+ 		                contentType: false,
+ 		                processData: false,
+ 		                type: 'POST',
+ 	                success: function(data) {
+ 	                    toastr.success(data);
+ 						tabla.ajax.reload();
+ 						$('#modalOficina').modal('hide');
+ 	                	},
+ 	                complete:function(){
+ 	                	$("#btn-alta-oficina").prop("disabled", false);
+ 	                },
+ 	                error: function(jqXHR,textStatus,errorThrown ){
+ 						toastr.error(jqXHR.responseText);
+ 						}
+ 	            	});
+ 	            }
+			}); 
+			
+			
+	});
+	</script>
+	
+	<section class="content-header">
+		<div class="row pull-right">
+		    <ol class="breadcrumb">
+		        <li><a href="#"><i class="fa fa-dashboard"></i> Principal</a></li>
+	        	<li class="active">Oficinas</li>
+		    </ol>
+		</div>
+		<hr>
+		<div class="row">
+			<div class="col-md-4">
+				<h2>
+			        Oficinas
+			    </h2>
+			</div>
+	    </div>  
+	</section>
+	<section class="content">
+	  	<div class="row">
+	    	<div class="col-xs-12">
+	     		{# <div class="box">
+		            <div class="box-body"> #}
+		              	<table id="registroOficinas" class="table table-striped">
+			                <thead>
+			                	<tr>
+			                		<th>id</th>
+    		                		<th>
+    		                			<button type="button" title="Agregar Oficina"class="btn btn-primary btn-xs btn-alta">
+    							    			<span class="glyphicon glyphicon-plus"></span>
+    							    	</button>
+    							    </th>
+					                <th>Tipo Oficina</th>
+					                <th>Oficina</th>
+					                <th>Código</th>
+					            </tr>
+			                </thead>
+			                <tbody>
+			                </tbody>
+		               	</table>
+		            {# </div> #} {# box-body #}
+		        {# </div> #} {# box #}
+	        </div> {# col #}
+	    </div> {# row #}
+	   	<div id="modalOficina" class="modal fade" role="dialog" data-backdrop="static" 
+   data-keyboard="false">
+		 	<div class="modal-dialog">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+				        <button type="button" class="close" data-dismiss="modal">&times;</button>
+				        <h4 class="modal-title" id="titulo-modal-oficina"></h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				        <form>
+				        	<input type="hidden" id="idOficina" name="idOficina">
+				        	<div class="row">
+				        		<div class="col-md-12">
+				        			<div class="row">
+				        				<div class="col-md-6">
+                				        	<div class="form-group">
+                					    		<label for="selTipoOficina">Tipo Oficina:</label>
+                					    		<select class="form-control" id="selTipoOficina" 
+                					    				name="selTipoOficina">
+                					    			<option value="0">Seleccione un tipo</option>
+                					    			{% for tipoOficina in tiposOficina %}
+                						                <option value="{{ tipoOficina.id }}">{{ tipoOficina.tipoOficina }}</option>
+                						            {% endfor %}
+                					        	</select>
+                					    	</div>
+                					    </div>
+                					    <div class="col-md-6">
+                					    	<div class="form-group">
+                				        		<label for="codigoOficina">Código:</label>
+                				        		<input id="codigoOficina" class="form-control" name="codigoOficina" 
+                				        			   placeholder="Codigo HCD">
+                				        	</div>
+                					    </div>
+                					</div>
+                					<div class="row">
+				        				<div class="col-md-12">
+                				        	<div class="form-group">
+                				        		<label for="nombreOficina">Nombre:</label>
+                				        		<input id="nombreOficina" class="form-control" name="nombreOficina" 
+                				        			   placeholder="Nombre de la Oficina">
+                				        	</div>
+                				    	</div>
+                					</div>
+        				        </div>
+    				        </div>
+					        <hr>
+					        <div class="btn-group">
+					        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+				       			 <button type="button" class="btn btn-primary" id="btn-alta-oficina">Guardar</button>
+					        </div>
+				        </form>
+				     </div>
+			    </div>
+		  	</div>
+		</div>
+	</section>
+	
+{% endblock %}

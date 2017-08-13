@@ -15,6 +15,14 @@
       </options>
     </field>
     <field name="activa" type="boolean" column="activa" nullable="false"/>
+    <field name="usuarioCreacion" type="string" length="70" column="usuarioCreacion" nullable="false">
+    </field>
+    <field name="fechaCreacion" type="datetime" column="fechaCreacion" nullable="false">
+    </field>
+    <field name="usuarioModificacion" type="string" length="70" column="usuarioModificacion" nullable="true">
+    </field>
+    <field name="fechaModificacion" type="datetime" column="fechaModificacion" nullable="true">
+    </field>
     <one-to-many field="expedientesAsignados" target-entity="ExpedienteComision" mapped-by="comision" orphan-removal="true">
     	<cascade>
     		<cascade-persist/>

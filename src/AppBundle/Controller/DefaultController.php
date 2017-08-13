@@ -315,12 +315,37 @@ class DefaultController extends Controller
      */
     public function comisionAction(Request $request)
     {
-       return $this->render('default/comision.html.twig', array(
-            'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR
-        ));
-         
+    	$tipoComisionRepository=$this->getDoctrine()->getRepository('AppBundle:TipoComision');
+    	$tiposComision=$tipoComisionRepository->findAll();
+    	return $this->render('default/comision.html.twig', array(
+            'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
+    		'tiposComision'=>$tiposComision
+        ));   
     }
-
+    
+    /**
+     * @Route("/bloques", name="bloques")
+     */
+    public function bloquesAction(Request $request)
+    {
+    	return $this->render('default/bloques.html.twig', array(
+    			'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR
+    	));  
+    }
+    
+    /**
+     * @Route("/oficinas", name="oficinas")
+     */
+    public function oficinasAction(Request $request)
+    {
+    	$tipoOficinaRepository=$this->getDoctrine()->getRepository('AppBundle:TipoOficina');
+    	$tiposOficina=$tipoOficinaRepository->findAll();
+    	return $this->render('default/oficinas.html.twig', array(
+    			'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
+    			'tiposOficina'=>$tiposOficina
+    	));
+    }
+    
     /**
      * @Route("/votacion")
      */
