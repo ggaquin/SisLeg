@@ -46,6 +46,39 @@ use FOS\RestBundle\Controller\Annotations\Route;
 class RestComisionAsignacionController extends FOSRestController{
 
     
+	/**
+	 * @Rest\Post("/create")
+	 */
+	public function crearAsignacionAction(Request $request)
+	{
+		$idExpediente=$request->request->get('idExpediente');
+		$comisiones=$request->request->get('comisiones');
+		$usuario=$this->getUser();
+		
+		$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
+		$expedienteRepositry=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+		$em = $this->getDoctrine()->getManager();
+		$expediente=$expedienteRepositry->find($idExpediente);
+		
+		$listaComisiones=explode(',', $comisiones);
+		foreach ($listaComisiones as $idComision){
+			$asignacion=new ExpedienteComision();
+			$comision=$comisionRepository->find($idComision);
+			$asignacion->setComision($comision);
+			$asignacion->setExpediente($expediente);
+			$asignacion->setFechaAsignacion(new \DateTime('now'));
+			$asignacion->setUsuarioCreacion($usuario->getUsuario());
+			$asignacion->setPublicado(false);
+			$em->persist($asignacion);
+		}
+		
+		$em->flush();
+		
+		return $this->view("Las nuevas asignaciones se generaron en forma exitosa",200);
+		
+		
+	}
+	
     /**
      * @Rest\Get("/getByCriteria/{tipoCriterio}/{criterio}")
      */
@@ -61,7 +94,7 @@ class RestComisionAsignacionController extends FOSRestController{
     		if ($tipoCriterio=='todo')
     			$expedientesAsignados=$expedienteComisionRepository->findBy(array('anulado' => false));
     		if($tipoCriterio=='busqueda-1')
-    			$expedientesAsignados=$expedienteComisionRepository->findByExpediente_Numero($criterio);
+    			$expedientesAsignados=$expedienteComisionRepository->findByExpediente_Numero($criterio,false);
     		if ($tipoCriterio=='busqueda-2'){
     			$expedientesAsignados=$expedienteComisionRepository->findByComision_Id($criterio);
     		}
@@ -325,19 +358,58 @@ class RestComisionAsignacionController extends FOSRestController{
       }
       
       /**
+       * @Rest\Get("/getByExpedienteAndNombreWhithFiltro")
+       */
+      public  function traerPorExpedienteYNombreConFiltro(Request $request){
+      	$term1=$request->query->get('q');
+      	$term2=$request->query->get('r');
+      	$term3=$request->query->get('s');
+      	$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
+      	$expedientesAsignados=$expedienteComisionRepository->findByExpediente_IdAndComision_NombreAndFiltro($term1, $term2,$term3);
+      	$comisiones=[];
+      	foreach ($expedientesAsignados as $expedienteAsignado){
+      		$comisiones[]=array(
+			      				'id' => $expedienteAsignado->getComision()->getId(),
+			      				'comision' => $expedienteAsignado->getComision()->getComision()
+					      		);
+      	}
+      	return $this->view($comisiones,200);
+      }
+      
+      /**
        * @Rest\Get("/getByExpedienteAndNombre")
        */
       public  function traerPorExpedienteYNombre(Request $request){
       	$term1=$request->query->get('q');
       	$term2=$request->query->get('r');
-      	$term3=$request->query->get('s');
       	$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
-      	$expedientesAsignados=$expedienteComisionRepository->findByExpediente_IdAndComision_Nombre($term1, $term2,$term3);
-      	$comisiones=[];
-      	foreach ($expedientesAsignados as $expedienteAsignado){
-      		$comisiones[]=$expedienteAsignado->getComision();
+      	$comisiones=$expedienteComisionRepository->findByExpediente_IdAndComision_Nombre($term1, $term2);
+      	$resultado=[];
+      	foreach ($comisiones as $comision){
+      		$resultado[]=array(
+					      		'id' => $comision->getId(),
+					      		'comision' => $comision->getComision()
+					      	  );
       	}
-      	return $this->view($comisiones,200);
+      	return $this->view($resultado,200);
+      }
+      
+      /**
+       * @Rest\Get("/getExpedientefromAsignados")
+       */
+      public  function traerExpedienteAsignados(Request $request){
+      	
+      	$term=$request->query->get('q');
+      	$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
+      	$expedientesAsignados=$expedienteComisionRepository->findExpedienteVigenteByNumero($term);
+      	$expedientes=[];
+      	foreach ($expedientesAsignados as $expedienteAsignado){
+      		$expedientes[]=array(
+      							'id' => $expedienteAsignado->getExpediente()->getId(),
+      							'numeroCompleto' => $expedienteAsignado->getExpediente()->getNumeroCompleto()
+      					       );
+      	}
+      	return $this->view($expedientes,200);
       }
     
 }

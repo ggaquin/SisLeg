@@ -472,6 +472,8 @@
 			var articulosRevision=[];
 
 			var tablaRevisiones;
+
+			var tablaDictamenes;
 			
 		    var tabla=$('#registroAsignaciones').DataTable({
 		    			  "language": {
@@ -1216,7 +1218,7 @@
 			$('#modalRevisiones').on('hidden.bs.modal', function () {
 				tablaRevisiones.destroy();
 			});
-
+			
 			$('#revisiones tbody').on( 'click', '.btn-usar', function () {
 				debugger;
 		        var data = tablaRevisiones.row( $(this).parents('tr') ).data();
@@ -1232,8 +1234,67 @@
 		       
 		    } );
 
+			//------------------------------------------------------------------------------------------------------------
+			//----------------------------------------NUEVA ASIGNACION DE COMISION----------------------------------------
+			//------------------------------------------------------------------------------------------------------------
+
+			$('#modalNuevaAsignacion').on('show.bs.modal', function () {
+				$('#selExpedienteAdd').empty().change();
+				$("#selComisionesAdd").empty().change();
+			});
+
+			$("#btn-guardar-asignacion").click(function(){
+
+				$(this).prop("disabled",true);
+				
+				var idExpediente = $("#modalNuevaAsignacion").find('select[name="selExpedienteAdd"]').val();
+				var comisiones = $("#modalNuevaAsignacion").find('select[name="selComisionesAdd"]').val();
+				
+              	var formData=new FormData();
+                var validacion='';
+
+                validacion+=((idExpediente=="")?'<li>Debe seleccionar una expediente</li>':'');
+                validacion+=((comisiones=="" || comisiones == [])?'<li>Debe seleccionar al menos una comisión</li>':'')
+
+              	 if (validacion.length>0) 
+ 				{
+ 					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+ 								validacion+'</ul>':'');
+ 					toastr.error(validacion);
+ 					$("#btn-guardar-asignacion").prop("disabled", false);
+ 					return false;
+ 				}
+ 				else{
+
+ 					  formData.append('idExpediente',idExpediente);
+ 		              formData.append('comisiones',comisiones);
+
+ 	            	$.ajax({
+ 		                async: true,
+ 		                url: '{{ app.request.getBaseURL() }}/api/comisionAsignacion/create',
+ 		                data: formData,
+ 		                cache: false,
+ 		                contentType: false,
+ 		                processData: false,
+ 		                type: 'POST',
+ 	                success: function(data) {
+ 	                    toastr.success(data);
+ 						tabla.ajax.reload();
+ 						$('#modalNuevaAsignacion').modal('hide');
+ 	                	},
+ 	                complete:function(){
+ 	                	$("#btn-guardar-asignacion").prop("disabled", false);
+ 	                },
+ 	                error: function(jqXHR,textStatus,errorThrown ){
+ 						toastr.error(jqXHR.responseText);
+ 						}
+ 	            	});
+ 	            }
+
+			});
+
 		    //------------------------------------------------------------------------------------------------------------
-			//--------------------------EDICION DE VISTOS Y COSIIDERANDOS DE LA REVISIÓN----------------------------------
+			//--------------------------EDICION DE VISTOS Y CONSIDERANDOS DE LA REVISIÓN----------------------------------
 			//------------------------------------------------------------------------------------------------------------
 
 		    $("#btn-editar-vistos-revision").click(function(){
@@ -1277,7 +1338,7 @@
 
 			$("#selComisiones").select2({
 				ajax: {
-			    url: '{{ app.request.getBaseURL() }}'+"/api/comisionAsignacion/getByExpedienteAndNombre",
+			    url: '{{ app.request.getBaseURL() }}'+"/api/comisionAsignacion/getByExpedienteAndNombreWhithFiltro",
 			    dataType: 'json',
 			    delay: 250,
 			    cache: false,
@@ -1315,8 +1376,62 @@
 				
 			});
 
+			$("#selComisionesAdd").select2({
+				ajax: {
+			    url: '{{ app.request.getBaseURL() }}'+"/api/comisionAsignacion/getByExpedienteAndNombre",
+			    dataType: 'json',
+			    delay: 250,
+			    cache: false,
+			    data: function (params) {
+			      return {
+							q: params.term, // search term
+  			        		r: $("#modalNuevaAsignacion").find('select[name="selExpedienteAdd"]').val(),
+        			        page: params.page
+        			      };
+			    },
+			    processResults: function (data) {
+			       var dato=data;
+		           return {
+				        results: $.map(dato, function(item) {
+				            return { id: item.id, text: item.comision };
+				        })
+				    };
+		        },
+			  },
+			  language: "es",
+			  minimumInputLength: 3,
+			  theme: "bootstrap",
+			});
+
+			$("#selExpedienteAdd").select2({
+				ajax: {
+			    url: '{{ app.request.getBaseURL() }}'+"/api/comisionAsignacion/getExpedientefromAsignados",
+			    dataType: 'json',
+			    delay: 250,
+			    cache: false,
+			    data: function (params) {
+			      return {
+							q: params.term, // search term
+        			        page: params.page
+        			      };
+			    },
+			    processResults: function (data) {
+			       var dato=data;
+		           return {
+				        results: $.map(dato, function(item) {
+				            return { id: item.id, text: item.numeroCompleto };
+				        })
+				    };
+		        },
+			  },
+			  language: "es",
+			  minimumInputLength: 1,
+			  theme: "bootstrap",
+			});
+			
 			addClasssToSelect2("group-selComisiones","selComisiones");
 			addClasssToSelect2("group-selConcejales","selConcejales");
+			addClasssToSelect2("group-selComisionesAdd","selComisiones");
 			
 			$('#estadoFiltro').bootstrapToggle({
 		      on:  'Activo',
@@ -1384,7 +1499,7 @@
 				if(((valorBusqueda=="busqueda-1"|| valorBusqueda=="busqueda-2") && criterio()!="" && criterio()!="0") ||
 					valorBusqueda=="busqueda-3"|| valorBusqueda=="busqueda-4")
 				{
-					tabla.ajax.url("api/comisionAsignacion/getByCriteria//"+tipoCriterio()+"/"+criterio()).load();
+					tabla.ajax.url("api/comisionAsignacion/getByCriteria/"+tipoCriterio()+"/"+criterio()).load();
 					$(".filtro").prop('disabled',true);
 					$('#estadoFiltro').bootstrapToggle('enable');
 					$("#estadoFiltro").bootstrapToggle('on');
@@ -1396,7 +1511,7 @@
 					$(".filtro").prop('disabled',false);
 					$("#selBusqueda").val("todo").change();
 					$(".filtro").prop('disabled',false);
-					tabla.ajax.url("api/comisionAdignacion/getByCriteria//"+tipoCriterio()+"/"+criterio()).load();
+					tabla.ajax.url("api/comisionAsignacion/getByCriteria/"+tipoCriterio()+"/"+criterio()).load();
 					$(this).bootstrapToggle('disable');
 					
 				}
@@ -1489,7 +1604,7 @@
 	                		<th>
 	                			<div class="btn-group">
 	                				{# if EXP_NEW is defined #}
-		                			<button type="button" title="Agregar Asignación"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#">
+		                			<button type="button" title="Agregar Asignación"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modalNuevaAsignacion">
 							    			<span class="glyphicon glyphicon-plus"></span>
 							    	</button>
 							    	{# endif #}
@@ -1855,6 +1970,51 @@
 						    			<div class="btn-group">
 								        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
 				       			 			<button type="button" class="btn btn-primary" id="btn-cambio-texto">Aceptar</button>
+								        </div>
+							        </div>
+							    </div>
+    				    	</div>
+				    	</form>
+				    </div>
+				</div>
+			</div>
+		</div>
+		<div id="modalNuevaAsignacion" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
+			<div class="modal-dialog modal-lg">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Asignar Nueva Comisión</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				    	<form role="form">
+				    		<input type="hidden" id="idTexto" name="idTexto">
+				    		<div class="row">
+				    			<div class="col-md-3">
+				    				<div class="form-group">
+    				    				<label for="selExpedienteAdd">Expediente:</label>
+    						        	<select class="form-control" data-width="100%"
+    						        			id="selExpedienteAdd" name="selExpedienteAdd">
+    						        	</select>
+    								</div>
+				    			</div>
+				    			<div class="col-md-9">
+				    				<div class="form-group" id="group-selComisionesAdd">
+    				    				<label for="selComisionesAdd">Comisiones:</label>
+    						        	<select class="form-control" multiple="multiple" data-width="100%" 
+    						        			id="selComisionesAdd" name="selComisionesAdd">
+    						        	</select>
+    								</div>
+				    			</div>
+                			</div>
+                			<hr>
+    				    	<div class="row">
+    				    		<div class="col-md-12">
+					        		<div class="text-center">
+						    			<div class="btn-group">
+								        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+				       			 			<button type="button" class="btn btn-primary" id="btn-guardar-asignacion">Aceptar</button>
 								        </div>
 							        </div>
 							    </div>

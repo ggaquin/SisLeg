@@ -432,5 +432,47 @@ class Dictamen
     public function getClaseDictamen(){
     	return "basico";
     }
+    
+    /**
+     * get listaComisionesMayoria
+     *
+     * @return string
+     * @VirtualProperty()
+     */
+    public function getListaComisionesMayoria(){
+    	$comisiones="";
+    	$asinaciones=$this->asignacionesPorMayoria;
+    	foreach ($asinaciones as $asinacion)
+    		$comisiones.=(($comisiones!="")?'/':'').$asinacion->getComision()->getComision();
+    	return $comisiones;
+    }
+    
+    /**
+     * get listaComisionesPrimeraMinoria
+     *
+     * @return string
+     * @VirtualProperty()
+     */
+    public function getListaComisionesPrimeraMinoria(){
+    	$comisiones="";
+    	$asinaciones=$this->asignacionesPorPrimeraMinoria;
+    	foreach ($asinaciones as $asinacion)
+    		$comisiones.=(($comisiones!="")?'/':'').$asinacion->getComision()->getComision();
+    		return $comisiones;
+    }
+    
+    /**
+     * get listaComisionesSegundaMinoria
+     *
+     * @return string
+     * @VirtualProperty()
+     */
+    public function getListaComisionesSegundaMinoria(){
+    	$comisiones="";
+    	$asinaciones=$this->asignacionesPorSegundaMinoria;
+    	foreach ($asinaciones as $asinacion)
+    		$comisiones.=(($comisiones!="")?'/':'').$asinacion->getComision()->getComision();
+    		return $comisiones;
+    }
   
 }
