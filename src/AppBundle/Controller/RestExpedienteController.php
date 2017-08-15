@@ -360,7 +360,7 @@ class RestExpedienteController extends FOSRestController{
     		   		$expedienteComision->setComision($comision);
     		     		   		
     		   		$estadoExpediente=$estadoExpedienteRepository->find($idNuevoEstadoExpediente);
-    		   		$expediente->setEstado($estadoExpediente);
+    		   		$expediente->setEstadoExpediente($estadoExpediente);
     		   	}
     		   	
     		   	$em->persist($expediente);

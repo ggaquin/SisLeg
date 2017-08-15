@@ -1063,7 +1063,7 @@
 			$('#proyectos tbody').on( 'click', '.btn-ingresar', function () {
 		        var data = tablaProyectos.row( $(this).parents('tr') ).data();
 		        $("#nuevoExpediente").find('input[name="idProyecto"]').val(data[ "id" ]);
-		        var tipoExpediente=data[ "tipo_proyecto"].tipo_expediente.id;
+		        var tipoExpediente=data[ "tipo_expediente"];
 		        $("#nuevoExpediente").find('input[name="idTipoExpediente"]').val(tipoExpediente);
 		        $("#nuevoExpediente").find('div[name="concejales"]').html(data[ "lista_concejales"]);
 		        $("#nuevoExpediente").modal('show');
@@ -1124,9 +1124,9 @@
 									  ],
 								      "columns": [
 								      		{ "data": "id" },
-								      		{ "data": "tipo_proyecto.tipo_expediente.id"},
+								      		{ "data": "tipo_expediente"},
 								      		{ "data": "null","width":"12%"},
-								      		{ "data": "tipo_proyecto.tipo_proyecto","width":"20%"},
+								      		{ "data": "tipo_proyecto","width":"20%"},
 								            { "data": "lista_concejales","className": "for-mobile","width":"70%" },
 								        ],
 								      "autoWidth":false,

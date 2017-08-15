@@ -67,6 +67,7 @@ class RestProyectoController extends FOSRestController{
             foreach ($proyectos as $proyecto){
             	$registro=array('id'=>$proyecto->getId(),
             					'numero_expediente'=>$proyecto->getNumeroExpediente(),
+            					'tipo_expediente'=>$proyecto->getTipoProyecto()->getTipoExpediente()->getId(),	
             					'tipo_proyecto'=>$proyecto->getTipoProyecto()->getTipoProyecto(),
             					'fecha_creacion_formateada'=>$proyecto->getFechaCreacionFormateada(),
             					'fecha_entrada_formateada'=>$proyecto->getFechaEntradaFormateada(),
