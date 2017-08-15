@@ -10,12 +10,16 @@ use JMS\Serializer\Annotation\VirtualProperty;
  *
  * @ORM\Table(name="movimiento", indexes={@ORM\Index(name="movimiento_remito_idx", columns={"idRemito"}), 
  *                                        @ORM\Index(name="movimiento_expediente_idx", columns={"idExpediente"}),
- *                                        @ORM\Index(name="movimiento_tipoMovimiento_idx", columns={"idTipoMovimiento"})})
+ *                                        @ORM\Index(name="movimiento_sesion_idx", columns={"idSesion"})})
  *
  * @ORM\Entity
+ * @ORM\InheritanceType("SINGLE_TABLE")
+ * @ORM\DiscriminatorColumn(name="discriminador", type="string", length=7)
+ * @ORM\DiscriminatorMap({"pase" = "AppBundle\Entity\Pase",
+ *                        "informe" = "AppBundle\Entity\SolicitudInforme"})
  */
 
-class Movimiento {
+abstract class Movimiento {
 	
 	/**
 	* @var integer
@@ -25,17 +29,7 @@ class Movimiento {
 	* @ORM\GeneratedValue(strategy="IDENTITY")
 	*/
 	private $id;
-	
-	/**
-	 * @var \AppBundle\Entity\TipoMovimiento
-	 *
-	 * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Movimiento")
-	 * @ORM\JoinColumns({
-	 *   @ORM\JoinColumn(name="idTipoMovimiento", referencedColumnName="idTipoMovimiento")
-	 * })
-	 */
-	private $tipoMovimiento;
-	
+		
 	/**
 	 * @var string
 	 *
@@ -60,12 +54,12 @@ class Movimiento {
 	private $remito;
 	
 	/**
-	 * @var smallint
+	 * @var integer
 	 *
-	 * @ORM\Column(name="fojas", type="smallint", nullable=false)
+	 * @ORM\Column(name="remitoRetorno", type="datetime", nullable=true)
 	 */
-	private $fojas;
-	
+	private $remitoRetorno;
+		
 	/**
 	 * @var boolean
 	 *
@@ -101,20 +95,6 @@ class Movimiento {
 	 */
 	private $fechaModificacion;
 	
-	/**
-	 * @var \DateTime
-	 *
-	 * @ORM\Column(name="fechaRespuestaInforme", type="datetime", nullable=true)
-	 */
-	private $fechaRespuestaInforme;
-	
-	/**
-	 * @var integer
-	 * 
-	 * @ORM\Column(name="remitoRetorno", type="datetime", nullable=true)
-	 */
-	private $remitoRetorno;
-	
 	//------------------------------------constructor---------------------------------------------
 	
 	/**
@@ -134,29 +114,6 @@ class Movimiento {
 	 */
 	public function getId() {
 		return $this->id;
-	}
-	
-	/**
-	 * Set tipoMovimiento
-	 *
-	 * @param \AppBundle\Entity\TipoMovimiento $tipoMovimiento
-	 *
-	 * @return Movimiento
-	 */
-	public function setTipoMovimiento(\AppBundle\Entity\TipoMovimiento $tipoMovimiento= null)
-	{
-		$this->tipoMovimiento = $tipoMovimiento;
-		return $this;
-	}
-	
-	/**
-	 * Get tipoMovimiento
-	 *
-	 * @return \AppBundle\Entity\TipoMovimiento
-	 */
-	public function getTipoMovimiento()
-	{
-		return $this->tipoMovimiento;
 	}
 	
 	/**
@@ -223,27 +180,24 @@ class Movimiento {
 	}
 	
 	/**
-	 * Set fojas
-	 *
-	 * @param integer $fojas
-	 *
-	 * @return Movimiento
-	 */
-	public function setFojas($fojas)
-	{
-		$this->fojas = $fojas;
-		
-		return $this;
-	}
-	
-	/**
-	 * Get fojas
+	 * Get remitoRetorno
 	 *
 	 * @return integer
 	 */
-	public function getFojas()
-	{
-		return $this->fojas;
+	public function getRemitoRetorno() {
+		return $this->remitoRetorno;
+	}
+	
+	/**
+	 * Set remitoRetorno
+	 *
+	 * @param integer $remitoRetorno
+	 *
+	 * @return Pase
+	 */
+	public function setRemitoRetorno($remitoRetorno) {
+		$this->remitoRetorno = $remitoRetorno;
+		return $this;
 	}
 	
 	/**
@@ -366,52 +320,6 @@ class Movimiento {
 		return $this->usuarioModificacion;
 	}
 	
-	/**
-	 * Set fechaRespuestaInforme
-	 *
-	 * @param \DateTime $fechaRespuestaInforme
-	 *
-	 * @return Movimiento
-	 */
-	public function setFechaRespuestaInforme($fechaRespuestaInforme)
-	{
-		$this->fechaRespuestaInforme = $fechaRespuestaInforme;
-		
-		return $this;
-	}
-	
-	/**
-	 * Get fechaRespuestaInforme
-	 *
-	 * @return \DateTime
-	 */
-	public function getFechaRespuestaInforme()
-	{
-		return $this->fechaRespuestaInforme;
-	}
-	
-	/**
-	 * Get remitoRetorno
-	 *
-	 * @return integer
-	 */
-	public function getRemitoRetorno() {
-		return $this->remitoRetorno;
-	}
-	
-	/**
-	 * Set remitoRetorno
-	 *
-	 * @param integer $remitoRetorno
-	 *
-	 * @return Movimiento
-	 */
-	public function setRemitoRetorno($remitoRetorno) {
-		$this->remitoRetorno = $remitoRetorno;
-		return $this;
-	}
-	
-		
 	//------------------------------Propiedades Virtuales -------------------------------------
 	
 	/**
@@ -439,18 +347,6 @@ class Movimiento {
 	}
 	
 	/**
-	 * Get fechaRespuestaFormateada
-	 *
-	 * @return string
-	 *
-	 * @VirtualProperty
-	 */
-	public function getFechaRespuestaFormateada()
-	{
-		return ((!is_null($this->fechaRespuestaInforme))?$this->fechaRespuestaInforme->format('d/m/Y'):'');
-	}
-	
-	/**
 	 * Get origen
 	 *
 	 * @return string
@@ -472,18 +368,5 @@ class Movimiento {
 	{
 		return ((!is_null($this->getRemito()))?$this->getRemito()->getDestino()->getOficina():'');
 	}
-	
-	/**
-	 * Get fechaRespuestaInformeFormateada
-	 *
-	 * @return string
-	 *
-	 * @VirtualProperty
-	 */
-	public function getFechaRespuestaInformeFormateada()
-	{
-		return ((!is_null($this->getFechaRespuestaInforme()))?$this->getFechaRespuestaInforme()->format('d/m/Y'):'');
-	}
-	
-	
+		
 }

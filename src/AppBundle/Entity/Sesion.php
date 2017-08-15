@@ -292,4 +292,18 @@ class Sesion
     {
     	return $this->fecha->format('d/m/Y');
     }
+    
+    /**
+     * Get fechaMuestra
+     *
+     * @return string
+     *
+     * @VirtualProperty
+     */
+    public function getFechaMuestra()
+    {
+    	return $this->fecha->format('d/m/Y').'('.$this->getTipoSesion()->getAbreviacion().')';
+    }
+    
+    
 }

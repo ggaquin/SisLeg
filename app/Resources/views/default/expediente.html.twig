@@ -1334,12 +1334,10 @@
 				debugger;
 		        var data = tablaInformes.row( $(this).parents('tr') ).data();
 		        $("#respuestaInforme").find('input[name="idInforme"]').val(data[ "id" ]);
+		        $("#respuestaInforme").find('input[name="numeroRemitoInforme"]').val("");
+		        $("#respuestaInforme").find('input[name="fechaRespuesta"]').val("");
+		        actualizarSesiones($("#selSesionRespuesta"),0);
 		    } );
-
-			//EVENTO CERRAR MODAL RESPUESTA DE INFORMES
-			$('#respuestaInforme').on('hidden.bs.modal', function () {
-				$("#respuestaInforme").find('input[name="fechaRespuesta"]').val("");
-			});
 
 			//EVENTO CERRAR MODAL DE INFORMES
 			$('#informes').on('hidden.bs.modal', function () {
@@ -1357,13 +1355,17 @@
 				var idInforme =$("#respuestaInforme").find('input[name="idInforme"]').val();
 				var fecha=$("#respuestaInforme").find('input[name="fechaRespuesta"]').val();
 				var numeroRemito=$("#respuestaInforme").find('input[name="numeroRemitoInforme"]').val();
+				var	idSesion=$("#respuestaInforme").find('select[name="selSesionRespuesta"]').val();
 								
 				formData.append('idInforme',idInforme);
-				formData.append('fecha',fecha);
+				formData.append('fecha',fecha);;
 				validacion=((fecha=="") ?'<li>Debe seleccionar una fecha</li>':'');
 				formData.append('numeroRemito',numeroRemito);
 				validacion+=((numeroRemito.length==0)
 						 	  ?'<li>Debe indicar un numero de remito</li>':'');
+				formData.append('idSesion',idSesion)
+				validacion+=((idSesion==0)
+						 	  ?'<li>Debe seleccionar una sesión</li>':'');
 				
                 if (validacion.length>0) 
         		{
@@ -1867,7 +1869,7 @@
 			</div>
 		</div>
 		<div id="respuestaInforme" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
-			<div class="modal-dialog modal-sm">
+			<div class="modal-dialog">
 			    <!-- Modal content-->
 			    <div class="modal-content">
 				    <div class="modal-header" style="background-color:#666	;color:#FFF">
@@ -1878,19 +1880,28 @@
 				    	<form role="form">
 				    		<input type="hidden" id="idInforme" name="idInforme">
 				    		<div class="row">
-				    			<div class="col-md-6">
+				    			<div class="col-md-4">
 				    				<div class="form-group">
     				    				<label for="fechaRespuesta">Fecha Respuesta</label>
     				    				<input type="text" class="form-control text-center campo-fecha"
     				    					   id="fechaRespuesta" name="fechaRespuesta">
     				    			</div>
 				    			</div>
-				    			<div class="col-md-6">
+				    			<div class="col-md-4">
 				    				<div class="form-group">
     				    				<label for="numeroRemitoInforme">N° Remito</label>
     				    				<input type="text" class="form-control text-center es-numero"
     				    					   id="numeroRemitoInforme" name="numeroRemitoInforme">
     				    			</div>
+				    			</div>
+				    			<div class="col-md-4">
+				    				<div class="form-group">
+				    					<label for="selSesionRespuesta">Sesión</label>
+				    					<select class="form-control" id="selSesionRespuesta" 
+					        					name="selSesionRespuesta">
+					        					<option value="0">Seleccione Sesion</option>
+					        			</select>
+				    				</div>
 				    			</div>
                 			</div>
                 			<hr>

@@ -116,6 +116,8 @@ class RestComisionAsignacionController extends FOSRestController{
 				    					'dictamen_primera_minoria'=>(is_null($e->getDictamenPrimeraMinoria())?0:$e->getDictamenPrimeraMinoria()->getId()),
 				    					'dictamen_segunda_minoria'=>(is_null($e->getDictamenSegundaMinoria())?0:$e->getDictamenSegundaMinoria()->getId()),
     									'fecha_publicacion_formateada'=>$e->getFechaPublicacionFormateada(),
+    									'sesion_muestra'=>$e->getSesionMuestra(),
+    									'id_sesion'=>((!is_null($e->getSesion()))?$e->getSesion()->getId():0)
 				    				);
     			$respuesta[]=$datosAsignacion;
     		}
@@ -126,6 +128,31 @@ class RestComisionAsignacionController extends FOSRestController{
 	    }
     }
     
+    /**
+     * @Rest\Post("/updateSesion")
+     */
+    public function actualizarSesionAction(Request $request) 
+    {
+    	$idAsignacion=$request->request->get('idAsignacion');
+    	$idSesion=$request->request->get('idSesion');
+    	$usuario=$this->getUser();
+    	
+    	$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
+    	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+    	$expedienteComision=$expedienteComisionRepository->find($idAsignacion);
+    	$sesion=$sesionRepository->find($idSesion);
+    	
+    	$expedienteComision->setSesion($sesion);
+    	$expedienteComision->setFechaModificacion(new \DateTime());
+    	$expedienteComision->setUsuarioModificacion($usuario->getUsuario());
+    	
+    	$em = $this->getDoctrine()->getManager();
+    	$em->persist($expedienteComision);
+    	$em->flush();
+    	
+    	return $this->view("La sesion se asignó e forma exitosa",200);
+    }
+        
     /**
      * @Rest\Post("/updateVisualizacion")
      */

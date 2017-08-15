@@ -192,14 +192,15 @@
 									            "data": null,
 									            "orderable":false,
 									            "render": function(data, type, row){
+										            debugger;
 									            	var html="<div class='text-center'>";
 									            	if (row.anulado==false && row.fecha_recepcion_formateada==""){
-										            	if ("{{ app.user.rol.oficina is null}}" || "{{ app.user.rol.oficina.oficina }}"== row.origen.oficina) {
+										            	if ("{{ app.user.rol.oficina is null}}" || "{{ app.user.rol.oficina.oficina }}"== row.oficina_origen) {
         									            	html+="<button type='button' title='Anular Remito' class='btn btn-danger btn-xs btn-anular' data-toggle='modal' data-target='#anulacion'>"+
         									            		 "<span class='glyphicon glyphicon-ban-circle'></span></button>";
 		    											}
-    									            	if ("{{ app.user.rol.oficina is null}}" || "{{ app.user.rol.oficina.oficina }}"== row.destino.oficina ||
-    									            		("{{ app.user.rol.oficina.id }}"== "9" && row.destino.es_externa)) {
+    									            	if ("{{ app.user.rol.oficina is null}}" || "{{ app.user.rol.oficina.oficina }}"== row.oficina_destino ||
+    									            		("{{ app.user.rol.oficina.id }}"== "9" && row.destino_externo)) {
     									            		html+="<button type='button' title='Agregar Recepción' class='btn btn-info btn-xs btn-recepcion' data-toggle='modal' data-target='#recepcion'>"+
     									             		  	  "<span class='glyphicon glyphicon-calendar'></span></button>";
 														}

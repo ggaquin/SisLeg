@@ -10,6 +10,7 @@ use JMS\Serializer\Annotation\VirtualProperty;
  *
  * @ORM\Table(name="expedienteComision", indexes={@ORM\Index(name="expedienteComision_expediente_idx", columns={"idExpediente"}), 
  *                                                @ORM\Index(name="expedienteComision_comision_idx", columns={"idComision"}),
+ *                                                @ORM\Index(name="expedienteComision_sesion_idx", columns={"idSesion"}),
  *                                                @ORM\Index(name="expedienteComision_dictamenMayoria_idx", columns={"idDictamenMayoria"}),
  *                                                @ORM\Index(name="expedienteComision_dictamenPrimeraMinoria_idx", columns={"idDictamenPrimeraMinoria"}),
  *                                                @ORM\Index(name="expedienteComision_dictamenSegundaMinoria_idx", columns={"idDictamenSegundaMinoria"})
@@ -97,6 +98,15 @@ class ExpedienteComision
      * @ORM\Column(name="anulado", type="boolean", nullable=false)
      */
     private $anulado;
+    
+    /**
+     * @var \AppBundle\Entity\Sesion
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Sesion")
+     * @ORM\JoinColumns({
+     * 		@ORM\JoinColumn(name="idSesion",referencedColumnName="idSesion")
+     * })
+     */
+    private $sesion;
     
     /**
      * @var \DateTime
@@ -220,6 +230,30 @@ class ExpedienteComision
     public function getComision()
     {
         return $this->comision;
+    }
+    
+    /**
+     * Set sesion
+     *
+     * @param \AppBundle\Entity\Sesion $sesion
+     *
+     * @return ExpedienteComision
+     */
+    public function setSesion($sesion)
+    {
+    	$this->sesion = $sesion;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Get sesion	
+     *
+     * @return \AppBundle\Entity\Sesion
+     */
+    public function getSesion()
+    {
+    	return $this->sesion;
     }
 
       /**
@@ -465,6 +499,17 @@ class ExpedienteComision
     public function getFechaPublicacionFormateada()
     {
     	 return ((!is_null($this->fechaPublicacion))?$this->fechaPublicacion->format('d/m/Y'):'');
+    }
+    
+    /**
+     * Get SesionMuestra
+     * 
+     * @return string
+     * 
+     * @VirtualProperty
+     */
+    public function getSesionMuestra(){
+    	return ((is_null($this->getSesion()))?null:$this->getSesion()->getFechaMuestra());
     }
     
     /**

@@ -252,6 +252,25 @@
               	<li><a href="#" onclick="cargarMenu('/legisladores')"><i class="fa fa-address-card-o"></i><span>Concejales</span></a></li>
               {% endif %}
               
+              <li class="treeview">
+                <a href="#">
+                  <i class="fa fa-inbox"></i>
+                  <span>Despacho</span>
+                  <span class="pull-right-container">
+                    <i class="fa fa-angle-left pull-right"></i>
+                  </span>
+                </a>
+                <ul class="treeview-menu">
+                  <li class="divider"></li>
+                  {# {% if EXP_MAIN is defined %} #}
+                  <li><a href="#" onclick="cargarMenu('/expedientes')"><i class="fa fa-minus"></i>Sanciones</a></li>
+                  {# {% endif %} #}
+                  {# if  MOV_MAIN is defined #}
+                  <li><a href="#" onclick="cargarMenu('/movimientos')"><i class="fa fa-minus"></i>Versiones Taquigráficas</a></li>
+                  {# endif #}
+                </ul>
+              </li>
+              
               {% if EXP_MAIN is defined or MOV_MAIN is defined or REP_MAIN is defined %}
                   <li class="treeview">
                     <a href="#">

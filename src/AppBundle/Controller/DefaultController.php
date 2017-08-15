@@ -152,7 +152,7 @@ class DefaultController extends Controller
         $estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
         $tipoOficinaRepository=$this->getDoctrine()->getRepository('AppBundle:TipoOficina');
         $oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
-        $tipoSeionRepository=$this->getDoctrine()->getRepository('AppBundle:TipoSesion');
+        $tipoSesionRepository=$this->getDoctrine()->getRepository('AppBundle:TipoSesion');
         $idOficinaExterna=$this->getParameter('id_oficina_externa');
         
         $tiposExpediente=$tiposExpedienteRepository->findBy(array(),array('tipoExpediente' => 'ASC'));
@@ -170,7 +170,7 @@ class DefaultController extends Controller
         $array['tipos']=$tiposExpediente;
         $array['estados']=$estadosExpediente;
         $array['oficinasExternas']=$oficinasExternas;
-        $array['tiposSesion']=$tipoSeionRepository->findAll();
+        $array['tiposSesion']=$tipoSesionRepository->findAll();
         return $this->render('default/expediente.html.twig', $array);
     }
     
@@ -195,6 +195,26 @@ class DefaultController extends Controller
     		   'MAYORIA' => $this->getParameter('dictaminantes_en_mayoria'),
     		   'PRIMERA_MINORIA' => $this->getParameter('dictaminantes_en_primer_minoria'),
     		   'SEGUNDA_MINORIA' => $this->getParameter('dictaminantes_en_segunda_minoria')
+    	));
+    }
+    
+    
+    /**
+     * @Route("/sanciones", name="sanciones")
+     */
+    public function expedientesSancionesAction(Request $request)
+    {
+    	$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
+    	$tipoProyectoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoProyecto');
+        	
+    	$comisiones=$comisionRepository->findBy(array('activa' => true));
+    	$tipoProyectos=$tipoProyectoRepository->findAll();
+    	return $this->render('default/sanciones.html.twig',array(
+    			'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
+    			'comisiones' => $comisiones, 'tipoProyectos'=> $tipoProyectos,
+    			'MAYORIA' => $this->getParameter('dictaminantes_en_mayoria'),
+    			'PRIMERA_MINORIA' => $this->getParameter('dictaminantes_en_primer_minoria'),
+    			'SEGUNDA_MINORIA' => $this->getParameter('dictaminantes_en_segunda_minoria')
     	));
     }
     

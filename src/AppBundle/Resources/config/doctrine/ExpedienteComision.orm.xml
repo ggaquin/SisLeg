@@ -5,6 +5,7 @@
     <indexes>
       <index name="expedienteComision_expediente_idx" columns="idExpediente"/>
       <index name="expedienteComision_comision_idx" columns="idComision"/>
+      <index name="expedienteComision_sesion_idx" columns="idSesion"/>
       <index name="expedienteComision_dictamenMayoria_idx" columns="idDictamenMayoria"/>
       <index name="expedienteComision_dictamenPrimeraMinoria_idx" columns="idDictamenPrimeraMinoria"/>
       <index name="expedienteComision_dictamenSegundaMinoria_idx" columns="idDictamenSegundaMinoria"/>
@@ -31,6 +32,11 @@
         <option name="fixed"/>
       </options>
     </field>
+    <many-to-one field="sesion" target-entity="Sesion">
+    	<join-columns>
+    		<join-column name="idSesion" referenced-column-name="idSesion"/>
+    	</join-columns>
+    </many-to-one>
      <many-to-one field="dictamenMayoria" target-entity="Dictamen" inversed-by="asignacionesPorMayoria">
      	<cascade>
      		<cascade-persist/>

@@ -1,17 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
-  <entity name="AppBundle\Entity\Movimiento" table="movimiento">
+  <entity name="AppBundle\Entity\Movimiento" table="movimiento" inheritance-type="SINGLE_TABLE">
   	<indexes>
   		<index columns="idRemito" name="movimiento_remito_idx"></index>
   		<index columns="idExpediente" name="movimiento_expediente_idx"></index>
-  		<index columns="idTipoMovimiento" name="movimiento_tipoMovimiento_idx"></index>
+  		<index columns="idSesion" name="movimiento_sesion_idx"></index>
   	</indexes>
+  	<discriminator-column name="discriminador" type="string" length="7"/>
+    <discriminator-map>
+        <discriminator-mapping value="pase" class="AppBundle\Entity\Pase" />
+        <discriminator-mapping value="informe" class="AppBundle\Entity\SolicitudInforme" />
+    </discriminator-map>
     <id name="id" type="integer" column="idMovimiento">
       <generator strategy="IDENTITY"/>
     </id>
     <field name="observacion" type="string" length="200" column="observacion" nullable="true">
     </field>
-    <field name="fojas" type="smallint" column="fojas" nullable="false">
+      <field name="remitoRetorno" type="integer" column="remitoRetorno" nullable="true">
     </field>
     <field name="anulado" type="boolean" column="anulado" nullable="true">
     </field>
@@ -22,10 +27,6 @@
     <field name="usuarioModificacion" type="string" length="70" column="usuarioModificacion" nullable="true">
     </field>
     <field name="fechaModificacion" type="datetime" column="fechaModificacion" nullable="true">
-    </field>
-    <field name="fechaRespuestaInforme" type="datetime" column="fechaRespuestaInforme" nullable="true">
-    </field>
-    <field name="remitoRetorno" type="integer" column="remitoRetorno" nullable="true">
     </field>
     <many-to-one field="remito" target-entity="Remito" inversed-by="movimientos">
     	<join-columns>
@@ -38,11 +39,6 @@
     	</cascade>
     	<join-columns>
     		<join-column name="idExpediente" referenced-column-name="idExpediente"/>
-    	</join-columns>
-    </many-to-one>
-     <many-to-one field="tipoMovimiento" target-entity="TipoMovimiento">
-    	<join-columns>
-    		<join-column name="idTipoMovimiento" referenced-column-name="idTipoMovimiento"/>
     	</join-columns>
     </many-to-one>
   </entity>

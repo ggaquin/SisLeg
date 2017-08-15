@@ -5,6 +5,7 @@ namespace AppBundle\Repository;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\ResultSetMapping;
 use AppBundle\Entity\Movimiento;
+use AppBundle\Entity\Pase;
 
 class ExpedienteRepository extends EntityRepository{
 	
@@ -147,39 +148,31 @@ class ExpedienteRepository extends EntityRepository{
 	
 	public function findGirosByExpediente_Id($idExpediente){
 		
-		$movimientoInforme=2;
-		$rep = $this->getEntityManager()->getRepository('AppBundle:Movimiento');
+		$rep = $this->getEntityManager()->getRepository('AppBundle:Pase');
 		$qb = $rep->createQueryBuilder('m');
 		$qb ->innerJoin('m.expediente', 'e')
-		    -> innerJoin("m.tipoMovimiento", 't')
 		    -> where($qb->expr()->andX(
 							    		$qb->expr()->eq('e.id', '?1'),
-		    							$qb->expr()->neq('t.id','?2'),
-		    							$qb->expr()->eq('m.anulado', '?3')
+		    							$qb->expr()->eq('m.anulado', '?2')
 							    		)
 		    		)
 		    ->setParameter(1, $idExpediente)
-		    ->setParameter(2, $movimientoInforme)
-		    ->setParameter(3, false);
+		    ->setParameter(2, false);
 		return $qb->getQuery()->getResult();
 	}
 	
 	public function findInformesByExpediente_Id($idExpediente){
 		
-		$movimientoPase=1;
-		$rep = $this->getEntityManager()->getRepository('AppBundle:Movimiento');
+		$rep = $this->getEntityManager()->getRepository('AppBundle:SolicitudInforme');
 		$qb = $rep->createQueryBuilder('m');
 		$qb -> innerJoin('m.expediente', 'e')
-			-> innerJoin("m.tipoMovimiento", 't')
 			-> where($qb->expr()->andX(
 										$qb->expr()->eq('e.id', '?1'),
-										$qb->expr()->neq('t.id','?2'),
-										$qb->expr()->eq('m.anulado', '?3')	
+										$qb->expr()->eq('m.anulado', '?2')	
 									   )
 					)
 			->setParameter(1, $idExpediente)
-			->setParameter(2, $movimientoPase)
-			->setParameter(3, false);
+			->setParameter(2, false);
 		return $qb->getQuery()->getResult();
 	}
 }

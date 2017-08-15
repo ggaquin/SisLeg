@@ -453,7 +453,8 @@ class Remito{
 		foreach ($movimientosAux as $movimiento){
 			if (!$expedientes=="")
 				$expedientes.=" / ";
-			$expedientes.=$movimiento->getExpediente()->getNumeroCompleto();
+			$expedientes.=$movimiento->getExpediente()->getNumeroCompleto()." ".
+						  (($movimiento instanceof Pase)?"(P)":"(I)");
 		}
 		return $expedientes;
 	}

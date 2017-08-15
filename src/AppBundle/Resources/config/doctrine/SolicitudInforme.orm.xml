@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\SolicitudInforme"> 
+    <field name="fechaRespuesta" type="datetime" column="fechaRespuesta" nullable="true">
+    </field>
+    <many-to-one field="sesion" target-entity="Sesion">
+    	<join-columns>
+    		<join-column name="idSesion" referenced-column-name="idSesion"/>
+    	</join-columns>
+    </many-to-one>
+  </entity>
+</doctrine-mapping>

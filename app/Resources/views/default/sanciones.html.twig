@@ -412,29 +412,59 @@
 	        var newOption = new Option(nombreComision, idComision, true, true);
 		   	$("#selComisiones").append(newOption).trigger('change');
 		   	$("#editaRevision").bootstrapToggle('on');
+
+		   	/*
+			
+        	$datosAsignacion=array( 'id'=>$e->getId(), 'numeroCompleto'=>$e->getExpediente()->getNumeroCompeto(),
+				  	'comisionNombre'=>$e->getComision()->getComision(), 'comisionId'=>$e->getComision()->getId(),
+				  	'publicado'=>$e->getPublicado(), 'tieneDictamenMayoria'=>$e->getTieneDictamenMayoria(),
+				  	'tieneDictamenPrimeraMinoria'=>$e->getTieneDictamenPrimeraMinoria(),
+				  	'tieneDictamenSegundaMinoria'=>$e->getTieneDictamenSegundaMinoria(),
+				  	'idProyecto'=>$e->getExpediente()->getProyecto()->getId(),'idExpediente'=>$e->getExpediente()->getId(),
+					'dictamenMayoria'=>(is_null($e->getDictamenMayoria())?0:$e->getDictamenMayoria()),
+					'dictamenPrimeraMinoria'=>(isnull($e->getDictamenPrimeraMinoria())?0:$e->getDictamenPrimeraMinoria()),
+					'dictamenSegundaMinoria'=>(isnull($e->getDictamenSegundaMinoria())?0:$e->getDictamenSegundaMinoria()),
+					'fechaPublicacionFormateada'=>$e->getFechaPublicacionFormateada(),
+				);
+			
+		   	*/
+		   	/*
+		   	$("#modalDictamen").find('input[name="idAsignacion"]').val(data[ "id" ]);
+			var idProyecto=((data[ "expediente" ][ "proyecto"]!=null)?data[ "expediente" ][ "proyecto"][ "id" ]:0);
+	   		htmlTipoRedaccion="<option value='basico'>Básico</option>" +
+						      "<option value='articulado'>Articulado</option>";	
+	        if (idProyecto!=0)
+		        htmlTipoRedaccion+="<option value='revision'>Revisión</option>";
+
+			$("#selTipoRedaccion").html(htmlTipoRedaccion);
+			
+			var idExpediente=data[ "expediente" ][ "id" ];
+			$("#modalDictamen").find('input[name="idExpediente"]').val(idExpediente);
+	        $("#modalDictamen").find('input[name="idProyecto"]').val(idProyecto);
+	        $("#modalDictamen").find('input[name="idDictaminantes"]').val(numeroDictaminantes);
+
+	        if (numeroDictaminantes==1){
+		        var idDictamen=((data[ "dictamen_mayoria" ]!=null)?data[ "dictamen_mayoria" ][ "id" ]:0);
+	        	$("#modalDictamen").find('input[name="idDictamen"]').val(idDictamen);
+	        }
+	        if (numeroDictaminantes==2){
+	        	var idDictamen=((data[ "dictamen_primera_minoria" ]!=null)?data[ "dictamen_primera_minoria" ][ "id" ]:0);
+	        	$("#modalDictamen").find('input[name="idDictamen"]').val(idDictamen);
+	        }
+	        if (numeroDictaminantes==3){
+	        	var idDictamen=((data[ "dictamen_segunda_minoria" ]!=null)?data[ "dictamen_segunda_minoria" ][ "id" ]:0);
+	        	$("#modalDictamen").find('input[name="idDictamen"]').val(idDictamen);
+	        }
+
+	        var nombreComision=data[ "comision" ][ "comision" ];
+	        var idComision=data[ "comision" ][ "id" ];
+	        $("#modalDictamen").find('input[name="idComision"]').val(idComision);
+	        $("#selComisiones").empty().change();
+	        var newOption = new Option(nombreComision, idComision, true, true);
+		   	$("#selComisiones").append(newOption).trigger('change');
+		   	$("#editaRevision").bootstrapToggle('on');
+		   	*/
 	    }
-
-		function actualizarSesiones(control,valorSeleccionado){
-
-			$.ajax({
-				type:'Get',
-				dataType: 'json	',
-				url:'{{ app.request.getBaseURL() }}'+'/api/session/getLastByType',
-				success: function(data){
-					$(control).html('');
-					var html='<option value="0">Seleccione Sesion</option>'
-					$.each(data, function(index,sesion){
-						html+='<option value="'+sesion.id+'" '+
-							  ((valorSeleccionado==sesion.id)?'selected':'') +'>'+sesion.fecha_formateada+'-('+
-							 sesion.tipo_sesion.abreviacion+')</option>';
-					});
-					$(control).html(html);    			
-				},
-				error: function(jqXHR,textStatus,errorThrown ){
-					toastr.error(jqXHR.responseText);
-				}
-	      	});
-		}
 		
 		$(document).ready(function () {
 
@@ -504,22 +534,6 @@
 									        },
 									        {
 									            "targets": [ 4 ],
-									            "data": null,
-									            "orderable":true,
-									            "render": function(data, type, row){
-										            var html="<div class='text-center'>";
-										            if (row.sesion_muestra ==null)
-										            	html+="<button type='button'title='Asignar a Sesion' class='btn btn-primary btn-xs btn-asignar-sesion ' data-toggle='modal' data-target='#modalSesion'><span class='glyphicon glyphicon-calendar'></span></button> ";
-										            else{
-										            	html+="<button type='button' title='Editar Sesion' class='btn btn-primary btn-xs btn-editar-sesion' data-toggle='modal' data-target='#modalSesion'>"+row.sesion_muestra+"   <span class='glyphicon glyphicon-pencil'></span></button>";
-											            //html+="<span class='label label-success'>"+row.sesion_muestra+"</span>";
-														
-										            }
-												    return html+"</div>";
-									            }
-									        },
-									        {
-									            "targets": [ 5 ],
 									            "data": "publicado",
 									            "orderable":true,
 									            "render": function(data, type, row){
@@ -527,7 +541,7 @@
 									            }
 									        },
 									        {
-									        	"targets": [ 7 ],
+									        	"targets": [ 6 ],
 									         	"data": "",
 									         	"orderable":false,
 									         	"render": function(data, type, row){
@@ -546,7 +560,7 @@
 									         	}
 									        },
 										    {
-									         	"targets": [ 8 ],
+									         	"targets": [ 7 ],
 									         	"data": "",
 									         	"orderable":false,
 									         	"render": function(data, type, row){
@@ -565,7 +579,7 @@
 										     	}
 										    },
 											{
-									            "targets": [ 9 ],
+									            "targets": [ 8 ],
 									            "data": "",
 									            "orderable":false,
 									            "render": function(data, type, row){
@@ -587,14 +601,13 @@
 					      "columns": [
 					      		{ "data": "id" },
 					      		{ "data": "null","width":"7%"},
-					      		{ "data": "numero_completo","width":"8%"},
+					      		{ "data": "numero_completo","width":"10%"},
 					            { "data": "comision_nombre","width":"28%" },
-					            { "data": "null","width":"11%" },
-					            { "data": "publicado","width":"4%" },
-					            { "data": "fecha_publicacion_formateada","width":"6%" },
-					            { "data": "null", "width": "12%"},
-					            { "data": "null", "width": "12%"},
-					            { "data": "null", "width": "12%"}
+					            { "data": "publicado","width":"8%" },
+					            { "data": "fecha_publicacion_formateada","width":"8%" },
+					            { "data": "null", "width": "13%"},
+					            { "data": "null", "width": "13%"},
+					            { "data": "null", "width": "13%"}
 					        ],
 
 					        /*
@@ -640,76 +653,6 @@
 		        					 '/imprimir?tipoDocumento=expediente&id='+
 		        					  data[ "id" ];
 		    } );
-
-		  //-----------------------------------------------------------------------------------------------------------------
-		  //----------------------------------------------ASIGNACION DE SESIÓN-----------------------------------------------
-		  //-----------------------------------------------------------------------------------------------------------------
-
-		  //EVENTO ASIGNAR SESION DE LA GRILLA DE ASIGNACIONES	
-		    $('#registroAsignaciones tbody').on( 'click', '.btn-asignar-sesion', function () {
-		    	var data = tabla.row( $(this).parents('tr') ).data();
-		        $("#modalSesion").find("input[name='idAsignacion']").val(data[ "id" ]);
-		        actualizarSesiones($("#selSesion"),0);
-		        
-		    } );
-		    
-		  //EVENTO EDITAR SESION DE LA GRILLA DE ASIGNACIONES	
-		    $('#registroAsignaciones tbody').on( 'click', '.btn-editar-sesion', function () {
-		    	var data = tabla.row( $(this).parents('tr') ).data();
-		        $("#modalSesion").find("input[name='idAsignacion']").val(data[ "id" ]);
-		        actualizarSesiones($("#selSesion"),data[ "id_sesion" ]);
-		    });
-
-		  //EVENTO GUARDAR SESION DEL MODAL DE SESION
-		  $("#btn-guardar-sesion").click(function(){
-
-			    $("#btn-guardar-sesion").prop("disabled",true);
-			  
-				var idSesion=$("#modalSesion").find("select[name='selSesion']").val();
-				var idAsignacion=$("#modalSesion").find("input[name='idAsignacion']").val();
-
-				var validacion='';
-				var formData=new FormData();
-
-				validacion+=((idSesion==0)
-						 	 ?'<li>Debe selecionar una sesion</li>':'');
-			 	
-				formData.append('idSesion',idSesion);
-				formData.append('idAsignacion',idAsignacion);
-				
-				if (validacion.length>0) 
-				{
-					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
-								validacion+'</ul>':'');
-					$("#btn-guardar-sesion").prop("disabled",false);
-					toastr.error(validacion);
-					return false;
-				}
-				else{
-
-	            	$.ajax({
-		                async: true,
-		                url: '{{ app.request.getBaseURL() }}'+ '/api/comisionAsignacion/updateSesion',
-		                data: formData,
-		                type: 'post',
-		                cache: false,
-		                contentType: false,
-		                processData: false,
-	                success: function(data) {
-	                    toastr.success(data);
-						tabla.ajax.reload();
-						$('#modalSesion').modal('hide');
-	                	},
-	                complete: function(){
-	                	$("#btn-guardar-sesion").prop("disabled",false);
-	                	},
-	                error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(jqXHR.responseText);
-						}
-	            	});
-	            }  
-
-		  });
 
 		  //-----------------------------------------------------------------------------------------------------------------
 		  //-------------------------------------ALTA Y MODIFICACION DE DICTAMENES-------------------------------------------
@@ -1669,8 +1612,7 @@
 						    </th>	
 						    <th>Expdiente</th>
 			                <th>Comision</th>
-			                <th>Sesion</th>
-			                <th title="Publicado">Pub.</th>
+			                <th>Publicado</th>
 			                <th title="Fecha Publicacion">F. Pub.</th>
 			                <th>Dict. May.</th>
 			                <th>Dict. Prim. Min.</th>
@@ -2073,43 +2015,6 @@
 						    			<div class="btn-group">
 								        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
 				       			 			<button type="button" class="btn btn-primary" id="btn-guardar-asignacion">Aceptar</button>
-								        </div>
-							        </div>
-							    </div>
-    				    	</div>
-				    	</form>
-				    </div>
-				</div>
-			</div>
-		</div>
-		<div id="modalSesion" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
-			<div class="modal-dialog modal-sm">
-			    <!-- Modal content-->
-			    <div class="modal-content">
-				    <div class="modal-header" style="background-color:#666	;color:#FFF">
-		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title">Asignar Sesión</h4>
-				    </div>
-				    <div class="modal-body" style="background-color:#ecf0f5">
-				    	<form role="form">
-				    		<input type="hidden" id="idAsignacion" name="idAsignacion">
-				    		<div class="row">
-				    			<div class="col-md-12">
-				    				<div class="form-group">
-    				    				<label for="selSesion">Sesión:</label>
-    						        	<select class="form-control" data-width="100%"
-    						        			id="selSesion" name="selSesion">
-    						        	</select>
-    								</div>
-				    			</div>
-                			</div>
-                			<hr>
-    				    	<div class="row">
-    				    		<div class="col-md-12">
-					        		<div class="text-center">
-						    			<div class="btn-group">
-								        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
-				       			 			<button type="button" class="btn btn-primary" id="btn-guardar-sesion">Aceptar</button>
 								        </div>
 							        </div>
 							    </div>
