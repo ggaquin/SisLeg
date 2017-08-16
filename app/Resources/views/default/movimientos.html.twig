@@ -295,6 +295,7 @@
                     success: function(data) {
                         toastr.success(data);
     					tabla.ajax.reload();
+    					$("#anulacion").modal('hide');
                     	},
                     error: function(jqXHR,textStatus,errorThrown ){
     					toastr.error(jqXHR.responseText);

@@ -101,7 +101,7 @@ class Remito{
 	 * @var \Doctrine\Common\Collections\Collection
 	 *
 	 * @ORM\OneToMany(targetEntity="AppBundle\Entity\Movimiento", mappedBy="remito",
-	 * 				  cascade={"persist", "remove"},orphanRemoval=true)
+	 * 				  cascade={"persist"})
 	 */
 	private $movimientos;
 	

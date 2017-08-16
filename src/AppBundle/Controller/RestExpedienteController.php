@@ -411,15 +411,16 @@ class RestExpedienteController extends FOSRestController{
     	$remito = $remitoRepository->find($idRemito);
     	
     	if($remito->getFechaRecepcion()!=null)
-    		return $this->view("El remito ".$remito->getId()." tiene fecha de recepción. No se puede Anular",500);
+    		return $this->view("El movimiento ".$remito->getId()." tiene fecha de recepción. No se puede Anular",500);
     	
     	if($remito->getAnulado()==true)	
-    		return $this->view("El remito ".$remito->getId()." ya se encuentra anulado. No se puede Anular",500);
+    		return $this->view("El movimiento ".$remito->getId()." ya se encuentra anulado. No se puede Anular",500);
     	
     	$remito->setAnulado(true);
     	$remito->setMotivoAnulacion($motivoAnulacion);
-    	foreach ($remito->getMovimiento() as $movimiento) {
+    	foreach ($remito->getMovimientos() as $movimiento) {
     		$movimiento->setAnulado(true);
+    		$movimiento->getExpediente()->setOficinaActual($remito->getOrigen());
     	}
     	$em = $this->getDoctrine()->getManager();
     	$em->persist($remito);
