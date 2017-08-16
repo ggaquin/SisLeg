@@ -342,7 +342,7 @@ class RestExpedienteController extends FOSRestController{
     	foreach ($remitoDetalle as $detalle) {
     		
     		$expediente=$expedienteRepository->find($detalle->id);
-    		$tipoMovimiento=$tipoMovimientoRepository->find($detalle->idTipoMovimiento);
+    		//$tipoMovimiento=$tipoMovimientoRepository->find($detalle->idTipoMovimiento);
     		
     		if($detalle->idTipoMovimiento==$movimientoInformeYPase ||
     		   $detalle->idTipoMovimiento==$movimientoPase){
@@ -358,7 +358,8 @@ class RestExpedienteController extends FOSRestController{
     		   		$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
     		   		$comision=$comisionRepository->find($detalle->idComision);
     		   		$expedienteComision->setComision($comision);
-    		     		   		
+    		     		   	
+    		   		$expediente->addAsignacionComision($expedienteComision);
     		   		$estadoExpediente=$estadoExpedienteRepository->find($idNuevoEstadoExpediente);
     		   		$expediente->setEstadoExpediente($estadoExpediente);
     		   	}
