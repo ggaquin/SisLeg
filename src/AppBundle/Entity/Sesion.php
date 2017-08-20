@@ -69,13 +69,14 @@ class Sesion
      * })
      */
     private $tipoSesion;
-
+    
     /**
-     * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\OneToMany(targetEntity="AppBundle\Entity\AgendaSesion", mappedBy="sesion")
+     * @var tieneOrdenDelDia
+     * 
+     * @ORM\Column(name="tieneOrdenDelDia", type="boolean", nullable=false)
      */
-    private $ordenDelDia;
+    private $tieneOrdenDelDia;
+
 
     //-------------------------------------constructor----------------------------------------------
 
@@ -84,7 +85,7 @@ class Sesion
      */
     public function __construct()
     {
-        $this->ordenDelDia = new \Doctrine\Common\Collections\ArrayCollection();
+        //$this->ordenDelDia = new \Doctrine\Common\Collections\ArrayCollection();
         $this->quorum=false;
         $this->presentes=0;
     }
@@ -244,41 +245,29 @@ class Sesion
     {
     	return $this->tipoSesion;
     }
-
-    /**
-     * Add agendaSesion
-     *
-     * @param \AppBundle\Entity\AgendaSesion $agendaSesion
-     *
-     * @return Sesion
-     */
-    public function addAgendaSesion(\AppBundle\Entity\AgendaSesion $agendaSesion)
-    {
-        $this->ordenDelDia[] = $agendaSesion;
-
-        return $this;
-    }
-
-    /**
-     * Remove agendaSesion
-     *
-     * @param \AppBundle\Entity\AgendaSesion $agendaSesion
-     */
-    public function removeAgendaSesion(\AppBundle\Entity\AgendaSesion $agendaSesion)
-    {
-        $this->ordenDelDia->removeElement($agendaSesion);
-    }
-
-    /**
-     * Get ordenDelDia
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getOrdenDelDia()
-    {
-        return $this->ordenDelDia;
-    }
     
+    /**
+     * Get tieneOrdenDelDia
+     * 
+     * @return boolean
+     */
+	public function getTieneOrdenDelDia() {
+		return $this->tieneOrdenDelDia;
+	}
+	
+	/**
+	 * Set tieneOrdenDelDia
+	 * 
+	 * @param boolean $tieneOrdenDelDia
+	 * @return Sesion
+	 */
+	public function setTieneOrdenDelDia($tieneOrdenDelDia) {
+		$this->tieneOrdenDelDia = $tieneOrdenDelDia;
+		return $this;
+	}
+	    
+    
+
     //--------------------------------Propiedades Virtuales-----------------------------------
     
     /**

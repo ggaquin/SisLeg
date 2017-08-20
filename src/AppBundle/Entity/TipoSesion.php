@@ -33,7 +33,7 @@ class TipoSesion
     /**
      * @var string
      *
-     * @ORM\Column(name="$abreviacion", type="string", length=1, nullable=false)
+     * @ORM\Column(name="$abreviacion", type="string", length=2, nullable=false)
      */
     private $abreviacion;
 

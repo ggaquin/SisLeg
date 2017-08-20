@@ -145,7 +145,7 @@
 		function criterio(){
 			var tipo=$("#selBusqueda").val();
 			var valorRetorno;
-			return ((tipo=="todo" || tipo=="busqueda-3" || tipo=="busqueda-4")?"0":$("#"+tipo).val());	
+			return ((tipo=="todo" || tipo=="busqueda-3")?"0":$("#"+tipo).val());	
 		}
 		function tipoCriterio(){
 			return $("#selBusqueda").val();
@@ -165,30 +165,6 @@
 				$("#div-btn-revision").addClass("hidden");
 		}
 	
-		function aplicarAccion(accion, idAsignacion, tabla){
-
-			var formData= new FormData();
-			formData.append("accion",accion);
-			formData.append("idAsignacion",idAsignacion);
-		
-    		$.ajax({
-                   async: true,
-                   url: '{{ app.request.getBaseURL() }}'+'/api/comisionAsignacion/updateVisualizacion',
-                   data: formData,
-                   cache: false,
-                   contentType: false,
-                   processData: false,
-                   type:  'POST',
-               success: function(data) {
-                   toastr.success(data);
-    				tabla.ajax.reload();
-               	},
-               error: function(jqXHR,textStatus,errorThrown ){
-    				toastr.error(jqXHR.responseText);
-    			}
-           	});
-		}
-
 		function addClasssToSelect2(div,clase){
 			$("#"+div).find('span[class="select2-selection select2-selection--multiple"]').addClass(clase);
 		}
@@ -334,46 +310,6 @@
 		   	$("#editaRevision").bootstrapToggle('on');
 		   	$("#vistosYConsiderandos").bootstrapToggle('on');
 
-		   	/*
-		
-        	$datosAsignacion=array( 'id'=>$e->getId(), 'numeroCompleto'=>$e->getExpediente()->getNumeroCompeto(),
-				  	'comisionNombre'=>$e->getComision()->getComision(), 'comisionId'=>$e->getComision()->getId(),
-				  	'publicado'=>$e->getPublicado(), 'tieneDictamenMayoria'=>$e->getTieneDictamenMayoria(),
-				  	'tieneDictamenPrimeraMinoria'=>$e->getTieneDictamenPrimeraMinoria(),
-				  	'tieneDictamenSegundaMinoria'=>$e->getTieneDictamenSegundaMinoria(),
-				  	'idProyecto'=>$e->getExpediente()->getProyecto()->getId(),'idExpediente'=>$e->getExpediente()->getId(),
-					'dictamenMayoria'=>(is_null($e->getDictamenMayoria())?0:$e->getDictamenMayoria()),
-					'dictamenPrimeraMinoria'=>(isnull($e->getDictamenPrimeraMinoria())?0:$e->getDictamenPrimeraMinoria()),
-					'dictamenSegundaMinoria'=>(isnull($e->getDictamenSegundaMinoria())?0:$e->getDictamenSegundaMinoria()),
-					'fechaPublicacionFormateada'=>$e->getFechaPublicacionFormateada(),
-				);
-			
-		   	*/
-		   	/*
-			$("#modalDictamen").find('input[name="idAsignacion"]').val(data[ "id" ]);
-	        var idProyecto=((data[ "expediente" ][ "proyecto" ]!=null)?data[ "expediente" ][ "proyecto" ][ "id" ]:0);
-			htmlTipoRedaccion="<option value='basico' selected='selected'>Básico</option>" +
-						      "<option value='articulado'>Articulado</option>";	
-	        if (idProyecto!=0)
-		        htmlTipoRedaccion+="<option value='revision'>Revisión</option>";
-
-			$("#selTipoRedaccion").html(htmlTipoRedaccion);
-
-			var idExpediente=data[ "expediente" ][ "id" ];
-			$("#modalDictamen").find('input[name="idExpediente"]').val(idExpediente);
-	        $("#modalDictamen").find('input[name="idProyecto"]').val(idProyecto);
-	        $("#modalDictamen").find('input[name="idDictaminantes"]').val(numeroDictaminantes);
-	        $("#modalDictamen").find('input[name="idDictamen"]').val(0);
-	        var nombreComision=data[ "comision" ][ "comision" ];
-	        var idComision=data[ "comision" ][ "id" ];
-	        $("#modalDictamen").find('input[name="idComision"]').val(idComision);
-	        $("#selComisiones").empty().change();
-	        var newOption = new Option(nombreComision, idComision, true, true);
-		   	$("#selComisiones").append(newOption).trigger('change');
-		   	$("#editaRevision").bootstrapToggle('on');
-		   	$("#vistosYConsiderandos").bootstrapToggle('on');
-		   	*/
-
 		}
 
 		function abrirEdicionDictamen(data,numeroDictaminantes){
@@ -486,7 +422,6 @@
 									            "orderable":false,
 									            "render": function(data, type, row){
 										            var html="<div class='btn-group'>";
-											        html+="<button type='button' title='Publicar' class='btn btn-primary btn-xs btn-publicar'><span class='glyphicon glyphicon-eye-open'></span></button>";
 											        html+="<button type='button' title='Anular Asignación' class='btn btn-danger btn-xs btn-anular'><span class='glyphicon glyphicon-minus-sign'></span></button>";
 													html+="</div>";
 									            	return html;
@@ -497,7 +432,7 @@
 									            "data": null,
 									            "orderable":true,
 									            "render": function(data, type, row){
-									            	html="<button type='button'title='Editar Comision' class='btn btn-primary btn-xs btn-editar ' data-toggle='modal' data-target='#cambioComision'><span class='glyphicon glyphicon-pencil'></span></button> ";
+									            	html="<button type='button'title='Editar Comision' class='btn btn-primary btn-xs btn-editar'><span class='glyphicon glyphicon-pencil'></span></button> ";
 								            		html+=data;
 								            		return html;
 									            }
@@ -519,22 +454,15 @@
 									            }
 									        },
 									        {
-									            "targets": [ 5 ],
-									            "data": "publicado",
-									            "orderable":true,
-									            "render": function(data, type, row){
-									            	return ((data==false)?"NO":"SI");
-									            }
-									        },
-									        {
-									        	"targets": [ 7 ],
+									        	"targets": [ 6 ],
 									         	"data": "",
 									         	"orderable":false,
 									         	"render": function(data, type, row){
 												var html="<div class='btn-group'style='margin-left:5px'>";
+													debugger;
     												if (row.tiene_dictamen_mayoria==false){
     													html+="<span class='label label-danger'>Sin Dictamen</span>";
-    													if (row.publicado==true)
+    													if (row.recibido==true)
     														html+="<button type='button' title='Agregar Dictamen' class='btn btn-primary btn-xs btn-nuevo-dictamen-mayoria' data-toggle='modal' data-target='#modalDictamen'><span class='glyphicon glyphicon-paperclip'></span></button>";
     												}
     												else{
@@ -546,14 +474,14 @@
 									         	}
 									        },
 										    {
-									         	"targets": [ 8 ],
+									         	"targets": [ 7 ],
 									         	"data": "",
 									         	"orderable":false,
 									         	"render": function(data, type, row){
 												var html="<div class='btn-group'style='margin-left:5px'>";
     												if (row.tiene_dictamen_primera_minoria==false){
     													html+="<span class='label label-danger'>Sin Dictamen</span>";
-    													if (row.publicado==true)
+    													if (row.recibido==true)
     														html+="<button type='button' title='Agregar Dictamen' class='btn btn-primary btn-xs btn-nuevo-dictamen-primera-minoria' data-toggle='modal' data-target='#modalDictamen'><span class='glyphicon glyphicon-paperclip'></span></button>";
     												}
     												else{
@@ -565,14 +493,14 @@
 										     	}
 										    },
 											{
-									            "targets": [ 9 ],
+									            "targets": [ 8 ],
 									            "data": "",
 									            "orderable":false,
 									            "render": function(data, type, row){
 													var html="<div class='btn-group'style='margin-left:5px'>";
 													if (row.tiene_dictamen_segunda_minoria==false){
 														html+="<span class='label label-danger'>Sin Dictamen</span>";
-														if (row.publicado==true)
+														if (row.recibido==true)
 															html+="<button type='button' title='Agregar Dictamen' class='btn btn-primary btn-xs btn-nuevo-dictamen-segunda-minoria' data-toggle='modal' data-target='#modalDictamen'><span class='glyphicon glyphicon-paperclip'></span></button>";
 													}
 													else{
@@ -590,41 +518,11 @@
 					      		{ "data": "numero_completo","width":"8%"},
 					            { "data": "comision_nombre","width":"28%" },
 					            { "data": "null","width":"11%" },
-					            { "data": "publicado","width":"4%" },
 					            { "data": "fecha_publicacion_formateada","width":"6%" },
 					            { "data": "null", "width": "12%"},
 					            { "data": "null", "width": "12%"},
 					            { "data": "null", "width": "12%"}
 					        ],
-
-					        /*
-					         "columns": [
-					      		{ "data": "id" },
-					      		{ "data": "null","width":"7%"},
-					      		{ "data": "expediente.numero_completo","width":"10%"},
-					            { "data": "comision.comision","width":"28%" },
-					            { "data": "publicado","width":"8%" },
-					            { "data": "fecha_publicacion_formateada","width":"8%" },
-					            { "data": "null", "width": "13%"},
-					            { "data": "null", "width": "13%"},
-					            { "data": "null", "width": "13%"}
-					        ],
-					        
-					        */
-
-					        /*
-					        	$datosAsignacion=array( 'id'=>$e->getId(), 'numeroCompleto'=>$e->getExpediente()->getNumeroCompeto(),
-				    				  	'comisionNombre'=>$e->getComision()->getComision(), 'comisionId'=>$e->getComision()->getId(),
-				    				  	'publicado'=>$e->getPublicado(), 'tieneDictamenMayoria'=>$e->getTieneDictamenMayoria(),
-				    				  	'tieneDictamenPrimeraMinoria'=>$e->getTieneDictamenPrimeraMinoria(),
-				    				  	'tieneDictamenSegundaMinoria'=>$e->getTieneDictamenSegundaMinoria(),
-				    				  	'idProyecto'=>$e->getExpediente()->getProyecto()->getId(),'idExpediente'=>$e->getExpediente()->getId(),
-				    					'dictamenMayoria'=>(is_null($e->getDictamenMayoria())?0:$e->getDictamenMayoria()),
-				    					'dictamenPrimeraMinoria'=>(isnull($e->getDictamenPrimeraMinoria())?0:$e->getDictamenPrimeraMinoria()),
-				    					'dictamenSegundaMinoria'=>(isnull($e->getDictamenSegundaMinoria())?0:$e->getDictamenSegundaMinoria()),
-    									'fechaPublicacionFormateada'=>$e->getFechaPublicacionFormateada(),
-				    				);
-					        */
 					      "autoWidth":false,
 					      "paging": true,
 					      "lengthChange": true,
@@ -935,16 +833,32 @@
 			//---------------------------------------PUBLICACIÓN y ANULACIÓN-------------------------------------------------
 			//---------------------------------------------------------------------------------------------------------------
 						
-			$('#registroAsignaciones tbody').on( 'click', '.btn-publicar', function () {			
-				 var data = tabla.row( $(this).parents('tr') ).data();
-				 idAsignacion=data[ "id" ];
-				 aplicarAccion("publicar", idAsignacion,tabla);
-			}); 
-
 			$('#registroAsignaciones tbody').on( 'click', '.btn-anular', function () {			
 				 var data = tabla.row( $(this).parents('tr') ).data();
-				 idAsignacion=data[ "id" ];
-				 aplicarAccion("anular", idAsignacion,tabla);
+
+				 if (data["recibido"]==false)
+					 toastr.error("No se ha efectivizado la recepción del movimiento");
+				 else{
+        				 var formData=new FormData();
+        				 formData.append('idAsignacion',+data[ "id" ]);
+        				 				 
+        				 $.ajax({
+        	                   async: true,
+        	                   url: '{{ app.request.getBaseURL() }}/api/comisionAsignacion/anular',
+        	                   data: formData,
+        	                   cache: false,
+        	                   contentType: false,
+        	                   processData: false,
+        	                   type:  'POST',
+        	               success: function(data) {
+        	                   toastr.success(data);
+        	    				tabla.ajax.reload();
+        	               	},
+        	               error: function(jqXHR,textStatus,errorThrown ){
+        	    				toastr.error(jqXHR.responseText);
+        	    			}
+        	           	});
+				 }
 			}); 
 			
 			//---------------------------------------------------------------------------------------------------------------
@@ -954,7 +868,12 @@
 			//EVENTO BOTON EDITAR COMISION EN GRILLA
 		    $('#registroAsignaciones tbody').on( 'click', '.btn-editar', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
-		        $("#cambioComision").find('input[name="idAsignacion"]').val(data[ "id" ]);
+		        if (data["recibido"]==false)
+					 toastr.error("No se ha efectivizado la recepción del movimiento");
+				 else{
+		        		$("#cambioComision").find('input[name="idAsignacion"]').val(data[ "id" ]);
+		        		$("#cambioComision").modal('show');
+				 }
 		    } );
 
 			//BOTON ACEPTAR DEL MODAL DE EDICIÓN DE COMISIÓN
@@ -1554,7 +1473,7 @@
 			$("#btn-busqueda").click(function(){
 				var valorBusqueda=$("#selBusqueda").val();
 				if(((valorBusqueda=="busqueda-1"|| valorBusqueda=="busqueda-2") && criterio()!="" && criterio()!="0") ||
-					valorBusqueda=="busqueda-3"|| valorBusqueda=="busqueda-4")
+					valorBusqueda=="busqueda-3")
 				{
 					tabla.ajax.url("api/comisionAsignacion/getByCriteria/"+tipoCriterio()+"/"+criterio()).load();
 					$(".filtro").prop('disabled',true);
@@ -1631,8 +1550,7 @@
 											<option value="todo">Todo</option>
 											<option value="busqueda-1">Número Expediente</option>
 											<option value="busqueda-2">Comision</option>
-											<option value="busqueda-3">Sin Publicar</option>
-											<option value="busqueda-4">Sin Dictamen</option>
+											<option value="busqueda-3">Sin Dictamen</option>
 										</select>
 										<input class="form-control busqueda hidden filtro" id="busqueda-1"/>
 										<select class="form-control busqueda hidden filtro" id="busqueda-2">
@@ -1670,7 +1588,6 @@
 						    <th>Expdiente</th>
 			                <th>Comision</th>
 			                <th>Sesion</th>
-			                <th title="Publicado">Pub.</th>
 			                <th title="Fecha Publicacion">F. Pub.</th>
 			                <th>Dict. May.</th>
 			                <th>Dict. Prim. Min.</th>
@@ -1777,7 +1694,7 @@
 					    			<div class="col-md-12">
 					    				<nav>
         								    <ul class="nav nav-pills">
-        									    <li role="presentation"><a href="#" id="link-tab-1" class="selectable" onclick = "habilitar('tab-1')" ><h4>Texto</h4></h4></a></li>
+        									    <li role="presentation"><a href="#" id="link-tab-1" class="selectable" onclick = "habilitar('tab-1')" ><h4>Texto</h4></a></li>
         										<li role="presentation"><a href="#" id="link-tab-2" class="selectable hidden" onclick = "habilitar('tab-2')"><h4>Artículos</h4></a></li>
         										<li role="presentation"><a href="#" id="link-tab-3" class="selectable hidden" onclick = "habilitar('tab-3')"><h4>Revision Proyecto</h4></a></li>
         										<li role="presentation"><a href="#" id="link-tab-4" class="selectable hidden" onclick = "habilitar('tab-4')"><h4>Copiar Dictamen</h4></a></li>

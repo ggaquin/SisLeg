@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
-  <entity name="AppBundle\Entity\AgendaSesion" table="agendaSesion">
+  <entity name="AppBundle\Entity\ExpedienteSesion" table="expedienteSesion">
     <indexes>
-      <index name="agendaSesion_expediente_idx" columns="idExpediente"/>
-      <index name="agendaSesion_sesion_idx" columns="idSesion"/>
-      <index name="agendaSesion_estadoAgendaSesion_idx" columns="idEstadoAgendaSesion"/>
+      <index name="expedienteSesion_expediente_idx" columns="idExpediente"/>
+      <index name="expedienteSesion_sesion_idx" columns="idSesion"/>
+      <index name="expedienteSesion_estadoExpedienteSesion_idx" columns="idEstadoExpedienteSesion"/>
     </indexes>
-    <id name="id" type="integer" column="idAgendaSesion">
+    <id name="id" type="integer" column="idExpedienteSesion">
       <generator strategy="IDENTITY"/>
     </id>
     <field name="aFavor" type="smallint" column="aFavor" nullable="false">
@@ -27,9 +27,9 @@
         <option name="default">0</option>
       </options>
     </field>
-    <many-to-one field="estadoAgendaSesion" target-entity="EstadoAgendaSesion" fetch="LAZY">
+    <many-to-one field="estadoExpedienteSesion" target-entity="EstadoExpedienteSesion" fetch="LAZY">
       <join-columns>
-        <join-column name="idEstadoAgendaSesion" referenced-column-name="idEstadoAgendaSesion"/>
+        <join-column name="idEstadoExpedienteSesion" referenced-column-name="idEstadoExpedienteSesion"/>
       </join-columns>
     </many-to-one>
     <many-to-one field="expediente" target-entity="Expediente" fetch="LAZY">
@@ -37,7 +37,7 @@
         <join-column name="idExpediente" referenced-column-name="idExpediente"/>
       </join-columns>
     </many-to-one>
-    <many-to-one field="sesion" target-entity="Sesion" inversed-by="ordenDelDia" fetch="LAZY">
+    <many-to-one field="sesion" target-entity="Sesion" fetch="LAZY">
       <join-columns>
         <join-column name="idSesion" referenced-column-name="idSesion"/>
       </join-columns>

@@ -137,59 +137,47 @@ class ExpedienteComisionRepository extends EntityRepository{
 			->innerJoin('ec.comision', 'c')
 			->innerJoin('e.estadoExpediente', 'es')
 			->where($qb->expr()->andX(
-					$qb->expr()->eq('e.id', '?1'),
-					$qb->expr()->like('c.id', '?2'),
-					$qb->expr()->orX(
-							$qb->expr()->eq('es.id','?3'),
-							$qb->expr()->eq('es.id','?4')
-							)
-					
-					)
-					
-					
-					)
+										$qb->expr()->eq('e.id', '?1'),
+										$qb->expr()->like('c.id', '?2'),
+										$qb->expr()->orX(
+														$qb->expr()->eq('es.id','?3'),
+														$qb->expr()->eq('es.id','?4')
+														)
+												)										
+										)
 			->setParameter(1, $idExpediente)
 			->setParameter(2, $idComision)
 			->setParameter(3, 2)
 			->setParameter(4, 3);
 		return $qb->getQuery()->getSingleResult();
 	}
-	/*
-	public function findDictamenByExpediente_Id($idExpediente){
+	
+	
+	public function findPrimerAsignacionByExpediente_Id($idExpediente){
 			
-		$rep = $this->getEntityManager()->getRepository('AppBundle:Dictamen');
-		$qb = $rep->createQueryBuilder('d');
-		$qb -> leftJoin('d.asignacionesPorMayoria', 'm')
-			-> leftJoin('m.expediente', 'em')
-			-> leftJoin('d.asignacionesPorPrimeraMinoria', 'pm')
-			-> leftJoin('pm.expediente', 'epm')
-			-> leftJoin('d.asignacionesPorSegundaMinoria', 'sm')
-			-> leftJoin('sm.expediente', 'esm')
-			-> distinct();
-		$qb -> where(
-					 $qb->expr()->orX(
-					 					$qb->expr()->andX(
-					 									  $qb->expr()->isNotNull('m'),
-					 									  $qb->expr()->eq('em.id', '?1'),
-					 									  $qb->expr()->isNull('m.numeroSancion')
-					 									 ),
-								 		$qb->expr()->andX(
-								 						  $qb->expr()->isNotNull('pm'),
-								 						  $qb->expr()->eq('epm.id', '?1'),
-								 						  $qb->expr()->isNull('epm.numeroSancion')	
-								 						 ),
-								 		$qb->expr()->andX(
-											 			  $qb->expr()->isNotNull('sm'),
-											 			  $qb->expr()->eq('esm.id', '?1'),
-								 						  $qb->expr()->isNull('esm.numeroSancion')
-											 			 )
-					 				 )
-				  )
-			-> setParameter(1, $idExpediente);
+		$qb1 = $this->createQueryBuilder('ec');
+		$qb1 ->select('MIN(ec.id) as primerAsignacion')
+			 ->innerJoin('ec.expediente', 'e')
+			 ->innerJoin('e.estadoExpediente', 'es')
+			 ->where($qb1->expr()->andX(
+										$qb1->expr()->eq('e.id', '?1'),
+										$qb1->expr()->orX(
+												$qb1->expr()->eq('es.id','?2'),
+												$qb1->expr()->eq('es.id','?3')
+												)
+										)
+					)
+			->groupBy('e.id');
+			
+		$qb = $this->createQueryBuilder('ecp');
+		$qb -> where($qb->expr()->in('ecp.id', $qb1->getDQL()))
+			->setParameter(1, $idExpediente)
+			->setParameter(2, 2)
+			->setParameter(3, 3);
 		
 		return $qb->getQuery()->getResult();
 				
 	}
-	*/
+	
 	
 }

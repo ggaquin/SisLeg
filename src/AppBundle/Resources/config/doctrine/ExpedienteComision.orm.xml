@@ -6,6 +6,7 @@
       <index name="expedienteComision_expediente_idx" columns="idExpediente"/>
       <index name="expedienteComision_comision_idx" columns="idComision"/>
       <index name="expedienteComision_sesion_idx" columns="idSesion"/>
+      <index name="expedienteComision_movimiento_idx" columns="idMovimiento"/>
       <index name="expedienteComision_dictamenMayoria_idx" columns="idDictamenMayoria"/>
       <index name="expedienteComision_dictamenPrimeraMinoria_idx" columns="idDictamenPrimeraMinoria"/>
       <index name="expedienteComision_dictamenSegundaMinoria_idx" columns="idDictamenSegundaMinoria"/>
@@ -13,8 +14,6 @@
     <id name="id" type="integer" column="idExpedienteComision">
       <generator strategy="IDENTITY"/>
     </id>
-    <field name="publicado" type="boolean" column="publicado" nullable="false">
-    </field>
     <field name="fechaPublicacion" type="datetime" column="fechaPublicacion" nullable="true">
     </field>	
     <field name="anulado" type="boolean" column="anulado" nullable="false">
@@ -32,6 +31,11 @@
         <option name="fixed"/>
       </options>
     </field>
+    <many-to-one field="paseOriginario" target-entity="Pase">
+    	<join-columns>
+    		<join-column name="idMovimiento" referenced-column-name="idMovimiento"/>
+    	</join-columns>
+    </many-to-one>
     <many-to-one field="sesion" target-entity="Sesion">
     	<join-columns>
     		<join-column name="idSesion" referenced-column-name="idSesion"/>

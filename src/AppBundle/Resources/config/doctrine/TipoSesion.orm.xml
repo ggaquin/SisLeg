@@ -9,7 +9,7 @@
         <option name="fixed"/>
       </options>
     </field>
-    <field name="abreviacion" type="string" column="abreviacion" length="1" nullable="false">
+    <field name="abreviacion" type="string" column="abreviacion" length="2" nullable="false">
       <options>
         <option name="fixed"/>
       </options>

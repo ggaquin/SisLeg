@@ -3,27 +3,46 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+//use Doctrine\ORM\Mapping\InheritanceType;
 
 /**
- * AgendaSesion
+ * ExpedienteSesion
  *
- * @ORM\Table(name="agendaSesion", indexes={@ORM\Index(name="agendaSesion_expediente_idx", columns={"idExpediente"}), 
- *                                          @ORM\Index(name="agendaSesion_sesion_idx", columns={"idSesion"}), 
- *                                          @ORM\Index(name="agendaSesion_estadoAgendaSesion_idx", columns={"idEstadoAgendaSesion"})})
+ * @ORM\Table(name="ExpedienteSesion", indexes={@ORM\Index(name="agendaSesion_expediente_idx", columns={"idExpediente"}), 
+ *                                          	@ORM\Index(name="agendaSesion_sesion_idx", columns={"idSesion"}), 
+ *                                          	@ORM\Index(name="expedienteSesion_estadoExpedienteSesion_idx", columns={"idEstadoExpedienteSesion"})})
  * @ORM\Entity
  */
-class AgendaSesion
+
+ /*
+ * @ORM\InheritanceType("SINGLE_TABLE")
+ * @ORM\DiscriminatorColumn(name="discriminador", type="string", length=15)
+ * @ORM\DiscriminatorMap({"ItemA" = "AppBundle\Entity\ExpedienteSeSionItemA", 
+ *                        "ItemB" = "AppBundle\Entity\ExpedienteSeSionItemB",
+ *                        "ItemC" = "AppBundle\Entity\ExpedienteSeSionItemC",
+ *                        "ItemD" == "AppBundle\Entity\ExpedienteSeSionItemD",
+ *                        "ItemE" == "AppBundle\Entity\ExpedienteSeSionItemE"
+ *                        })
+ */
+abstract class ExpedienteSesion
 {   
     //--------------------------------atributos de la clase----------------------------------------
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="idAgendaSesion", type="integer")
+     * @ORM\Column(name="idExpedienteSesion", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $id;
+    
+    /**
+     * @var innteger
+     * 
+     * @ORM\Column(name="ordenSesion" ,type="smallint", nullable=false)
+     */
+    private $ordenSesion;
 
     /**
      * @var integer
@@ -47,14 +66,14 @@ class AgendaSesion
     private $abstenciones = '0';
 
     /**
-     * @var \AppBundle\Entity\EstadoAgendaSesion
+     * @var \AppBundle\Entity\EstadoExpedienteSesion
      *
-     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\EstadoAgendaSesion")
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\EstadoExpedienteSesion")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="idEstadoAgendaSesion", referencedColumnName="idEstadoAgendaSesion")
+     *   @ORM\JoinColumn(name="idEstadoExpedienteSesion", referencedColumnName="idEstadoExpedienteSesion")
      * })
      */
-    private $estadoAgendaSesion;
+    private $estadoExpedienteSesion;
 
     /**
      * @var \AppBundle\Entity\Expediente
@@ -69,7 +88,7 @@ class AgendaSesion
     /**
      * @var \AppBundle\Entity\Sesion
      *
-     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Sesion", inversedBy="ordenDelDia")
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Sesion")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="idSesion", referencedColumnName="idSesion")
      * })
@@ -87,13 +106,34 @@ class AgendaSesion
     {
         return $this->id;
     }
-
+    
+    /**
+     * Get ordenSesion
+     * 
+     * @return integer
+     */
+	public function getOrdenSesion() {
+		return $this->ordenSesion;
+	}
+	
+	/**
+	 * Set ordenSesion
+	 * 
+	 * @param integer $ordenSesion
+	 * 
+	 * @return ExpedienteSesion
+	 */
+	public function setOrdenSesion($ordenSesion) {
+		$this->ordenSesion = $ordenSesion;
+		return $this;
+	}
+	
     /**
      * Set aFavor
      *
      * @param integer $aFavor
      *
-     * @return Agenda
+     * @return ExpedienteSesion
      */
     public function setAFavor($aFavor)
     {
@@ -117,7 +157,7 @@ class AgendaSesion
      *
      * @param integer $enContra
      *
-     * @return Agenda
+     * @return ExpedienteSesion
      */
     public function setEnContra($enContra)
     {
@@ -141,7 +181,7 @@ class AgendaSesion
      *
      * @param integer $abstenciones
      *
-     * @return Agenda
+     * @return ExpedienteSesion
      */
     public function setAbstenciones($abstenciones)
     {
@@ -161,27 +201,27 @@ class AgendaSesion
     }
 
     /**
-     * Set estadoAgendaSesion
+     * Set estadoExpedienteSesion
      *
-     * @param \AppBundle\Entity\EstadoAgendaSesion $estadoAgendaSesion
+     * @param \AppBundle\Entity\EstadoExpedienteSesion $estadoExpedienteSesion
      *
-     * @return AgendaSesion
+     * @return ExpedienteSesion
      */
-    public function setEstadoAgendaSesion(\AppBundle\Entity\EstadoAgendaSesion $estadoAgendaSesion = null)
+    public function setEstadoExpedienteSesion(\AppBundle\Entity\EstadoExpedienteSesion $estadoExpedienteSesion= null)
     {
-        $this->estadoAgendaSesion = $estadoAgendaSesion;
+    	$this->estadoExpedienteSesion = $estadoExpedienteSesion;
 
         return $this;
     }
 
     /**
-     * Get estadoAgendaSesion
+     * Get estadoExpedienteSesion
      *
-     * @return \AppBundle\Entity\EstadoAgendaSesion
+     * @return \AppBundle\Entity\EstadoExpedienteSesion
      */
-    public function getEstadoAgendaSesion()
+    public function getEstadoExpedienteSesion()
     {
-        return $this->estadoAgendaSesion;
+        return $this->estadoExpedienteSesion;
     }
 
     /**
@@ -189,7 +229,7 @@ class AgendaSesion
      *
      * @param \AppBundle\Entity\Expediente $expediente
      *
-     * @return AgendaSesion
+     * @return ExpedienteSesion
      */
     public function setExpediente(\AppBundle\Entity\Expediente $expediente = null)
     {
@@ -213,7 +253,6 @@ class AgendaSesion
      *
      * @param \AppBundle\Entity\Sesion $sesion
      *
-     * @return Agenda
      */
     public function setSesion(\AppBundle\Entity\Sesion $sesion = null)
     {
@@ -231,4 +270,8 @@ class AgendaSesion
     {
         return $this->sesion;
     }
+    
+    //----------------------------------------METODOS ABSTRACTOS----------------------------------------
+    
+    public abstract function getDatosAImprimir();
 }

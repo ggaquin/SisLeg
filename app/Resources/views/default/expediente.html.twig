@@ -173,6 +173,7 @@
 						$("#documentoParticular").val('');
 						break;
 				case 4:
+				case 9:
 						$(".proyecto-concejales").addClass('hidden');
 						$(".expediente-particular").addClass('hidden');
 						$(".ente-externo").removeClass('hidden');
@@ -207,6 +208,7 @@
 						$("#documentoParticularMod").val('');
 						break;
 				case 4:
+				case 9:
 						$(".proyecto-concejales").addClass('hidden');
 						$(".expediente-particular").addClass('hidden');
 						$(".ente-externo").removeClass('hidden');
@@ -375,21 +377,33 @@
 									            "data": "numero_completo",
 									            "orderable":true,
 									            "render": function(data, type, row){
-										            var html="";
+										            var html="<div>";
 										            if('{{ EXP_EDIT is defined}}')
 									            		html+="<button type='button'title='Editar expediente' class='btn btn-primary btn-xs btn-editar ' data-toggle='modal' data-target='#modificacionExpediente'><span class='glyphicon glyphicon-pencil'></span></button> ";
+									            		html+=data;
+									            	return html;
+									            }
+									        },
+									        {
+									            "targets": [ 4 ],
+									            "data": "fecha_creacion_formateada",
+									            "orderable":true,
+									            "render": function(data, type, row){
+										            var html="";
+										            if('{{ app.user.rol.rol}}'=="ROLE_ADMINISTRADOR")
+									            		html+="<button type='button'title='Editar Fecha' class='btn btn-primary btn-xs btn-editar-fecha' data-toggle='modal' data-target='#modalFechaIngreso'><span class='glyphicon glyphicon-pencil'></span></button> ";
 									            		html+=data
 									            	return html;
 									            }
 									        },
 								            {
-									            "targets": [ 6 ],
+									            "targets": [ 5 ],
 									            "data": 'oficina_actual',
 									            "orderable":true,
 									            "render": function(data, type, row){
-									            	var html="";
+									            	var html="<div>";
 									            	if(data=="COMISIONES" && row.lista_comisiones_asignadas.length>0){
-											        	html= "<span style='color:#367fa9' class='glyphicon glyphicon-info-sign' title='"
+											        	html+= "<span style='color:#367fa9' class='glyphicon glyphicon-info-sign' title='"
 													              +row.lista_comisiones_asignadas
 													              +"'></span>  "+data;
 									            	}
@@ -400,13 +414,14 @@
         	    													  " data-toggle='modal' data-target='#retornoExterno'>" +
         	    						             		  	  	  "<span class='glyphicon glyphicon-repeat'></span></button>  "+data;
         									            	}
-        	    						             		else html=data;
+        	    						             		else html+=data;
 														}
+													html+="</div><div style='padding-top: 9px'><span class='label label-info'>"+row.estado+"</span></div>";
 									            	return html;
 									            }
 									        },
 								            {
-									            "targets": [ 7 ],
+									            "targets": [ 6 ],
 									            "data": 'caratula_muestra',
 									            "orderable":true,
 									            "render": function(data, type, row){
@@ -416,18 +431,16 @@
 												        	html+="<button type='button' title='Descargar Documento' class='btn btn-info btn-xs btn-descargar'><span class='glyphicon glyphicon-save-file'></span></button>";
 									            	return html;
 									            }
-									        } 
-									       
+									        }									       
 						  ],
 					      "columns": [
 					      		{ "data": "id" },
-					      		{ "data": "null","width":"7%"},
+					      		{ "data": "null","width":"12%"},
 					      		{ "data": "numero_completo","width":"10%"},
-					            { "data": "tipo_expediente","width":"8%" },
-					            { "data": "fecha_creacion_formateada","width":"8%" },
-					            { "data": "fecha_modificacion_formateada","width":"8%" },
+					            { "data": "tipo_expediente","width":"10%" },
+					            { "data": "fecha_creacion_formateada","width":"10%" },
 					            { "data": "oficina_actual","width":"25%" },
-					            { "data": "caratula_muestra", "width": "34%"},
+					            { "data": "caratula_muestra", "width": "33%"},
 					        ],
 					      "autoWidth":false,
 					      "paging": true,
@@ -503,7 +516,7 @@
 					else{ 
         				$.ajax({
         	                async: true,
-        	                url: '{{ app.request.getBaseURL() }}'+'/setRetornoExterno',
+        	                url: '{{ app.request.getBaseURL() }}/setRetornoExterno',
         	                data: formData,
         	                contentType: false,
         	                cache: false,
@@ -713,7 +726,7 @@
 
 						if(data.proyecto!=0){
 							$("#selTipoExpedienteMod").prop( "disabled", true );
-							$("#concejalesMod").html(data.lista_autores);
+							$("#concejalesMod").html(data.concejal);
 							mostrarTiposPara("proyectos");
 						}
 						else{
@@ -1065,7 +1078,7 @@
 		        $("#nuevoExpediente").find('input[name="idProyecto"]').val(data[ "id" ]);
 		        var tipoExpediente=data[ "tipo_expediente"];
 		        $("#nuevoExpediente").find('input[name="idTipoExpediente"]').val(tipoExpediente);
-		        $("#nuevoExpediente").find('div[name="concejales"]').html(data[ "lista_concejales"]);
+		        $("#nuevoExpediente").find('div[name="concejales"]').html(data[ "concejal"]);
 		        $("#nuevoExpediente").modal('show');
 		    } );
 
@@ -1127,7 +1140,8 @@
 								      		{ "data": "tipo_expediente"},
 								      		{ "data": "null","width":"12%"},
 								      		{ "data": "tipo_proyecto","width":"20%"},
-								            { "data": "lista_concejales","className": "for-mobile","width":"70%" },
+								            { "data": "concejal","className": "for-mobile","width":"20%" },
+								            { "data": "claves","className": "for-mobile","width":"50%" },
 								        ],
 								      "autoWidth":false,
 								      "paging": true,
@@ -1466,6 +1480,64 @@
 	            	});
 	            }
 			});
+
+
+			//------------------------------------------------------------------------------------------------------------
+			//----------------------------------------EDICION FECHA DE INGRESO--------------------------------------------
+			//------------------------------------------------------------------------------------------------------------
+			
+			 $('#registroExpediente tbody').on( 'click', '.btn-editar-fecha', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+		        $("#modalFechaIngreso").find("input[name='idExpediente']").val(data[ "id" ]);
+		        $("#modalFechaIngreso").find("input[name='fechaIngreso']").val("");
+		    } );
+						
+			$("#btn-guardar-fecha").click(function(){	
+				
+				$("#btn-guardar-fecha").prop("disabled",true);
+				var formData=new FormData();
+				var idExpediente=$("#modalFechaIngreso").find('input[name="idExpediente"]').val();
+              	var fecha=$("#fechaIngreso").val();
+              	
+                var validacion='';
+                
+                validacion+=((fecha=="")?'<li>Debe indicar la nueva fecha de ingreso</li>':'');
+                            				  				
+	            if (validacion.length>0) 
+				{
+					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+								validacion+'</ul>':'');
+					toastr.error(validacion);
+					$("#btn-guardar-fecha").prop("disabled", false);
+					return false;
+				}
+				else{
+
+					formData.append('fecha',fecha);
+	              	formData.append('idExpediente',idExpediente);
+
+	            	$.ajax({
+		                async: true,
+		                url: '{{ app.request.getBaseURL() }}/api/expediente/upateFechaIngreso',
+		                data: formData,
+		                cache: false,
+		                contentType: false,
+		                processData: false,
+		                type:  'POST',
+	                success: function(data) {
+	                    toastr.success(data);
+	                    tabla.ajax.reload();
+						$('#modalFechaIngreso').modal('hide');
+	                	},
+	                complete:function(){
+	                	$("#btn-guardar-fecha").prop("disabled", false);
+	                },
+	                error: function(jqXHR,textStatus,errorThrown ){
+						toastr.error(jqXHR.responseText);
+						}
+	            	});
+	            }
+			});
 			
 		    //------------------------------------------------------------------------------------------------------------
 			//---------------------------------INICIALIZACIÓN DE CONTROLES------------------------------------------------
@@ -1480,7 +1552,7 @@
 				$("#modalSesion").find('input[name="control"]').val("selSesionMod");
 				$("#modalSesion").modal('show');
 			});
-			
+
 			$("#selTipoExpediente").change(function(){
 				mostrarOrigenParaNuevo($(this).val());
 			});
@@ -1571,6 +1643,12 @@
 		    	locale: 'es',
 		    	format:'DD/MM/YYYY',
 		    	minDate : 'now'
+		    });
+
+			$('#fechaIngresoExpediente').datetimepicker({
+		    	locale: 'es',
+		    	format:'DD/MM/YYYY',
+		    	maxDate : 'now'
 		    });
 
 		    $(".es-numero").on('keypress',function(event){
@@ -1684,8 +1762,7 @@
 						    <th>Numero</th>
 			                <th>Tipo</th>
 			                <th>F. Ing</th>
-			                <th>F. Mod</th>
-			                <th>Oficina Actual</th>
+			                <th>Estado / Oficina</th>	
 			                <th>Caratula</th>
 	                	</tr>
 	                </thead>
@@ -2460,6 +2537,45 @@
 				     </div>
 			    </div>
 		  	</div>
+		</div>
+		<div id="modalFechaIngreso" class="modal fade custom-modal" role="dialog" data-backdrop="static" 
+		     data-keyboard="false">
+		 	<div class="modal-dialog modal-sm">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Cambio Fecha Ingreso</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				    	<input type="hidden" id="idExpediente" name="idExpediente">
+				    	<div class="row">
+				    		<div class="col-md-12">
+    				    		<div class="form-group">
+    				        		<label for="fechaIngresoExpediente">Nueva Fecha de Ingreso</label>
+									<div class="input-group date" id="fechaIngresoExpediente">
+						                <input type="text" class="form-control text-center" id="fechaIngreso" name="fechaIngreso" data-provide="datepicker">
+						                 <div class="input-group-addon">
+						                    <i class="fa fa-calendar"></i>
+						                </div>
+						             </div>
+    							</div>
+    						</div>
+				    	</div>
+				     	<hr>
+				        <div class="row">
+				        	<div class="col-md-12">
+				        		<div class="text-center">
+					    			<div class="btn-group">
+							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+						       			 <button type="button" class="btn btn-primary" id="btn-guardar-fecha">Guardar</button>
+							        </div>
+						        </div>
+						    </div>
+			    		</div>
+				    </div>
+				</div>
+			</div>
 		</div>
 		<div id="modalSesion" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
 		 	<div class="modal-dialog">

@@ -117,7 +117,8 @@ class RestExpedienteController extends FOSRestController{
             					'caratula_sin_html'=>$expediente->getCaratulaSinHtml(),
             					'oficina_actual_externa'=>$expediente->getOficinaActual()->getEsExterna(),
             					'lista_comisiones_asignadas'=>$expediente->getListaComisionesAsignadas(),
-            					'folios'=>$expediente->getFolios()
+            					'folios'=>$expediente->getFolios(),
+            					'estado'=>$expediente->getEstadoExpediente()->getEstadoExpediente()
             					);
             	$resutado[]=$registro;
             	
@@ -145,7 +146,7 @@ class RestExpedienteController extends FOSRestController{
         				 'numero_sancion'=>$expediente->getNumeroSancion(),
         				 'año'=>$expediente->getAño(), 
         				 'sesion'=>(($expediente->getSesion()!=null)?$expediente->getSesion()->getId():0),
-        				 'lista_autores'=>$expediente->getListaAutores(),
+        				 'concejal'=>$expediente->getProyecto()->getConcejal()->getNombreCompleto(),
         				 'proyecto'=>(($expediente->getProyecto()!=null)?$expediente->getProyecto()->getId():0),
         				 'demandante_documento'=>(($expediente->getDemandanteParticular()!=null)
         				 							?$expediente->getDemandanteParticular()->getDocumento()
@@ -255,6 +256,40 @@ class RestExpedienteController extends FOSRestController{
     		return $this->view($e->getMessage(),500);
     	}
     }
+    
+    /**	
+     * @Rest\Post("/upateFechaIngreso")
+     */
+    public function actualizarFechaIngresoAction(Request $request)
+    {
+		    	$idExpediente=$request->request->get('idExpediente');
+    		$fecha=$request->request->get('fecha');
+    	   	
+    	try {
+    		
+    		$usuario=$this->getUser();
+    		$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+    		$fechaActual=new \DateTime('now');
+    		    		
+    		$expediente=$expedienteRepository->find($idExpediente);
+    		$fechaIngreso= \DateTime::createFromFormat('d/m/Y', $fecha);
+    		
+    		$expediente->setFechaCreacion($fechaIngreso);
+    		$expediente->setFechaModificacion($fechaActual);
+    		$expediente->setUsuarioModificacion($usuario->getUsuario());
+    		
+    		$em = $this->getDoctrine()->getManager();
+    		$em->persist($expediente);
+    		$em->flush();
+    		    		
+    		return $this->view("El fecha de ingreso se actualizó forma exitosa",200);
+    		
+    	}
+    	catch (\Exception $e){
+    		return $this->view($e->getMessage(),500);
+    	}
+    }
+    
     /**
      * @Rest\Get("/getRemitosByCriteria/{tipoCriterio}/{criterio}")
      */
@@ -320,7 +355,6 @@ class RestExpedienteController extends FOSRestController{
     	$usuario=$this->getUser();
     	$oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
     	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
-    	$tipoMovimientoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoMovimiento');
     	$estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
     	$fechaActual=new \DateTime('now');
     	$origen=$usuario->getRol()->getOficina();
@@ -342,12 +376,20 @@ class RestExpedienteController extends FOSRestController{
     	foreach ($remitoDetalle as $detalle) {
     		
     		$expediente=$expedienteRepository->find($detalle->id);
-    		//$tipoMovimiento=$tipoMovimientoRepository->find($detalle->idTipoMovimiento);
-    		
+    		    		
     		if($detalle->idTipoMovimiento==$movimientoInformeYPase ||
     		   $detalle->idTipoMovimiento==$movimientoPase){
     			
     		   	$expediente->setOficinaActual($destino); //cambia destino de expediente
+    		   	
+    		   	$pase=new Pase();
+    		   	$pase->setExpediente($expediente);
+    		   	$pase->setFechaCreacion($fechaActual);
+    		   	$pase->setUsuarioCreacion($usuario->getUsuario());
+    		   	$pase->setFojas($detalle->folios);
+    		   	$pase->setObservacion($detalle->observaciones);
+    		   	
+    		   	$expedienteComision=null;
     		   	
     		   	if ($detalle->incluyeComision){
     		   		
@@ -358,20 +400,23 @@ class RestExpedienteController extends FOSRestController{
     		   		$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
     		   		$comision=$comisionRepository->find($detalle->idComision);
     		   		$expedienteComision->setComision($comision);
+    		   		$expedienteComision->setPaseOriginario($pase);
     		     		   	
     		   		$expediente->addAsignacionComision($expedienteComision);
     		   		$estadoExpediente=$estadoExpedienteRepository->find($idNuevoEstadoExpediente);
     		   		$expediente->setEstadoExpediente($estadoExpediente);
+    		   		$expediente->setFechaCreacion($fechaActual);
+    		   		$expediente->setUsuarioCreacion($usuario->getUsuario());
     		   	}
     		   	
-    		   	$em->persist($expediente);
+//				$em->persist($expediente);
     		   	
-    		   	$pase=new Pase();
-    		   	$pase->setExpediente($expediente);
-    		   	$pase->setFechaCreacion($fechaActual);
-    		   	$pase->setUsuarioCreacion($usuario->getUsuario());
-    		   	$pase->setFojas($detalle->folios);
-    		   	$pase->setObservacion($detalle->observaciones);
+//     		   	$pase=new Pase();
+//     		   	$pase->setExpediente($expediente);
+//     		   	$pase->setFechaCreacion($fechaActual);
+//     		   	$pase->setUsuarioCreacion($usuario->getUsuario());
+//     		   	$pase->setFojas($detalle->folios);
+//     		   	$pase->setObservacion($detalle->observaciones);
     		   	
     		   	$remito->addMovimiento($pase);
     		    	
@@ -406,6 +451,7 @@ class RestExpedienteController extends FOSRestController{
     {	
     	$idRemito = $request->request->get('idRemito');
     	$motivoAnulacion = $request->request->get('motivoAnulacion');
+    	$usuario=$this->getUser();
     	
     	$remitoRepository=$this->getDoctrine()->getRepository('AppBundle:Remito');
     	$remito = $remitoRepository->find($idRemito);
@@ -417,10 +463,17 @@ class RestExpedienteController extends FOSRestController{
     		return $this->view("El movimiento ".$remito->getId()." ya se encuentra anulado. No se puede Anular",500);
     	
     	$remito->setAnulado(true);
+    	$remito->setUsuarioModificacion($usuario->getUsuario());
+    	$remito->setFechaModificacion(new \DateTime('now'));
+    	
     	$remito->setMotivoAnulacion($motivoAnulacion);
     	foreach ($remito->getMovimientos() as $movimiento) {
     		$movimiento->setAnulado(true);
+    		$remito->setUsuarioModificacion($usuario->getUsuario());
+    		$remito->setFechaModificacion(new \DateTime('now'));
     		$movimiento->getExpediente()->setOficinaActual($remito->getOrigen());
+    		$movimiento->getExpediente()->setUsuarioModificacion($usuario->getUsuario());
+    		$movimiento->getExpediente()->setFechaModificacion(new \DateTime('now'));
     	}
     	$em = $this->getDoctrine()->getManager();
     	$em->persist($remito);
@@ -431,14 +484,14 @@ class RestExpedienteController extends FOSRestController{
     }
     
     /**
-     * @Rest\Post("/updateRemito")
+     * @Rest\Post("/updateRecepcionRemito")
      */
     public function actualizarFechaRemitoAction(Request $request)
     {
     	$idRemito = $request->request->get('idRemito');
-    	$fechaRecepcion = $request->request->get('fechaRecepcion');
-    	
-    	$fecha = \DateTime::createFromFormat('d/m/Y', $fechaRecepcion);
+    	$fecha = new \DateTime('now');
+    	$usuario=$this->getUser();
+
     	$estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
     	$remitoRepository=$this->getDoctrine()->getRepository('AppBundle:Remito');
     	$remito = $remitoRepository->find($idRemito);
@@ -450,11 +503,21 @@ class RestExpedienteController extends FOSRestController{
     		return $this->view("El remito ".$remito->getId()." se encuentra anulado",500);
     	
     	$remito->setFechaRecepcion($fecha);
+    	$remito->setUsuarioModificacion($usuario->getUsuario());
+    	$remito->setFechaModificacion($fecha);
     	
+    	$idOficinaComisiones=$this->getParameter('id_comisiones');
     	foreach ($remito->getMovimientos() as $movimiento){
-    		$idNuevoEstadoExpediente=$this->getParameter('id_estado_en_tramite');
+    		
+    		if ($usuario->getRol()->getOficina()->getId()==$idOficinaComisiones)
+    			$idNuevoEstadoExpediente=$this->getParameter('id_estado_estudio_comision');
+    		else
+    			$idNuevoEstadoExpediente=$this->getParameter('id_estado_en_tramite');
+    		
     		$nuevoEstadoExpediente=$estadoExpedienteRepository->find($idNuevoEstadoExpediente);
     		$movimiento->getExpediente()->setEstadoExpediente($nuevoEstadoExpediente);
+    		$movimiento->getExpediente()->setUsuarioModificacion($usuario->getUsuario());
+    		$movimiento->getExpediente()->setFechaModificacion($fecha);
     	}
     	
     	$em = $this->getDoctrine()->getManager();

@@ -53,7 +53,7 @@
 
 		.div-articulos{
 			/* height: 470px; */
-			max-height: 475px;
+			max-height: 375px;
 			overflow-y:auto;
 			overflow-x: hidden; 
 		}
@@ -85,11 +85,11 @@
 			height: 366px!important;
 		}
 		.text-area-larga{
-			height: 475px!important;
+			height: 450px!important;
 		}
 		
 		.tab{
-			height: 545px;
+			height: 495px;
 		}
 		.toggle-on.btn{
 			line-height: 22.5px!important;
@@ -106,6 +106,13 @@
 			height: 70px;
 		    max-height: 70px;
 		    overflow-y: auto;
+		}
+		
+		.nav-selected{
+			font-style: italic;
+			font-weight: bold;
+			color: #337ab7;
+			/* background: #337ab7!important; */
 		}
 		
 	</style>
@@ -162,6 +169,8 @@
 		function habilitar(nombre){
 			$(".tab").addClass("hidden");
 			$("#"+nombre).removeClass("hidden");
+			$(".nav-legend").removeClass("nav-selected");
+			$("#link-"+nombre).find("h4").addClass("nav-selected");
 		}	
 
 		function agregarArticulo(articulo,modalTabla){
@@ -356,8 +365,8 @@
 					      		{ "data": "tipo_proyecto","width":"5%"},
 					            { "data": "fecha_creacion_formateada", "width": "15%" },
 					            { "data": "fecha_entrada_formateada", "width": "15%" },
-					            { "data": "estado_expediente","width":"10%" },
-					            { "data": "lista_concejales","className": "for-mobile","width":"40%" },
+					            { "data": "concejal","width":"20%" },
+					            { "data": "claves","className": "for-mobile","width":"30%" },
 					        ],
 					      "autoWidth":false,
 					      "paging": true,
@@ -477,8 +486,7 @@
 		    //EVENTO ABRIR MODAL MODIFICAR PROYECTO
 			$('#editarProyecto').on('show.bs.modal', function () {
 
-				$("#selConcejalesMod").empty().change();
-				$("#selBloquesMod").empty().change();
+				$("#selConcejalMod").empty().change();
 				$("#vistoMod").data("wysihtml5").editor.setValue('');
 				$("#considerandoMod").data("wysihtml5").editor.setValue('');
 				$("#articulosMod > tbody").html('');
@@ -495,17 +503,13 @@
 					success: function(data){
 
 						$("#selTipoProyectoMod").val(data.id_tipo_proyecto);
+						$("#clavesMod").val(data.claves);
 						$("#vistoMod").data("wysihtml5").editor.setValue(data.visto);
 						$("#considerandoMod").data("wysihtml5").editor.setValue(data.considerandos);
+						
+					 	var newOption = new Option(data.concejal_nombre_completo, data.concejal_id, true, true);
+						$("#selConcejalMod").append(newOption).trigger('change');
 
-					 	var concejales=data.concejales;
-
-					 	//selección de los bloques almacenados
-					 	$.each(concejales, function(index,concejal){
-					 		var newOption = new Option(concejal.descripcion, concejal.id, true, true);
-						   	$("#selConcejalesMod").append(newOption).trigger('change');
-						 });
-					 
 					    $.each(data.articulos,function(index,articulo){
 							agregarArticulo(articulo,'articulosMod');
 						});
@@ -534,8 +538,8 @@
 				var validacion='';
 				var formData=new FormData();
 				var idtipoProyecto=$("#selTipoProyectoMod").val();
-				var bloques=$("#selBloquesMod").val();
-				var concejales=$("#selConcejalesMod").val();
+				var claves=$("#clavesMod").val();
+				var idConcejal=$("#selConcejalMod").val();
 				var visto=$("#vistoMod").val();
 				var considerando=$("#considerandoMod").val();
 
@@ -545,15 +549,17 @@
 				*/
 
 				validacion+=((idtipoProyecto==0)?'<li>Debe seleccionar un tipo de proyecto</li>':'');
-				validacion+=(((concejales==null||concejales.length==0) && (bloques==null||bloques.length==0))
-								?'<li>Debe especificar al menos un autor o bloque para el proyecto</li>':'');
+				validacion+=((idConcejal=="")
+								?'<li>Debe especificar un concejal</li>':'');
 				validacion+=((visto.length==0)?'<li>Debe especificar los vistos</li>':'');
 				validacion+=((considerando.length==0)?'<li>Debe especificar las consideraciones</li>':'');
-
+				validacion+=((claves.replace(/ /g,'').length==0)
+						 		?'<li>Debe especificar al menos una palabra clave</li>':'');	
+		 		
 				formData.append("idProyecto",idProyecto);
 				formData.append("idtipoProyecto",idtipoProyecto);
-				formData.append("bloques",bloques);
-				formData.append("concejales",concejales);
+				formData.append("idConcejal",idConcejal);
+				formData.append("claves",claves);
 				formData.append("visto",visto);
 				formData.append("considerando",considerando);
 				formData.append("articulos",JSON.stringify(articulosIngresados));
@@ -609,8 +615,7 @@
 			//EVENTO ABRIR MODAL NUEVO PROYECTO
 		    $('#nuevoProyecto').on('show.bs.modal', function () {
 		  		$("#selTipoProyecto").val(0);
-		  		$("#selBloques").empty().change();
-		    	$("#selConcejales").empty().change();
+		    	$("#selConcejal").empty().change();
 				$("#visto").data("wysihtml5").editor.setValue('');
 				$("#considerando").data("wysihtml5").editor.setValue('');
 				$("#articulos > tbody").html('');
@@ -636,8 +641,8 @@
 				var validacion='';
 				var formData=new FormData();
 				var idtipoProyecto=$("#selTipoProyecto").val();
-				var bloques=$("#selBloques").val();
-				var concejales=$("#selConcejales").val();
+				var idConcejal=$("#selConcejal").val();
+				var claves=$("#claves").val();
 				var visto=$("#visto").val();
 				var considerando=$("#considerando").val();
 
@@ -647,14 +652,16 @@
 				*/
 
 				validacion+=((idtipoProyecto==0)?'<li>Debe seleccionar un tipo de proyecto</li>':'');
-				validacion+=(((concejales==null||concejales.length==0) && (bloques==null||bloques.length==0))
-								?'<li>Debe especificar al menos un concejal o bloque para el proyecto</li>':'');
+				validacion+=((idConcejal=="")
+							 ?'<li>Debe especificar un concejal</li>':'');
+				validacion+=((claves.replace(/ /g,'').length==0)
+							 ?'<li>Debe especificar al menos una palabra clave</li>':'');
 				validacion+=((visto.length==0)?'<li>Debe especificar los vistos</li>':'');
 				validacion+=((considerando.length==0)?'<li>Debe especificar las consideraciones</li>':'');
 
 				formData.append("idtipoProyecto",idtipoProyecto);
-				formData.append("bloques",bloques);
-				formData.append("concejales",concejales);
+				formData.append("idConcejal",idConcejal);
+				formData.append("claves",claves);
 				formData.append("visto",visto);
 				formData.append("considerando",considerando);
 				formData.append("articulos",JSON.stringify(articulosIngresados));
@@ -875,6 +882,7 @@
 				},
 			});
 
+			/*
 			$("#selConcejalesMod").select2({
 				ajax: {
 			    url: '{{ app.request.getBaseURL() }}'+"/api/legislador/nombre/getByCriteria",
@@ -883,7 +891,7 @@
 			    cache: false,
 			    data: function (params) {
 			      return {
-			        q: params.term, // search term
+			        q: params.term, 
 			        page: params.page
 			      };
 			    },
@@ -939,8 +947,9 @@
 						$("#selConcejalesMod")[0].children[i].remove();
 				}
 			});
-
-			$("#selConcejales").select2({
+			*/
+			
+			$(".selConcejal").select2({
 				ajax: {
 			    url: '{{ app.request.getBaseURL() }}'+"/api/legislador/nombre/getByCriteria",
 			    dataType: 'json',
@@ -949,6 +958,33 @@
 			    data: function (params) {
 			      return {
 			        q: params.term, // search term
+			        page: params.page
+			      };
+			    },
+			    processResults: function (data) {
+			       var dato=data;
+		           return {
+				        results: $.map(dato, function(item) {
+				            	return { id: item.id, text: item.nombre_completo };
+				        })
+				    };
+		        },
+			  },
+			  language: "es",
+			  minimumInputLength: 3,
+			  theme: "bootstrap",
+			});
+
+			/*
+			$("#selConcejales").select2({
+				ajax: {
+			    url: '{{ app.request.getBaseURL() }}'+"/api/legislador/nombre/getByCriteria",
+			    dataType: 'json',
+			    delay: 250,
+			    cache: false,
+			    data: function (params) {
+			      return {
+			        q: params.term, 
 			        page: params.page
 			      };
 			    },
@@ -1004,6 +1040,7 @@
 						$("#selConcejales")[0].children[i].remove();
 				}
 			});
+			*/
 	});
 	</script>
 	<section class="content-header">
@@ -1086,8 +1123,8 @@
 						    <th>Tipo</th>
 			                <th>F. Creacion</th>
 			                <th>F. Entrada</th>
-			                <th>Estado Exp.</th>
-			                <th>Autores</th>
+			                <th>Autor</th>
+			                <th>Palabras Clave</th>
 	                	</tr>
 	                </thead>
 	                <tbody>
@@ -1119,25 +1156,50 @@
 								            {% endfor %}
 						        		</select>
 						        	</div>
+						    		<div class="form-group">
+							        	<label for="selConcejal">Concejal:</label>
+							        	<select class="form-control selConcejal" data-width="100%" id="selConcejal" name="selConcejal"></select>
+							        </div>
+							        <div class="form-group">
+							        	<label for="claves">Claves De Búsqueda:</label>
+							        	<textarea class="form-control" maxlength="120PX"  style="height: 100px;background-color: #ffff99" 
+							        			  id="claves" name="claves"></textarea>
+							        </div>
+											    
 						        	{# Descomentar si se acuerda notificacion #}
 						        	{# 
 						        	<div class="form-group text-center" style="padding-top:15px">
 						        		<label for="notificarProyecto">Notificar</label>
 										<input type="checkbox" name="notificarProyecto" id="notificarProyecto" data-size="small">
-							        </div>
+							        </div>	
 							        #} 
-						    		<nav>
-									    <ul class="nav">
-										    <li><a href="#" id="link-tab-1" onclick = "habilitar('tab-1')" >Autores/Visto</a></li>
-											<li><a href="#" onclick = "habilitar('tab-2')">Considerando</a></li>
-											<li><a href="#" onclick = "habilitar('tab-3')">Artículos</a></li>
+						    		<!-- <nav>
+									    <ul class="nav nav-pills">
+										    <li role="presentation"><a href="#" id="link-tab-1" onclick = "habilitar('tab-1')" >Vistos</a></li>
+											<li role="presentation"><a href="#" onclick = "habilitar('tab-2')">Considerandos</a></li>
+											<li role="presentation"><a href="#" onclick = "habilitar('tab-3')">Artículos</a></li>
 										</ul>
-									</nav>
+									</nav> -->
 						    	</div>
 						    	<div class="col-md-10">
+						    		<div class="row" style="padding-bottom: 10px">
+						    			<nav>
+    									    <ul class="nav nav-pills">
+    										    <li role="presentation"><a href="#" id="link-tab-1" onclick = "habilitar('tab-1')">
+    										    	<h4 class="nav-legend">Vistos</h4></a>
+    										    </li>
+    											<li role="presentation"><a href="#" id="link-tab-2" onclick = "habilitar('tab-2')">
+    												<h4 class="nav-legend">Considerandos</h4></a>
+    											</li>
+    											<li role="presentation"><a href="#" id="link-tab-3" onclick = "habilitar('tab-3')">
+    												<h4 class="nav-legend">Artículos</h4></a>
+    											</li>
+    										</ul>
+    									</nav>
+						    		</div>
 								    <div class="row tab" id="tab-1">
 								    	<div class="col-md-12">
-								    		<div class="row">
+								    		<!-- <div class="row">
 								    			<div class="col-md-4">
 								    				<div class="form-group">
 											        	<label for="selBloques">Bloques:</label>
@@ -1150,7 +1212,7 @@
 											        	<select class="form-control" multiple="multiple" data-width="100%" id="selConcejales" name="selConcejales"></select>
 											        </div>
 											    </div>
-										    </div>
+										    </div> 
 										    <div class="row">
 										    	<div class="col-md-12">
 									        		<div class="form-group">
@@ -1159,13 +1221,18 @@
 										        		id="visto" name="visto" placeholder="vistos"></textarea>
 										        	</div>
 										        </div>
-									        </div> 
+									        </div> -->
+							        		<div class="form-group">
+								        		<!-- <label for="visto">Visto:</label> -->
+								        		<textarea class="form-control text-area text-area-larga" 
+								        		id="visto" name="visto" placeholder="vistos"></textarea>
+								        	</div>    
 								        </div> 
 						        	</div>
 							        <div class="row tab hidden" id="tab-2">
 							        	<div class="col-md-12">
 							        		<div class="form-group">
-								        		<label for="considerando">Considerando:</label>
+								        		<!-- <label for="considerando">Considerando:</label> -->
 									        	<textarea class="form-control text-area text-area-larga" 
 									        	id="considerando" name="considerando" placeholder="Consideranto"></textarea>
 									        </div>
@@ -1173,14 +1240,12 @@
 							        </div>
 							        <div class="row tab hidden" id="tab-3">
 						        		<div class="col-md-12">
-						        			<div class="row">
+						        			<!-- <div class="row">
 								        		<div class="col-md-12">	
 										        	<label>Artículos:</label>
-										        	<!-- <div class="form-inline pull-right">
-										        		<button type="button" class="btn btn-primary btn-sm" onClick="modalNuevoArticulo('articulos')" >Nuevo Artículo</button>
-										        	</div> -->
+										     
 										        </div>
-										    </div>
+										    </div> -->
 								        	<div class="row" style="padding-top:5px">
 								        		<div class="col-md-12">
 										        	<div class="div-articulos" id="div-articulos">
@@ -1297,18 +1362,43 @@
 								            {% endfor %}
 						        		</select>
 						        	</div>
-						    		<nav>
+						        	<div class="form-group">
+							        	<label for="selConcejalMod">Concejal:</label>
+							        	<select class="form-control selConcejal" data-width="100%" id="selConcejalMod" 
+							        			name="selConcejalMod"></select>
+							        </div>
+							         <div class="form-group">
+							        	<label for="clavesMod">Claves Búsqueda:</label>
+							        	<textarea class="form-control" maxlength="100"  style="height: 100px;background-color: #ffff99"
+							        			  id="clavesMod" name="clavesMod"></textarea>
+							        </div>
+						    		<!-- <nav> 
 									    <ul class="nav">
 										    <li><a href="#" id="link-tab-1" onclick = "habilitar('tab-1-mod')" >Autores/Visto</a></li>
 										    <li><a href="#" id="link-tab-2" onclick = "habilitar('tab-2-mod')">Considerando</a></li>
 											<li><a href="#" onclick = "habilitar('tab-3-mod')">Artículos</a></li>
 										</ul>
-									</nav>
+									</nav> -->
 						    	</div>
 						    	<div class="col-md-10">
+    						    	<div class="row" style="padding-bottom: 10px">
+						    			<nav>
+    									    <ul class="nav nav-pills">
+    										    <li role="presentation"><a href="#" id="link-tab-1-mod" onclick = "habilitar('tab-1-mod')">
+    										    	<h4 class="nav-legend">Vistos</h4></a>
+    										    </li>
+    											<li role="presentation"><a href="#" id="link-tab-2-mod" onclick = "habilitar('tab-2-mod')">
+    												<h4 class="nav-legend">Considerandos</h4></a>
+    											</li>
+    											<li role="presentation"><a href="#" id="link-tab-3-mod" onclick = "habilitar('tab-3-mod')">
+    												<h4 class="nav-legend">Artículos</h4></a>
+    											</li>
+    										</ul>
+    									</nav>
+						    		</div>
 								    <div class="row tab" id="tab-1-mod">
 								    	<div class="col-md-12">
-								    		<div class="row">
+								    		<!-- <div class="row">
 								    			<div class="col-md-4">
 								    				<div class="form-group">
 											        	<label for="selBloquesMod">Bloques:</label>
@@ -1330,13 +1420,18 @@
     									        		id="vistoMod" name="vistoMod" placeholder="Vistos"></textarea>
     									        	</div>
 									        	</div>
-									        </div> 
+									        </div>  -->
+							        		<div class="form-group">
+								        		<!-- <label for="vistoMod">Visto:</label> -->
+								        		<textarea class="form-control text-area text-area-larga" 
+								        		id="vistoMod" name="vistoMod" placeholder="Vistos"></textarea>
+								        	</div>	
 								        </div> 
 						        	</div>
 							        <div class="row tab hidden" id="tab-2-mod">
 							        	<div class="col-md-12">
 							        		<div class="form-group">
-								        		<label for="considerandoMod">Considerando:</label>
+								        		<!-- <label for="considerandoMod">Considerando:</label> -->
 									        	<textarea class="form-control text-area text-area-larga" 
 									        	id="considerandoMod" name="considerandoMod" placeholder="Consideranto"></textarea>
 									        </div>
@@ -1344,14 +1439,12 @@
 							        </div>
 							        <div class="row tab hidden" id="tab-3-mod">
 						        		<div class="col-md-12">
-						        			<div class="row">
+						        			<!-- <div class="row">
 								        		<div class="col-md-12">	
 										        	<label>Artículos:</label>
-										        	<!-- <div class="form-inline pull-right">
-										        		<button type="button" onClick="modalNuevoArticulo('articulosMod')" class="btn btn-primary btn-sm">Nuevo Artículo</button>
-										        	</div> -->
+										        	
 										        </div>
-										    </div>
+										    </div> -->
 								        	<div class="row" style="padding-top:5px">
 								        		<div class="col-md-12">
 										        	<div class="div-articulos" id="div-articulosMod">

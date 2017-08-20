@@ -38,6 +38,7 @@ use AppBundle\Entity\TipoProyecto;
 use AppBundle\AppBundle;
 use AppBundle\Entity\EstadoExpediente;
 use FOS\RestBundle\Controller\Annotations\Route;
+use AppBundle\Repository\ExpedienteComisionRepository;
 
 /**
  * @Route("/api/comisionAsignacion")
@@ -56,19 +57,25 @@ class RestComisionAsignacionController extends FOSRestController{
 		$usuario=$this->getUser();
 		
 		$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
-		$expedienteRepositry=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+		$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+		$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
 		$em = $this->getDoctrine()->getManager();
-		$expediente=$expedienteRepositry->find($idExpediente);
+		$expediente=$expedienteRepository->find($idExpediente);
 		
 		$listaComisiones=explode(',', $comisiones);
 		foreach ($listaComisiones as $idComision){
+			$primerAsignacion=$expedienteComisionRepository
+								->findPrimerAsignacionByExpediente_Id($expediente->getId());
+			if (count($primerAsignacion)==0)
+					return $this->view("El expediente ".$expediente->getNumeroCompleto().
+									   "no posee ningina asignación actual",500);
 			$asignacion=new ExpedienteComision();
 			$comision=$comisionRepository->find($idComision);
 			$asignacion->setComision($comision);
+			$asignacion->setPaseOriginario(($primerAsignacion[0])->getPaseOriginario());
 			$asignacion->setExpediente($expediente);
 			$asignacion->setFechaAsignacion(new \DateTime('now'));
 			$asignacion->setUsuarioCreacion($usuario->getUsuario());
-			$asignacion->setPublicado(false);
 			$em->persist($asignacion);
 		}
 		
@@ -85,7 +92,7 @@ class RestComisionAsignacionController extends FOSRestController{
     public function traerExpedientesComisionPorCriterioAction(Request $request)
     {
     	try {
-    		$tipoCriterio=$request->get('tipoCriterio');
+	    		$tipoCriterio=$request->get('tipoCriterio');
     		$criterio=$request->get('criterio');
     
     		$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
@@ -98,16 +105,14 @@ class RestComisionAsignacionController extends FOSRestController{
     		if ($tipoCriterio=='busqueda-2'){
     			$expedientesAsignados=$expedienteComisionRepository->findByComision_Id($criterio);
     		}
-    		if($tipoCriterio=='busqueda-3')
-    			$expedientesAsignados=$expedienteComisionRepository->findBy(array('publicado' => false, 'anulado' => false));
-    		if ($tipoCriterio=='busqueda-4'){
+    		if ($tipoCriterio=='busqueda-3'){
     			$expedientesAsignados=$expedienteComisionRepository->findByDictamen(array('dictamen' => null,'anulado' => false));
     		}
     		$respuesta=[];
     		foreach ($expedientesAsignados as $e){
     			$datosAsignacion=array( 'id'=>$e->getId(), 'numero_completo'=>$e->getExpediente()->getNumeroCompleto(),
 				    				  	'comision_nombre'=>$e->getComision()->getComision(), 'comision_id'=>$e->getComision()->getId(),
-				    				  	'publicado'=>$e->getPublicado(), 'tiene_dictamen_mayoria'=>$e->getTieneDictamenMayoria(),
+    									'tiene_dictamen_mayoria'=>$e->getTieneDictamenMayoria(),
 				    				  	'tiene_dictamen_primera_minoria'=>$e->getTieneDictamenPrimeraMinoria(),
 				    				  	'tiene_dictamen_segunda_minoria'=>$e->getTieneDictamenSegundaMinoria(),
     									'id_proyecto'=>(is_null($e->getExpediente()->getProyecto())?0:$e->getExpediente()->getProyecto()->getId()),
@@ -117,7 +122,8 @@ class RestComisionAsignacionController extends FOSRestController{
 				    					'dictamen_segunda_minoria'=>(is_null($e->getDictamenSegundaMinoria())?0:$e->getDictamenSegundaMinoria()->getId()),
     									'fecha_publicacion_formateada'=>$e->getFechaPublicacionFormateada(),
     									'sesion_muestra'=>$e->getSesionMuestra(),
-    									'id_sesion'=>((!is_null($e->getSesion()))?$e->getSesion()->getId():0)
+    									'id_sesion'=>((!is_null($e->getSesion()))?$e->getSesion()->getId():0),
+    									'recibido'=>!is_null($e->getPaseOriginario()->getRemito()->getFechaRecepcion())
 				    				);
     			$respuesta[]=$datosAsignacion;
     		}
@@ -154,31 +160,17 @@ class RestComisionAsignacionController extends FOSRestController{
     }
         
     /**
-     * @Rest\Post("/updateVisualizacion")
+     * @Rest\Post("/anular")
      */
     public function cambiarVisualizacionExpedienteComisionAction(Request $request)
     {
     	$idAsignacion=$request->request->get('idAsignacion');
-    	$accion=$request->request->get('accion');	
     	$usuario=$this->getUser();
-    	
-    	//TODO: validar que este recibido
     	
     	$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
     	$expedienteComision=$expedienteComisionRepository->find($idAsignacion);
-    	$estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
     	
-    	
-    	if ($accion=="publicar"){
-    		$expedienteComision->setPublicado(true);
-    		$expedienteComision->setFechaPublicacion(new \DateTime());
-    		$idNuevoEstadoExpediente=$this->getParameter('id_estado_estudio_comision');
-    		$nuevoEstadoExpediente=$estadoExpedienteRepository->find($idNuevoEstadoExpediente);
-    		$expedienteComision->getExpediente()->setEstadoExpediente($nuevoEstadoExpediente);
-    	}
-    	if ($accion=="anular"){
-    		$expedienteComision->setAnulado(true);
-    	}
+    	$expedienteComision->setAnulado(true);
     
     	$expedienteComision->setFechaModificacion(new \DateTime());
     	$expedienteComision->setUsuarioModificacion($usuario->getUsuario());

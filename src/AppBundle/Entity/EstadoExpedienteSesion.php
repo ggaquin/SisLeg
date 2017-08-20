@@ -5,19 +5,19 @@ namespace AppBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * EstadoAgendaSesion
+ * EstadoExpedienteSesion
  *
- * @ORM\Table(name="estadoAgendaSesion")
+ * @ORM\Table(name="estadoExpedienteSesion")
  * @ORM\Entity
  */
-class EstadoAgendaSesion
+class EstadoExpedienteSesion
 {
     //-----------------------------------atributos de la clase-------------------------------------
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="idEstadoAgendaSesion", type="smallint")
+     * @ORM\Column(name="idEstadoExpedienteSesion", type="smallint")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -26,9 +26,9 @@ class EstadoAgendaSesion
     /**
      * @var string
      *
-     * @ORM\Column(name="estadoAgendaSesion", type="string", length=45, nullable=false)
+     * @ORM\Column(name="estadoExpedienteSesion", type="string", length=45, nullable=false)
      */
-    private $estadoAgendaSesion;
+    private $estadoExpedienteSesion;
 
     //-----------------------------------setters y getters-----------------------------------------
 
@@ -44,27 +44,27 @@ class EstadoAgendaSesion
     }
 
     /**
-     * Set estadoAgendaSesion
+     * Set estadoExpedienteSesion
      *
-     * @param string $estadoAgendaSesion
+     * @param string $estadoExpedienteSesion
      *
-     * @return EstadoAgendaSesion
+     * @return EstadoExpedienteSesion
      */
-    public function setEstadoAgendaSesion($estadoAgendaSesion)
+    public function setEstadoExpedienteSesion($estadoExpedienteSesion)
     {
-        $this->estadoAgendaSesion = $estadoAgendaSesion;
+    	$this->estadoExpedienteSesion = $estadoExpedienteSesion;
 
         return $this;
     }
 
     /**
-     * Get estadoAgendaSesion
+     * Get estadoExpedienteSesion
      *
      * @return string
      */
-    public function getEstadoAgendaSesion()
+    public function getEstadoExpedienteSesion()
     {
-        return $this->estadoAgendaSesion;
+        return $this->estadoExpedienteSesion;
     }
 
 }

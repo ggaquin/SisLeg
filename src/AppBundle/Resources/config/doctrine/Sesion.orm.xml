@@ -22,7 +22,8 @@
         <option name="unsigned"/>
       </options>
     </field>
-   	<one-to-many field="ordenDelDia" target-entity="AgendaSesion" mapped-by="sesion"/>
+    <field name="tieneOrdenDelDia" type="boolean" column="tieneOrdenDelDia" nullable="false">
+    </field>
    	<many-to-one field="tipoSesion" target-entity="TipoSesion">
    		<join-columns>
    			<join-column name="idTipoSesion" referenced-column-name="idTipoSesion"/>

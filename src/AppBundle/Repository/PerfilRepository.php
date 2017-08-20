@@ -43,6 +43,7 @@ class PerfilRepository extends EntityRepository{
   		    ->setParameter(3, $fechaActual);
 	        return $qb->getQuery()->getResult();
 	}
+	
   	
 	/**
 	 * <p>Indica si un determinado perfil posee un usuario ya generado</p>

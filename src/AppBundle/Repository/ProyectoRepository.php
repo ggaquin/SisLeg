@@ -52,14 +52,12 @@ class ProyectoRepository extends EntityRepository{
 	public function findByAutor_Nombres($patronBusqueda){
 
 		$qb = $this->createQueryBuilder('p');
-		$qb -> innerJoin('p.autores',
-						'a',
-						'with',$qb->expr()->orX(
-								       $qb->expr()->like('a.nombres', '?1'),
-								       $qb->expr()->like('a.apellidos','?1')
+		$qb -> innerJoin('p.concejal','c')
+			->where($qb->expr()->orX(
+								       $qb->expr()->like('c.nombres', '?1'),
+								       $qb->expr()->like('c.apellidos','?1')
 									)
-		   		  		)
-		    ->distinct()
+		   		  	)
   		    ->setParameter(1, '%'.$patronBusqueda.'%');
 	        return $qb->getQuery()->getResult();
 	  

@@ -201,8 +201,8 @@
 		    											}
     									            	if ("{{ app.user.rol.oficina is null}}" || "{{ app.user.rol.oficina.oficina }}"== row.oficina_destino ||
     									            		("{{ app.user.rol.oficina.id }}"== "9" && row.destino_externo)) {
-    									            		html+="<button type='button' title='Agregar Recepción' class='btn btn-info btn-xs btn-recepcion' data-toggle='modal' data-target='#recepcion'>"+
-    									             		  	  "<span class='glyphicon glyphicon-calendar'></span></button>";
+    									            		html+="<button type='button' title='Marcar Recepción' class='btn btn-success btn-xs btn-recepcion'>"+
+    									             		  	  "<span class='glyphicon glyphicon-ok'></span></button>";
 														}
 									            	}
 									            	return html+"</div>";
@@ -309,64 +309,28 @@
 			//BOTON FECHA RECEPCION DEL LISTADO DE REMITOS
 			$("#registroRemitos > tbody").on('click','.btn-recepcion',function(){
 				var data = tabla.row( $(this).parents('tr') ).data();
-				$("#recepcion").find('input[name="idRemito"]').val(data[ "id" ]);
+
+				var formData=new FormData();
+				formData.append('idRemito',data[ "id" ]);
+				
+				$.ajax({
+	                async: true,
+	                url: '{{ app.request.getBaseURL() }}/api/expediente/updateRecepcionRemito',
+	                data: formData,
+	                type: 'post',
+	                cache: false,
+	                contentType: false,
+	                processData: false,
+                success: function(data) {
+                    toastr.success(data);
+					tabla.ajax.reload();
+                	},
+                error: function(jqXHR,textStatus,errorThrown ){
+					toastr.error(jqXHR.responseText);
+					}
+            	});
 			});
 			
-			//EVENTO ABRIR MODAL RECEPCION REMITO
-			$("#recepcion").on('show.bs.modal', function () {
-				$("#recepcion").find('input[name="fechaRecepcion"]').val("");
-			});
-
-			//GUERDAR FECHA
-			$("#btn-guardar-fecha").click(function(){
-
-				$(this).prop("disabled",true);
-				var validacion='';
-				var formData=new FormData();
-
-				var idRemito=$("#recepcion").find('input[name="idRemito"]').val();
-				var fecha=$("#recepcion").find('input[name="fechaRecepcion"]').val();
-				validacion+=((fecha=="")?'<li>Debe especificar la fecha de recepción</li>':'');
-
-				
-				
-				formData.append("fechaRecepcion",fecha);
-				formData.append("idRemito",idRemito);
-
-				if (validacion.length>0) 
-				{
-					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
-								validacion+'</ul>':'');
-					$('#btn-guardar-fecha').prop("disabled",false);
-					toastr.error(validacion);
-					return false;
-				}
-				else{
-
-	            	$.ajax({
-		                async: true,
-		                url: '{{ app.request.getBaseURL() }}'+'/api/expediente/updateRemito',
-		                data: formData,
-		                type: 'post',
-		                cache: false,
-		                contentType: false,
-		                processData: false,
-	                success: function(data) {
-	                    toastr.success(data);
-						tabla.ajax.reload();
-						$('#recepcion').modal('hide');
-	                	},
-	                complete: function(){
-	                	$('#btn-guardar-fecha').prop("disabled",false);
-	                	},
-	                error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(jqXHR.responseText);
-						}
-	            	});
-	            }
-					
-			});
-
 			//--------------------------------------NUEVO REMITO---------------------------------------------
 			
 			//EVENTO ABRIR MODAL NUEVO REMITO
@@ -446,7 +410,7 @@
 		    
 			//---------------------------------INICIALIZACIÓN DE CONTROLES--------------------------
 
-			 $('#datepicker1').datetimepicker({
+			$('#datepicker1').datetimepicker({
 		    	locale: 'es',
 		    	format:'DD/MM/YYYY'
 		    });
@@ -520,21 +484,7 @@
     				            return { id: item.id, text: item.numeroCompleto };
     				        })
     				    };				   
-    		        },
-    		        /* transport: function (params, success, failure) {
-
-						debugger;
-    		            var $request = $.ajax(params);
-    		         
-    		            $request.then(success);
-    		            $request.fail(failure);
-    		         
-    		            return $request;
-    		         },
-    		         error: function (jqXHR, status, error) {
-    		             console.log(error + ": " + jqXHR.responseText);
-    		             return { results: [] };
-    		         } */
+    		        }
 			  },
 			  allowClear: true,
 			  language: "es",
@@ -797,45 +747,6 @@
 				     </div>
 			    </div>
 		  	</div>
-		</div>
-		<div id="recepcion" class="modal fade custom-modal" role="dialog" data-backdrop="static" 
-		     data-keyboard="false">
-		 	<div class="modal-dialog modal-sm">
-			    <!-- Modal content-->
-			    <div class="modal-content">
-				    <div class="modal-header" style="background-color:#666	;color:#FFF">
-		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title">Recepción de Remito</h4>
-				    </div>
-				    <div class="modal-body" style="background-color:#ecf0f5">
-				    	<input type="hidden" id="idRemito" name="idRemito">
-				    	<div class="row">
-				    		<div class="col-md-12">
-    				    		<div class="form-group">
-    				        		<label for="datepicker1">Fecha de Recepción</label>
-									<div class="input-group date" id="datepicker1">
-						                <input type="text" class="form-control text-center" id="fechaRecepcion" name="fechaRecepcion" data-provide="datepicker">
-						                 <div class="input-group-addon">
-						                    <i class="fa fa-calendar"></i>
-						                </div>
-						             </div>
-    							</div>
-    						</div>
-				    	</div>
-				     	<hr>
-				        <div class="row">
-				        	<div class="col-md-12">
-				        		<div class="text-center">
-					    			<div class="btn-group">
-							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
-						       			 <button type="button" class="btn btn-primary" id="btn-guardar-fecha">Guardar</button>
-							        </div>
-						        </div>
-						    </div>
-			    		</div>
-				    </div>
-				</div>
-			</div>
 		</div>
 		<div id="anulacion" class="modal fade custom-modal" role="dialog" data-backdrop="static" 
 		     data-keyboard="false">

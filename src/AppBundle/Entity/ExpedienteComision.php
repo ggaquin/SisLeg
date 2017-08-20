@@ -11,6 +11,7 @@ use JMS\Serializer\Annotation\VirtualProperty;
  * @ORM\Table(name="expedienteComision", indexes={@ORM\Index(name="expedienteComision_expediente_idx", columns={"idExpediente"}), 
  *                                                @ORM\Index(name="expedienteComision_comision_idx", columns={"idComision"}),
  *                                                @ORM\Index(name="expedienteComision_sesion_idx", columns={"idSesion"}),
+ *                                                @ORM\Index(name="expedienteComision_movimiento_idx", columns={"idMovimiento"}),
  *                                                @ORM\Index(name="expedienteComision_dictamenMayoria_idx", columns={"idDictamenMayoria"}),
  *                                                @ORM\Index(name="expedienteComision_dictamenPrimeraMinoria_idx", columns={"idDictamenPrimeraMinoria"}),
  *                                                @ORM\Index(name="expedienteComision_dictamenSegundaMinoria_idx", columns={"idDictamenSegundaMinoria"})
@@ -86,13 +87,7 @@ class ExpedienteComision
      * })
      */
     private $dictamenSegundaMinoria;
-    
-   /**
-    * @var boolean
-    * @ORM\Column(name="publicado", type="boolean", nullable=false)
-    */ 
-    private $publicado;
-    
+        
     /**
      * @var boolean
      * @ORM\Column(name="anulado", type="boolean", nullable=false)
@@ -107,6 +102,16 @@ class ExpedienteComision
      * })
      */
     private $sesion;
+    
+    /**
+     *@var \AppBundle\Entity\Pase
+     *
+     * @ORM\manyToOne(targetEntity="AppBundle\Entity\Pase")
+     * @ORM\JoinColumns({
+     * 		@ORM\JoinColumn(name="idMovimiento", referencedColumnName="idMovimiento")
+     * })
+     */
+    private $paseOriginario;
     
     /**
      * @var \DateTime
@@ -255,7 +260,28 @@ class ExpedienteComision
     {
     	return $this->sesion;
     }
-
+    
+    /**
+     * Get paseOriginario
+     * 
+     * @return \AppBundle\Entity\Pase
+     */
+	public function getPaseOriginario() {
+		return $this->paseOriginario;
+	}
+	
+	/**
+	 * Set paseOriginario
+	 * 
+	 * @param \AppBundle\Entity\Pase $paseOriginario
+	 * 
+	 * @return ExpedienteComision
+	 */
+	public function setPaseOriginario($paseOriginario) {
+		$this->paseOriginario = $paseOriginario;
+		return $this;
+	}
+	
       /**
      * Get dictamenMayoria
      * 
@@ -318,31 +344,7 @@ class ExpedienteComision
 		$this->dictamenSegundaMinoria = $dictamenSegundaMinoria;
 		return $this;
 	}
-    
-    /**
-     * Set publicado
-     *
-     * @param boolean $publicado
-     *
-     * @return ExpedienteComision
-     */
-    public function setPublicado($publicado)
-    {
-    	$this->publicado = $publicado;
-    	
-    	return $this;
-    }
-    
-    /**
-     * Get publicado
-     *
-     * @return boolean
-     */
-    public function getPublicado()
-    {
-    	return $this->publicado;
-    }
-    
+        
     /**
      * Set fechaPublicacion
      *

@@ -51,7 +51,7 @@ class ExpedienteRepository extends EntityRepository{
 
 		$qb = $this->createQueryBuilder('e');
 		$qb -> innerJoin('e.proyecto','p')
-		    -> innerJoin('p.concejales','c',
+		    -> innerJoin('p.concejal','c',
 						'with',$qb->expr()->orX(
 								       $qb->expr()->like('c.nombres', '?1'),
 								       $qb->expr()->like('c.apellidos','?1')
@@ -101,6 +101,8 @@ class ExpedienteRepository extends EntityRepository{
 		$rsm->addScalarResult('fechaCreacion', 'fecha');
 		$rsm->addScalarResult('folios', 'folios');
 		
+		$fechaActual=new \DateTime('now');
+		
 		$sql='SELECT e.idExpediente, e.numeroExpediente, t.letra, e.fechaCreacion, e.folios '.
 			 'FROM expediente e '.
 			 'inner join tipoExpediente t '.
@@ -111,6 +113,11 @@ class ExpedienteRepository extends EntityRepository{
 		if(!is_null($oficina)){
 			$sql.='inner join oficina o on e.idOficina=o.idOficina ';
 			$condition.=' and o.idOficina=:idOficina';
+			
+			if($oficina->getId()==9){
+				$sql.='inner join sesion s on e.idSesion=s.idSesion ';
+				$condition.=' and (e.idTipoExpediente in (2,7,9) or s.fecha<:fechaActual)';
+			}
 		}
 		
 		$sql.=$condition;
@@ -119,10 +126,12 @@ class ExpedienteRepository extends EntityRepository{
 		->createNativeQuery($sql,$rsm);
 		$query->setParameter('numero',$numero);
 		
-		if(!is_null($oficina))
+		if(!is_null($oficina)){
 			$query->setParameter('idOficina',$oficina->getId());
-		
-		return $query->getOneOrNullResult(); //getSingleResult();
+			if ($oficina->getId()==9)
+				$query->setParameter('fechaActual',$fechaActual);
+		}
+		return $query->getOneOrNullResult();
 		
 	}
 	

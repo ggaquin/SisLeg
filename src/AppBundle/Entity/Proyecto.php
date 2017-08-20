@@ -9,11 +9,9 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Proyecto
  * @ORM\Table(name="proyecto", uniqueConstraints={@ORM\UniqueConstraint(name="UNIQ_proyecto_expediente_idx",
- *                                                 columns={"idExpediente"}),
- *                                           	  @ORM\UniqueConstraint(name="UNIQ_proyecto_ultimaRevision_idx",
- *                                                 columns={"idUltimaRevision"})},
+ *                                                 columns={"idExpediente"})},
  *                             indexes={@ORM\Index(name="proyecto_tipoProyecto_idx", columns={"idTipoProyecto"}),
- *                                     
+ *                                      @ORM\Index(name="proyecto_concejal_idx", columns={"idConcejal"})
  *                                     }
  *                              )
  * @ORM\Entity(repositoryClass="AppBundle\Repository\ProyectoRepository")
@@ -50,6 +48,13 @@ class Proyecto
      * })
      */
      private $tipoProyecto;
+     
+     /**
+      * @var string
+      * 
+      * @ORM\Column(name="clavesBusqueda", type="string", length=120, nullable=false)
+      */
+     private $clavesBusqueda;
 
     /**
      * @var text
@@ -72,7 +77,7 @@ class Proyecto
      */
     private $articulos;
 
-    /**
+    /*
      * @var \Doctrine\Common\Collections\Collection
      *
      * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Perfil", fetch="EAGER", orphanRemoval=true )
@@ -84,15 +89,28 @@ class Proyecto
      *     @ORM\JoinColumn(name="idPerfil", referencedColumnName="idPerfil")
      *   }
      * )
-     */
+     *
     private $concejales;
+    */
 
     /**
+     * @var \AppBundle\Entity\PerfilLegislador
+     *
+     * @ORM\ManyToone(targetEntity="AppBundle\Entity\Perfil", fetch="lazy")
+     *@ORM\JoinColumns({
+     *	@ORM\JoinColumn(name="idConcejal", referencedColumnName="idPerfil")
+     *})
+     *
+     */
+    private $concejal;
+    
+    /*
      * @var \Doctrine\Common\Collections\Collection
      *
      * @ORM\OneToMany(targetEntity="AppBundle\Entity\ProyectoFirma", cascade={"persist"}, mappedBy="proyecto")
-     */
+     *
     private $firmas;
+    */
 
     /**
      * @var \DateTime
@@ -124,26 +142,28 @@ class Proyecto
      */
     private $usuarioModificacion;
     
-    /**
+    /*
      * @var \AppBundle\Entity\ProyectoRevision
-      *
+     *
      * @ORM\OneToOne(targetEntity="AppBundle\Entity\ProyectoRevision", fetch="LAZY" )
      * @ORM\JoinColumns({
      *  @ORM\JoinColumn(name="idProyectoRevision", referencedColumnName="idProyectoRevision")
      * })
-     */
+     *
     private $ultimaRevision;
+    */
 
     //------------------------------------constructor---------------------------------------------
 
-    /**
+    /*
      * Constructor
-     */
+     *
     public function __construct()
     {
         $this->concejales = new \Doctrine\Common\Collections\ArrayCollection();
         $this->firmas = new \Doctrine\Common\Collections\ArrayCollection();
     }
+    */
 
     //-------------------------------------setters y getters--------------------------------------
  
@@ -204,7 +224,28 @@ class Proyecto
     {
         return $this->tipoProyecto;
     }
-
+    
+    /**
+     * Get clavesBusqueda
+     * 
+     * @return string
+     */
+	public function getClavesBusqueda() {
+		return $this->clavesBusqueda;
+	}
+	
+	/**
+	 * Set clavesBusqueda
+	 * 
+	 * @param string $clavesBusqueda
+	 * 
+	 * @return Proyecto
+	 */
+	public function setClavesBusqueda($clavesBusqueda) {
+		$this->clavesBusqueda = $clavesBusqueda;
+		return $this;
+	}
+	
     /**
      * Set visto
      *
@@ -275,15 +316,35 @@ class Proyecto
     public function getArticulos()
     {
         return $this->articulos;
-    } 
-
+    }
+    
     /**
+     * Get concejal
+     * 
+     * @return \AppBundle\Entity\PerfilLegislador
+     */
+	public function getConcejal() {
+		return $this->concejal;
+	}
+	
+	/**
+	 * Set concejal
+	 * @param \AppBundle\Entity\PerfilLegislador $concejal
+	 * @return Proyecto
+	 */
+	public function setConcejal($concejal) {
+		$this->concejal = $concejal;
+		return $this;
+	}
+	
+
+    /*
      * set concejales
      *
      * @param array $nuevosConcejales
      *
      * @return Proyecto
-     */
+     *
     public function setConcejales($nuevosConcejales)
     {
         $collection= new \Doctrine\Common\Collections\ArrayCollection();
@@ -295,13 +356,13 @@ class Proyecto
         return $this;
     }
 
-    /**
+    
      * Add concejal
      *
      * @param \AppBundle\Entity\Perfil $concejal
      *
      * @return Proyecto
-     */
+     *
     public function addConcejal(\AppBundle\Entity\Perfil $concejal)
     {
         $this->concejales[] = $concejal;
@@ -309,36 +370,37 @@ class Proyecto
         return $this;
     }
 
-    /**
+    
      * Remove concejal
      *
      * @param \AppBundle\Entity\Perfil $concejal
      *
      * @return Proyecto
-     */
+     *
     public function removeConcejal(\AppBundle\Entity\Perfil $concejal)
     {
         $this->concejales->removeElement($concejal);
         return $this;
     }
 
-    /**
+    
      * Get concejales
      *
      * @return \Doctrine\Common\Collections\Collection
-     */
+     *
     public function getConcejales()
     {
         return $this->concejales;
     }
+    */
 
-    /**
+    /*
      * Add firma
      *
      * @param \AppBundle\Entity\ProyectoFirma $firma
      *
      * @return Proyecto
-     */
+     *
     public function addFirma(\AppBundle\Entity\ProyectoFirma $firma)
     {
         $firma->setProyecto($this);
@@ -348,35 +410,35 @@ class Proyecto
         return $this;
     }
 
-    /**
+    
      * Remove firma
      *
      * @param \AppBundle\Entity\ProyectoFirma $firma
      *
      * @return Proyecto
-     */
+     *
     public function removeFirma(\AppBundle\Entity\ProyectoFirma $firma)
     {
         $this->firmas->removeElement($firma);
     }
 
-    /**
+    
      * Get firmas
      *
      * @return \Doctrine\Common\Collections\Collection
-     */
+     *
     public function getFirmas()
     {
         return $this->firmas;
     }
     
-    /**
+    
      * Set ultimaRevision
      *
      * @param \AppBundle\Entity\ProyectoRevision $ultimaRevision
      *
      * @return Proyecto
-     */
+     *
     public function setUltimaRevision($ultimaRevision)
     {
     	$this->ultimaRevision = $ultimaRevision;
@@ -384,15 +446,16 @@ class Proyecto
     	return $this;
     }
     
-    /**
+    
      * Get ultimaRevision
      *
      * @return \AppBundle\Entity\ProyectoRevision
-     */
+     *
     public function getTUltimaRevision()
     {
     	return $this->ultimaRevision;
     }
+    */
 
     /**
      * Set fechaCreacion
@@ -492,13 +555,13 @@ class Proyecto
 
     //------------------------------Propiedades virtuales-----------------------------------------
 
-    /**
+    /*
      * Get listaConsejales
      *
      * @return string
      *
      * @VirtualProperty
-     */
+     *
     public function getListaConcejales()
     {
         $listaConcejales="";
@@ -508,6 +571,7 @@ class Proyecto
         }
         return $listaConcejales;
     }
+    */
 
     /**
      * Get fechaEntradaFormateada
