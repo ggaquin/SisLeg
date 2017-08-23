@@ -146,7 +146,9 @@ class RestExpedienteController extends FOSRestController{
         				 'numero_sancion'=>$expediente->getNumeroSancion(),
         				 'año'=>$expediente->getAño(), 
         				 'sesion'=>(($expediente->getSesion()!=null)?$expediente->getSesion()->getId():0),
-        				 'concejal'=>$expediente->getProyecto()->getConcejal()->getNombreCompleto(),
+        				 'concejal'=>(!is_null($expediente->getProyecto())
+        				 				?$expediente->getProyecto()->getConcejal()->getNombreCompleto()
+        				 				:""),
         				 'proyecto'=>(($expediente->getProyecto()!=null)?$expediente->getProyecto()->getId():0),
         				 'demandante_documento'=>(($expediente->getDemandanteParticular()!=null)
         				 							?$expediente->getDemandanteParticular()->getDocumento()

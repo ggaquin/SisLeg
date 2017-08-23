@@ -86,6 +86,7 @@ class Sesion
     public function __construct()
     {
         //$this->ordenDelDia = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->tieneOrdenDelDia=false;
         $this->quorum=false;
         $this->presentes=0;
     }
