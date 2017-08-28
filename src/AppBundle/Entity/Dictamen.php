@@ -11,6 +11,7 @@ use Doctrine\ORM\Mapping\JoinTable;
  * Dictamen
  * 
  * @ORM\Table(name="dictamen",  indexes={@ORM\Index(name="dictamen_proyectoRevision_idx",columns={"idProyectoRevision"}),
+ * 										 @ORM\Index(name="dictamen_sesion_idx", columns={"idSesion"}),
  * 										 @ORM\Index(name="dictamen_tipoProyecto_idx",columns={"idTipoDictamen"})
  * 										})
  * @ORM\Entity
@@ -34,6 +35,16 @@ class Dictamen
     private $id;
     
     /**
+     * @var \AppBundle\Entity\Sesion
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Sesion")
+     * @ORM\JoinColumns({
+     * 		@ORM\JoinColumn(name="idSesion",referencedColumnName="idSesion")
+     * })
+     */
+    private $sesion;
+    
+    
+    /**
      * @var string
      * @ORM\Column(name="textoLibre",type="text",nullable=true)
      */
@@ -53,21 +64,21 @@ class Dictamen
     /**
      * @var \Doctrine\Common\Collections\Collection
      * 
-     * @ORM\OneToMany(targetEntity="AppBundle\Entity\ExpedienteComision", cascade={"persist"}, mappedBy="dictamenMayoria")
+     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\ExpedienteComision", cascade={"persist"}, mappedBy="dictamenesMayoria")
      */
     private $asignacionesPorMayoria;
     
     /**
      * @var \Doctrine\Common\Collections\Collection
      *
-     * @ORM\OneToMany(targetEntity="AppBundle\Entity\ExpedienteComision", cascade={"persist"}, mappedBy="dictamenPrimeraMinoria")
+     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\ExpedienteComision", cascade={"persist"}, mappedBy="dictamenesPrimeraMinoria")
      */
     private $asignacionesPorPrimeraMinoria;
     
     /**
      * @var \Doctrine\Common\Collections\Collection
      *
-     * @ORM\OneToMany(targetEntity="AppBundle\Entity\ExpedienteComision", cascade={"persist"}, mappedBy="dictamenSegundaMinoria")
+     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\ExpedienteComision", cascade={"persist"}, mappedBy="dictamenesSegundaMinoria")
      */
     private $asignacionesPorSegundaMinoria;
 	
@@ -110,7 +121,31 @@ class Dictamen
     {
         return $this->id;
     }
-   
+    
+    /**
+     * Set sesion
+     *
+     * @param \AppBundle\Entity\Sesion $sesion
+     *
+     * @return ExpedienteComision
+     */
+    public function setSesion($sesion)
+    {
+    	$this->sesion = $sesion;
+    	
+    	return $this;
+    }
+    
+    /**
+     * Get sesion
+     *
+     * @return \AppBundle\Entity\Sesion
+     */
+    public function getSesion()
+    {
+    	return $this->sesion;
+    }
+    
     /**
      * Get textoLibre
      *
@@ -169,7 +204,7 @@ class Dictamen
      *
      * @param \AppBundle\Entity\PerfilLegislador $concejal
      *
-     * @return Proyecto
+     * @return Dictamen
      */
     public function removeConcejal(\AppBundle\Entity\PerfilLegislador $concejal)
     {
@@ -214,9 +249,8 @@ class Dictamen
      */
     public function addAsignacionPorMayoria(\AppBundle\Entity\ExpedienteComision $asignacionPorMayoria)
     {
-    	$asignacionPorMayoria->setDictamenMayoria($this);
+    	$asignacionPorMayoria->addDictamenMayoria($this);
     	$this->asignacionesPorMayoria[] = $asignacionPorMayoria;
-    	
     	return $this;
     }
     
@@ -272,9 +306,8 @@ class Dictamen
      */
     public function addAsignacionPorPrimeraMinoria(\AppBundle\Entity\ExpedienteComision $asignacionPorPrimeraMinoria)
     {
-    	$asignacionPorPrimeraMinoria->setDictamenPrimeraMinoria($this);
+    	$asignacionPorPrimeraMinoria->addDictamenPrimeraMinoria($this);
     	$this->asignacionesPorPrimeraMinoria[] = $asignacionPorPrimeraMinoria;
-    	
     	return $this;
     }
     
@@ -330,8 +363,8 @@ class Dictamen
      */
     public function addAsignacionPorSegundaMinoria(\AppBundle\Entity\ExpedienteComision $asignacionPorSegundaMinoria)
     {
+    	$asignacionPorSegundaMinoria->addDictamenSegundaMinoria($this);
     	$this->asignacionesPorSegundaMinoria[] = $asignacionPorSegundaMinoria;
-    	
     	return $this;
     }
     
@@ -344,7 +377,6 @@ class Dictamen
      */
     public function removeAsignacionPorSegundaMinoria(\AppBundle\Entity\ExpedienteComision $asignacionPorSegundaMinoria)
     {
-    	$asignacionPorSegundaMinoria->setDictamenSegundaMinoria(null);
     	$this->asignacionesPorSegundaMinoria->removeElement($asignacionPorSegundaMinoria);
     	return $this;
     }
@@ -431,6 +463,17 @@ class Dictamen
      */
     public function getClaseDictamen(){
     	return "basico";
+    }
+    
+    /**
+     * Get SesionMuestra
+     *
+     * @return string
+     *
+     * @VirtualProperty
+     */
+    public function getSesionMuestra(){
+    	return ((is_null($this->getSesion()))?null:$this->getSesion()->getFechaMuestra());
     }
     
     /**

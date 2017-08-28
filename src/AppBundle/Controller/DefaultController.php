@@ -13,6 +13,7 @@ use AppBundle\Entity\Bloque;
 use AppBundle\Entity\Proyecto;
 use AppBundle\Entity\Comision;
 use AppBundle\Entity\TipoSesion;
+use AppBundle\Entity\TipoExpedienteSesion;
 
 
 class DefaultController extends Controller
@@ -595,14 +596,66 @@ class DefaultController extends Controller
      * @Route("/pruebaVistas")
      */
     public function pruebaAction(Request $request){
-        /*
-        $tipoDocumento = $request->query->get('tipoDocumento');
-        $id = $request->query->get('id');
-    
-        $r=$this->get('impresion_servicio')->traerParametrosCaratula($id);
+       
+    	$idSesion = 5;//$request->query->get('idSesion');
+    	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+    	$tipoExpedienteSesionRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpedienteSesion');
+    	$tiposExpedientesSesion=$tipoExpedienteSesionRepository->findAll();
+    	    	
+    	$pdf = $this->get('white_october.tcpdf')->create();
+    	
+    	// activa o desactiva encabezado de página
+    	$pdf ->SetPrintHeader(true);
+    	// activa o desactiva el pie de página
+    	$pdf->SetFont('times', '', 12);
+    	$pdf ->SetPrintFooter(false);
+    	$base=$request->getSchemeAndHttpHost().$request->getBasePath();
+    	$pdf->setBaseImagePath($base);
+    	$urlImage='/document_bootstrap/escudopng2_mini.png';
+    	// set default header data
+    	$pdf ->SetAuthor('SisLeg');
+    	$pdf ->SetTitle('SisLeg');
+    	$pdf ->SetSubject('SisLeg');
+    	$pdf ->SetHeaderData($urlImage, 8, 'SisLeg','SisLeg', array(0,0,0), array(0,0,0));
+    	// set default monospaced font
+    	$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+    	// set margins
+    	$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+    	$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+    	$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+    	// set auto page breaks
+    	$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+    	$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+    	   	
+    	$pdf->AddPage('P','LEGAL');
 
-        return $this->render('documento/portada_expediente_2.html.twig', $r['documento']);
-        */
+//     	$html='';
+    	
+    	foreach ($tiposExpedientesSesion as $tipoExpedienteSesion){
+    		//$html='';
+    		$content=$sesionRepository->findOrdenDiaBySesionYApartado($idSesion, $tipoExpedienteSesion->getId());
+    		
+    		if (count($content)>0){
+    			$html='<div style="text-align:center"><h3>'.$tipoExpedienteSesion->getLetra().')'.
+      				   $tipoExpedienteSesion->getTipoExpedienteSesion().'</h3></div>';
+	    		$html.=($content[0]["textoApartado"]);
+		    	$pdf->writeHTMLCell(170, '', 25, '', $html, 0, 1, 0, true, 'J', true);
+// 		    	$pdf->Ln(1);
+    		}
+    		
+    	}
+    	
+//     	$pdf->writeHTMLCell(170, '', 25, '', $html, 0, 1, 0, true, 'J', true);
+//     	$pdf->Ln(1);
+    		    	
+    	return new Response(
+    			$pdf->Output('SisLeg', 'D'),
+    			200,
+    			[
+    					'Content-Type'        => 'application/pdf',
+    					'Content-Disposition' => sprintf('attachment; filename="%s"', 'SisLeg'),
+    			]
+    			);
     }
 
 }

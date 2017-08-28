@@ -3,26 +3,15 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-//use Doctrine\ORM\Mapping\InheritanceType;
 
 /**
  * ExpedienteSesion
  *
  * @ORM\Table(name="ExpedienteSesion", indexes={@ORM\Index(name="agendaSesion_expediente_idx", columns={"idExpediente"}), 
  *                                          	@ORM\Index(name="agendaSesion_sesion_idx", columns={"idSesion"}), 
- *                                          	@ORM\Index(name="expedienteSesion_estadoExpedienteSesion_idx", columns={"idEstadoExpedienteSesion"})})
+ *                                          	@ORM\Index(name="expedienteSesion_estadoExpedienteSesion_idx", columns={"idEstadoExpedienteSesion"}),
+ *                                          	@ORM\Index(name="expedienteSesion_tipoExpedienteSesion_idx", columns={"idTipoExpedienteSesion"})})
  * @ORM\Entity
- */
-
- /*
- * @ORM\InheritanceType("SINGLE_TABLE")
- * @ORM\DiscriminatorColumn(name="discriminador", type="string", length=15)
- * @ORM\DiscriminatorMap({"ItemA" = "AppBundle\Entity\ExpedienteSeSionItemA", 
- *                        "ItemB" = "AppBundle\Entity\ExpedienteSeSionItemB",
- *                        "ItemC" = "AppBundle\Entity\ExpedienteSeSionItemC",
- *                        "ItemD" == "AppBundle\Entity\ExpedienteSeSionItemD",
- *                        "ItemE" == "AppBundle\Entity\ExpedienteSeSionItemE"
- *                        })
  */
 abstract class ExpedienteSesion
 {   
@@ -38,11 +27,28 @@ abstract class ExpedienteSesion
     private $id;
     
     /**
-     * @var innteger
+     * @var \AppBundle\Entity\TipoExpedienteSesion
+     * 
+     * @ORM\ManyToOne(targetEntity="\AppBundle\Entity\TipoExpedienteSesion")
+     * @ORM\JoinColumns({
+     * 		@ORM\JoinColumn(name="idTipoExpedienteSesion", referencedColumnName="idTipoExpedienteSesion")
+     * })
+     */
+    private $tipoExpedienteSesion;
+    
+    /**
+     * @var integer
      * 
      * @ORM\Column(name="ordenSesion" ,type="smallint", nullable=false)
      */
     private $ordenSesion;
+    
+    /**
+     * @var string
+     * 
+     * @ORM\Column(name="texto", type="text", nullable=false)
+     */
+    private $texto;
 
     /**
      * @var integer
@@ -108,6 +114,27 @@ abstract class ExpedienteSesion
     }
     
     /**
+     * Get tipoExpedienteSesion
+     * 
+     * @return TipoExpedienteSesion
+     */
+	public function getTipoExpedienteSesion() {
+		return $this->tipoExpedienteSesion;
+	}
+	
+	/**
+	 * Set tipoExpedienteSesion
+	 * 
+	 * @param \AppBundle\Entity\TipoExpedienteSesion $tipoExpedienteSesion
+	 * 
+	 * @return ExpedienteSesion
+	 */
+	public function setTipoExpedienteSesion($tipoExpedienteSesion) {
+		$this->tipoExpedienteSesion = $tipoExpedienteSesion;
+		return $this;
+	}
+	    
+    /**
      * Get ordenSesion
      * 
      * @return integer
@@ -128,6 +155,27 @@ abstract class ExpedienteSesion
 		return $this;
 	}
 	
+	/**
+	 * Get texto
+	 * 
+	 * @return string
+	 */
+	public function getTexto() {
+		return $this->texto;
+	}
+	
+	/**
+	 * Set texto
+	 * 
+	 * @param string $texto
+	 * 
+	 * @return ExpedienteSesion
+	 */
+	public function setTexto($texto) {
+		$this->texto = $texto;
+		return $this;
+	}
+		
     /**
      * Set aFavor
      *

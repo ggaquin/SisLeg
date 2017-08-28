@@ -1,87 +1,3 @@
-#version 1.4.0-dev
-
-ALTER TABLE `sistema_legislativo`.`proyecto` 
-DROP FOREIGN KEY `fk_proyecto_proyectoRevision`;
-
-ALTER TABLE `sistema_legislativo`.`proyecto` 
-DROP COLUMN `idUltimaRevision`,
-ADD COLUMN `idConcejal` INT NULL AFTER `idTipoProyecto`,
-ADD COLUMN `clavesBusqueda` VARCHAR(120) NOT NULL AFTER `idConcejal`,
-ADD INDEX `proyecto_concejal_idx` (`idConcejal` ASC),
-DROP INDEX `UNIQ_proyecto_ultimaRevision_idx` ;
-
-ALTER TABLE `sistema_legislativo`.`proyecto` 
-ADD CONSTRAINT `fk_proyecto_concejal`
-  FOREIGN KEY (`idConcejal`)
-  REFERENCES `sistema_legislativo`.`perfil` (`idPerfil`)
-  ON DELETE NO ACTION
-  ON UPDATE NO ACTION;
-  
-DROP TABLE `sistema_legislativo`.`legisladores_proyectos`;
-
-DELETE FROM `sistema_legislativo`.`proyecto`;
-
-INSERT INTO `sistema_legislativo`.`tipoExpediente` (`tipoExpediente`, `letra`) VALUES ('Poder Ejecutivo B)', 'D');
-UPDATE `sistema_legislativo`.`tipoExpediente` SET `tipoExpediente`='Poder Ejecutivo A)' WHERE `idTipoExpediente`='4';
-
-ALTER TABLE `sistema_legislativo`.`expedienteComision` 
-DROP COLUMN `publicado`;
-
-ALTER TABLE `sistema_legislativo`.`tipoSesion` 
-CHANGE COLUMN `abreviacion` `abreviacion` VARCHAR(2) NOT NULL ;
-
-INSERT INTO `sistema_legislativo`.`tipoSesion` (`tipoSesion`, `abreviacion`) VALUES ('Especial', 'ES');
-
-ALTER TABLE `sistema_legislativo`.`expedienteComision` 
-ADD COLUMN `idMovimiento` INT NULL AFTER `idSesion`,
-ADD INDEX `expedienteComision_movimiento_idx` (`idMovimiento` ASC);
-
-ALTER TABLE `sistema_legislativo`.`expedienteComision`
-ADD CONSTRAINT `FK_expedienteComision_sesion` FOREIGN KEY (`idSesion`) REFERENCES `sesion` (`idSesion`);
-
-ALTER TABLE `sistema_legislativo`.`expedienteComision` 
-ADD CONSTRAINT `fk_expedienteComision_movimiento`
-  FOREIGN KEY (`idMovimiento`)
-  REFERENCES `sistema_legislativo`.`movimiento` (`idMovimiento`)
-  ON DELETE NO ACTION
-  ON UPDATE NO ACTION;
-  
-ALTER TABLE `sistema_legislativo`.`expediente`
-ADD CONSTRAINT `FK_expediente_sesion` FOREIGN KEY (`idSesion`) REFERENCES `sesion` (`idSesion`);
-
-ALTER TABLE `sistema_legislativo`.`movimiento` CHANGE `fojas` `fojas` SMALLINT DEFAULT NULL;
-  
- CREATE TABLE `estadoExpedienteSesion` (
-  `idEstadoExpedienteSesion` smallint(6) NOT NULL AUTO_INCREMENT,
-  `estadoExpedienteSesion` varchar(45) NOT NULL,
-  PRIMARY KEY (`idEstadoExpedienteSesion`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4; 
-  
-CREATE TABLE `expedienteSesion` (
-  `idExpedienteSesion` int(11) NOT NULL AUTO_INCREMENT,
-  `ordenSesion` tinyint(4) DEFAULT NULL,
-  `discriminador` varchar(5) DEFAULT NULL,
-  `idExpediente` int(11) DEFAULT NULL,
-  `idSesion` int(11) DEFAULT NULL,
-  `idEstadoExpedienteSesion` smallint(6) DEFAULT NULL,
-  `aFavor` smallint(6) NOT NULL DEFAULT '0',
-  `enContra` smallint(6) NOT NULL DEFAULT '0',
-  `abstenciones` smallint(6) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`idExpedienteSesion`),
-  KEY `expedienteSesion_estadoExpedienteSesion_idx` (`idEstadoExpedienteSesion`),
-  KEY `expedienteSesion_sesion_idx` (`idSesion`),
-  KEY `expedienteSesion_expediente_idx` (`idExpediente`),
-  CONSTRAINT `fk_expedienteSesion_estadoExpedienteSesion` FOREIGN KEY (`idEstadoExpedienteSesion`) REFERENCES `estadoExpedienteSesion` (`idEstadoExpedienteSesion`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_expedienteSesion_expediente` FOREIGN KEY (`idExpediente`) REFERENCES `expediente` (`idExpediente`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_expedienteSesion_sesion` FOREIGN KEY (`idSesion`) REFERENCES `sesion` (`idSesion`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-DROP TABLE `sistema_legislativo`.`agendaSesion`;
-
-DROP TABLE `sistema_legislativo`.`estadoAgendaSesion`;
-
-DROP table `sistema_legislativo`.`proyectoFirma`;
-
 #1.5.0-dev
 
 CREATE TABLE `tipoExpedienteSesion` (
@@ -243,15 +159,23 @@ ADD INDEX `letra_idx` (`letraOrdenDelDia` ASC);
 ALTER TABLE `expedienteSesion` 
 ADD INDEX `expedienteSesion_idx` (`idTipoExpedienteSesion` ASC, `idSesion` ASC);
 
-
-
-
-
-
-
-
-
-
-
-
+UPDATE `tipoExpedienteSesion` SET `tipoExpedienteSesion`='Mensajes del Departamento Ejecutivo Girados a Comisiones' WHERE `idTipoExpedienteSesion`='2';
+UPDATE `tipoExpedienteSesion` SET `tipoExpedienteSesion`='Proyectos' WHERE `idTipoExpedienteSesion`='3';
+UPDATE `tipoExpedienteSesion` SET `tipoExpedienteSesion`='Proyectos Girados a Comisiones' WHERE `idTipoExpedienteSesion`='5';
+UPDATE `tipoExpedienteSesion` SET `tipoExpedienteSesion`='Comisión de Presupesto y Hacienda' WHERE `idTipoExpedienteSesion`='7';
+UPDATE `tipoExpedienteSesion` SET `tipoExpedienteSesion`='Comisión de Obras Públicas y Urbanismo' WHERE `idTipoExpedienteSesion`='8';
+UPDATE `tipoExpedienteSesion` SET `tipoExpedienteSesion`='Comisión de Servicios Públicos' WHERE `idTipoExpedienteSesion`='9';
+UPDATE `tipoExpedienteSesion` SET `tipoExpedienteSesion`='Comisión de Derechos y Garantías' WHERE `idTipoExpedienteSesion`='10';
+UPDATE `tipoExpedienteSesion` SET `tipoExpedienteSesion`='Comisión de Industria y Comercio Interior y Exterior' WHERE `idTipoExpedienteSesion`='12';
+UPDATE `tipoExpedienteSesion` SET `tipoExpedienteSesion`='Comisión de Habitat, Tierrras y Viviendas' WHERE `idTipoExpedienteSesion`='13';
+UPDATE `tipoExpedienteSesion` SET `tipoExpedienteSesion`='Comisión de Medios de Comunicación Social' WHERE `idTipoExpedienteSesion`='14';
+UPDATE `tipoExpedienteSesion` SET `tipoExpedienteSesion`='Comisión de Seguridad y Justicia' WHERE `idTipoExpedienteSesion`='15';
+UPDATE `tipoExpedienteSesion` SET `tipoExpedienteSesion`='Comisión de Mujeres y Equidad de Genero' WHERE `idTipoExpedienteSesion`='16';
+UPDATE `tipoExpedienteSesion` SET `tipoExpedienteSesion`='Comisión de Cultura y Educación ' WHERE `idTipoExpedienteSesion`='17';
+UPDATE `tipoExpedienteSesion` SET `tipoExpedienteSesion`='Comisión de Promoción de la Comunidad' WHERE `idTipoExpedienteSesion`='18';
+UPDATE `tipoExpedienteSesion` SET `tipoExpedienteSesion`='Comisión de Defensa del Usuario' WHERE `idTipoExpedienteSesion`='19';
+UPDATE `tipoExpedienteSesion` SET `tipoExpedienteSesion`='Comisión de Planeamiento' WHERE `idTipoExpedienteSesion`='20';
+UPDATE `tipoExpedienteSesion` SET `tipoExpedienteSesion`='Comisión de Interpretación y Reglamento' WHERE `idTipoExpedienteSesion`='21';
+UPDATE `tipoExpedienteSesion` SET `tipoExpedienteSesion`='Comisión de Ecología y Protección del Medio Ambiente' WHERE `idTipoExpedienteSesion`='22';
+UPDATE `tipoExpedienteSesion` SET `tipoExpedienteSesion`='Dictamenes Conjunto' WHERE `idTipoExpedienteSesion`='23';
 

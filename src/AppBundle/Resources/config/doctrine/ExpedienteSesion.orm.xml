@@ -5,10 +5,15 @@
       <index name="expedienteSesion_expediente_idx" columns="idExpediente"/>
       <index name="expedienteSesion_sesion_idx" columns="idSesion"/>
       <index name="expedienteSesion_estadoExpedienteSesion_idx" columns="idEstadoExpedienteSesion"/>
+      <index name="expedienteSesion_tipoExpedienteSesion_idx" columns="idTipoExpedienteSesion"/>
     </indexes>
     <id name="id" type="integer" column="idExpedienteSesion">
       <generator strategy="IDENTITY"/>
     </id>
+    <field name="ordenSesion" column="ordenSesion" type="smallint">
+    </field>
+    <field name="texto" type="text" nullable="false">
+    </field>
     <field name="aFavor" type="smallint" column="aFavor" nullable="false">
       <options>
         <option name="unsigned"/>
@@ -27,6 +32,11 @@
         <option name="default">0</option>
       </options>
     </field>
+    <many-to-one field="tipoExpedienteSesion" target-entity="TipoExpedienteSesion">
+    	<join-columns>
+    		<join-column name="idTipoExpedienteSesion" referenced-column-name="idTipoExpedienteSesion"/>
+    	</join-columns>
+    </many-to-one>
     <many-to-one field="estadoExpedienteSesion" target-entity="EstadoExpedienteSesion" fetch="LAZY">
       <join-columns>
         <join-column name="idEstadoExpedienteSesion" referenced-column-name="idEstadoExpedienteSesion"/>

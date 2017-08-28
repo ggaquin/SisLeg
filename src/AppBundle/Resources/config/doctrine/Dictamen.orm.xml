@@ -4,6 +4,7 @@
     <indexes>
       <index name="dictamen_proyectoRevision_idx" columns="idProyectoRevision"/>
       <index name="dictamen_tipoProyecto_idx" columns="idTipoDictamen"/>
+      <index name="dictamen_sesion_idx" columns="idSesion"/>
     </indexes>
     <discriminator-column name="discriminador" type="string" length="15"/>
     <discriminator-map>
@@ -23,23 +24,11 @@
     </field> 
     <field name="textoLibre" type="text" column="textoLibre" nullable="false">
     </field>
-    <one-to-many field="asignacionesPorMayoria" mapped-by="dictamenMayoria" target-entity="ExpedienteComision">
-	    <cascade>
-	    	<cascade-persist/>
-	    </cascade>
-    </one-to-many>
-    <one-to-many field="asignacionesPorPrimeraMinoria" mapped-by="dictamenPrimeraMinoria" 
-    			 target-entity="ExpedienteComision">
-	    <cascade>
-	    	<cascade-persist/>
-	    </cascade>
-    </one-to-many>
-    <one-to-many field="asignacionesPorSegundaMinoria" mapped-by="dictamenSegundaMinoria" 
-    			 target-entity="ExpedienteComision">
-	    <cascade>
-	    	<cascade-persist/>
-	    </cascade>
-    </one-to-many>
+    <many-to-one field="sesion" target-entity="Sesion">
+    	<join-columns>
+    		<join-column name="idSesion" referenced-column-name="idSesion"/>
+    	</join-columns>
+    </many-to-one>
     <many-to-many field="concejales" target-entity="PerfilLegislador">
     	<join-table name="dictamen_legislador">
     		<join-columns>
@@ -50,5 +39,19 @@
     		</inverse-join-columns>
     	</join-table>
     </many-to-many> 
+    <many-to-many field="asignacionesPorMayoria" mapped-by="dictamenesMayoria" target-entity="ExpedienteComision">
+	    <cascade>
+	    	<cascade-persist/>
+	    </cascade>
+    </many-to-many>
+    <many-to-many field="asignacionesPorPrimeraMinoria" mapped-by="dictamenesPrimeraMinoria" 
+    			 target-entity="ExpedienteComision">
+    </many-to-many>
+    <many-to-many field="asignacionesPorSegundaMinoria" mapped-by="dictamenesSegundaMinoria" 
+    			 target-entity="ExpedienteComision">
+	    <cascade>
+	    	<cascade-persist/>
+	    </cascade>
+    </many-to-many>
   </entity>  
 </doctrine-mapping>

@@ -3,6 +3,8 @@
 
 namespace AppBundle\Repository;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Query\Expr\Select;
+use AppBundle\Entity\Dictamen;
 
 class ExpedienteComisionRepository extends EntityRepository{
 	
@@ -16,6 +18,34 @@ class ExpedienteComisionRepository extends EntityRepository{
 
         return $qb->getQuery()->getResult();
 
+	}
+	
+	public  function findDictamenByAsignacionAndSesionPendiente($idAsignacion,$numeroDictaminantes){
+		
+		$fechactual=new \DateTime('now');
+		
+		$rep = $this->getEntityManager()->getRepository('AppBundle:Dictamen');
+		$qb = $rep->createQueryBuilder('d')
+			->select('d');
+		
+		if ($numeroDictaminantes==1)
+			$qb -> innerJoin('d.asignacionesPorMayoria', 'a');
+		if ($numeroDictaminantes==2)
+			$qb -> innerJoin('d.asignacionesPorPrimeraMinoria', 'a');
+		if ($numeroDictaminantes==3)
+			$qb -> innerJoin('d.asignacionesPorSegundaMinoria', 'a');
+		
+		$qb	-> innerJoin('d.sesion', 's')
+			-> where($qb->expr()->andX(
+										$qb->expr()->gte('s.fecha', '?1'),
+										$qb->expr()->eq('a.id', '?2')
+					
+									   )
+					)
+			-> setParameter(1, $fechactual)
+			-> setParameter(2, $idAsignacion);
+		
+		return $qb->getQuery()->getResult();
 	}
 	
 	public function findExpedienteVigenteByNumero($numeroExpediente){
@@ -41,10 +71,13 @@ class ExpedienteComisionRepository extends EntityRepository{
 		
 	}
 
-	public function findByDictamen_Null(){
+	public function findExpedienteComisionByExpediente_Estado($idEstadoExpediente){
 
 		$qb = $this->createQueryBuilder('ec');
-        $qb-> where($qb->expr()->isNull('ec.dictamenMayoria'));
+		$qb ->innerJoin('e.Expediente', 'e')
+			->innerJoin('e.estadoExpediente', 'ee')
+			->where($qb->expr()->eq('ee.id', '?1'))
+			->setParameter(1, $idEstadoExpediente);
                    
         return $qb->getQuery()->getResult();
 

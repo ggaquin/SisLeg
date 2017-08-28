@@ -5,17 +5,11 @@
     <indexes>
       <index name="expedienteComision_expediente_idx" columns="idExpediente"/>
       <index name="expedienteComision_comision_idx" columns="idComision"/>
-      <index name="expedienteComision_sesion_idx" columns="idSesion"/>
       <index name="expedienteComision_movimiento_idx" columns="idMovimiento"/>
-      <index name="expedienteComision_dictamenMayoria_idx" columns="idDictamenMayoria"/>
-      <index name="expedienteComision_dictamenPrimeraMinoria_idx" columns="idDictamenPrimeraMinoria"/>
-      <index name="expedienteComision_dictamenSegundaMinoria_idx" columns="idDictamenSegundaMinoria"/>
     </indexes>
     <id name="id" type="integer" column="idExpedienteComision">
       <generator strategy="IDENTITY"/>
-    </id>
-    <field name="fechaPublicacion" type="datetime" column="fechaPublicacion" nullable="true">
-    </field>	
+    </id>	
     <field name="anulado" type="boolean" column="anulado" nullable="false">
     </field>
     <field name="fechaCreacion" type="datetime" column="fechaCreacion" nullable="false"/>
@@ -36,35 +30,6 @@
     		<join-column name="idMovimiento" referenced-column-name="idMovimiento"/>
     	</join-columns>
     </many-to-one>
-    <many-to-one field="sesion" target-entity="Sesion">
-    	<join-columns>
-    		<join-column name="idSesion" referenced-column-name="idSesion"/>
-    	</join-columns>
-    </many-to-one>
-     <many-to-one field="dictamenMayoria" target-entity="Dictamen" inversed-by="asignacionesPorMayoria">
-     	<cascade>
-     		<cascade-persist/>
-     	</cascade>
-    	<join-columns>
-    		<join-column name="idDictamenMayoria" referenced-column-name="idDictamen"  />
-    	</join-columns>
-    </many-to-one>
-    <many-to-one field="dictamenPrimeraMinoria" target-entity="Dictamen" inversed-by="asignacionesPorPrimeraMinoria">
-    	<cascade>
-     		<cascade-persist/>
-     	</cascade>
-    	<join-columns>
-    		<join-column name="idDictamenPrimeraMinoria" referenced-column-name="idDictamen"/>
-    	</join-columns>
-    </many-to-one>
-    <many-to-one field="dictamenSegundaMinoria" target-entity="Dictamen" inversed-by="asignacionesPorSegundaMinoria">
-    	<cascade>
-     		<cascade-persist/>
-     	</cascade>
-    	<join-columns>
-    		<join-column name="idDictamenSegundaMinoria" referenced-column-name="idDictamen"/>
-    	</join-columns>
-    </many-to-one>
     <many-to-one field="comision" target-entity="Comision" inversed-by="expedientesAsignados">
       <join-columns>
         <join-column name="idComision" referenced-column-name="idComision"/>
@@ -78,5 +43,44 @@
         <join-column name="idExpediente" referenced-column-name="idExpediente"/> 
       </join-columns>
     </many-to-one>
+    <many-to-many field="dictamenesMayoria" target-entity="Dictamen" inversed-by="asignacionesPorMayoria">
+    	<cascade>
+	    	<cascade-persist/>
+	    </cascade>
+    	<join-table name="expedienteComision_dictamenesMayoria">
+    		<join-columns>
+    			<join-column name="idExpedienteComision" referenced-column-name="idExpedienteComision"/>
+    		</join-columns>
+    		<inverse-join-columns>
+    			<join-column name="idDictamen" referenced-column-name="idDictamen"/>
+    		</inverse-join-columns>
+    	</join-table>
+    </many-to-many>
+    <many-to-many field="dictamenesPrimeraMinoria" target-entity="Dictamen" inversed-by="asignacionesPorPrimeraMinoria">
+    	<cascade>
+	    	<cascade-persist/>
+	    </cascade>
+    	<join-table name="expedienteComision_dictamenesPrimeraMinoria">
+    		<join-columns>
+    			<join-column name="idExpedienteComision" referenced-column-name="idExpedienteComision"/>
+    		</join-columns>
+    		<inverse-join-columns>
+    			<join-column name="idDictamen" referenced-column-name="idDictamen"/>
+    		</inverse-join-columns>
+    	</join-table>
+    </many-to-many>
+    <many-to-many field="dictamenesSegundaMinoria" target-entity="Dictamen" inversed-by="asignacionesPorSegundaMinoria">
+    	<cascade>
+	    	<cascade-persist/>
+	    </cascade>
+    	<join-table name="expedienteComision_dictamenesSegundaMinoria">
+    		<join-columns>
+    			<join-column name="idExpedienteComision" referenced-column-name="idExpedienteComision"/>
+    		</join-columns>
+    		<inverse-join-columns>
+    			<join-column name="idDictamen" referenced-column-name="idDictamen"/>
+    		</inverse-join-columns>
+    	</join-table>
+    </many-to-many>
   </entity>
 </doctrine-mapping>

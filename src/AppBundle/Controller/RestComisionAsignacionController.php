@@ -94,7 +94,7 @@ class RestComisionAsignacionController extends FOSRestController{
     	try {
 	    		$tipoCriterio=$request->get('tipoCriterio');
     		$criterio=$request->get('criterio');
-    
+    		
     		$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
     		$expedientesAsignados=null;
     		
@@ -106,23 +106,19 @@ class RestComisionAsignacionController extends FOSRestController{
     			$expedientesAsignados=$expedienteComisionRepository->findByComision_Id($criterio);
     		}
     		if ($tipoCriterio=='busqueda-3'){
-    			$expedientesAsignados=$expedienteComisionRepository->findByDictamen(array('dictamen' => null,'anulado' => false));
+    			$idEstadoEstudioComision=$this->getParameter('id_estado_estudio_comision');
+    			$expedientesAsignados=$expedienteComisionRepository
+    									->findExpedienteComisionByExpediente_Estado($idEstadoEstudioComision);
     		}
     		$respuesta=[];
     		foreach ($expedientesAsignados as $e){
     			$datosAsignacion=array( 'id'=>$e->getId(), 'numero_completo'=>$e->getExpediente()->getNumeroCompleto(),
 				    				  	'comision_nombre'=>$e->getComision()->getComision(), 'comision_id'=>$e->getComision()->getId(),
-    									'tiene_dictamen_mayoria'=>$e->getTieneDictamenMayoria(),
-				    				  	'tiene_dictamen_primera_minoria'=>$e->getTieneDictamenPrimeraMinoria(),
-				    				  	'tiene_dictamen_segunda_minoria'=>$e->getTieneDictamenSegundaMinoria(),
     									'id_proyecto'=>(is_null($e->getExpediente()->getProyecto())?0:$e->getExpediente()->getProyecto()->getId()),
     									'id_expediente'=>$e->getExpediente()->getId(),
-				    					'dictamen_mayoria'=>(is_null($e->getDictamenMayoria())?0:$e->getDictamenMayoria()->getId()),
-				    					'dictamen_primera_minoria'=>(is_null($e->getDictamenPrimeraMinoria())?0:$e->getDictamenPrimeraMinoria()->getId()),
-				    					'dictamen_segunda_minoria'=>(is_null($e->getDictamenSegundaMinoria())?0:$e->getDictamenSegundaMinoria()->getId()),
-    									'fecha_publicacion_formateada'=>$e->getFechaPublicacionFormateada(),
-    									'sesion_muestra'=>$e->getSesionMuestra(),
-    									'id_sesion'=>((!is_null($e->getSesion()))?$e->getSesion()->getId():0),
+    									'dictamenes_mayoria'=>$e->getListaDictamenesMayoria(),
+    									'dictamenes_primera_minoria'=>$e->getListaDictamenesPrimeraMinoria(),
+    									'dictamenes_segunda_minoria'=>$e->getListaDictamenesSegundaMinoria(),
     									'recibido'=>!is_null($e->getPaseOriginario()->getRemito()->getFechaRecepcion())
 				    				);
     			$respuesta[]=$datosAsignacion;
@@ -179,7 +175,7 @@ class RestComisionAsignacionController extends FOSRestController{
     	$em->persist($expedienteComision);
     	$em->flush();
     	
-    	return $this->view("La asignación de expediente se logró ".$accion." en forma exitosa",200);
+    	return $this->view("La asignación de expediente se logró anular en forma exitosa",200);
     }
     
     /**
@@ -210,6 +206,31 @@ class RestComisionAsignacionController extends FOSRestController{
     }
     
     /**
+     * @Rest\Get("/validarAltaDictamen/{numeroDictaminantes}/{idAsignacion}")
+     */
+    public function  validarAltaDictamen(Request $request)
+    {
+    	$numeroDictaminantes=$request->get('numeroDictaminantes');
+    	$idAsignacion=$request->get('idAsignacion');
+    	
+    	$mensaje="";
+    	$response_state=200;
+    	
+    	$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
+    	$dictamenes=$expedienteComisionRepository
+    				 ->findDictamenByAsignacionAndSesionPendiente
+    				  ($idAsignacion,$numeroDictaminantes);
+    	
+    	if(count($dictamenes)>0){
+    		$mensaje='El dictamen '.$dictamenes[0]->getSesionMuestra().' aún no tiene paso por el cuerpo';
+    		$response_state=500;
+    	}	
+    		
+    	return $this->view($mensaje,$response_state);
+    	
+    }
+    
+    /**
      * @Rest\Get("/getDictamen/{id}")
      */
     public function traerDictamenPorId(Request $request){
@@ -234,7 +255,8 @@ class RestComisionAsignacionController extends FOSRestController{
     					 'incluye_vistos_y_considerandos'=>(($dictamen instanceof DictamenRevision)
     					 									?$dictamen->getRevisionProyecto()->getIncluyeVistosyConsiderandos():true),
     					 'revision_id'=>(($dictamen instanceof DictamenRevision)
-    					 					?$dictamen->getRevisionProyecto()->getId():0)
+    					 					?$dictamen->getRevisionProyecto()->getId():0),
+    					 'sesion_id'=>$dictamen->getSesion()->getId()
     					 );
    
     	return $this->view($resultado,200);
@@ -252,6 +274,7 @@ class RestComisionAsignacionController extends FOSRestController{
     	$idTipoDictamen=$request->request->get('tipoDictamen');
     	$comisiones=$request->request->get('comisiones');
     	$texto=$request->request->get('texto');
+    	$idSesion=$request->request->get('idSesion');
     	$idRevision=$request->request->get('idRevision');
     	$editaRevision=$request->request->get('editaRevision');
     	$vistosYConsiderandos=$request->request->get('vistosYConsiderandos');
@@ -268,6 +291,7 @@ class RestComisionAsignacionController extends FOSRestController{
     	$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
     	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
     	$estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
+    	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
  
     	if ($tipoRedaccion=="basico")
     		$dictamen=new Dictamen();
@@ -281,6 +305,8 @@ class RestComisionAsignacionController extends FOSRestController{
 	
     	//campo común a todos los tipos
     	$dictamen->setTextoLibre($texto);
+    	$sesion=$sesionRepository->find($idSesion);
+    	$dictamen->setSesion($sesion);
     		
     	//para el tipo articulado
     	if ($tipoRedaccion=="articulado"){
