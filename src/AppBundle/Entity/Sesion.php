@@ -77,6 +77,19 @@ class Sesion
      */
     private $tieneOrdenDelDia;
 
+    /**
+     * @var tieneEdicionBloqueada
+     *
+     * @ORM\Column(name="tieneEdicionBloqueada", type="boolean", nullable=false)
+     */
+    private $tieneEdicionBloqueada;
+    
+    /**
+     * @var cantidadExpedientes
+     *
+     * @ORM\Column(name="cantidadExpedientes", type="integer")
+     */
+    private $cantidadExpedientes;
 
     //-------------------------------------constructor----------------------------------------------
 
@@ -87,8 +100,10 @@ class Sesion
     {
         //$this->ordenDelDia = new \Doctrine\Common\Collections\ArrayCollection();
         $this->tieneOrdenDelDia=false;
+        $this->tieneEdicionBloqueada=false;
         $this->quorum=false;
         $this->presentes=0;
+        $this->cantidadExpedientes=0;
     }
 
     //------------------------------------setters y getters----------------------------------------
@@ -266,9 +281,47 @@ class Sesion
 		$this->tieneOrdenDelDia = $tieneOrdenDelDia;
 		return $this;
 	}
+	
+	/**
+	 * Get tieneEdicionBloqueada
+	 *
+	 * @return boolean
+	 */
+	public function getTieneEdicionBloqueada() {
+		return $this->tieneEdicionBloqueada;
+	}
+	
+	/**
+	 * Set tieneEdicionBloqueada
+	 *
+	 * @param boolean $tieneEdicionBloqueada
+	 * @return Sesion
+	 */
+	public function setTieneEdicionBloqueada($tieneEdicionBloqueada) {
+		$this->tieneEdicionBloqueada = $tieneEdicionBloqueada;
+		return $this;
+	}
+	
+	/**
+	 * Get cantidadExpedientes
+	 *
+	 * @return integer
+	 */
+	public function getCantidadExpedientes() {
+		return $this->cantidadExpedientes;
+	}
+	
+	/**
+	 * Set cantidadExpedientes
+	 *
+	 * @param integer $cantidadExpedientes
+	 * @return Sesion
+	 */
+	public function setCantidadExpedientes($cantidadExpedientes) {
+		$this->cantidadExpedientes = $cantidadExpedientes;
+		return $this;
+	}
 	    
-    
-
     //--------------------------------Propiedades Virtuales-----------------------------------
     
     /**

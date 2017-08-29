@@ -68,18 +68,92 @@
 									            "targets": [ 1 ],
 									            "data": null,
 									            "orderable":false,
-									            "defaultContent": "<div class='btn-group'>"+
-									            	"<button type='button'  title='Editar Sesion' class='btn btn-primary btn-xs btn-editar'><span class='glyphicon glyphicon-pencil'></span>"+
-									            	"</button>"+
-									            	"</div>"
+									            "render": function(data, type, row){
+
+										            var html="<div class='btn-group'>";
+        									            	 
+        									        if (row.tiene_orden_del_dia==false){
+
+														html+="<button type='button'  title='Editar Sesión' "+
+            								            	 		 "class='btn btn-primary btn-xs btn-editar'>"+
+            								            	 		 "<span class='glyphicon glyphicon-pencil'></span>"+
+            								            	 "</button>";
+        									        	
+        									        	html+="<button type='button'  title='Generar Orden del Día' "+
+   									            	 		 		  "class='btn btn-primary btn-xs btn-generar'>"+
+   									            	 		 		  "<span class='fa fa-cogs'></span>"+
+   									            	 		  "</button>";
+        									        }
+   									            	else{
+															if (row.tiene_edicion_bloqueada!=false){
+       									            			html+="<button type='button'  title='Eliminar Orden del Día' "+
+        							            	 		 		  		  "class='btn btn-primary btn-xs btn-borrar'>"+
+        							            	 		 		  		  "<span class='glyphicon glyphicon-wrench'></span>"+
+        							            	 		 		  "</button>";
+															}
+
+        							            	 		html+="<button type='button'  title='Descargar Orden del Día' "+
+        					            	 		 		  		  "class='btn btn-info btn-xs btn-descargar'>"+
+        					            	 		 		  		  "<span class='glyphicon glyphicon-save-file'></span>"+
+        					            	 		 		  	"</button>";
+   									            	}
+
+										            return html+"</div>";
+									            }
+									         }, 
+								             {
+									            "targets": [ 2 ],
+									            "data": 'tiene_orden_del_dia',
+									            "orderable":false,
+									            "render": function(data, type, row){
+
+									            	var html="";
+									      
+													if (data==false)
+														html="<span class='label label-info'>SIN GENERAR</span>";
+													else
+														html="<span class='label label-success'>"+
+															 row.cantidad_expedientes+" EXPEDIENTES</span>";
+															
+													return html;
+													
+										         }
+									         },
+									         {
+									            "targets": [ 4 ],
+									            "data": 'descripcion',
+									            "orderable":false,
+									            "render": function(data, type, row){
+
+													var html="";
+									            	debugger;
+									             	if (row.tiene_orden_del_dia==true){
+
+										            	if(row.tiene_edicion_bloqueada==false)
+											            	
+										            		html="<button type='button'  title='Bloquear Ediciones' "+
+        					            	 		 		  		  "class='btn btn-danger btn-xs btn-bloquear'>"+
+        					            	 		 		  		  "<span class='fa fa-unlock-alt' ></span>"+
+					            	 		 		  			 "</button>&nbsp;&nbsp;"+data; 	
+					            	 		 		   	else
+
+    					            	 		 		  	html="<span class='fa fa-lock'></span>&nbsp;&nbsp;"+data;
+									             	}
+    					            	 		 	else
+
+        					            	 		 	html=data;
+    					            	 		 		  			 
+													return html;
+										         }
 									         }
 
 						  ],
 					      "columns": [
 					      		{ "data": "id" },
 					      		{ "data": "" ,"width":"10%" },
-					      		{ "data": "tipo_sesion.tipo_sesion","width":"20%" },
-					            { "data": "descripcion","width":"50%" },
+					      		{ "data": "tiene_orden_del_dia","width":"10%" },
+					      		{ "data": "tipo_sesion","width":"20%" },
+					            { "data": "descripcion","width":"40%" },
 					            { "data": "fecha_formateada","width":"10%"},
 					            { "data": "año","width":"10%"},
 					        ],
@@ -98,6 +172,87 @@
 				$('#modalSesion').modal('show');
 			});
 
+		    $('#registroSesiones tbody').on( 'click', '.btn-descargar', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+		        window.location.href='{{ app.request.getBaseURL() }}'+
+		        					 '/imprimirOrdenDelDia?idSesion='+data[ "id" ];
+		    } );
+
+		    $('#registroSesiones tbody').on( 'click', '.btn-bloquear', function () {
+			     var data = tabla.row( $(this).parents('tr') ).data();
+			     var idSesion=data[ "id" ];
+
+			     var formData=new FormData();
+			     formData.append('idSesion',idSesion);
+
+			     $.ajax({
+		                async: true,
+		                url: '{{ app.request.getBaseURL() }}/api/sesion/ordenDia/invalidate',
+		                data: formData,
+		                cache: false,
+		                contentType: false,
+		                processData: false,
+		                type:  'POST',
+	                success: function(data) {
+	                    toastr.success(data);
+						tabla.ajax.reload();
+	                },
+	                error: function(jqXHR,textStatus,errorThrown ){
+						toastr.error(jqXHR.responseText);
+						}
+	            	});
+			} )
+
+		    $('#registroSesiones tbody').on( 'click', '.btn-borrar', function () {
+			     var data = tabla.row( $(this).parents('tr') ).data();
+			     var idSesion=data[ "id" ];
+
+			     var formData=new FormData();
+			     formData.append('idSesion',idSesion);
+
+			     $.ajax({
+		                async: true,
+		                url: '{{ app.request.getBaseURL() }}/api/sesion/ordenDia/remove',
+		                data: formData,
+		                cache: false,
+		                contentType: false,
+		                processData: false,
+		                type:  'POST',
+	                success: function(data) {
+	                    toastr.success(data);
+						tabla.ajax.reload();
+	                },
+	                error: function(jqXHR,textStatus,errorThrown ){
+						toastr.error(jqXHR.responseText);
+						}
+	            	});
+			});
+				
+			$('#registroSesiones tbody').on( 'click', '.btn-generar', function () {
+			     var data = tabla.row( $(this).parents('tr') ).data();
+			     var idSesion=data[ "id" ];
+
+			     var formData=new FormData();
+			     formData.append('idSesion',idSesion);
+
+			     $.ajax({
+		                async: true,
+		                url: '{{ app.request.getBaseURL() }}/api/sesion/ordenDia/create',
+		                data: formData,
+		                cache: false,
+		                contentType: false,
+		                processData: false,
+		                type:  'POST',
+	                success: function(data) {
+	                    toastr.success(data);
+						tabla.ajax.reload();
+	                },
+	                error: function(jqXHR,textStatus,errorThrown ){
+						toastr.error(jqXHR.responseText);
+						}
+	            	});
+			});
+			
 			$('#registroSesiones tbody').on( 'click', '.btn-editar', function () {
 			     var data = tabla.row( $(this).parents('tr') ).data();
 			     $("#modalSesion").find('input[name="id"]').val(data[ "id" ]);
@@ -265,13 +420,14 @@
 	                <thead>
 	                	<tr>
 	                		<th>id</th>
-	                		<th class="text-center">
+	                		<th>
 	                			<button type="button" title="Agregar Sesion"class="btn btn-primary btn-xs 
 	                					btn-alta"><span class="glyphicon glyphicon-plus"></span>
 						    	</button>
 						    </th>
-						    <th>Tipo Sesion</th>
-			                <th>Descripcion</th>
+						    <th>Orden del Día</th>
+						    <th>Tipo Sesión</th>
+			                <th>Descripción</th>
 			                <th>Fecha</th>
 			                <th>Año</th>
 			            </tr>

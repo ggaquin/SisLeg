@@ -40,7 +40,22 @@ class SesionRepository extends EntityRepository{
 					  -> setParameter('idApartado',$idApartado);
 		return $query->getResult();
 		
+	}
+	
+	public function createOrdenDelDia($idSesion){
 		
+		$params['idSesion']=$idSesion;
+		$stmt= $this->getEntityManager()->getConnection()->prepare('call crearOrdenDelDia(:idSesion)');
+		$stmt->execute($params);
+				
+	}
+	
+	public function removeOrdenDelDia($idSesion){
+		
+		$params['idSesion']=$idSesion;
+		$stmt= $this->getEntityManager()->getConnection()->prepare('call borrarOrdenDelDia(:idSesion)');
+		$stmt->execute($params);
+
 	}
 	
 }

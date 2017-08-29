@@ -1,6 +1,7 @@
 CREATE DEFINER=`root`@`localhost` PROCEDURE `crearOrdenDelDia`(IN _idSesion int)
 BEGIN
 
+	declare _cantidadExpedientes int default 0;
 	declare _idEstado int default 6;
     set @idTipo:=0;
     
@@ -594,5 +595,12 @@ BEGIN
     order 
     by		t.letra ASC,t.añoExpediente ASC,t.numeroExpediente ASC;
     
+    select count(distinct idExpediente) into _cantidadExpedientes
+    from `expedienteSesion` where idSesion=_idSesion;
+    
+    update 	sesion
+    set		tieneOrdenDelDia=1,
+			cantidadExpedientes=_cantidadExpedientes
+	where 	idSesion=_idSesion;
     
 END

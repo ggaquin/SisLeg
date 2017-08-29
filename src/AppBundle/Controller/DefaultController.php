@@ -593,11 +593,11 @@ class DefaultController extends Controller
     }
 
      /**
-     * @Route("/pruebaVistas")
+     * @Route("/imprimirOrdenDelDia")
      */
     public function pruebaAction(Request $request){
        
-    	$idSesion = 5;//$request->query->get('idSesion');
+    	$idSesion = $request->query->get('idSesion');
     	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
     	$tipoExpedienteSesionRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpedienteSesion');
     	$tiposExpedientesSesion=$tipoExpedienteSesionRepository->findAll();

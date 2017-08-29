@@ -445,7 +445,22 @@ class RestController extends FOSRestController{
     	else
     		$sesiones=$sesionReposiory->findAll();
     	
-    	return $this->view($sesiones,200);
+    	$resutado=[];
+    	foreach ($sesiones as $sesion){
+    		$registro=array('id'=>$sesion->getId(), 
+    						'tiene_orden_del_dia'=>$sesion->getTieneOrdenDelDia(),
+    						'tipo_sesion'=>$sesion->getTipoSesion()->getTipoSesion(),
+    						'descripcion'=>$sesion->getDescripcion(),
+    						'fecha_formateada'=>$sesion->getFechaFormateada(),
+    						'año'=>$sesion->getAño(),
+    						'cantidad_expedientes'=>$sesion->getCantidadExpedientes(),
+    						'tiene_edicion_bloqueada'=>$sesion->getTieneEdicionBloqueada()
+    						);
+    		$resutado[]=$registro;
+    			
+    	}
+    		
+    	return $this->view($resutado,200);
     }
     
     /**
@@ -534,6 +549,70 @@ class RestController extends FOSRestController{
     	$comisiones=$comisionRepository->findComisionByPatronBusqueda($term);
     	
     	return $this->view($comisiones,200);
+    }
+    
+    /**
+     * @Rest\Post("/api/sesion/ordenDia/create")
+     */
+    public function  generarOrdenDelDia(Request $request){
+    	
+    	$idSesion=$request->request->get('idSesion');
+    	
+    	try {
+    		$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+    		$sesionRepository->createOrdenDelDia($idSesion);
+    		
+    		return $this->view('La orden del día se generó correctamente',200);
+    	}
+    	catch (\Exception $e){
+    		return $this->view($e->getMessage(),500);
+    	}
+    	
+    }
+    
+    /**
+     * @Rest\Post("/api/sesion/ordenDia/remove")
+     */
+    public function  borrarOrdenDelDia(Request $request){
+    	
+    	$idSesion=$request->request->get('idSesion');
+    	
+    	try {
+    		$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+    		$sesionRepository->removeOrdenDelDia($idSesion);
+    		
+    		return $this->view('La orden del día se eliminó en forma correcta',200);
+    	}
+    	catch (\Exception $e){
+    		return $this->view($e->getMessage(),500);
+    	}
+    	
+    }
+    
+    /**
+     * @Rest\Post("/api/sesion/ordenDia/invalidate")
+     */
+    public function  invalidarEdicionOrdenDelDia(Request $request){
+    	
+    	$idSesion=$request->request->get('idSesion');
+    	
+    	try {
+    		$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+    		$sesion=$sesionRepository->find($idSesion);
+    		$sesion->setTieneEdicionBloqueada(true);
+    		
+    		$em = $this->getDoctrine()->getManager();
+    		$em->persist($sesion);
+    		$em->flush();
+    		
+    		return $this->view('El bloqueo de ediciones sobre la orden del día'.
+    							$sesion->getFechaMuestra().'se realizó en forma exitosa',200);
+    	
+    	}
+    	catch (\Exception $e){
+    		return $this->view($e->getMessage(),500);
+    	}
+    	
     }
     
    

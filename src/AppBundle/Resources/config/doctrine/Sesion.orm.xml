@@ -24,6 +24,10 @@
     </field>
     <field name="tieneOrdenDelDia" type="boolean" column="tieneOrdenDelDia" nullable="false">
     </field>
+     <field name="tieneEdicionBloqueada" type="boolean" column="tieneEdicionBloqueada" nullable="false">
+    </field>
+    <field name="cantidadExpedientes" type="integer" column="cantidadExpedientes">
+    </field>
    	<many-to-one field="tipoSesion" target-entity="TipoSesion">
    		<join-columns>
    			<join-column name="idTipoSesion" referenced-column-name="idTipoSesion"/>

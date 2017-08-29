@@ -179,3 +179,20 @@ UPDATE `tipoExpedienteSesion` SET `tipoExpedienteSesion`='Comisión de Interpret
 UPDATE `tipoExpedienteSesion` SET `tipoExpedienteSesion`='Comisión de Ecología y Protección del Medio Ambiente' WHERE `idTipoExpedienteSesion`='22';
 UPDATE `tipoExpedienteSesion` SET `tipoExpedienteSesion`='Dictamenes Conjunto' WHERE `idTipoExpedienteSesion`='23';
 
+ALTER TABLE `sesion` 
+ADD COLUMN `tieneEdicionBloqueada` TINYINT(1) NULL AFTER `tieneOrdenDelDia`;
+
+UPDATE `sesion` SET `tieneEdicionBloqueada`='0' WHERE `idSesion`='1';
+UPDATE `sesion` SET `tieneEdicionBloqueada`='0' WHERE `idSesion`='2';
+UPDATE `sesion` SET `tieneEdicionBloqueada`='0' WHERE `idSesion`='3';
+UPDATE `sesion` SET `tieneEdicionBloqueada`='0' WHERE `idSesion`='4';
+UPDATE `sesion` SET `tieneEdicionBloqueada`='0' WHERE `idSesion`='5';
+UPDATE `sesion` SET `tieneEdicionBloqueada`='0' WHERE `idSesion`='6';
+
+ALTER TABLE `sesion` 
+CHANGE COLUMN `tieneEdicionBloqueada` `tieneEdicionBloqueada` TINYINT(1) NOT NULL;
+
+ALTER TABLE `sesion` 
+ADD COLUMN `cantidadExpedientes` INT NOT NULL AFTER `tieneEdicionBloqueada`;
+
+
