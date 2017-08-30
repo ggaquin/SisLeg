@@ -599,15 +599,21 @@ class DefaultController extends Controller
        
     	$idSesion = $request->query->get('idSesion');
     	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+    	$sesion=$sesionRepository->find($idSesion);
     	$tipoExpedienteSesionRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpedienteSesion');
     	$tiposExpedientesSesion=$tipoExpedienteSesionRepository->findAll();
-    	    	
+    	 
+    	$meses = array("Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre");
+    	
+    	$fecha=$sesion->getFecha()->format('d')." de ".$meses[$sesion->getFecha()->format('n')-1].
+    		   " de ".$sesion->getFecha()->format('Y') ;
+    	
     	$pdf = $this->get('white_october.tcpdf')->create();
     	
     	// activa o desactiva encabezado de página
-    	$pdf ->SetPrintHeader(true);
+    	$pdf ->SetPrintHeader(false);
     	// activa o desactiva el pie de página
-    	$pdf->SetFont('times', '', 12);
+    	
     	$pdf ->SetPrintFooter(false);
     	$base=$request->getSchemeAndHttpHost().$request->getBasePath();
     	$pdf->setBaseImagePath($base);
@@ -616,7 +622,7 @@ class DefaultController extends Controller
     	$pdf ->SetAuthor('SisLeg');
     	$pdf ->SetTitle('SisLeg');
     	$pdf ->SetSubject('SisLeg');
-    	$pdf ->SetHeaderData($urlImage, 8, 'SisLeg','SisLeg', array(0,0,0), array(0,0,0));
+    	$pdf ->SetHeaderData($urlImage, 8, 'HCD Lomas de Zamora - Orden del Día','Sesión: '.$fecha, array(0,0,0), array(0,0,0));
     	// set default monospaced font
     	$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
     	// set margins
@@ -626,18 +632,39 @@ class DefaultController extends Controller
     	// set auto page breaks
     	$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
     	$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
-    	   	
+    	
     	$pdf->AddPage('P','LEGAL');
-
-//     	$html='';
+    	
+    	$pdf->ln(15);
+    	
+    	$pdf->Image('/document_bootstrap/portada_orden_dia.png', 25, '', 170, '', '', '', 'M', 
+    				true, 700, '', false, false, 1, false, false, false);
+    	   	
+    	//$dias = array("Domingo","Lunes","Martes","Miercoles","Jueves","Viernes","Sábado");
+    	   	
+    	$pdf->ln(80);
+    	$pdf->SetFont('times', 'I', 18);
+    	$html_caratula='<H1>SESION '.strtoupper($sesion->getTipoSesion()->getTipoSesion()). ' A CELEBRARSE</H1>'.
+    				   '<H1>EL DÍA '.strtoupper($fecha).'</H1>';
+    	
+    	$pdf->writeHTMLCell(170, '', 25, '', $html_caratula, 0, 1, 0, true, 'C', true);
+    	
+    	$pdf->ln(50);
+    	$pdf->SetFont('times', '', 20);
+    	$pdf->writeHTMLCell(170, '', 25, '', '<H1><u>ORDEN DEL DÍA</u></H1>', 0, 1, 0, true, 'C', true);
+    	 
+    	$pdf ->SetPrintHeader(true);
+    	$pdf->AddPage('P','LEGAL');
+    	$pdf->SetFont('times', '', 12);
+    	
     	
     	foreach ($tiposExpedientesSesion as $tipoExpedienteSesion){
     		//$html='';
     		$content=$sesionRepository->findOrdenDiaBySesionYApartado($idSesion, $tipoExpedienteSesion->getId());
     		
     		if (count($content)>0){
-    			$html='<div style="text-align:center"><h3>'.$tipoExpedienteSesion->getLetra().')'.
-      				   $tipoExpedienteSesion->getTipoExpedienteSesion().'</h3></div>';
+    			$html='<div style="text-align:center"><h1>'.$tipoExpedienteSesion->getLetra().')'.
+      				   $tipoExpedienteSesion->getTipoExpedienteSesion().'</h1></div>';
 	    		$html.=($content[0]["textoApartado"]);
 		    	$pdf->writeHTMLCell(170, '', 25, '', $html, 0, 1, 0, true, 'J', true);
 // 		    	$pdf->Ln(1);
