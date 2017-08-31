@@ -33,7 +33,7 @@ class DefaultController extends Controller
         // last username entered by the user
         $lastUsername = $authenticationUtils->getLastUsername();
 
-        $version=$this->getParameter('project_version');
+        $version=$this->getParameter('project_version'); 
 
         return $this->render('security/login.html.twig', array(
             'last_username' => $lastUsername,
@@ -608,6 +608,7 @@ class DefaultController extends Controller
     	$fecha=$sesion->getFecha()->format('d')." de ".$meses[$sesion->getFecha()->format('n')-1].
     		   " de ".$sesion->getFecha()->format('Y') ;
     	
+    	$basepath=realpath($this->getParameter('kernel.root_dir').'/..');
     	$pdf = $this->get('white_october.tcpdf')->create();
     	
     	// activa o desactiva encabezado de página
@@ -637,9 +638,14 @@ class DefaultController extends Controller
     	
     	$pdf->ln(15);
     	
-    	$pdf->Image('/document_bootstrap/portada_orden_dia.png', 25, '', 170, '', '', '', 'M', 
+    	
+    	$imagenpath=$basepath.'/web/document_bootstrap/portada_orden_dia.png';
+    	
+    	//$pdf->writeHTMLCell(170, '', 25, '', '<H1>'.$imagenpath.'</H1>', 0, 1, 0, true, 'C', true);
+    	
+    	$pdf->Image($imagenpath, 25, '', 170, '', '', '', 'M', 
     				true, 700, '', false, false, 1, false, false, false);
-    	   	
+    	  	
     	//$dias = array("Domingo","Lunes","Martes","Miercoles","Jueves","Viernes","Sábado");
     	   	
     	$pdf->ln(80);

@@ -61,8 +61,8 @@ class ImpresionServicio
 //                        $listaConcejales.=$perfilRepository->findLegisladorByBloque_Id($bloque->getId());
 //                     }
                     //$listaConcejales.=($listaConcejales!=""?" - ":"");
-                    $listaConcejales.=$proyecto->getListaConcejales(";");
-                    $documento["origen"]=$listaConcejales;
+                    //$listaConcejales.=$proyecto->getListaConcejales(";");
+                    $documento["origen"]=$proyecto->getConcejal()->getBloque()->getBloque();
                     $tieneProyecto=true;
                     $idProyecto=$proyecto->getId();
                     break;
