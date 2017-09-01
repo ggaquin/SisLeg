@@ -261,7 +261,7 @@
               {% if app.user.rol.oficina is null or app.user.rol.oficina.id==5 %}
                   <li class="treeview">
                     <a href="#">
-                      <i class="fa fa-inbox"></i>
+                      <i class="fa fa-book"></i>
                       <span>Despacho</span>
                       <span class="pull-right-container">
                         <i class="fa fa-angle-left pull-right"></i>
@@ -270,10 +270,10 @@
                     <ul class="treeview-menu">
                       <li class="divider"></li>
                       {# {% if EXP_MAIN is defined %} #}
-                      	<li><a href="pruebaVistas" ><i class="fa fa-minus"></i>Sanciones</a></li>
+                      	<li><a href="#" onclick="noImplementado();"><i class="fa fa-minus"></i>Sanciones</a></li>
                       {# {% endif %} #}
                       {# if  MOV_MAIN is defined #}
-                      	<li><a href="#" onclick="cargarMenu('/movimientos')"><i class="fa fa-minus"></i>Versiones Taquigráficas</a></li>
+                      	<li><a href="#" onclick="noImplementado();"><i class="fa fa-minus"></i>Versiones Taquigráficas</a></li>
                       {# endif #}
                       {% if  MOV_MAIN is defined%}
                       	<li><a href="#" onclick="cargarMenu('/movimientos')"><i class="fa fa-minus"></i>Movimientos</a></li>

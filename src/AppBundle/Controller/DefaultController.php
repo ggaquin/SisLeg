@@ -433,9 +433,9 @@ class DefaultController extends Controller
         $pdf ->SetPrintHeader(true);
         // activa o desactiva el pie de página
         if ($tipoDocumento=='proyecto') $pdf ->SetPrintFooter(true); else $pdf ->SetPrintFooter(false);
-        $base=$request->getSchemeAndHttpHost().$request->getBasePath();
-        $pdf->setBaseImagePath($base);
-        $urlImage='/document_bootstrap/escudopng2_mini.png';
+        //$base=$request->getSchemeAndHttpHost().$request->getBasePath();
+        //$pdf->setBaseImagePath($base);
+        $urlImage='/web/document_bootstrap/escudopng2_mini.png';
         // set default header data
         $pdf ->SetAuthor('SisLeg');
         $pdf ->SetTitle($titulo);
@@ -616,13 +616,13 @@ class DefaultController extends Controller
     	// activa o desactiva el pie de página
     	
     	$pdf ->SetPrintFooter(false);
-    	$base=$request->getSchemeAndHttpHost().$request->getBasePath();
-    	$pdf->setBaseImagePath($base);
-    	$urlImage='/document_bootstrap/escudopng2_mini.png';
+    	//$base=$request->getSchemeAndHttpHost().$request->getBasePath();
+    	//$pdf->setBaseImagePath($base);
+    	$urlImage='/web/document_bootstrap/escudopng2_mini.png';
     	// set default header data
     	$pdf ->SetAuthor('SisLeg');
-    	$pdf ->SetTitle('SisLeg');
-    	$pdf ->SetSubject('SisLeg');
+    	$pdf ->SetTitle('HCD Lomas de Zamora');
+    	$pdf ->SetSubject('Orden del Día '.$fecha);
     	$pdf ->SetHeaderData($urlImage, 8, 'HCD Lomas de Zamora - Orden del Día','Sesión: '.$fecha, array(0,0,0), array(0,0,0));
     	// set default monospaced font
     	$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
@@ -682,7 +682,7 @@ class DefaultController extends Controller
 //     	$pdf->Ln(1);
     		    	
     	return new Response(
-    			$pdf->Output('SisLeg', 'D'),
+    			$pdf->Output('Orden del Día '.$fecha, 'D'),
     			200,
     			[
     					'Content-Type'        => 'application/pdf',
