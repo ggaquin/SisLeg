@@ -7,10 +7,31 @@ use Doctrine\ORM\Query\ResultSetMapping;
 
 class SesionRepository extends EntityRepository{
 	
+	public function countByFechaYTipo($fecha,$idTipoSesion){
+		
+		$qb = $this ->createQueryBuilder('s')
+				    ->select('count(s.id)')
+				    ->innerJoin('s.tipoSesion', 'ts')
+				    ->where('s.fecha >= :fecha and ts.id= :idTipoSesion')
+				    ->setParameter('fecha', $fecha)
+				    ->setParameter('idTipoSesion', $idTipoSesion);
+		return $qb->getQuery()->getResult();
+		
+	}
+	
 	public function findLastActivoByTipo(){
 		
-		$fechactual=new \DateTime('now');
-
+		$rsm = new ResultSetMapping();
+		$rsm->addScalarResult('idSesion', 'id');
+		$rsm->addScalarResult('descripcion', 'fecha_formateada');
+			
+		$sql="select idSesion, descripcion ".
+			 "FROM 	vw_sesiones_habiles ";
+			
+		$query=$this->getEntityManager()->createNativeQuery($sql, $rsm);
+		return $query->getArrayResult();
+		
+		/*
 		$qb1 = $this->createQueryBuilder('s')
 				    ->select('MIN(s.id)')
                     ->where('s.fecha > :fecha')
@@ -24,6 +45,7 @@ class SesionRepository extends EntityRepository{
            ->setParameter('fecha', $fechactual);
 
         return $qb->getQuery()->getResult();
+        */
 
 	}
 	

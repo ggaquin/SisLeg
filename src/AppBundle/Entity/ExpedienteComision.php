@@ -596,7 +596,9 @@ class ExpedienteComision
     	$listaDictamenesMayoria=[];
     	foreach ($this->dictamenesMayoria as $dictamen)
     		$listaDictamenesMayoria[]=array('id'=>$dictamen->getId(),
-    									    'sesion'=>$dictamen->getSesion()->getFechaMuestra()    				
+    										'sesion'=>(!is_null($dictamen->getSesion())
+    															?$dictamen->getSesion()->getFechaMuestra()
+    															:'Sin Sesión')
     										);
     	return $listaDictamenesMayoria;
     }
@@ -613,7 +615,9 @@ class ExpedienteComision
     	$listaDictamenesPrimeraMinoria=[];
     	foreach ($this->dictamenesPrimeraMinoria as $dictamen)
     		$listaDictamenesPrimeraMinoria[]=array('id'=>$dictamen->getId(),
-    									    	   'sesion'=>$dictamen->getSesion()->getFechaMuestra()    				
+								    			   'sesion'=>(!is_null($dictamen->getSesion())
+								    						  ?$dictamen->getSesion()->getFechaMuestra()
+								    						  :'Sin Sesión')
     										);
     		return $listaDictamenesPrimeraMinoria;
     }
@@ -630,7 +634,9 @@ class ExpedienteComision
     	$listaDictamenesSegundaMinoria=[];
     	foreach ($this->dictamenesSegundaMinoria as $dictamen)
     		$listaDictamenesSegundaMinoria[]=array('id'=>$dictamen->getId(),
-    											   'sesion'=>$dictamen->getSesion()->getFechaMuestra()
+								    			   'sesion'=>(!is_null($dictamen->getSesion())
+								    						  ?$dictamen->getSesion()->getFechaMuestra()
+								    						  :'Sin Sesión')
     											  );
     		return $listaDictamenesSegundaMinoria;
     }

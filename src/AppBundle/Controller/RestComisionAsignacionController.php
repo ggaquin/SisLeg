@@ -39,6 +39,7 @@ use AppBundle\AppBundle;
 use AppBundle\Entity\EstadoExpediente;
 use FOS\RestBundle\Controller\Annotations\Route;
 use AppBundle\Repository\ExpedienteComisionRepository;
+use AppBundle\Entity\Pase;
 
 /**
  * @Route("/api/comisionAsignacion")
@@ -119,7 +120,8 @@ class RestComisionAsignacionController extends FOSRestController{
     									'dictamenes_mayoria'=>$e->getListaDictamenesMayoria(),
     									'dictamenes_primera_minoria'=>$e->getListaDictamenesPrimeraMinoria(),
     									'dictamenes_segunda_minoria'=>$e->getListaDictamenesSegundaMinoria(),
-    									'recibido'=>!is_null($e->getPaseOriginario()->getRemito()->getFechaRecepcion())
+    									'recibido'=>!is_null($e->getPaseOriginario()->getRemito()->getFechaRecepcion()),
+    									'anulado'=>$e->getAnulado()
 				    				);
     			$respuesta[]=$datosAsignacion;
     		}
@@ -158,21 +160,54 @@ class RestComisionAsignacionController extends FOSRestController{
     /**
      * @Rest\Post("/anular")
      */
-    public function cambiarVisualizacionExpedienteComisionAction(Request $request)
+    public function anularExpedienteComisionAction(Request $request)
     {
     	$idAsignacion=$request->request->get('idAsignacion');
     	$usuario=$this->getUser();
     	
+       	$idNuevoEstadoExpediente=$this->getParameter('id_estado_espera_recepcion');
+    	$estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
+    	$nuevoEstadoExpediente=$estadoExpedienteRepository->find($idNuevoEstadoExpediente);
+    	
     	$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
     	$expedienteComision=$expedienteComisionRepository->find($idAsignacion);
+    	$idExpediente=$expedienteComision->getExpediente()->getId();
+    	$idComision=$expedienteComision->getComision()->getId();
+    	$cuentaAsignaciones=$expedienteComisionRepository
+    							->countComisionesByExpediente_IdAndFiltro($idExpediente,$idComision);
     	
     	$expedienteComision->setAnulado(true);
-    
     	$expedienteComision->setFechaModificacion(new \DateTime());
     	$expedienteComision->setUsuarioModificacion($usuario->getUsuario());
     	
     	$em = $this->getDoctrine()->getManager();
     	$em->persist($expedienteComision);
+    	
+    	if ($cuentaAsignaciones[1]==0){
+    		
+    		$oficinaOrigen=$expedienteComision->getPaseOriginario()->getRemito()->getOrigen();
+    		
+    		$expediente=$expedienteComision->getExpediente()->setEstadoExpediente($nuevoEstadoExpediente);
+    		$expediente->setOficinaActual($oficinaOrigen); 
+    		
+    		$remito= new Remito();
+    		$remito->setDestino($oficinaOrigen);
+    		$remito->setOrigen($usuario->getRol()->getOficina());
+    		$remito->setFechaCreacion(new \DateTime());
+    		$remito->setUsuarioCreacion($usuario->getUsuario());
+    		
+    		$pase=new Pase();
+    		$pase->setExpediente($expediente);
+    		$pase->setFechaCreacion(new \DateTime());
+    		$pase->setUsuarioCreacion($usuario->getUsuario());
+    		$pase->setFojas($expediente->getFolios());
+    		$pase->setObservacion('Devuelto por anulacion de comisiones');
+    		
+    		$remito->addMovimiento($pase);
+    		$em->persist($remito);
+    		    		
+    	}
+    	
     	$em->flush();
     	
     	return $this->view("La asignación de expediente se logró anular en forma exitosa",200);
@@ -256,7 +291,7 @@ class RestComisionAsignacionController extends FOSRestController{
     					 									?$dictamen->getRevisionProyecto()->getIncluyeVistosyConsiderandos():true),
     					 'revision_id'=>(($dictamen instanceof DictamenRevision)
     					 					?$dictamen->getRevisionProyecto()->getId():0),
-    					 'sesion_id'=>$dictamen->getSesion()->getId()
+    					 'sesion_id'=>(!is_null($dictamen->getSesion())?$dictamen->getSesion()->getId():0)
     					 );
    
     	return $this->view($resultado,200);

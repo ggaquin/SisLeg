@@ -493,14 +493,12 @@ class RestController extends FOSRestController{
 	    	$sesionReposiory=$this->getDoctrine()->getRepository('AppBundle:Sesion');
 	    	$tipoSesionReposiory=$this->getDoctrine()->getRepository('AppBundle:TipoSesion');
 	    	$tipoSesion=$tipoSesionReposiory->find($idTipoSesion);
-	    	$sesionPersistida=$sesionReposiory->findBy(array('tipoSesion' => $tipoSesion, 
-	    													 'fecha' => $fechaSesion
-	    													)
-	    											  );
-	    	if (count($sesionPersistida)>0)
+	    	$sesionesPersistidas=$sesionReposiory->findBy(array('tipoSesion' => $tipoSesion,'fecha' => $fechaSesion));
+	    	
+	    	if (count($sesionesPersistidas)>0)
 	    		return $this->view('Ya existe una sesion del tipo '.
 	    						   $tipoSesion->getTipoSesion().
-	    						   ' creada para la fecha dada',500);
+	    						   ' creada para la misma fecha',500);
 	    	
 	    	$sesion=null;
 	    	$mensaje="";

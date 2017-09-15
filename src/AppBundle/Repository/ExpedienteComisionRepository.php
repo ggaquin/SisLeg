@@ -133,6 +133,29 @@ class ExpedienteComisionRepository extends EntityRepository{
 		return $qb->getQuery()->getResult();
 	}
 	
+	public  function countComisionesByExpediente_IdAndFiltro($idExpediente,$filtro){
+		
+		$qb = $this->createQueryBuilder('ec');
+		$qb ->select('count(ec.id)')
+			->innerJoin('ec.expediente', 'e')
+			->innerJoin('ec.comision', 'c')
+			->innerJoin('e.estadoExpediente', 'es')
+			->where($qb->expr()->andX(
+										$qb->expr()->eq('e.id', '?1'),
+										$qb->expr()->orX(
+												$qb->expr()->eq('es.id','?2'),
+												$qb->expr()->eq('es.id','?3')
+												),
+										$qb->expr()->neq('c.id', '?4')
+									  )
+					)
+			->setParameter(1, $idExpediente)
+			->setParameter(2, 2)
+			->setParameter(3, 3)
+			->setParameter(4, $filtro);
+			return $qb->getQuery()->getSingleResult();
+		}
+	
 	public  function findByExpediente_IdAndComision_Nombre($nombre,$idExpediente){
 		
 		$qb1 = $this->createQueryBuilder('ecs');

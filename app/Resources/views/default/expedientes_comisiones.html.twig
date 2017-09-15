@@ -403,8 +403,7 @@
 					var html='<option value="0">Seleccione Sesion</option>'
 					$.each(data, function(index,sesion){
 						html+='<option value="'+sesion.id+'" '+
-							  ((valorSeleccionado==sesion.id)?'selected':'') +'>'+sesion.fecha_formateada+'-('+
-							 sesion.tipo_sesion.abreviacion+')</option>';
+							  ((valorSeleccionado==sesion.id)?'selected':'') +'>'+sesion.fecha_formateada+'</option>';
 					});
 					$(control).html(html);    			
 				},
@@ -512,6 +511,7 @@
     														  "<span class='glyphicon glyphicon-paperclip'></span></button>";
     												
 													$.each(row.dictamenes_mayoria,function(index,dictamen){
+														debugger;
 														html+="<button type='button' title='Editar Dictamen' "+
 															  "class='btn btn-info btn-xs btn-editar-dictamen-mayoria' "+
 															  "data-toggle='modal' data-target='#modalDictamen' id='"+dictamen.id+"'>"+
@@ -823,7 +823,7 @@
 				validacion+=((texto.replace(/ /g, '').length==0)
 						 	 ?'<li>Debe poveer un texto para el dictamen</li>':'');
 
-			 	validacion+=((idSesion==0)?'<li>Debe seleccionar una sesion</li>':'')
+			 	//validacion+=((idSesion==0)?'<li>Debe seleccionar una sesion</li>':'')
 			 	 
 				validacion+=((tipoDictamen==0 && tipoRedaccion=="articulado")
 							 ?'<li>Debe especificar el tipo de dictamen</li>':'');
@@ -1346,7 +1346,9 @@
 
 		    	$("#modalTexto").find('input[name="idTexto"]').val("vistos");
 		    	var htmlEdicion=$("#modalDictamen").find('div[id="vistos"]').html();
-		    	$("#edicion-texto").data("wysihtml5").editor.setValue(htmlEdicion)
+		    	$("#edicion-texto").data("wysihtml5").editor.setValue(htmlEdicion);
+		    	setTimeout(function() { $("#edicion-texto").data("wysihtml5").editor.focus(); }, 10);
+		    	//$("#edicion-texto").data("wysihtml5").editor.focus();
 		   		$("#modalTexto").modal("show");
 			});
 
@@ -1354,8 +1356,11 @@
 
 		    	$("#modalTexto").find('input[name="idTexto"]').val("considerandos");
 		    	var htmlEdicion=$("#modalDictamen").find('div[id="considerandos"]').html();
-		    	$("#edicion-texto").data("wysihtml5").editor.setValue(htmlEdicion)
+		    	$("#edicion-texto").data("wysihtml5").editor.setValue(htmlEdicion);
+		    	setTimeout(function() { $("#edicion-texto").data("wysihtml5").editor.focus(); }, 10);
+		    	//$("#edicion-texto").data("wysihtml5").editor.focus();
 		   		$("#modalTexto").modal("show");
+		    	
 			});
 
 		    $("#btn-cambio-texto").click(function(){

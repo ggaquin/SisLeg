@@ -871,6 +871,19 @@ class Expediente
     	$año = ((is_null($this->año))?"":$this->año);
         return $this->numeroExpediente.'-'.($this->tipoExpediente->getLetra()).'-'.substr($año,2,2);
     }
+    
+    /**
+     * Get numeroYAño
+     *
+     * @return string
+     *
+     * @VirtualProperty
+     */
+    public function getNumeroYAño()
+    {
+    	$año = ((is_null($this->año))?"":$this->año);
+    	return $this->numeroExpediente.'-'.substr($año,2,2);
+    }
 
      /**
      * Get ejercicio
