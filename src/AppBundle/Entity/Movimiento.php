@@ -10,13 +10,15 @@ use JMS\Serializer\Annotation\VirtualProperty;
  *
  * @ORM\Table(name="movimiento", indexes={@ORM\Index(name="movimiento_remito_idx", columns={"idRemito"}), 
  *                                        @ORM\Index(name="movimiento_expediente_idx", columns={"idExpediente"}),
- *                                        @ORM\Index(name="movimiento_sesion_idx", columns={"idSesion"})})
+ *                                        @ORM\Index(name="movimiento_sesion_idx", columns={"idSesion"}),
+ *                                        @ORM\Index(name="movimiento_comision_idx", columns={"idComision"})})
  *
  * @ORM\Entity
  * @ORM\InheritanceType("SINGLE_TABLE")
  * @ORM\DiscriminatorColumn(name="discriminador", type="string", length=7)
  * @ORM\DiscriminatorMap({"pase" = "AppBundle\Entity\Pase",
- *                        "informe" = "AppBundle\Entity\SolicitudInforme"})
+ *                        "informe" = "AppBundle\Entity\SolicitudInforme",
+ *                        "notificacion" ="AppBundle\Entity\Notificacion"})
  */
 
 abstract class Movimiento {

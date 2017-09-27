@@ -8,7 +8,7 @@ use JMS\Serializer\Annotation\VirtualProperty;
 /**
  * Rol
  *
- * @ORM\Table(name="rol")
+ * @ORM\Table(name="rol", indexes={@ORM\Index(name="rol_oficina_idx", columns={"idOficina"})})
  * @ORM\Entity
  */
 class Rol

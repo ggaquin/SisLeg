@@ -86,7 +86,7 @@ DROP FOREIGN KEY `fk_expedienteComision_sesion`;
 ALTER TABLE `expedienteComision` 
 DROP INDEX `expedienteComision_sesion_idx`;
 
-ALTER TABLE `expedienteComision` 
+ALTER TABLE `expedienteComision` 	
 DROP COLUMN `idSesion`;
 
 CREATE TABLE `expedienteComision_dictamenesMayoria` (

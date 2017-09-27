@@ -17,7 +17,7 @@ class OrigenExterno
     /**
      * @var integer
      *
-     * @ORM\Column(name="idOrigenExterno", type="smallint")
+     * @ORM\Column(name="idOrigenExterno", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */

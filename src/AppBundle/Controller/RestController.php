@@ -3,41 +3,27 @@
 namespace AppBundle\Controller;
 
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\FOSRestController;
-use Symfony\Component\HttpFoundation\Request;
 use FOS\RestBundle\View\View;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\Request;
 ;
 
 // use twig\twig;
 
-use AppBundle\Entity\Rol;
-use AppBundle\Entity\Usuario;
-use AppBundle\Entity\Perfil;
-use AppBundle\Entity\PerfilLegislador;  
-use AppBundle\Entity\PerfilPublico;
-use AppBundle\Entity\Bloque;
-use AppBundle\Entity\Expediente;
-use AppBundle\Entity\Proyecto;
-use AssistBundle\Entity\AdministracionSesion;
-use AppBundle\Entity\Remito;
-use AppBundle\Entity\Oficina;
-use AppBundle\Entity\DemandanteParticular;
-use AppBundle\Entity\OrigenExterno;
-use AppBundle\Entity\ExpedienteComision;
-use AppBundle\Entity\Movimiento;
-use FOS\RestBundle\Controller\Annotations\Get;
-use AppBundle\Entity\Sesion;
-use AppBundle\Entity\ProyectoRevision;
-use AppBundle\Entity\Comision;
-use AppBundle\Entity\Dictamen;
-use AppBundle\Entity\DictamenArticulado;
-use AppBundle\Entity\DictamenRevision;
-use AppBundle\Entity\TipoProyecto;
+
 use AppBundle\AppBundle;
-use AppBundle\Entity\EstadoExpediente;
+use AppBundle\Entity\Bloque;
+use AppBundle\Entity\Comision;
+use AppBundle\Entity\Expediente;
+use AppBundle\Entity\Oficina;
+use AppBundle\Entity\Perfil;
+use AppBundle\Entity\PerfilLegislador;
+use AppBundle\Entity\Sesion;
 use AppBundle\Entity\TipoComision;
+use AssistBundle\Entity\AdministracionSesion;
+use FOS\RestBundle\Controller\Annotations\Get;
 
 
 class RestController extends FOSRestController{
@@ -430,7 +416,7 @@ class RestController extends FOSRestController{
     
     /**
      * @Rest\Get("/api/sesion/getByCriteria/{criterio}")
-     */
+     *
     public function traerSesionesPorCriterioAction(Request $request){
     	
     	$criterio=$request->get('criterio');
@@ -461,11 +447,11 @@ class RestController extends FOSRestController{
     	}
     		
     	return $this->view($resutado,200);
-    }
+    }/*
     
     /**
      * @Rest\Get("/api/sesion/getOne/{id}")
-     */
+     *
     public function traerSesionPorId(Request $request){
     	
     	$idSesion=$request->get('id');
@@ -474,11 +460,11 @@ class RestController extends FOSRestController{
     	$sesion=$sesionReposiory->find($idSesion);
    
     	return $this->view($sesion,200);
-    }
+    }*/
     
     /**
      * @Rest\Post("/api/sesion/save")
-     */
+     *
     public function guardarSesion(Request $request){
     	
     	try{
@@ -526,17 +512,17 @@ class RestController extends FOSRestController{
     	catch(\Exception $e){
     		return $this->view($e->getMessage(),500);
     	}
-    }
+    }*/
     
     /**
      * @Rest\Get("/api/session/getLastByType")
-     */
+     *
     public function  traerUltimasSesionesPorTipoAction(Request $request){
     	
     	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
     	$sesionesValidas=$sesionRepository->findLastActivoByTipo();
     	return $this->view($sesionesValidas,200);
-    }
+    }*/
     
     /**
      * @Rest\Get("/api/comision/getByCriteria")
@@ -551,7 +537,7 @@ class RestController extends FOSRestController{
     
     /**
      * @Rest\Post("/api/sesion/ordenDia/create")
-     */
+     *
     public function  generarOrdenDelDia(Request $request){
     	
     	$idSesion=$request->request->get('idSesion');
@@ -566,11 +552,11 @@ class RestController extends FOSRestController{
     		return $this->view($e->getMessage(),500);
     	}
     	
-    }
+    }*/
     
     /**
      * @Rest\Post("/api/sesion/ordenDia/remove")
-     */
+     *
     public function  borrarOrdenDelDia(Request $request){
     	
     	$idSesion=$request->request->get('idSesion');
@@ -585,11 +571,11 @@ class RestController extends FOSRestController{
     		return $this->view($e->getMessage(),500);
     	}
     	
-    }
+    }*/
     
     /**
      * @Rest\Post("/api/sesion/ordenDia/invalidate")
-     */
+     *
     public function  invalidarEdicionOrdenDelDia(Request $request){
     	
     	$idSesion=$request->request->get('idSesion');
@@ -611,7 +597,7 @@ class RestController extends FOSRestController{
     		return $this->view($e->getMessage(),500);
     	}
     	
-    }
+    }*/
     
    
     
@@ -641,7 +627,7 @@ class RestController extends FOSRestController{
     }
 
     /**
-     *  @Rest\Get("/api/sesion/traerAccion")
+     *  @Rest\Get("/api/session/traerAccion")
      */
     public function traerAccionIdAction(Request $request)
     {   

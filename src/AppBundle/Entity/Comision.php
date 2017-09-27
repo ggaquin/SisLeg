@@ -8,9 +8,10 @@ use JMS\Serializer\Annotation\VirtualProperty;
 /**
  * Comision
  *
- * @ORM\Table(name="Comision",indexes={@ORM\Index(name="comision_tipoComision_idx", columns={"idTipoComision"}),
+ * @ORM\Table(name="comision",indexes={@ORM\Index(name="comision_tipoComision_idx", columns={"idTipoComision"}),
                                        @ORM\Index(name="comision_perfilPresidente_idx", columns={"idPerfilPresidente"}),
-                                       @ORM\Index(name="comision_perfilVicePresidente_idx", columns={"idPerfilVicePresidente"})
+                                       @ORM\Index(name="comision_perfilVicePresidente_idx", columns={"idPerfilVicePresidente"}),
+                                       @ORM\Index(name="letra_idx", columns={"letraOrdenDelDia"})
                                        })
  * @ORM\Entity(repositoryClass="AppBundle\Repository\ComisionRepository")
  */
@@ -21,7 +22,7 @@ class Comision
     /**
      * @var integer
      *
-     * @ORM\Column(name="idComision", type="int")
+     * @ORM\Column(name="idComision", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -89,6 +90,13 @@ class Comision
      * })
      */
     private $tipoComision;
+    
+    /**
+     * @var string
+     * 
+     * @ORM\Column(name="letraOrdenDelDia", length=1, nullable=false)
+     */
+    private $letraOrdenDelDia;
 
     /**
      * @var boolean
@@ -355,7 +363,26 @@ class Comision
     {
         return $this->comision;
     }
-
+    
+    /**
+     * Get letraOrdenDelDia
+     * 
+     * @return string
+     */
+	public function getLetraOrdenDelDia() {
+		return $this->letraOrdenDelDia;
+	}
+	
+	/**
+	 * Set letraOrdebDelDia
+	 * @param unknown $letraOrdenDelDia
+	 * @return \AppBundle\Entity\Comision
+	 */
+	public function setLetraOrdenDelDia($letraOrdenDelDia) {
+		$this->letraOrdenDelDia = $letraOrdenDelDia;
+		return $this;
+	}
+	
     /**
      * Set tipoComision
      *

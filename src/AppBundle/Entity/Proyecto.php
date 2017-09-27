@@ -96,7 +96,7 @@ class Proyecto
     /**
      * @var \AppBundle\Entity\PerfilLegislador
      *
-     * @ORM\ManyToone(targetEntity="AppBundle\Entity\Perfil", fetch="lazy")
+     * @ORM\ManyToone(targetEntity="AppBundle\Entity\Perfil", fetch="LAZY")
      *@ORM\JoinColumns({
      *	@ORM\JoinColumn(name="idConcejal", referencedColumnName="idPerfil")
      *})
@@ -138,7 +138,7 @@ class Proyecto
     /**
      * @var string
      *
-     * @ORM\Column(name="usuarioModificacion", type="string", length=70, nullable=false)
+     * @ORM\Column(name="usuarioModificacion", type="string", length=70,nullable=true)
      */
     private $usuarioModificacion;
     

@@ -201,21 +201,34 @@ class DefaultController extends Controller
     
     
     /**
-     * @Route("/sanciones", name="sanciones")
+     * @Route("/seleccionSesion", name="seleccionSesion")
      */
-    public function expedientesSancionesAction(Request $request)
+    public function seleccionSesionAction(Request $request)
     {
-    	$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
-    	$tipoProyectoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoProyecto');
-        	
-    	$comisiones=$comisionRepository->findBy(array('activa' => true));
-    	$tipoProyectos=$tipoProyectoRepository->findAll();
-    	return $this->render('default/sanciones.html.twig',array(
+    	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+    	$años=$sesionRepository->findByDistinctPeriodos();
+    	
+    	return $this->render('default/seleccion_sesion.html.twig',array(
     			'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
-    			'comisiones' => $comisiones, 'tipoProyectos'=> $tipoProyectos,
-    			'MAYORIA' => $this->getParameter('dictaminantes_en_mayoria'),
-    			'PRIMERA_MINORIA' => $this->getParameter('dictaminantes_en_primer_minoria'),
-    			'SEGUNDA_MINORIA' => $this->getParameter('dictaminantes_en_segunda_minoria')
+    			'años'=> $años
+    	));
+    }
+    
+    /**
+     * @Route("/expedientesOrdenDia", name="expedientesOrdenDia")
+     */
+    public function traerExpedientesOrdenDiaAction(Request $request)
+    {
+    	$idSesion=$request->query->get('idSesion');
+    	$tipoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
+    	$tipoExpedienteSesionRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpedienteSesion');
+    	
+    	$tiposExpediente=$tipoExpedienteRepository->findAll();
+    	$tiposExpedienteSesion=$tipoExpedienteSesionRepository->findAll();
+    	return $this->render('default/expedientes_orden_dia.html.twig',array(
+    			'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
+    			'tiposExpediente'=> $tiposExpediente, 'tiposExpedienteSesion'=>$tiposExpedienteSesion,
+    			'idSesion'=>$idSesion
     	));
     }
     

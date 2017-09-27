@@ -40,7 +40,7 @@ class PerfilLegislador extends Perfil
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="desde", type="datetime", nullable=false)
+     * @ORM\Column(name="hasta", type="datetime", nullable=false)
      */
     private $hasta;
 

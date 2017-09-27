@@ -371,7 +371,7 @@
 
 		 	$("#selBusqueda").change(function(){
 				var control=$(this).val();
-				tabla.ajax.url("/api/sesion/getByCriteria/"+control).load();
+				tabla.ajax.url( '{{ app.request.getBaseURL() }}'+"/api/sesion/getByCriteria/"+control).load();
 			}); 
 		});
 

@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * MenuItem
  *
- * @ORM\Table(name="menuItem")
+ * @ORM\Table(name="menuItem", indexes={@ORM\Index(name="menuitem_menu_idx",columns={"idMenu"})})
  * @ORM\Entity()
  */
 class MenuItem

@@ -7,13 +7,16 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ExpedienteSesion
  *
- * @ORM\Table(name="ExpedienteSesion", indexes={@ORM\Index(name="agendaSesion_expediente_idx", columns={"idExpediente"}), 
+ * @ORM\Table(name="expedienteSesion", indexes={@ORM\Index(name="agendaSesion_expediente_idx", columns={"idExpediente"}), 
  *                                          	@ORM\Index(name="agendaSesion_sesion_idx", columns={"idSesion"}), 
  *                                          	@ORM\Index(name="expedienteSesion_estadoExpedienteSesion_idx", columns={"idEstadoExpedienteSesion"}),
- *                                          	@ORM\Index(name="expedienteSesion_tipoExpedienteSesion_idx", columns={"idTipoExpedienteSesion"})})
- * @ORM\Entity
+ *                                          	@ORM\Index(name="expedienteSesion_tipoExpedienteSesion_idx", columns={"idTipoExpedienteSesion"}),
+ *            					 			   },
+ *            							uniqueConstraints={@ORM\UniqueConstraint(name="expedienteSesion_resolucion_idx", columns={"idResolucion"})}
+ *            )
+ * @ORM\Entity(repositoryClass="AppBundle\Repository\ExpedienteSesionRepository")
  */
-abstract class ExpedienteSesion
+class ExpedienteSesion
 {   
     //--------------------------------atributos de la clase----------------------------------------
 
@@ -100,6 +103,14 @@ abstract class ExpedienteSesion
      * })
      */
     private $sesion;
+    
+    /**
+     * @var \AppBundle\Entity\Resolucion
+     *
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Resolucion")
+     * @ORM\JoinColumn(name="idResolucion", referencedColumnName="idResolucion")
+     */
+    private $resolucion;
 
     //------------------------------------setters y getters---------------------------------------
 
@@ -319,7 +330,25 @@ abstract class ExpedienteSesion
         return $this->sesion;
     }
     
-    //----------------------------------------METODOS ABSTRACTOS----------------------------------------
-    
-    public abstract function getDatosAImprimir();
+    /**
+     * Get resolucion
+     * 
+     * @return \AppBundle\Entity\Resolucion
+     */
+	public function getResolucion() {
+		return $this->resolucion;
+	}
+	
+	/**
+	 * Set resolucion
+	 * 
+	 * @param \AppBundle\Entity\Resolucion $resolucion
+	 * 
+	 * @return \AppBundle\Entity\ExpedienteSesion
+	 */
+	public function setResolucion($resolucion) {
+		$this->resolucion = $resolucion;
+		return $this;
+	}
+	    
 }

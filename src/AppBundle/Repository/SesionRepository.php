@@ -30,23 +30,60 @@ class SesionRepository extends EntityRepository{
 			
 		$query=$this->getEntityManager()->createNativeQuery($sql, $rsm);
 		return $query->getArrayResult();
-		
-		/*
-		$qb1 = $this->createQueryBuilder('s')
-				    ->select('MIN(s.id)')
-                    ->where('s.fecha > :fecha')
-                    ->groupBy('s.tipoSesion');
-                    
-		
-        $qb =$this->createQueryBuilder('ss');
-        $qb->where(
-        		  	$qb->expr()->in('ss.id', $qb1->getDQL())
-        		  )
-           ->setParameter('fecha', $fechactual);
 
-        return $qb->getQuery()->getResult();
-        */
-
+	}
+	
+	public function findByExpediente_Numero($criterio,$idSesion){
+		
+		$qb = $this->createQueryBuilder('es');
+		$qb -> innerJoin('es.expediente', 'e')
+			-> innerJoin('es.sesion', 's')
+			-> where($qb->expr()->andX(
+										$qb->expr()->eq('e.numeroExpediente', '?1'),
+										$qb->expr()->eq('s.id', '?1')
+									  )
+					)
+			->setParameter('1', $criterio)
+			->setParameter('2', $idSesion);
+		
+		return $qb->getQuery()->getResult();
+		
+	}
+	
+	public function findByTipoExpediente_id($criterio,$idSesion){
+		
+		$qb = $this->createQueryBuilder('es');
+		$qb -> innerJoin('es.expediente', 'e')
+			-> innerJoin('e.tipoExpediente', 't')
+			-> innerJoin('es.sesion', 's')
+			-> where($qb->expr()->andX(
+										$qb->expr()->eq('t.id', '?1'),
+										$qb->expr()->eq('s.id', '?1')
+									  )
+					)
+			->setParameter('1', $criterio)
+			->setParameter('2', $idSesion);
+				
+		return $qb->getQuery()->getResult();
+				
+	}
+	
+	public function findByletraOrdenDia($criterio,$idSesion){
+		
+		$qb = $this->createQueryBuilder('es');
+		$qb -> innerJoin('es.expediente', 'e')
+			-> innerJoin('es.tipoExpedienteSesion', 't')
+			-> innerJoin('es.sesion', 's')
+			-> where($qb->expr()->andX(
+										$qb->expr()->eq('t.id', '?1'),
+										$qb->expr()->eq('s.id', '?1')
+									   )
+					)
+			->setParameter('1', $criterio)
+			->setParameter('2', $idSesion);
+			
+		return $qb->getQuery()->getResult();
+				
 	}
 	
 	public function findOrdenDiaBySesionYApartado($idSesion,$idApartado){
@@ -78,6 +115,34 @@ class SesionRepository extends EntityRepository{
 		$stmt= $this->getEntityManager()->getConnection()->prepare('call borrarOrdenDelDia(:idSesion)');
 		$stmt->execute($params);
 
+	}
+	
+	public function findByDistinctPeriodos(){
+		
+		$qb = $this->createQueryBuilder('s')
+			-> select('s.periodo')
+			-> distinct();
+
+		$resultado = $qb->getQuery()->getResult();
+		$periodos=[];
+
+		foreach ($resultado as $valor){
+			$periodos[]=$valor['periodo'];
+		}
+
+		return  $periodos;
+		
+	}
+	
+	public function findByPeriodo($periodo){
+		
+		$qb = $this->createQueryBuilder('s');
+		$qb	-> where($qb->expr()->eq('s.periodo', '?1'))
+
+			->setParameter('1', $periodo);
+					
+		return $qb->getQuery()->getResult();
+			
 	}
 	
 }

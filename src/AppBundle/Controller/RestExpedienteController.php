@@ -118,7 +118,8 @@ class RestExpedienteController extends FOSRestController{
             					'oficina_actual_externa'=>$expediente->getOficinaActual()->getEsExterna(),
             					'lista_comisiones_asignadas'=>$expediente->getListaComisionesAsignadas(),
             					'folios'=>$expediente->getFolios(),
-            					'estado'=>$expediente->getEstadoExpediente()->getEstadoExpediente()
+            					'estado'=>$expediente->getEstadoExpediente()->getEstadoExpediente(),
+            					'numero_sancion'=>$expediente->getNumeroSancion()
             					);
             	$resutado[]=$registro;
             	
@@ -144,7 +145,7 @@ class RestExpedienteController extends FOSRestController{
         				 'caratula'=>$expediente->getCaratula(),
         				 'folios'=>$expediente->getFolios(),
         				 'numero_sancion'=>$expediente->getNumeroSancion(),
-        				 'año'=>$expediente->getAño(), 
+        				 'año'=>$expediente->getPeriodo(), 
         				 'sesion'=>(($expediente->getSesion()!=null)?$expediente->getSesion()->getId():0),
         				 'concejal'=>(!is_null($expediente->getProyecto())
         				 				?$expediente->getProyecto()->getConcejal()->getNombreCompleto()
@@ -621,7 +622,7 @@ class RestExpedienteController extends FOSRestController{
             $expediente->setFolios($folios);
             $expediente->setArchivos($archivos);
             $expediente->setNumeroExpediente($numeroExpediente);
-            $expediente->setAño($año);
+            $expediente->setPeriodo($año);
             $expediente->setCaratula($caratula);
             $sesion=$sesionRepository->find($idSesion);
             $expediente->setSesion($sesion);
@@ -719,7 +720,7 @@ class RestExpedienteController extends FOSRestController{
             $caratula=$request->request->get('caratula');
             $año=$request->request->get('año');
             $idSesion=$request->request->get('idSesion');
-            $numeroSancion=$request->request->get('numeroSancion');
+            //$numeroSancion=$request->request->get('numeroSancion');
             $archivos=$request->files->all();
             $usuario=$this->getUser();
 
@@ -731,12 +732,12 @@ class RestExpedienteController extends FOSRestController{
 			
             //datos del HCD
             $expediente->setNumeroExpediente($numeroExpediente);
-            $expediente->setAño($año);
+            $expediente->setPeriodo($año);
             $expediente->setFolios($folios);
             $expediente->setCaratula($caratula);
             $sesion=$sesionRepository->find($idSesion);
             $expediente->setSesion($sesion);
-            $expediente->setNumeroSancion($numeroSancion);
+            //$expediente->setNumeroSancion($numeroSancion);
             $expediente->setArchivos($archivos);
             $proyecto=$expediente->getProyecto();
             

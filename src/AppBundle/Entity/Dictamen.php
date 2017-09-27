@@ -28,7 +28,7 @@ class Dictamen
     /**
      * @var integer
      *
-     * @ORM\Column(name="idDictamen", type="int")
+     * @ORM\Column(name="idDictamen", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -46,7 +46,7 @@ class Dictamen
     
     /**
      * @var string
-     * @ORM\Column(name="textoLibre",type="text",nullable=true)
+     * @ORM\Column(name="textoLibre",type="text",nullable=false)
      */
     private $textoLibre;
     
@@ -127,7 +127,7 @@ class Dictamen
      *
      * @param \AppBundle\Entity\Sesion $sesion
      *
-     * @return ExpedienteComision
+     * @return Dictamen
      */
     public function setSesion($sesion)
     {
@@ -421,7 +421,7 @@ class Dictamen
      *
      * @param \DateTime $fechaCreacion
      *
-     * @return ProyectoAsignado
+     * @return Dictamen
      */
     public function setFechaCreacion($fechaCreacion)
     {

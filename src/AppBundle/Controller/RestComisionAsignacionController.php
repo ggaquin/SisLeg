@@ -114,7 +114,9 @@ class RestComisionAsignacionController extends FOSRestController{
     		$respuesta=[];
     		foreach ($expedientesAsignados as $e){
     			$datosAsignacion=array( 'id'=>$e->getId(), 'numero_completo'=>$e->getExpediente()->getNumeroCompleto(),
-				    				  	'comision_nombre'=>$e->getComision()->getComision(), 'comision_id'=>$e->getComision()->getId(),
+				    				  	'comision_nombre'=>$e->getComision()->getComision(), 
+    									'comision_id'=>$e->getComision()->getId(),
+    									'letra'=>$e->getComision()->getLetraOrdenDelDia(),
     									'id_proyecto'=>(is_null($e->getExpediente()->getProyecto())?0:$e->getExpediente()->getProyecto()->getId()),
     									'id_expediente'=>$e->getExpediente()->getId(),
     									'dictamenes_mayoria'=>$e->getListaDictamenesMayoria(),
@@ -303,6 +305,7 @@ class RestComisionAsignacionController extends FOSRestController{
     public function guardarDictamen(Request $request)
     {
     	$idExpediente=$request->request->get('idExpediente');
+    	$idDictamen=$request->request->get('idDictamen');
     	$idProyecto=$request->request->get('idProyecto');
     	$numeroDictaminantes=$request->request->get('numeroDictaminantes');
     	$tipoRedaccion=$request->request->get('tipoRedaccion');
@@ -318,8 +321,10 @@ class RestComisionAsignacionController extends FOSRestController{
     	$articulos=json_decode($request->request->get('articulos'));
     	
     	$dictamen=null;
+    	$dictamenOriginal=null;
     	$usuario=$this->getUser();
 
+    	$dictamenRepository=$this->getDoctrine()->getRepository('AppBundle:Dictamen');
     	$tipoProyectoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoProyecto');
     	$proyectoRevisionRepository=$this->getDoctrine()->getRepository('AppBundle:ProyectoRevision');
     	$proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');  
@@ -328,16 +333,19 @@ class RestComisionAsignacionController extends FOSRestController{
     	$estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
     	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
  
-    	if ($tipoRedaccion=="basico")
-    		$dictamen=new Dictamen();
-    	if ($tipoRedaccion=="articulado")
-    		$dictamen= new DictamenArticulado();
-    	if ($tipoRedaccion=="revision")
-    		$dictamen= new DictamenRevision();
+    	if ($idDictamen!=0)
+    		$dictamenOriginal = $dictamenRepository->find($idDictamen);
+    	
+	    if ($tipoRedaccion=="basico")
+	    	$dictamen=new Dictamen();
+	    if ($tipoRedaccion=="articulado")
+	    	$dictamen= new DictamenArticulado();
+	    if ($tipoRedaccion=="revision")
+	    	$dictamen= new DictamenRevision();
     		
-    	$dictamen->setFechaCreacion(new \DateTime('now'));
-    	$dictamen->setUsuarioCreacion($usuario->getUsuario());
-	
+	    $dictamen->setFechaCreacion(new \DateTime('now'));
+	    $dictamen->setUsuarioCreacion($usuario->getUsuario());
+    	
     	//campo común a todos los tipos
     	$dictamen->setTextoLibre($texto);
     	$sesion=$sesionRepository->find($idSesion);
@@ -398,24 +406,22 @@ class RestComisionAsignacionController extends FOSRestController{
     	foreach ($comisionesArray as $idComision){
        		
        		$expedienteComision=$expedienteComisionRepository->findByExpediente_IdAndComision_Id($idExpediente, $idComision);
-       		
+  	
        		if($numeroDictaminantes==1)
 	       	{	//dictamen mayoria
-	       		$dictamenOriginal=$expedienteComision->getDictamenMayoria();
 	       		if (!is_null($dictamenOriginal))
-	       			$dictamenOriginal->removeAsignacionPorMayoria($expedienteComision);
+		       		$dictamenOriginal->removeAsignacionPorMayoria($expedienteComision);
+	       		
        			$dictamen->addAsignacionPorMayoria($expedienteComision);
        		}
        		if($numeroDictaminantes==2)
        		{	//dictamen primera Minoria
-       			$dictamenOriginal=$expedienteComision->getDictamenPrimeraMinoria();
        			if (!is_null($dictamenOriginal))
        				$dictamenOriginal->removeAsignacionPorPrimeraMinoria($expedienteComision);
        			$dictamen->addAsignacionPorPrimeraMinoria($expedienteComision);
        		}
        		if($numeroDictaminantes==3)
        		{	//dictamen segunda Minoria
-       			$dictamenOriginal=$expedienteComision->getDictamenSegundaMinoria();
        			if (!is_null($dictamenOriginal))
        				$dictamenOriginal->removeAsignacionSegundaMinoria($expedienteComision);
        			$dictamen->addAsignacionPorSegundaMinoria($expedienteComision);
@@ -491,5 +497,5 @@ class RestComisionAsignacionController extends FOSRestController{
       	}
       	return $this->view($expedientes,200);
       }
-    
+          
 }

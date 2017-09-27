@@ -16,9 +16,9 @@ use JMS\Serializer\Annotation\Exclude;
  *                                        @ORM\Index(name="expediente_oficina_idx", columns={"idOficina"}),
  *                                        @ORM\Index(name="expediente_sesion_idx", columns={"idSesion"})
  *                                       },
- *            uniqueConstraints={@ORM\UniqueConstraint(name="numeroExpediente_idx", columns={"numeroExpediente"}),
+ *            uniqueConstraints={@ORM\UniqueConstraint(name="numeroExpediente_idx", columns={"numeroExpediente","periodo"}),
  *            					 @ORM\UniqueConstraint(name="expediente_origenExterno_idx", columns={"idOrigenExterno"}),
- *            					 @ORM\UniqueConstraint(name="expediente_demandanteParticular_idx", columns={"idDemandateParticular"})
+ *            					 @ORM\UniqueConstraint(name="expediente_demandanteParticular_idx", columns={"idDemandanteParticular"})
  *            })
  * @ORM\Entity(repositoryClass="AppBundle\Repository\ExpedienteRepository")
  *
@@ -87,7 +87,7 @@ class Expediente
     /**
      * @var string
      *
-     * @ORM\Column(name="hashId", type="hash", length=32, nullable=false)
+     * @ORM\Column(name="hashId", type="string", length=32, nullable=false)
      */
     private $hashId;
 
@@ -101,14 +101,14 @@ class Expediente
     /**
      * @var string
      *
-     * @ORM\Column(name="año", type="string", length=4, nullable=false)
+     * @ORM\Column(name="periodo", type="string", length=4, nullable=false)
      */
-    private $año;
+    private $periodo;
     
     /**
      * @var \AppBundle\Entity\DemandanteParticular
      *
-     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\DemandanteParticular",cascade={"persist","update"})
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\DemandanteParticular",cascade={"persist","merge","refresh"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="idDemandanteParticular", referencedColumnName="idDemandanteParticular")
      * })
@@ -118,7 +118,7 @@ class Expediente
     /**
      * @var \AppBundle\Entity\OrigenExterno
      *
-     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\OrigenExterno", cascade={"persist","update"})
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\OrigenExterno", cascade={"persist","merge","refresh"})
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="idOrigenExterno", referencedColumnName="idOrigenExterno")
      * })
@@ -193,7 +193,7 @@ class Expediente
      * @ORM\Column(name="numeroSancion", type="string", length=20, nullable=false)
      */
     private $numeroSancion;
-
+    
     /**
      * @var \DateTime
      *
@@ -257,6 +257,7 @@ class Expediente
        $this->archivoBorrado="";
        $this->movimientos = new \Doctrine\Common\Collections\ArrayCollection();
        $this->proyecto=null;
+       $this->numeroSancion='';
     }
 
     //-------------------------------setters y getters--------------------------------------------
@@ -306,27 +307,27 @@ class Expediente
     }
     
     /**
-     * Set año
+     * Set periodo
      *
-     * @param string $año
+     * @param string $periodo
      *
      * @return Expediente
      */
-    public function setAño($año)
+    public function setPeriodo($periodo)
     {
-    	$this->año = $año;
+    	$this->periodo = $periodo;
     	
     	return $this;
     }
     
     /**
-     * Get año
+     * Get periodo
      *
      * @return string
      */
-    public function getAño()
+    public function getPeriodo()
     {
-    	return $this->año;
+    	return $this->periodo;
     }
     
     /**
@@ -582,7 +583,7 @@ class Expediente
     	$this->numeroSancion = $numeroSancion;
     	
     	return $this;
-    }
+    } 
     
     /**
      * Get numeroSancion
@@ -868,7 +869,7 @@ class Expediente
      */
     public function getNumeroCompleto()
     {   
-    	$año = ((is_null($this->año))?"":$this->año);
+    	$año = ((is_null($this->periodo))?"":$this->periodo);
         return $this->numeroExpediente.'-'.($this->tipoExpediente->getLetra()).'-'.substr($año,2,2);
     }
     
@@ -881,7 +882,7 @@ class Expediente
      */
     public function getNumeroYAño()
     {
-    	$año = ((is_null($this->año))?"":$this->año);
+    	$año = ((is_null($this->periodo))?"":$this->periodo);
     	return $this->numeroExpediente.'-'.substr($año,2,2);
     }
 
@@ -894,9 +895,9 @@ class Expediente
      */
     public function getEjercicio()
     {  
-        return substr($this->año,2,2);
+        return substr($this->periodo,2,2);
     }
-
+    
     /**
      * Get caratulaSinHtml
      *

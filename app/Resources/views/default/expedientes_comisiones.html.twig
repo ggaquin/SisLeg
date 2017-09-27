@@ -288,7 +288,7 @@
 		function abrirAltaDictamen(data,numeroDictaminantes){
 
 			var idAsignacion=data[ "id" ];
-			
+			debugger;
 			$.ajax({
 				type:'Get',
 				contentType: "application/x-www-form-urlencoded;charset=utf-8",
@@ -397,14 +397,14 @@
 			$.ajax({
 				type:'Get',
 				dataType: 'json	',
-				url:'{{ app.request.getBaseURL() }}'+'/api/session/getLastByType',
+				url:'{{ app.request.getBaseURL() }}'+'/api/sesion/getLastByType',
 				success: function(data){
 					$(control).html('');
 					var html='<option value="0">Seleccione Sesion</option>'
 					$.each(data, function(index,sesion){
 						html+='<option value="'+sesion.id+'" '+
 							  ((valorSeleccionado==sesion.id)?'selected':'') +'>'+sesion.fecha_formateada+'</option>';
-					});
+					}); 
 					$(control).html(html);    			
 				},
 				error: function(jqXHR,textStatus,errorThrown ){
@@ -474,7 +474,7 @@
 									            "orderable":true,
 									            "render": function(data, type, row){
 									            	html="<button type='button'title='Editar Comision' class='btn btn-primary btn-xs btn-editar'><span class='glyphicon glyphicon-pencil'></span></button> ";
-								            		html+=data;
+								            		html+=data+' ('+row.letra+')';
 								            		return html;
 									            }
 									        },
@@ -539,7 +539,7 @@
     												
 													$.each(row.dictamenes_primera_minoria,function(index,dictamen){
 														html+="<button type='button' title='Editar Dictamen' "+
-															  "class='btn btn-info btn-xs btn-nuevo-dictamen-primera-minoria' "+
+															  "class='btn btn-info btn-xs btn-editar-dictamen-primera-minoria' "+
 															  "data-toggle='modal' data-target='#modalDictamen' id='"+dictamen.id+"'>"+
 															  dictamen.sesion+"</button>";
 													});
@@ -702,13 +702,13 @@
 		        abrirEdicionDictamen(data,numeroDictaminantes,e.currentTarget.id);
 		    });
 
-		    $('#registroAsignaciones tbody').on( 'click', '.btn-editar-dictamen-primera_minoria', function () {
+		    $('#registroAsignaciones tbody').on( 'click', '.btn-editar-dictamen-primera-minoria', function (e) {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        var numeroDictaminantes='{{ PRIMERA_MINORIA }}';
 		        abrirEdicionDictamen(data,numeroDictaminantes,e.currentTarget.id);
 		    });
 
-		    $('#registroAsignaciones tbody').on( 'click', '.btn-editar-dictamen-segunda-minoria', function () {
+		    $('#registroAsignaciones tbody').on( 'click', '.btn-editar-dictamen-segunda-minoria', function (e) {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        var numeroDictaminantes='{{ SEGUNDA_MINORIA }}';
 		        abrirEdicionDictamen(data,numeroDictaminantes,e.currentTarget.id);
@@ -843,7 +843,7 @@
 					              ?'<li>Debe poveer un texto para los considerandos de la revision</li>':'');
 				}
 
-				
+				debugger;
 				formData.append('idAsignacion',idAsignacion);
 				formData.append('idDictamen',idDictamen);
 				formData.append('idExpediente',idExpediente);

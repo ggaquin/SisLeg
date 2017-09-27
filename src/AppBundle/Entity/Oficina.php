@@ -28,14 +28,14 @@ class Oficina {
 	/**
 	 * @var string
 	 *
-	 * @ORM\Column(name="$oficina", type="String", length=100, nullable=false)
+	 * @ORM\Column(name="$oficina", type="string", length=100, nullable=false)
 	 */
 	private $oficina;
 	
 	/**
 	 * @var string
 	 *
-	 * @ORM\Column(name="codigo", type="String", length=15, nullable=false)
+	 * @ORM\Column(name="codigo", type="string", length=15, nullable=false)
 	 */
 	private $codigo;
 	

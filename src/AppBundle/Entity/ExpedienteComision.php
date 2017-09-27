@@ -21,7 +21,7 @@ class ExpedienteComision
     /**
      * @var integer
      *
-     * @ORM\Column(name="idExpdienteComision", type="int")
+     * @ORM\Column(name="idExpedienteComision", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -48,7 +48,7 @@ class ExpedienteComision
     private $comision;
     
      /**
-     * @var \AppBundle\Entity\Dictamen
+     *  @var \Doctrine\Common\Collections\Collection
      * 
      * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Dictamen", cascade={"persist"}, inversedBy="asignacionesPorMayoria")
      * @ORM\JoinTable(name="expedienteComision_dictamenesMayoria", 
@@ -59,9 +59,9 @@ class ExpedienteComision
     private $dictamenesMayoria;
     
     /**
-     * @var \AppBundle\Entity\Dictamen
+     *  @var \Doctrine\Common\Collections\Collection
      *
-     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Dictamen", cascade={"persist"}, inversedBy="asignacionesPorMayoria")
+     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Dictamen", cascade={"persist"}, inversedBy="asignacionesPorPrimeraMinoria")
      * @ORM\JoinTable(name="expedienteComision_dictamenesPrimeraMinoria", 
      * 	joinColumns={@ORM\JoinColumn(name="idExpedienteComision", referencedColumnName="idExpedienteComision")},
      * 	inverseJoinColumns={@ORM\JoinColumn(name="idDictamen", referencedColumnName="idDictamen")}
@@ -70,9 +70,9 @@ class ExpedienteComision
     private $dictamenesPrimeraMinoria;
     
     /**
-     * @var \AppBundle\Entity\Dictamen
+     *  @var \Doctrine\Common\Collections\Collection
      *
-     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Dictamen", cascade={"persist"}, inversedBy="asignacionesPorMayoria")
+     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Dictamen", cascade={"persist"}, inversedBy="asignacionesPorSegundaMinoria")
      * @ORM\JoinTable(name="expedienteComision_dictamenesSegundaMinoria", 
      * 	joinColumns={@ORM\JoinColumn(name="idExpedienteComision", referencedColumnName="idExpedienteComision")},
      * 	inverseJoinColumns={@ORM\JoinColumn(name="idDictamen", referencedColumnName="idDictamen")}

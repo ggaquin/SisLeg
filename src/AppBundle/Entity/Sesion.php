@@ -56,9 +56,9 @@ class Sesion
     /**
      * @var integer
      *
-     * @ORM\Column(name="año", type="smallint", nullable=false)
+     * @ORM\Column(name="periodo", type="smallint", nullable=false)
      */
-    private $año;
+    private $periodo;
     
     /**
      * @var \AppBundle\Entity\TipoSesion
@@ -215,27 +215,27 @@ class Sesion
     }
 
     /**
-     * Set año
+     * Set periodo
      *
-     * @param integer $año
+     * @param integer $periodo
      *
      * @return Sesion
      */
-    public function setAño($año)
+    public function setPeriodo($periodo)
     {
-    	$this->año = $año;
+    	$this->periodo = $periodo;
 
         return $this;
     }
 
     /**
-     * Get año
+     * Get periodo
      *
      * @return integer
      */
-    public function getAño()
+    public function getPeriodo()
     {
-        return $this->año;
+        return $this->periodo;
     }
     
     /**

@@ -146,7 +146,7 @@ class Perfil
     /**
      * @var string
      *
-     * @ORM\Column(name="usuarioModificacion", type="string", length=70, nullable=false)
+     * @ORM\Column(name="usuarioModificacion", type="string", length=70, nullable=true)
      */
     private $usuarioModificacion;
 

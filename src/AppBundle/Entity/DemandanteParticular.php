@@ -8,7 +8,7 @@ use JMS\Serializer\Annotation\VirtualProperty;
 /**
  * DemandanteParticular
  *
- * @ORM\Table(name="demandantePerticular")
+ * @ORM\Table(name="demandanteParticular")
  * @ORM\Entity()
  */
 class DemandanteParticular
@@ -41,7 +41,7 @@ class DemandanteParticular
     /**
      * @var string
      *
-     * @ORM\Column(name="apedocumentollidos", type="string", length=8)
+     * @ORM\Column(name="documento", type="string", length=8)
      */
     private $documento;
  

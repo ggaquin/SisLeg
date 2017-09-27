@@ -312,7 +312,7 @@
 			$.ajax({
 				type:'Get',
 				dataType: 'json	',
-				url:'{{ app.request.getBaseURL() }}'+'/api/session/getLastByType',
+				url:'{{ app.request.getBaseURL() }}'+'/api/sesion/getLastByType',
 				success: function(data){
 					$(control).html('');
 					var html='<option value="0">Seleccione Sesion</option>'
@@ -489,26 +489,23 @@
 										            var html="<div class='btn-group'>";
 											        html+="<button type='button' title='Giros' class='btn btn-info btn-xs btn-giros' data-toggle='modal' data-target='#giros'><span class='glyphicon glyphicon-refresh'></span></button>";
 											        html+="<button type='button' title='Informes' class='btn btn-info btn-xs btn-informes' data-toggle='modal' data-target='#informes'><span class='glyphicon glyphicon-list-alt'></span></button>";
-											        if('{{ EXP_EDIT is defined}}')
+											        if('{{ EXP_EDIT is defined}}' && row.numero_sancion=='')
 									            		html+="<button type='button'title='Editar expediente' class='btn btn-primary btn-xs btn-editar ' data-toggle='modal' data-target='#modificacionExpediente'><span class='glyphicon glyphicon-pencil'></span></button> ";
 													html+="</div>";
 									            	return html;
 									            }
 									        },
-									     /*   {
-									            "targets": [ 2 ],
-									            "data": "numero_completo",
-									            "orderable":true,
+									       {
+									            "targets": [ 4 ],
+									            "data": "numero_sancion",
+									            "orderable":false,
 									            "render": function(data, type, row){
-										            var html="<div>";
-										            if('{{ EXP_EDIT is defined}}')
-									            		html+="<button type='button'title='Editar expediente' class='btn btn-primary btn-xs btn-editar ' data-toggle='modal' data-target='#modificacionExpediente'><span class='glyphicon glyphicon-pencil'></span></button> ";
-									            		html+=data;
+										            var html="<h4><span class='label label-success'>"+row.numero_sancion+"</span></h4>";
 									            	return html;
 									            }
-									        },*/
+									        },
 									        {
-									            "targets": [ 4 ],
+									            "targets": [ 5 ],
 									            "data": "fecha_creacion_formateada",
 									            "orderable":true,
 									            "render": function(data, type, row){
@@ -520,7 +517,7 @@
 									            }
 									        },
 								            {
-									            "targets": [ 5 ],
+									            "targets": [ 6 ],
 									            "data": 'oficina_actual',
 									            "orderable":true,
 									            "render": function(data, type, row){
@@ -544,7 +541,7 @@
 									            }
 									        },
 								            {
-									            "targets": [ 6 ],
+									            "targets": [ 7 ],
 									            "data": 'caratula_muestra',
 									            "orderable":true,
 									            "render": function(data, type, row){
@@ -558,12 +555,13 @@
 						  ],
 					      "columns": [
 					      		{ "data": "id" },
-					      		{ "data": "null","width":"12%"},
+					      		{ "data": "null","width":"10%"},
 					      		{ "data": "numero_completo","width":"10%","sType":"custom-exp"},
 					            { "data": "tipo_expediente","width":"10%" },
+					            { "data": "numero_sancion","width":"7%" },
 					            { "data": "fecha_creacion_formateada","width":"10%" },
-					            { "data": "oficina_actual","width":"25%" },
-					            { "data": "caratula_muestra", "width": "33%"},
+					            { "data": "oficina_actual","width":"23%" },
+					            { "data": "caratula_muestra", "width": "30%"},
 					        ],
 					      "autoWidth":false,
 					      "paging": true,
@@ -923,7 +921,7 @@
               	var nombresParticular=$("#nombresParticularMod").val();
               	var idOrigen=$("#selOrigenMod").val();
               	var idSesion=$("#selSesionMod").val();
-				var numeroSancion=$("#numeroSancion").val();
+				//var numeroSancion=$("#numeroSancion").val();
 				var año=$("#añoIngresoMod").val();
 				var numeros=[];
               	$("#tabla-numeros-mod > tbody > tr").each(function(){ 
@@ -985,7 +983,7 @@
 				validacion+=((parseInt(año)>(new Date()).getFullYear())
 					  	 	  ?'<li>El año del expediente no puede ser mayor que el actual</li>':'');
 
-				formData.append('numeroSancion',numeroSancion);
+				//formData.append('numeroSancion',numeroSancion);
 
 				formData.append('idSesion',idSesion);
 				validacion+=(((idSesion==0 && idTipoExpediente!=3) || 
@@ -1915,6 +1913,7 @@
 						    </th>	
 						    <th>Numero</th>
 			                <th>Tipo</th>
+			                <th title='Numero de Sanción'>N° Sanc.</th>
 			                <th>F. Ing</th>
 			                <th>Estado / Oficina</th>	
 			                <th>Caratula</th>
@@ -2418,7 +2417,7 @@
 							        		<div class="form-group">
 								        		<label for="numerosancionMod">N° Sanción</label>
 								        		<input type="text" class="form-control es-numero" id="numerosancionMod"
-								        			   name="numerosancionMod" placeholder="N° Sancion">
+								        			   name="numerosancionMod" disabled>
 								        	</div>
 								        </div>
 							        </div>
