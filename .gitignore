@@ -19,3 +19,4 @@
 /web/js
 .project
 ./git
+app/config/parameters.yml
