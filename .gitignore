@@ -20,3 +20,5 @@
 .project
 ./git
 app/config/parameters.yml
+/app/config/parameters.yml
+parameters.yml

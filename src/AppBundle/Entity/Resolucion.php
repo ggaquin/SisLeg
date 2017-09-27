@@ -19,7 +19,7 @@ use Doctrine\ORM\Mapping\JoinTable;
  * @ORM\InheritanceType("SINGLE_TABLE")
  * @ORM\DiscriminatorColumn(name="discriminador", type="string", length=17)
  * @ORM\DiscriminatorMap({"basica" = "AppBundle\Entity\Resolucion", 
- *                        "articulada" = "AppBundle\Entity\ResolucionArticuladaConSancion",
+ *                        "articulado" = "AppBundle\Entity\ResolucionArticuladaConSancion",
  *                        "revision" = "AppBundle\Entity\ResolucionRevisionProyectoConSancion"})
  */
 class Resolucion

@@ -38,7 +38,8 @@ class ExpedienteSesionRepository extends EntityRepository{
 		$rsm->addScalarResult('tipoExpediente', 'tipo_expediente');
 		$rsm->addScalarResult('letrasOD', 'letras_o_d');
 		$rsm->addScalarResult('tiene_resolucion', 'tiene_resolucion');
-		$rsm->addScalarResult('idResolucion', 'idResolucion');
+		$rsm->addScalarResult('idResolucion', 'id_resolucion');
+		$rsm->addScalarResult('idDictamen', 'id_dictamen');
 		$rsm->addScalarResult('numero_sancion', 'numero_sancion');
 		$rsm->addScalarResult('tiene_notificacion', 'tiene_notificacion');
 		$rsm->addScalarResult('dictamenes', 'dictamenes');
@@ -67,7 +68,8 @@ class ExpedienteSesionRepository extends EntityRepository{
 		$rsm->addScalarResult('tipoExpediente', 'tipo_expediente');
 		$rsm->addScalarResult('letrasOD', 'letras_o_d');
 		$rsm->addScalarResult('tiene_resolucion', 'tiene_resolucion');
-		$rsm->addScalarResult('idResolucion', 'idResolucion');
+		$rsm->addScalarResult('idResolucion', 'id_resolucion');
+		$rsm->addScalarResult('idDictamen', 'id_dictamen');
 		$rsm->addScalarResult('numero_sancion', 'numero_sancion');
 		$rsm->addScalarResult('tiene_notificacion', 'tiene_notificacion');
 		$rsm->addScalarResult('dictamenes', 'dictamenes');
@@ -95,7 +97,8 @@ class ExpedienteSesionRepository extends EntityRepository{
 		$rsm->addScalarResult('tipoExpediente', 'tipo_expediente');
 		$rsm->addScalarResult('letrasOD', 'letras_o_d');
 		$rsm->addScalarResult('tiene_resolucion', 'tiene_resolucion');
-		$rsm->addScalarResult('idResolucion', 'idResolucion');
+		$rsm->addScalarResult('idResolucion', 'id_resolucion');
+		$rsm->addScalarResult('idDictamen', 'id_dictamen');
 		$rsm->addScalarResult('numero_sancion', 'numero_sancion');
 		$rsm->addScalarResult('tiene_notificacion', 'tiene_notificacion');
 		$rsm->addScalarResult('dictamenes', 'dictamenes');
@@ -117,13 +120,17 @@ class ExpedienteSesionRepository extends EntityRepository{
 	public function findDistinctByletraOrdenDia($criterio,$idSesion){
 		
 		$rsm = new ResultSetMapping();
-		$rsm->addScalarResult('id', 'id');
+		$rsm->addScalarResult('idExpediente', 'id_expediente');
+		$rsm->addScalarResult('idProyecto', 'id_proyecto');
 		$rsm->addScalarResult('numero_expediente', 'numero_expediente');
-		$rsm->addScalarResult('tipoExpediente', 'tipoExpediente');
-		$rsm->addScalarResult('letrasOD', 'letrasOD');
+		$rsm->addScalarResult('tipoExpediente', 'tipo_expediente');
+		$rsm->addScalarResult('letrasOD', 'letras_o_d');
 		$rsm->addScalarResult('tiene_resolucion', 'tiene_resolucion');
+		$rsm->addScalarResult('idResolucion', 'id_resolucion');
+		$rsm->addScalarResult('idDictamen', 'id_dictamen');
 		$rsm->addScalarResult('numero_sancion', 'numero_sancion');
 		$rsm->addScalarResult('tiene_notificacion', 'tiene_notificacion');
+		$rsm->addScalarResult('dictamenes', 'dictamenes');
 		
 		$query = $this->getEntityManager()
 					  ->createNativeQuery('call listadoExpedientesPorSesion(:idSesion,:numeroExpediente,'.

@@ -14,6 +14,7 @@ use AppBundle\Entity\Proyecto;
 use AppBundle\Entity\Comision;
 use AppBundle\Entity\TipoSesion;
 use AppBundle\Entity\TipoExpedienteSesion;
+use AppBundle\Entity\Oficina;
 
 
 class DefaultController extends Controller
@@ -221,14 +222,23 @@ class DefaultController extends Controller
     {
     	$idSesion=$request->query->get('idSesion');
     	$tipoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
+    	$tipoProyectoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoProyecto');
     	$tipoExpedienteSesionRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpedienteSesion');
+    	$tipoOficinaRepository=$this->getDoctrine()->getRepository('AppBundle:TipoOficina');
+    	$oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
+    	$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
     	
+    	$tipoOficina=$tipoOficinaRepository->find(2);
+    	$oficinas=$oficinaRepository->findBy(array('tipoOficina' => $tipoOficina));
     	$tiposExpediente=$tipoExpedienteRepository->findAll();
     	$tiposExpedienteSesion=$tipoExpedienteSesionRepository->findAll();
+    	$tiposProyecto=$tipoProyectoRepository->findAll();
+    	$comisiones=$comisionRepository->findAll();
     	return $this->render('default/expedientes_orden_dia.html.twig',array(
     			'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
     			'tiposExpediente'=> $tiposExpediente, 'tiposExpedienteSesion'=>$tiposExpedienteSesion,
-    			'idSesion'=>$idSesion
+    			'idSesion'=>$idSesion, 'tiposProyecto'=>$tiposProyecto, 'comisiones'=>$comisiones,
+    			'oficinas'=>$oficinas
     	));
     }
     

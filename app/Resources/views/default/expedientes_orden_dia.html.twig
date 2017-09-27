@@ -285,10 +285,129 @@
 			$("#div-incisos").animate({ scrollTop: $("#div-incisos")[0].scrollHeight}, 1000);
 		}
 
-		function abrirAltaResolucion(data,idDictamen){
+		function limpiarFormularioResolucion(articulosResolucion,articulosRevision){
+			$("#selTipoRedaccion").val("basico");
+	        $("#selTipoRedaccion").change();
+	        $("#texto").data("wysihtml5").editor.setValue('');
+	        $("#articulos > tbody").html('');
+	        $("#vistos").html('');
+	        $("#considerandos").html('');
+	        $("#articulos-revision > tbody").html('');
+	        articulosResolucion.length=0;
+	    	articulosRevision.length=0;
+		}
+
+		function habilitarControlesModalResolucion(idResolucion,idDictamen){
+
+			if (idResolucion==0 && idDictamen!=0){ //Alta por dictamen
+				$("#selTipoRedaccion").attr("disabled",true);
+				$("#btn-modo-redaccion").attr("disabled",true);
+				$("#btn-modo-dictamen").attr("disabled",true);
+				$("#titulo-modal-resolucion").html("Alta Resolución");
+			}
+
+			if (idResolucion==0 && idDictamen==0){//Alta por redaccion
+				$("#selTipoRedaccion").attr("disabled",false);
+				$("#btn-modo-redaccion").attr("disabled",true);
+				$("#btn-modo-dictamen").attr("disabled",true);
+				$("#titulo-modal-resolucion").html("Alta Resolución");
+			}
+
+			if (idResolucion!=0 && idDictamen!=0){//Edicion de resolucion basada en dictamen
+				$("#selTipoRedaccion").attr("disabled",true);
+				$("#btn-modo-redaccion").attr("disabled",false);
+				$("#btn-modo-dictamen").attr("disabled",false);
+				$("#titulo-modal-resolucion").html("Edición Resolución");
+			}
+
+			if(idResolucion!=0 && idDictamen==0){//Edicion de resolucion basada en redaccion
+				$("#selTipoRedaccion").attr("disabled",false);
+				$("#btn-modo-redaccion").attr("disabled",true);
+				$("#btn-modo-dictamen").attr("disabled",false);
+				$("#titulo-modal-resolucion").html("Edición Resolución");
+			}
+
+		}
+
+		function cargarDatosResolucion(idResolucion,idDictamen,articulosResolucion,articulosRevision,restauraDictamen){
+
+			var traduccionCampo=[];
+			var urlDatos='';
+	    	
+	    	if (idResolucion!=0){
+		    	urlDatos='/api/sesion/getResolucion/'+idResolucion;
+		    	traduccionCampo.push("clase_resolucion");
+		    	traduccionCampo.push("id_tipo_resolucion");	
+	    	}
+	    	else {
+	    			if (idDictamen!=0){
+			    		urlDatos='/api/comisionAsignacion/getDictamen/'+idDictamen;
+			    		traduccionCampo.push("clase_dictamen");
+			    		traduccionCampo.push("id_tipo_dictamen");
+	    			}	
+	    	}
 			
-	        var idProyecto=data[ "id_proyecto" ];
-	        var idExpediente=data[ "id_expediente" ];
+			$.ajax({
+				type:'Get',
+				dataType: 'json	',
+				url:'{{ app.request.getBaseURL() }}'+urlDatos,
+				success: function(data){
+					debugger;
+					//controles comunes a todos las resoluciones
+					$("#selTipoRedaccion").val(data[traduccionCampo[0]]);
+					$("#selTipoRedaccion").change();
+					$("#texto").data("wysihtml5").editor.setValue(data.texto_libre);	
+
+					//caso particular resolucion articulado
+					if (data[traduccionCampo[0]]=="articulado"){
+
+						$("#selTipoResolucion").val(data[traduccionCampo[1]]);
+    				    $.each(data.texto_articulado,function(index,articulo){
+    						agregarArticulo(articulo,'articulos');
+    					});
+
+				    	articulosResolucion=data.texto_articulado; 
+					} 
+
+					//caso particular dictamen por revision
+					if (data[traduccionCampo[0]]=="revision"){
+						
+					    $("#vistos").html(data.vistos);
+				        $("#considerandos").html(data.considerandos);
+				        
+				        $.each(data.articulos,function(index,articulo){
+    						agregarArticulo(articulo,'articulos-revision');
+    					});
+
+				    	articulosRevision=data.articulos; 
+
+						if (data.incluye_vistos_y_considerandos)
+							$("#vistosYConsiderandos").bootstrapToggle('on');
+						else
+							$("#vistosYConsiderandos").bootstrapToggle('off');
+
+				    	$("#modalDictamen").find('input[name="idRevision"]').val(data.revision_id);
+					   	
+    				} 
+
+    				if (idResolucion!=0){
+        				$("#poseeSancion").attr("checked",(data.numero_sancion!=""));
+						$("#numeroSancion").val(data.numero_sancion);
+    				}
+
+    				if (restauraDictamen==true)
+    					$("#modalResolucion").find('input[name="idDictamen"]').val(data.id_dictamen);
+					
+				},
+				error: function(jqXHR,textStatus,errorThrown ){
+					toastr.error(jqXHR.responseText);
+				}
+	      	});
+
+		}
+		
+		function abrirModalResolucion(idProyecto,idExpediente,idDictamen,idResolucion){
+			
 			htmlTipoRedaccion="<option value='basico' selected='selected'>Básico</option>" +
 						      "<option value='articulado'>Articulado</option>";	
 	        if (idProyecto!=0)
@@ -299,56 +418,28 @@
 			$("#modalResolucion").find('input[name="idExpediente"]').val(idExpediente);
 	        $("#modalResolucion").find('input[name="idProyecto"]').val(idProyecto);
 	        $("#modalResolucion").find('input[name="idDictamen"]').val(idDictamen);
+	        $("#modalResolucion").find('input[name="idResolucion"]').val(idResolucion);
 		   	$("#editaRevision").bootstrapToggle('on');
 		   	$("#vistosYConsiderandos").bootstrapToggle('on');
 		   	$("#poseeSancion").bootstrapToggle('off');
-		   /* 	$("#editaDictamen").bootstrapToggle('on'); */
+		   	$("#aplicaNotificacion").bootstrapToggle('off');
 		    $("#modalResolucion").modal('show');
 
 		}
-		/*
-		function abrirEdicionResolucion(data,numeroDictaminantes){
-			
-			var idProyecto=data[ "id_proyecto"];
-	   		htmlTipoRedaccion="<option value='basico'>Básico</option>" +
-						      "<option value='articulado'>Articulado</option>";	
-	        if (idProyecto!=0)
-		        htmlTipoRedaccion+="<option value='revision'>Revisión</option>";
 
-			$("#selTipoRedaccion").html(htmlTipoRedaccion);
-			
-			var idExpediente=data[ "id_expediente" ];
-			$("#modalDictamen").find('input[name="idExpediente"]').val(idExpediente);
-	        $("#modalDictamen").find('input[name="idProyecto"]').val(idProyecto);
-	        $("#modalDictamen").find('input[name="idDictaminantes"]').val(numeroDictaminantes);
+		function establecerDictamenModalResolucion(idDictamen,articulosResolucion,articulosRevision){
+        	$("#modalResolucion").find('input[name="idDictamen"]').val(idDictamen);
+        	cargarDatosResolucion(0,idDictamen,articulosResolucion,articulosRevision,false);
+        }
 
-	        if (numeroDictaminantes==1){
-		        var idDictamen=data[ "dictamen_mayoria" ];
-	        	$("#modalDictamen").find('input[name="idDictamen"]').val(idDictamen);
-	        }
-	        if (numeroDictaminantes==2){
-	        	var idDictamen=data[ "dictamen_primera_minoria" ];
-	        	$("#modalDictamen").find('input[name="idDictamen"]').val(idDictamen);
-	        }
-	        if (numeroDictaminantes==3){
-	        	var idDictamen=data[ "dictamen_segunda_minoria" ];
-	        	$("#modalDictamen").find('input[name="idDictamen"]').val(idDictamen);
-	        }
-
-	        var nombreComision=data[ "comision_nombre"];
-	        var idComision=data[ "comision_id" ];
-	        $("#modalDictamen").find('input[name="idComision"]').val(idComision);
-	        $("#selComisiones").empty().change();
-	        var newOption = new Option(nombreComision, idComision, true, true);
-		   	$("#selComisiones").append(newOption).trigger('change');
-		   	$("#editaRevision").bootstrapToggle('on');
-
-	    }
-		*/
+		function reestablecerRedaccionOriginal(idResolucion,articulosResolucion,articulosRevision){
+			limpiarFormularioResolucion(articulosResolucion,articulosRevision);
+        	cargarDatosResolucion(idResolucion,0,articulosResolucion,articulosRevision,true);
+		}
 		
 		$(document).ready(function () {
 
-			var articulosDictamen=[];
+			var articulosResolucion=[];
 			var articulosRevision=[];
 
 			var tablaRevisiones;
@@ -405,7 +496,7 @@
 									            			html+="<button type='button'title='Usar Dictamen' class='btn btn-primary btn-xs btn-resolucion-dictamen'><span class='glyphicon glyphicon-paperclip'></span></button> ";
 										            }
 								            		else
-								            			html="<button type='button'title='Editar Resolucion' class='btn btn-info btn-xs btn-resolucion'><h6>Editar <span class='glyphicon glyphicon-pencil'></span></h6></button> ";
+								            			html="<button type='button'title='Editar Resolucion' class='btn btn-info btn-xs btn-editar-resolucion'><h6>Editar <span class='glyphicon glyphicon-pencil'></span></h6></button> ";
 								     
 								            		return html;
 									            }
@@ -447,140 +538,43 @@
 		  //-------------------------------------ALTA Y MODIFICACION DE REsoluciones-------------------------------------------
 		  //-----------------------------------------------------------------------------------------------------------------
 
-		  //EVENTO REDACTAR RESOLUCION DE LA GRILLA DE ORDEN DEL DIA	
-		   $('#registroOrdenDia tbody').on( 'click', '.btn-redactar-resolucion', function () {
+		    //EVENTO REDACTAR RESOLUCION DE LA GRILLA DE ORDEN DEL DIA	
+		    $('#registroOrdenDia tbody').on( 'click', '.btn-redactar-resolucion', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
-		        abrirAltaResolucion(data,0);
-		   });
+		        abrirModalResolucion(data['id_proyecto'],data['id_expediente'],0,0);
+		    });
 
-		  //EVENTO USAR DICTAMEN DE LA GRILLA DE ORDEN DEL DIA	
-		   $('#registroOrdenDia tbody').on( 'click', '.btn-resolucion-dictamen', function () {
+		    //EVENTO USAR DICTAMEN DE LA GRILLA DE ORDEN DEL DIA	
+		    $('#registroOrdenDia tbody').on( 'click', '.btn-resolucion-dictamen', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        $("#modalDictamenes").find('input[name="idExpediente"]').val(data["id_expediente"]);
+		        $("#modalDictamenes").find('input[name="idProyecto"]').val(data["id_proyecto"]);
+		        $("#modalDictamenes").find('input[name="idResolucion"]').val(0);
 		        $("#modalDictamenes").find('input[name="modo"]').val("alta");
 		        $("#modalDictamenes").modal("show");
-		   });
+		    });
+
+			//EVENTO EDITAR RESOLUCION DE LA GRILLA DE ORDEN DEL DIA
+		    $('#registroOrdenDia tbody').on( 'click', '.btn-editar-resolucion', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+		        abrirModalResolucion(data['id_proyecto'],data['id_expediente'],data['id_dictamen'],data['id_resolucion']);
+		    });
 		   
-
-		   
-		    
-			//EVENTO EDITAR DICTAMEN DE LA GRILLA DE ASIGNACIONES
-		    $('#registroAsignaciones tbody').on( 'click', '.btn-editar-dictamen-mayoria', function () {
-		        var data = tabla.row( $(this).parents('tr') ).data();
-		        var numeroDictaminantes='{{ MAYORIA }}';
-		        abrirEdicionDictamen(data,numeroDictaminantes);
-		    });
-
-		    $('#registroAsignaciones tbody').on( 'click', '.btn-editar-dictamen-primera_minoria', function () {
-		        var data = tabla.row( $(this).parents('tr') ).data();
-		        var numeroDictaminantes='{{ PRIMERA_MINORIA }}';
-		        abrirEdicionDictamen(data,numeroDictaminantes);
-		    });
-
-		    $('#registroAsignaciones tbody').on( 'click', '.btn-editar-dictamen-segunda-minoria', function () {
-		        var data = tabla.row( $(this).parents('tr') ).data();
-		        var numeroDictaminantes='{{ SEGUNDA_MINORIA }}';
-		        abrirEdicionDictamen(data,numeroDictaminantes);
-		    });
-
-			//EVENTO MOSTRAR DEL MODAL DE DICTAMEN
+			//EVENTO MOSTRAR DEL MODAL DE RESOLUCION
 			$("#modalResolucion").on('show.bs.modal', function () {
 			
 				var idResolucion=$("#modalResolucion").find('input[name="idResolucion"]').val();
 				var idDictamen=$("#modalResolucion").find('input[name="idDictamen"]').val();
 				var obtenerDatos=(idResolucion!=0 || idDictamen!=0);
-				var urlDatos="";
-				var traducirCampo=[];
-				
-				$("#selTipoRedaccion").val("basico");
-		        $("#selTipoRedaccion").change();
-		        $("#texto").data("wysihtml5").editor.setValue('');
-		        $("#articulos > tbody").html('');
-		        $("#vistos").html('');
-		        $("#considerandos").html('');
-		        $("#articulos-revision > tbody").html('');
-		        articulosDictamen.length=0;
-		    	articulosRevision.length=0;
-		    	
-		    	if (idResolucion!=0){
-			    	urlDatos='api/sesion/getResolucion/'+idResolucion;
-			    	traducirCampo.push("clase_resolucion");
-			    	traducirCampo.push("id_tipo_resolucion");
-			    	
-		    	}
-		    	else {
-    		    		if (idDictamen!=0){
-    			    			urldatos='api/comisionAsignacion/getDictamen/'+idDictamen;
-    			    			traducirCampo.push("clase_dictamen");
-    			    			traducirCampo.push("id_tipo_dictamen");
-    		    		}
-		    	}
 
-				if (obtenerDatos){
-					
-            		$.ajax({
-            				type:'Get',
-            				dataType: 'json	',
-            				url:'{{ app.request.getBaseURL() }}/urlDatos',
-            				success: function(data){
-								debugger;
-            					//controles comunes a todos los dictamenes
-            					$("#selTipoRedaccion").val(data[traducirCampo[0]]);
-            					$("#selTipoRedaccion").change();
+				limpiarFormularioResolucion(articulosResolucion,articulosRevision);
+				debugger;
+				if (obtenerDatos)
+					cargarDatosResolucion(idResolucion,idDictamen,articulosResolucion,articulosRevision,false);
 
-            					if (data.clase_dictamen=="articulado")
-            						$("#selTipoResolucion").val(data[traducirCampo[1]]);
-        						          			
-            					$("#texto").data("wysihtml5").editor.setValue(data.texto_libre);						
-
-            				 	//caso particular dictamen articulado
-								if (data.clase_dictamen=="articulado"){
-            				 	
-                				    $.each(data.texto_articulado,function(index,articulo){
-                						agregarArticulo(articulo,'articulos');
-                					});
-            
-            				    	articulosDictamen=data.texto_articulado; 
-            					} 
-
-								//caso particular dictamen por revision
-            					if (data.clase_dictamen=="revision"){
-                					//var revision=data.revision_proyecto;
-            					    $("#vistos").html(data.vistos);
-            				        $("#considerandos").html(data.considerandos);
-            				        
-            				        $.each(data.articulos,function(index,articulo){
-                						agregarArticulo(articulo,'articulos-revision');
-                					});
-            
-            				    	articulosRevision=data.articulos; 
-
-									if (data.incluye_vistos_y_considerandos)
-										$("#vistosYConsiderandos").bootstrapToggle('on');
-									else
-										$("#vistosYConsiderandos").bootstrapToggle('off');
-
-            				    	$("#modalDictamen").find('input[name="idRevision"]').val(data.revision_id);
-            					   	
-                				} 
-
-                				if (idResolucion!=0){
-                    				$("#poseeSancion").attr("checked",(data.numero_sancion!=""));
-									$("#numeroSancion").val(data.numero_sancion);
-                				}
-
-                				$("#btn-copiar-dictamen").removeClass("hidden");
-            					
-            				},
-            				error: function(jqXHR,textStatus,errorThrown ){
-            					toastr.error(jqXHR.responseText);
-            				}
-            	      	});
-				}
-				else
-					$("#btn-copiar-dictamen").addClass("hidden");
+				habilitarControlesModalResolucion(idResolucion,idDictamen);
 					 
-		    } );
+		    });
 
 		    //GUARDAR DE DICTAMEN
 		    $("#btn-guardar-dictamen").click(function(){
@@ -599,7 +593,7 @@
 		        var texto=$("#texto").val();
 		        var articulos=null;
 		        if (tipoRedaccion!="basico")
-		        	articulos=((tipoRedaccion=="articulado")?articulosDictamen:articulosRevision);
+		        	articulos=((tipoRedaccion=="articulado")?articulosResolucion:articulosRevision);
 	        	var vistosYConsiderandos= $("#vistosYConsiderandos").is(":checked");
 	        	var editaRevision=$("#editaRevision").is(":checked");
 	        	debugger;
@@ -685,81 +679,6 @@
 		    	$("#btn-guardar-dictamen").prop("disabled",false);
 		    });
 		    		    
-			//---------------------------------------------------------------------------------------------------------------
-			//---------------------------------------PUBLICACIÓN y ANULACIÓN-------------------------------------------------
-			//---------------------------------------------------------------------------------------------------------------
-						
-			$('#registroAsignaciones tbody').on( 'click', '.btn-publicar', function () {			
-				 var data = tabla.row( $(this).parents('tr') ).data();
-				 idAsignacion=data[ "id" ];
-				 aplicarAccion("publicar", idAsignacion,tabla);
-			}); 
-
-			$('#registroAsignaciones tbody').on( 'click', '.btn-anular', function () {			
-				 var data = tabla.row( $(this).parents('tr') ).data();
-				 idAsignacion=data[ "id" ];
-				 aplicarAccion("anular", idAsignacion,tabla);
-			}); 
-			
-			//---------------------------------------------------------------------------------------------------------------
-			//---------------------------------------EDICIÓN DE LA COMISIÓN--------------------------------------------------
-			//---------------------------------------------------------------------------------------------------------------
-
-			//EVENTO BOTON EDITAR COMISION EN GRILLA
-		    $('#registroAsignaciones tbody').on( 'click', '.btn-editar', function () {
-		        var data = tabla.row( $(this).parents('tr') ).data();
-		        $("#cambioComision").find('input[name="idAsignacion"]').val(data[ "id" ]);
-		    } );
-
-			//BOTON ACEPTAR DEL MODAL DE EDICIÓN DE COMISIÓN
-		    $("#btn-cambio-comision").click(function(){
-
-		    	$(this).prop("disabled",true);
-				
-				var idAsignacion = $("#cambioComision").find('input[name="idAsignacion"]').val();
-				var idNuevaComision = $("#cambioComision").find('select[name="selComisionEdicion"]').val();
-				
-              	var formData=new FormData();
-                var validacion='';
-
-                formData.append('idAsignacion',idAsignacion);
-              	formData.append('idNuevaComision',idNuevaComision);
-              	validacion+=((idNuevaComision==0)?'<li>Debe seleccionar una comision</li>':'');
-
-              	 if (validacion.length>0) 
- 				{
- 					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
- 								validacion+'</ul>':'');
- 					toastr.error(validacion);
- 					$(this).prop("disabled", false);
- 					return false;
- 				}
- 				else{
-
- 	            	$.ajax({
- 		                async: true,
- 		                url: '{{ app.request.getBaseURL() }}'+'/api/comisionAsignacion/updateComision',
- 		                data: formData,
- 		                cache: false,
- 		                contentType: false,
- 		                processData: false,
- 		                type: 'POST',
- 	                success: function(data) {
- 	                    toastr.success(data);
- 						tabla.ajax.reload();
- 						$('#cambioComision').modal('hide');
- 	                	},
- 	                complete:function(){
- 	                	$(this).prop("disabled", false);
- 	                },
- 	                error: function(jqXHR,textStatus,errorThrown ){
- 						toastr.error(jqXHR.responseText);
- 						}
- 	            	});
- 	            }
-			    
-			 });
-
 		  //---------------------------------------------------------------------------------------------------------------
 		  //----------------------------------------------ARTICULADO-------------------------------------------------------
 		  //---------------------------------------------------------------------------------------------------------------
@@ -807,7 +726,7 @@
 					var articulo;
 					
 					if (tabla=="articulos")
-    					articulo=traerArticuloPorNumero(numeroArticulo,articulosDictamen);
+    					articulo=traerArticuloPorNumero(numeroArticulo,articulosResolucion);
 					else
 						articulo=traerArticuloPorNumero(numeroArticulo,articulosRevision);
 					
@@ -823,10 +742,10 @@
 			$("#articulos > tbody").on('click','.btn-eliminar-articulo',function(){
 				var numero=$(this).parents("tr").find('td:first').text();
 				var tabla = $("#modalArticulo").find('input[name="tabla"]').val();
-				articulosDictamen.eliminar('numero',numero);
-				articulosDictamen.renumerar('numero','digito');
+				articulosResolucion.eliminar('numero',numero);
+				articulosResolucion.renumerar('numero','digito');
 				$("#articulos > tbody").html('');
-    				$.each(articulosDictamen,function(i,articulo){
+    				$.each(articulosResolucion,function(i,articulo){
     					agregarArticulo(articulo,'articulos');
     				});
 			});
@@ -907,7 +826,7 @@
 
 						articuloActual=agregarArticulo(articuloActual,tabla);
 						if (tabla=="articulos")
-							articulosDictamen.push(articuloActual);
+							articulosResolucion.push(articuloActual);
 						else
 							articulosRevision.push(articuloActual);
 					}
@@ -920,7 +839,7 @@
 							
 							actualizarArticulo(articuloActual,tabla);
 							if (tabla=="articulos")
-								articulosDictamen.reemplazar(articuloActual,'numero'); 
+								articulosResolucion.reemplazar(articuloActual,'numero'); 
 							else
 								articulosRevision.reemplazar(articuloActual,'numero'); 
 						}
@@ -1026,7 +945,7 @@
 
 			});
 
-			$('#modalResolucion').on('hidden.bs.modal', function () {
+			$('#revisiones').on('hidden.bs.modal', function () {
 				tablaRevisiones.destroy();
 			});
 			
@@ -1043,7 +962,7 @@
 				});
 				$('#modalRevisiones').modal('hide');
 		       
-		    } );
+		    });
 
 			//------------------------------------------------------------------------------------------------------------
 			//--------------------------------------MODAL DE DICTAMENES---------------------------------------------------
@@ -1125,81 +1044,29 @@
 				tablaDictamenes.destroy();
 			});
 			
-			$('#revisiones tbody').on( 'click', '.btn-usar', function () {
+			$('#dictamenes tbody').on( 'click', '.btn-usar-dictamen', function () {
 				debugger;
-		        var data = tablaRevisiones.row( $(this).parents('tr') ).data();
-		        $("#modalResolucion").find('div[id="vistos"]').html(data[ "visto" ]);
-		        $("#modalResolucion").find('input[id="idRevision"]').val(data[ "id" ]);
-		        $("#modalResolucion").find('div[id="considerandos"]').html(data[ "considerandos" ]);
-		        $("#articulos-revision > tbody	").html('');
-		        articulosRevision=data[ "articulos" ];
-		        $.each(articulosRevision,function(index,articulo){
-					agregarArticulo(articulo,'articulos-revision');
-				});
-				$('#modalRevisiones').modal('hide');
+				
+				var modo=$("#modalDictamenes").find('input[name="modo"]').val();
+		        var data = tablaDictamenes.row( $(this).parents('tr') ).data();
+		        var idExpediente=$("#modalDictamenes").find('input[name="idExpediente"]').val();
+		        var idProyecto=$("#modalDictamenes").find('input[name="idProyecto"]').val();
+		        var idResolucion=$("#modalDictamenes").find('input[name="idResolucion"]').val();
+		        var idDictamen=data['id'];
+		        
+		        limpiarFormularioResolucion(articulosResolucion,articulosRevision);
+		        
+		        if (modo="alta")
+		        	abrirModalResolucion(idProyecto,idExpediente,idDictamen,0);
+		        else
+			        establecerDictamenModalResolucion(idDictamen,articulosResolucion,articulosRevision);
+
+		        habilitarControlesModalResolucion(idResolucion,idDictamen);
+
+				$('#modalDictamenes').modal('hide');
 		       
-		    } );
+		    });
 			
-		    
-
-			//------------------------------------------------------------------------------------------------------------
-			//----------------------------------------NUEVA ASIGNACION DE COMISION----------------------------------------
-			//------------------------------------------------------------------------------------------------------------
-
-			$('#modalNuevaAsignacion').on('show.bs.modal', function () {
-				$('#selExpedienteAdd').empty().change();
-				$("#selComisionesAdd").empty().change();
-			});
-
-			$("#btn-guardar-asignacion").click(function(){
-
-				$(this).prop("disabled",true);
-				
-				var idExpediente = $("#modalNuevaAsignacion").find('select[name="selExpedienteAdd"]').val();
-				var comisiones = $("#modalNuevaAsignacion").find('select[name="selComisionesAdd"]').val();
-				
-              	var formData=new FormData();
-                var validacion='';
-
-                validacion+=((idExpediente=="")?'<li>Debe seleccionar una expediente</li>':'');
-                validacion+=((comisiones=="" || comisiones == [])?'<li>Debe seleccionar al menos una comisión</li>':'')
-
-              	 if (validacion.length>0) 
- 				{
- 					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
- 								validacion+'</ul>':'');
- 					toastr.error(validacion);
- 					$("#btn-guardar-asignacion").prop("disabled", false);
- 					return false;
- 				}
- 				else{
-
- 					  formData.append('idExpediente',idExpediente);
- 		              formData.append('comisiones',comisiones);
-
- 	            	$.ajax({
- 		                async: true,
- 		                url: '{{ app.request.getBaseURL() }}/api/comisionAsignacion/create',
- 		                data: formData,
- 		                cache: false,
- 		                contentType: false,
- 		                processData: false,
- 		                type: 'POST',
- 	                success: function(data) {
- 	                    toastr.success(data);
- 						tabla.ajax.reload();
- 						$('#modalNuevaAsignacion').modal('hide');
- 	                	},
- 	                complete:function(){
- 	                	$("#btn-guardar-asignacion").prop("disabled", false);
- 	                },
- 	                error: function(jqXHR,textStatus,errorThrown ){
- 						toastr.error(jqXHR.responseText);
- 						}
- 	            	});
- 	            }
-
-			});
 
 		    //------------------------------------------------------------------------------------------------------------
 			//--------------------------EDICION DE VISTOS Y CONSIDERANDOS DE LA REVISIÓN----------------------------------
@@ -1244,102 +1111,6 @@
 					"size": "xs",
 				},
 			});
-			$("#selComisiones").select2({
-				ajax: {
-			    url: '{{ app.request.getBaseURL() }}'+"/api/comisionAsignacion/getByExpedienteAndNombreWhithFiltro",
-			    dataType: 'json',
-			    delay: 250,
-			    cache: false,
-			    data: function (params) {
-			      return {
-							q: params.term, // search term
-  			        		r: $("#modalDictamen").find('input[name="idExpediente"]').val(),
-  			        		s: $("#modalDictamen").find('input[name="idComision"]').val(),
-        			        page: params.page
-        			      };
-			    },
-			    processResults: function (data) {
-			       var dato=data;
-		           return {
-				        results: $.map(dato, function(item) {
-				            return { id: item.id, text: item.comision };
-				        })
-				    };
-		        },
-			  },
-			  language: "es",
-			  minimumInputLength: 3,
-			  theme: "bootstrap",
-			});
-			
-			$("#selComisiones").on('select2:unselecting',function(evt){
-				
-				var seleccion=evt.params.args.data.id;
-				var idProyecto= $("#modalDictamen").find('input[name="idComision"]').val();
-				
-				if (seleccion==idProyecto){
-					evt.preventDefault();
-					toastr.error("No se puede eliminar la comisión original");
-				}
-				
-			});
-
-			$("#selComisionesAdd").select2({
-				ajax: {
-			    url: '{{ app.request.getBaseURL() }}'+"/api/comisionAsignacion/getByExpedienteAndNombre",
-			    dataType: 'json',
-			    delay: 250,
-			    cache: false,
-			    data: function (params) {
-			      return {
-							q: params.term, // search term
-  			        		r: $("#modalNuevaAsignacion").find('select[name="selExpedienteAdd"]').val(),
-        			        page: params.page
-        			      };
-			    },
-			    processResults: function (data) {
-			       var dato=data;
-		           return {
-				        results: $.map(dato, function(item) {
-				            return { id: item.id, text: item.comision };
-				        })
-				    };
-		        },
-			  },
-			  language: "es",
-			  minimumInputLength: 3,
-			  theme: "bootstrap",
-			});
-
-			$("#selExpedienteAdd").select2({
-				ajax: {
-			    url: '{{ app.request.getBaseURL() }}'+"/api/comisionAsignacion/getExpedientefromAsignados",
-			    dataType: 'json',
-			    delay: 250,
-			    cache: false,
-			    data: function (params) {
-			      return {
-							q: params.term, // search term
-        			        page: params.page
-        			      };
-			    },
-			    processResults: function (data) {
-			       var dato=data;
-		           return {
-				        results: $.map(dato, function(item) {
-				            return { id: item.id, text: item.numeroCompleto };
-				        })
-				    };
-		        },
-			  },
-			  language: "es",
-			  minimumInputLength: 1,
-			  theme: "bootstrap",
-			});
-			
-			addClasssToSelect2("group-selComisiones","selComisiones");
-			addClasssToSelect2("group-selConcejales","selConcejales");
-			addClasssToSelect2("group-selComisionesAdd","selComisiones");
 			
 			$('#estadoFiltro').bootstrapToggle({
 		      on:  'Activo',
@@ -1350,12 +1121,21 @@
 		      height: "35px"
 		    });
 
-			 $("#poseeSancion").bootstrapToggle({
+			$("#aplicaNotificacion").bootstrapToggle({
+			      on:  'Notifica',
+			      off: 'No Notifica',
+			      offstyle: 'danger',
+			      onstyle: 'success',
+			      width: "153px",
+			      height: "25px"
+			});
+			
+			$("#poseeSancion").bootstrapToggle({
 			      on:  'Con Sancion',
 			      off: 'Sin Sancion',
 			      offstyle: 'danger',
 			      onstyle: 'success',
-			      width: "170px",
+			      width: "153px",
 			      height: "25px"
 			 });
 
@@ -1376,6 +1156,19 @@
 			      width: "200px",
 			      height: "25px"
 			 });
+
+			
+			 $("#aplicaNotificacion").change(function(){
+				 if ($(this).is(":checked")){
+					 $("#selComisionReserva").attr("disabled",false);
+				 	 $("#selDestinoNotificacion").attr("disabled",false);
+				 }
+				 else{
+					 $("#selComisionReserva").attr("disabled",true);
+				 	 $("#selDestinoNotificacion").attr("disabled",true);
+				 }
+			 });
+			 
 
 			 $("#poseeSancion").change(function(){
 				 if ($(this).is(":checked"))
@@ -1402,6 +1195,20 @@
 					 	$('#div-vistosYConsiderandos').removeClass("hidden");
 				 }
 			 });
+
+			 $("#btn-modo-dictamen").click(function(){
+
+				 	var idExpediente=$("#modalResolucion").find('input[name="idExpediente"]').val();
+			        var idProyecto=$("#modalResolucion").find('input[name="idProyecto"]').val();
+			        var idResolucion=$("#modalResolucion").find('input[name="idResolucion"]').val();
+			        
+			        $("#modalDictamenes").find('input[name="idExpediente"]').val(idExpediente);
+			        $("#modalDictamenes").find('input[name="idProyecto"]').val(idProyecto);
+			        $("#modalDictamenes").find('input[name="idResolucion"]').val(idResolucion);
+			        $("#modalDictamenes").find('input[name="modo"]').val("edicion");
+			        $("#modalDictamenes").modal("show");
+			 });
+			 
 
 			$(".busqueda").addClass('hidden');
 			$("#selBusqueda").val("todo");
@@ -1550,7 +1357,7 @@
 			    <div class="modal-content">
 				    <div class="modal-header" style="background-color:#666	;color:#FFF">
 		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title">Nueva Resolución</h4>
+		    			<h4 class="modal-title" id="titulo-modal-resolucion"></h4>
 				    </div>
 				    <div class="modal-body" style="background-color:#ecf0f5">
 				    	<input type="hidden" id="idDictamen" name="idDictamen">
@@ -1572,7 +1379,7 @@
             					        		<select class="form-control" id="selTipoDictamen" 
             					        				name="selTipoDictamen">
             					        			<option value="0">Seleccione Tipo Dictamen</option>
-            					        			{% for tipo in tipoProyectos %}
+            					        			{% for tipo in tiposProyecto %}
             							                <option value="{{ tipo.id }}">{{ tipo.tipoProyecto }}</option>
             							            {% endfor %}
             					        		</select>
@@ -1581,31 +1388,73 @@
             						</div>
         					    </div>
     					        <hr>
-    					        <div class="row">
-    					        	<div class="col-md-6 col-md-offset-3">
-            					        <div class="text-center">
-            					        	<div class="form-group">
-            					        		<input type="checkbox" id="poseeSancion" name="poseeSancion" data-size="small"/>
-            					        	</div>
-            					        	<div class="form-group">
-            					        		<input type="text" class="form-control text-center" placeholder="Número Sancion" 
-            					        			    id="numeroSancion" name="numeroSancion">
-            					        	</div>
-            					        </div>
-            					    </div>
-            					</div>
-    					        <hr>
-    					        <div class="col-md-12">
+    					        <div class="panel panel-primary">
+                                    <div class="panel-heading text-center"><strong>Sancion</strong></div>
+                                	<div class="panel-body">
+        					        	<div class="row">
+            					        	<div class="col-md-6 col-md-offset-3">
+                    					        <div class="text-center">
+                    					        	<div class="form-group">
+                    					        		<input type="checkbox" id="poseeSancion" name="poseeSancion" data-size="small"/>
+                    					        	</div>
+                    					        	<div class="form-group">
+                    					        		<input type="text" class="form-control text-center" placeholder="Número Sancion" 
+                    					        			    id="numeroSancion" name="numeroSancion">
+                    					        	</div>
+                    					        </div>
+                    					    </div>
+                    					</div>
+                    				</div>
+                        		</div>
+                        		 <div class="panel panel-primary">
+                                    <div class="panel-heading text-center"><strong>Notificación</strong></div>
+                                	<div class="panel-body">
+        					        	<div class="row">
+            					        	<div class="col-md-12">
+                    					        <div class="text-center">
+                    					        	<div class="form-group">
+                    					        		<input type="checkbox" id="aplicaNotificacion" name="aplicaNotificacion" data-size="small"/>
+                    					        	</div>
+                    					        	<div class="form-group">
+                    					        		<select class="form-control" id="selDestinoNotificacion" name="selDestinoNotificacion">
+                    					        			<option value="0">Seleccione Destino Notificación</option>
+                    					        			{% for oficina in oficinas %}
+                    							                <option value="{{ oficina.id }}">{{ oficina.oficina }}</option>
+                    							            {% endfor %}
+                    					        		</select>
+                    					        	</div>
+                    					        	<div class="form-group">
+                    					        		<select class="form-control" id="selComisionReserva" name="selComisionReserva">
+                    					        			<option value="0">Seleccione Comisión Reserva</option>
+                    					        			{% for comision in comisiones %}
+                    							                <option value="{{ comision.id }}">{{ comision.comision }}</option>
+                    							            {% endfor %}
+                    					        		</select>
+                    					        	</div>
+                    					        </div>
+                    					    </div>
+                    					</div>
+                    				</div>
+                        		</div>
+    					       <!-- <hr>
+    					         <div class="col-md-12 hidden" id="div-modo-dictamen">
         					        <div class="text-center">
         					        	<div class="form-group">
-        					        		<button type="button" class="btn btn-primary" id="btn-copiar-dictamen">Copiar Desde Dictamen</button>
+        					        		<button type="button" class="btn btn-primary" id="btn-modo-dictamen">Copiar Desde Dictamen</button>
         					        	</div>
         					        </div>
     					        </div>
+    					           <div class="col-md-12 hidden" id="div-modo-redaccion">
+        					        <div class="text-center">
+        					        	<div class="form-group">
+        					        		<button type="button" class="btn btn-primary" id="btn-modo-redaccion">Cambiar A Redacción</button>
+        					        	</div>
+        					        </div>
+    					        </div> -->
 					    	</div>
 					    	<div class="col-md-9">
-					    		<div class="row">
-					    			<div class="col-md-12">
+					    		<div class="row" style="padding-top: 5px;">
+					    			<div class="col-md-6">
 					    				<nav>
         								    <ul class="nav nav-pills">
         									    <li role="presentation"><a href="#" id="link-tab-1" class="selectable" onclick = "habilitar('tab-1')" ><h4>Texto</h4></h4></a></li>
@@ -1613,7 +1462,13 @@
         										<li role="presentation"><a href="#" id="link-tab-3" class="selectable hidden" onclick = "habilitar('tab-3')"><h4>Revision Proyecto</h4></a></li>
         									</ul>
         								</nav>
-					    			</div>			
+					    			</div>	
+					    			<div class="col-md-6">
+					    				<div class="btn-group pull-right">
+    					    				<button type="button" class="btn btn-primary" id="btn-modo-redaccion">Cambiar A Redacción</button>
+    					    				<button type="button" class="btn btn-primary" id="btn-modo-dictamen">Copiar Desde Dictamen</button>
+					    				</div>
+					    			</div>		
 					    		</div>
 					    		<br>
 							    <div class="row tab" id="tab-1">
@@ -1867,7 +1722,9 @@
 		    			<h4 class="modal-title">Dictamenes</h4>
 				    </div>
 				    <div class="modal-body" style="background-color:#ecf0f5">
+				    	<input type="hidden" name="idProyecto" id="idProyecto">
 				  		<input type="hidden" name="idExpediente" id="idExpediente"> 
+				  		<input type="hidden" name="idResolucion" id="idResolucion">
 				  		<input type="hidden" name="modo" id="modo">
 			        	<div class="row">
 			        		<div class="col-md-12">
