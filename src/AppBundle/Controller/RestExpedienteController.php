@@ -62,16 +62,23 @@ class RestExpedienteController extends FOSRestController{
     		   	    		
     		$valorRetorno=[];
     		$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
-    		$resultado=$expedienteRepository->findNumeroCompletoByNumero($numero,
-    																	 $usuario->getRol()->getOficina());
-    		if (!is_null($resultado)){
-	    		$formato = 'Y-m-d H:i:s';
-	    		$fecha = \DateTime::createFromFormat($formato,$resultado["fecha"]);
-	    		$ejercicio=substr($fecha->format("Y"),2,2);
-	    		$numeroCompleto=$resultado["numero"].'-'.$resultado["letra"].'-'.$ejercicio.'('.$resultado["folios"].')';
-	    		$valorRetorno=array(array('id' => $resultado["id"],'numeroCompleto' => $numeroCompleto));
-	    		return $this->view($valorRetorno,200);
+    		$resultados=$expedienteRepository->findNumeroCompletoByNumero($numero,
+																		  $usuario->getRol()->getOficina());
+    		
+    		if (count($resultados)>0){
+    			
+    			foreach ($resultados as $resultado){
+    				
+    				$ejercicio=substr($resultado['periodo'],2);
+    				$numeroCompleto=$resultado["numero"].'-'.$resultado["letra"].'-'.$ejercicio.'('.$resultado["folios"].')';
+    				$valorRetorno[]=array(
+    									  'id' => $resultado["id"],
+    									  'numeroCompleto' => $numeroCompleto
+    									  );    				
+    			}
     		}
+    		
+    		return $this->view($valorRetorno,200);
     		
     	}catch(\Exception $e){
     		

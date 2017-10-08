@@ -11,7 +11,6 @@ use Doctrine\ORM\Mapping\JoinTable;
  * Dictamen
  * 
  * @ORM\Table(name="dictamen",  indexes={@ORM\Index(name="dictamen_proyectoRevision_idx",columns={"idProyectoRevision"}),
- * 										 @ORM\Index(name="dictamen_sesion_idx", columns={"idSesion"}),
  * 										 @ORM\Index(name="dictamen_tipoProyecto_idx",columns={"idTipoDictamen"})
  * 										})
  * @ORM\Entity
@@ -33,17 +32,7 @@ class Dictamen
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $id;
-    
-    /**
-     * @var \AppBundle\Entity\Sesion
-     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Sesion")
-     * @ORM\JoinColumns({
-     * 		@ORM\JoinColumn(name="idSesion",referencedColumnName="idSesion")
-     * })
-     */
-    private $sesion;
-    
-    
+        
     /**
      * @var string
      * @ORM\Column(name="textoLibre",type="text",nullable=false)
@@ -64,21 +53,24 @@ class Dictamen
     /**
      * @var \Doctrine\Common\Collections\Collection
      * 
-     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\ExpedienteComision", cascade={"persist"}, mappedBy="dictamenesMayoria")
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\ExpedienteComision", 
+     * 				  cascade={"persist","merge","refresh"}, mappedBy="dictamenMayoria")
      */
     private $asignacionesPorMayoria;
     
     /**
      * @var \Doctrine\Common\Collections\Collection
      *
-     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\ExpedienteComision", cascade={"persist"}, mappedBy="dictamenesPrimeraMinoria")
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\ExpedienteComision", 
+     * 				  cascade={"persist","merge","refresh"}, mappedBy="dictamenPrimeraMinoria")
      */
     private $asignacionesPorPrimeraMinoria;
     
     /**
      * @var \Doctrine\Common\Collections\Collection
      *
-     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\ExpedienteComision", cascade={"persist"}, mappedBy="dictamenesSegundaMinoria")
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\ExpedienteComision",
+     * 				  cascade={"persist","merge","refresh"}, mappedBy="dictamenSegundaMinoria")
      */
     private $asignacionesPorSegundaMinoria;
 	
@@ -120,30 +112,6 @@ class Dictamen
     public function getId()
     {
         return $this->id;
-    }
-    
-    /**
-     * Set sesion
-     *
-     * @param \AppBundle\Entity\Sesion $sesion
-     *
-     * @return Dictamen
-     */
-    public function setSesion($sesion)
-    {
-    	$this->sesion = $sesion;
-    	
-    	return $this;
-    }
-    
-    /**
-     * Get sesion
-     *
-     * @return \AppBundle\Entity\Sesion
-     */
-    public function getSesion()
-    {
-    	return $this->sesion;
     }
     
     /**
@@ -249,7 +217,7 @@ class Dictamen
      */
     public function addAsignacionPorMayoria(\AppBundle\Entity\ExpedienteComision $asignacionPorMayoria)
     {
-    	$asignacionPorMayoria->addDictamenMayoria($this);
+    	$asignacionPorMayoria->setDictamenMayoria($this);
     	$this->asignacionesPorMayoria[] = $asignacionPorMayoria;
     	return $this;
     }
@@ -306,7 +274,7 @@ class Dictamen
      */
     public function addAsignacionPorPrimeraMinoria(\AppBundle\Entity\ExpedienteComision $asignacionPorPrimeraMinoria)
     {
-    	$asignacionPorPrimeraMinoria->addDictamenPrimeraMinoria($this);
+    	$asignacionPorPrimeraMinoria->setDictamenPrimeraMinoria($this);
     	$this->asignacionesPorPrimeraMinoria[] = $asignacionPorPrimeraMinoria;
     	return $this;
     }
@@ -363,7 +331,7 @@ class Dictamen
      */
     public function addAsignacionPorSegundaMinoria(\AppBundle\Entity\ExpedienteComision $asignacionPorSegundaMinoria)
     {
-    	$asignacionPorSegundaMinoria->addDictamenSegundaMinoria($this);
+    	$asignacionPorSegundaMinoria->setDictamenSegundaMinoria($this);
     	$this->asignacionesPorSegundaMinoria[] = $asignacionPorSegundaMinoria;
     	return $this;
     }
@@ -464,18 +432,7 @@ class Dictamen
     public function getClaseDictamen(){
     	return "basico";
     }
-    
-    /**
-     * Get SesionMuestra
-     *
-     * @return string
-     *
-     * @VirtualProperty
-     */
-    public function getSesionMuestra(){
-    	return ((is_null($this->getSesion()))?null:$this->getSesion()->getFechaMuestra());
-    }
-    
+       
     /**
      * get listaComisionesMayoria
      *

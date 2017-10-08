@@ -4,13 +4,18 @@ namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\VirtualProperty;
+use AppBundle\AppBundle;
 
 /**
  * ExpedienteComision
  *
  * @ORM\Table(name="expedienteComision", indexes={@ORM\Index(name="expedienteComision_expediente_idx", columns={"idExpediente"}), 
  *                                                @ORM\Index(name="expedienteComision_comision_idx", columns={"idComision"}),
- *                                                @ORM\Index(name="expedienteComision_movimiento_idx", columns={"idMovimiento"})
+ *                                                @ORM\Index(name="expedienteComision_movimiento_idx", columns={"idMovimiento"}),
+ *                                                @ORM\Index(name="expedienteComision_sesion_idx", columns={"idSesion"}),
+ *                                                @ORM\Index(name="expedienteComision_dictamenMayoria_idx", columns={"idDictamenMayoria"}),
+ *                                                @ORM\Index(name="expedienteComision_dictamenPrimeraMinoria_idx", columns={"idDictamenPrimeraMinoria"}),
+ *                                                @ORM\Index(name="expedienteComision_dictamenSegundaMinoria_idx", columns={"idDictamenSegundaMinoria"})
  *                                               })
  * @ORM\Entity(repositoryClass="AppBundle\Repository\ExpedienteComisionRepository")
  */
@@ -26,6 +31,14 @@ class ExpedienteComision
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $id;
+    
+    /**
+     * @var \AppBundle\Entity\Sesion
+     * 
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Sesion")
+     * @ORM\JoinColumn(name="idSesion", referencedColumnName="idSesion")
+     */
+    private $sesion;
  
    /**
      * @var \AppBundle\Entity\Expediente
@@ -48,37 +61,28 @@ class ExpedienteComision
     private $comision;
     
      /**
-     *  @var \Doctrine\Common\Collections\Collection
+     *  @var \AppBundle\Entity\Dictamen
      * 
-     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Dictamen", cascade={"persist"}, inversedBy="asignacionesPorMayoria")
-     * @ORM\JoinTable(name="expedienteComision_dictamenesMayoria", 
-     * 	joinColumns={@ORM\JoinColumn(name="idExpedienteComision", referencedColumnName="idExpedienteComision")},
-     * 	inverseJoinColumns={@ORM\JoinColumn(name="idDictamen", referencedColumnName="idDictamen")}
-     * )
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Dictamen", inversedBy="asignacionesPorMayoria")
+     * @ORM\JoinColumn(name="idDictamenMayoria", referencedColumnName="idDictamen")
      */
-    private $dictamenesMayoria;
+    private $dictamenMayoria;
     
     /**
-     *  @var \Doctrine\Common\Collections\Collection
+     *  @var \AppBundle\Entity\Dictamen
      *
-     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Dictamen", cascade={"persist"}, inversedBy="asignacionesPorPrimeraMinoria")
-     * @ORM\JoinTable(name="expedienteComision_dictamenesPrimeraMinoria", 
-     * 	joinColumns={@ORM\JoinColumn(name="idExpedienteComision", referencedColumnName="idExpedienteComision")},
-     * 	inverseJoinColumns={@ORM\JoinColumn(name="idDictamen", referencedColumnName="idDictamen")}
-     * )
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Dictamen", inversedBy="asignacionesPorPrimeraMinoria")
+     * @ORM\JoinColumn(name="idDictamenPrimeraMinoria", referencedColumnName="idDictamen")
      */
-    private $dictamenesPrimeraMinoria;
+    private $dictamenPrimeraMinoria;
     
     /**
-     *  @var \Doctrine\Common\Collections\Collection
+    *  @var \AppBundle\Entity\Dictamen
      *
-     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Dictamen", cascade={"persist"}, inversedBy="asignacionesPorSegundaMinoria")
-     * @ORM\JoinTable(name="expedienteComision_dictamenesSegundaMinoria", 
-     * 	joinColumns={@ORM\JoinColumn(name="idExpedienteComision", referencedColumnName="idExpedienteComision")},
-     * 	inverseJoinColumns={@ORM\JoinColumn(name="idDictamen", referencedColumnName="idDictamen")}
-     * )
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Dictamen", inversedBy="asignacionesPorSegundaMinoria")
+     * @ORM\JoinColumn(name="idDictamenSegundaMinoria", referencedColumnName="idDictamen")
      */
-    private $dictamenesSegundaMinoria;
+    private $dictamenSegundaMinoria;
         
     /**
      * @var boolean
@@ -147,7 +151,26 @@ class ExpedienteComision
     {
         return $this->id;
     }
-
+    
+    /**
+     * Get sesion
+     * 
+     * @return \AppBundle\Entity\Sesion
+     */
+	public function getSesion() {
+		return $this->sesion;
+	}
+	
+	/**
+	 * Set sesion
+	 * @param \AppBundle\Entity\Sesion $sesion
+	 * @return ExpedienteComision
+	 */
+	public function setSesion($sesion) {
+		$this->sesion = $sesion;
+		return $this;
+	}
+	
     /**
      * Set fechaAsignacion
      *
@@ -242,168 +265,72 @@ class ExpedienteComision
 	}
 		
 	/**
-	 * set dictamenesMayoria
-	 *
-	 * @param array $dictamenesMayoria
-	 *
-	 * @return ExpedienteComision
-	 */
-	public function setDictamenesMayoria($dictamenesMayoria)
-	{
-		$collection= new \Doctrine\Common\Collections\ArrayCollection();
-		foreach ($dictamenesMayoria as $dictamenMayoria) {
-			$collection[]=$dictamenMayoria;
-		}
-		$this->dictamenesMayoria = $collection;
-		
-		return $this;
-	}
-	
-	/**
-	 * Add dictamenMayoria
+	 * set dictamenMayoria
 	 *
 	 * @param \AppBundle\Entity\Dictamen $dictamenMayoria
 	 *
 	 * @return ExpedienteComision
 	 */
-	public function addDictamenMayoria(\AppBundle\Entity\Dictamen $dictamenMayoria)
+	public function setDictamenMayoria($dictamenMayoria)
 	{
-		$this->dictamenesMayoria[] = $dictamenMayoria;
-		
+		$this->dictamenMayoria = $dictamenMayoria;
 		return $this;
 	}
 	
 	/**
-	 * Remove dictamenMayoria
+	 * Get dictamenMayoria
 	 *
-	 * @param \AppBundle\Entity\Dictamen $dictamenMayoria
-	 *
-	 * @return ExpedienteComision
+	 * @return \AppBundle\Entity\Dictamen
 	 */
-	public function removeDictamenMayoria(\AppBundle\Entity\Dictamen $dictamenMayoria)
+	public function getDictamenMayoria()
 	{
-		$this->dictamenesMayoria->removeElement($dictamenMayoria);
-		return $this;
+		return $this->dictamenMayoria;
 	}
 	
 	/**
-	 * Get dictamenesMayoria
-	 *
-	 * @return \Doctrine\Common\Collections\Collection
-	 */
-	public function getDictamenesMayoria()
-	{
-		return $this->dictamenesMayoria;
-	}
-	
-	/**
-	 * set dictamenesPrimeraMinoria
-	 *
-	 * @param array $dictamenesPrimeraMinoria
-	 *
-	 * @return ExpedienteComision
-	 */
-	public function setDictamenesPrimeraMinoria($dictamenesPrimeraMinoria)
-	{
-		$collection= new \Doctrine\Common\Collections\ArrayCollection();
-		foreach ($dictamenesPrimeraMinoria as $dictamenPrimeraMinoria) {
-			$collection[]=$dictamenPrimeraMinoria;
-		}
-		$this->dictamenesPrimeraMinoria = $collection;
-		
-		return $this;
-	}
-	
-	/**
-	 * Add dictamenPrimeraMinoria
+	 * set dictamenPrimeraMinoria
 	 *
 	 * @param \AppBundle\Entity\Dictamen $dictamenPrimeraMinoria
 	 *
 	 * @return ExpedienteComision
 	 */
-	public function addDictamenPrimeraMinoria(\AppBundle\Entity\Dictamen $dictamenPrimeraMinoria)
+	public function setDictamenPrimeraMinoria($dictamenPrimeraMinoria)
 	{
-		$this->dictamenesPrimeraMinoria[] = $dictamenPrimeraMinoria;
+		$this->dictamenPrimeraMinoria = $dictamenPrimeraMinoria;
+		return $this;
+	}
 		
-		return $this;
-	}
-	
 	/**
-	 * Remove dictamenPrimeraMinoria
+	 * Get dictamenPrimeraMinoria
 	 *
-	 * @param \AppBundle\Entity\Dictamen $dictamenPrimeraMinoria
-	 *
-	 * @return ExpedienteComision
+	 * @return \AppBundle\Entity\Dictamen
 	 */
-	public function removeDictamenPrimeraMinoria(\AppBundle\Entity\Dictamen $dictamenPrimeraMinoria)
+	public function getDictamenPrimeraMinoria()
 	{
-		$this->dictamenesPrimeraMinoria->removeElement($dictamenPrimeraMinoria);
-		return $this;
+		return $this->dictamenPrimeraMinoria;
 	}
 	
 	/**
-	 * Get dictamenesPrimeraMinoria
-	 *
-	 * @return \Doctrine\Common\Collections\Collection
-	 */
-	public function getDictamenesPrimeraMinoria()
-	{
-		return $this->dictamenesPrimeraMinoria;
-	}
-	
-	/**
-	 * set dictamenesSegundaMinoria
-	 *
-	 * @param array $dictamenesSegundaMinoria
-	 *
-	 * @return ExpedienteComision
-	 */
-	public function setictamenesSegundaMinoria($dictamenesSegundaMinoria)
-	{
-		$collection= new \Doctrine\Common\Collections\ArrayCollection();
-		foreach ($dictamenesSegundaMinoria as $dictamenSegundaMinoria) {
-			$collection[]=$dictamenSegundaMinoria;
-		}
-		$this->dictamenesSegundaMinoria = $collection;
-		
-		return $this;
-	}
-	
-	/**
-	 * Add dictamenSegundaMinoria
+	 * set dictamenSegundaMinoria
 	 *
 	 * @param \AppBundle\Entity\Dictamen $dictamenSegundaMinoria
 	 *
 	 * @return ExpedienteComision
 	 */
-	public function addDictamenSegundaMinoria(\AppBundle\Entity\Dictamen $dictamenSegundaMinoria)
+	public function setDictamenSegundaMinoria($dictamenSegundaMinoria)
 	{
-		$this->dictamenesSegundaMinoria[] = $dictamenSegundaMinoria;
-		
+		$this->dictamenSegundaMinoria = $dictamenSegundaMinoria;
 		return $this;
 	}
 	
 	/**
-	 * Remove dictamenSegundaMinoria
+	 * Get dictamenSegundaMinoria
 	 *
-	 * @param \AppBundle\Entity\Dictamen $dictamenSegundaMinoria
-	 *
-	 * @return ExpedienteComision
+	 * @return \AppBundle\Entity\Dictamen
 	 */
-	public function removeDictamenSegundaMinoria(\AppBundle\Entity\Dictamen $dictamenSegundaMinoria)
+	public function getDictamenSegundaMinoria()
 	{
-		$this->dictamenesSegundaMinoria->removeElement($dictamenSegundaMinoria);
-		return $this;
-	}
-	
-	/**
-	 * Get dictamenesSegundaMinoria
-	 *
-	 * @return \Doctrine\Common\Collections\Collection
-	 */
-	public function getDictamenesSegundaMinoria()
-	{
-		return $this->dictamenesSegundaMinoria;
+		return $this->dictamenSegundaMinoria;
 	}
 	        
     /**
@@ -528,13 +455,13 @@ class ExpedienteComision
     
     //------------------------------------otras propiedades---------------------------------------
     
-    /**
+    /*
      * Get dictamenMayoria
      * 
      * @param integer $idDictamen
      * 
      * @return Dictamen
-     */
+     
     public function getDictamenMayoria($idDictamen){
     	
     	$dictamenBuscado=null;
@@ -552,7 +479,7 @@ class ExpedienteComision
      * @param integer $idDictamen
      *
      * @return Dictamen
-     */
+     
     public function getDictamenPrimeraMinoria($idDictamen){
     	
     	$dictamenBuscado=null;
@@ -570,7 +497,7 @@ class ExpedienteComision
      * @param integer $idDictamen
      *
      * @return Dictamen
-     */
+     
     public function getDictamenSegundaMinoria($idDictamen){
     	
     	$dictamenBuscado=null;
@@ -582,25 +509,34 @@ class ExpedienteComision
     	return $dictamenBuscado;
     }
     
+    */
+    
     //------------------------------Propiedades virtuales-----------------------------------------
-       
+    
+    		
+    		
     /**
-     * Get listaDictamenesMayoria
+     * Get permiteEdicion
      *
-     * @return array
+     * @return boolean
      * 
      * @VirtualProperty
      */
-    public function getListaDictamenesMayoria()
+    public function getPermiteEdicion()
     {
-    	$listaDictamenesMayoria=[];
-    	foreach ($this->dictamenesMayoria as $dictamen)
-    		$listaDictamenesMayoria[]=array('id'=>$dictamen->getId(),
-    										'sesion'=>(!is_null($dictamen->getSesion())
-    															?$dictamen->getSesion()->getFechaMuestra()
-    															:'Sin Sesión')
-    										);
-    	return $listaDictamenesMayoria;
+    	return (is_null($this->getSesion()) || $this->getSesion()->getTieneOrdenDelDia()==false);
+    }
+    
+    /**
+     * Get sesionMuestra
+     *
+     * @return string
+     *
+     * @VirtualProperty
+     */
+    public function getSesionMuestra()
+    {
+    	return (is_null($this->getSesion())?"":$this->getSesion()->getFechaMuestra());
     }
     
     /**
@@ -609,7 +545,7 @@ class ExpedienteComision
      * @return array
      * 
      * @VirtualProperty
-     */
+     *
     public function getListaDictamenesPrimeraMinoria()
     {
     	$listaDictamenesPrimeraMinoria=[];
@@ -628,7 +564,7 @@ class ExpedienteComision
      * @return array
      *	
      * @VirtualProperty
-     */
+     
     public function getListaDictamenesSegundaMinoria()
     {
     	$listaDictamenesSegundaMinoria=[];
@@ -640,5 +576,7 @@ class ExpedienteComision
     											  );
     		return $listaDictamenesSegundaMinoria;
     }
+    
+    */
     
 }

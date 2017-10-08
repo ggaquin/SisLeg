@@ -10,11 +10,11 @@ use AppBundle\AppBundle;
 use Doctrine\ORM\Mapping\Column;
 
 /**
- * ResolucionArticuladaConSancion
+ * SancionArticulada
  * 
  * @ORM\Entity
  */
-class ResolucionArticuladaConSancion extends Resolucion
+class SancionArticulada extends Sancion
 {
 	// ------------------------------atributos de la clase-----------------------------------------
 	
@@ -23,12 +23,12 @@ class ResolucionArticuladaConSancion extends Resolucion
 	 * @var \AppBundle\Entity\TipoProyecto 
 	 * 
 	 * @ORM\ManyToOne(targetEntity="AppBundle\Entity\TipoProyecto")
-	 * @ORM\JoinColumn(name="idTipoResolucion", referencedColumnName="idTipoProyecto")
+	 * @ORM\JoinColumn(name="idTipoSancion", referencedColumnName="idTipoProyecto")
 	 */
-	private $tipoResolucion;
+	private $tipoSancion;
 	
 	/**
-	 * @var string
+	 * @var array
 	 * @ORM\Column(name="textoArticulado",type="json_array",nullable=true)
 	 */
     private $textoArticulado;
@@ -41,38 +41,55 @@ class ResolucionArticuladaConSancion extends Resolucion
     private $notificacion;
     
     /**
+     * @var \AppBundle\Entity\Pase
+     * @ORM\OneToOne(targetEntity="AppBundle\Entity\Pase")
+     * @ORM\JoinColumn(name="idPase", referencedColumnName="idMovimiento")
+     */
+    private $pase;
+    
+    /**
      * @var string
      * @Column(name="numeroSancion", type="string", length=6)
      */
     private $numeroSancion='';
     
+    //------------------------------------constructor---------------------------------------------
+    
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+    	$this->numeroSancion= "";
+    }
+    
     //-------------------------------------setters y getters------------------------------------
 
     /**
-     * Get tipoResolucion
+     * Get tipoSancion
      * 
      * @return \AppBundle\Entity\TipoProyecto
      */
-    public function getTipoResolucion() {
-    	return $this->tipoResolucion;
+    public function getTipoSancion() {
+    	return $this->tipoSancion;
     }
     
     /**
-     * Set tipoResolucion
+     * Set tipoSancion
      * 
-     * @param \AppBundle\Entity\TipoProyecto $tipoResolucion
+     * @param \AppBundle\Entity\TipoProyecto $tipoSancion
      * 
-     * @return ResolucionArticuladaConSancion
+     * @return SancionArticulada
      */
-    public function setTipoResolucion($tipoResolucion) {
-    	$this->tipoResolucion = $tipoResolucion;
+    public function setTipoSancion($tipoSancion) {
+    	$this->tipoSancion = $tipoSancion;
     	return $this;
     }
     
     /**
      * Get textoArticulado
      * 
-     * @return string
+     * @return array
      */
     public function getTextoArticulado() {
     	return $this->textoArticulado;
@@ -81,9 +98,9 @@ class ResolucionArticuladaConSancion extends Resolucion
     /**
      * Set textoArticulado
      * 
-     * @param string $textoArticulado
+     * @param array $textoArticulado
      * 
-     * @return ResolucionArticuladaConSancion
+     * @return SancionArticulada
      */
     public function setTextoArticulado($textoArticulado) {
     	$this->textoArticulado = $textoArticulado;
@@ -104,13 +121,34 @@ class ResolucionArticuladaConSancion extends Resolucion
      * 
      * @param \AppBundle\Entity\Notificacion $notificacion
      * 
-     * @return ResolucionArticuladaConSancion
+     * @return SancionArticulada
      */
     public function setNotificacion($notificacion) {
     	$this->notificacion = $notificacion;
     	return $this;
     }
     
+    /**
+     * Get Pase
+     * 
+     * @return \AppBundle\Entity\Pase
+     */
+	public function getPase() {
+		return $this->pase;
+	}
+	
+	/**
+	 * Set Pase
+	 * 
+	 * @param \AppBundle\Entity\Pase $pase
+	 * 
+	 * @return \AppBundle\Entity\SancionArticulada
+	 */
+	public function setPase($pase) {
+		$this->pase = $pase;
+		return $this;
+	}
+	    
     /**
      * Get numeroSancion
      * 
@@ -125,7 +163,7 @@ class ResolucionArticuladaConSancion extends Resolucion
      * 
      * @param string $numeroSancion
      * 
-     * @return ResolucionArticuladaConSancion
+     * @return SancionArticulada
      */
     public function setNumeroSancion($numeroSancion) {
     	$this->numeroSancion = $numeroSancion;
@@ -135,13 +173,13 @@ class ResolucionArticuladaConSancion extends Resolucion
     //------------------------------Propiedades virtuales-----------------------------------------
     
     /**
-     * get claseResolucion
+     * get claseSancion
      * 
      * @return string
      * @VirtualProperty()
      */
-    public function getClaseResolucion(){
-    	return "articulada";
+    public function getClaseSancion(){
+    	return "articulado";
     }
       
 }

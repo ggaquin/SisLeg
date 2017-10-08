@@ -285,59 +285,63 @@
 			$("#div-incisos").animate({ scrollTop: $("#div-incisos")[0].scrollHeight}, 1000);
 		}
 
-		function limpiarFormularioResolucion(articulosResolucion,articulosRevision){
+		function limpiarFormularioSancion(articulosSancion,articulosRevision){
 			$("#selTipoRedaccion").val("basico");
 	        $("#selTipoRedaccion").change();
+	        $("#numeroSancion").val("");
+	        $("#selDestinoNotificacion").val(0);
+	        $("#selComisionReserva").val(0);
 	        $("#texto").data("wysihtml5").editor.setValue('');
 	        $("#articulos > tbody").html('');
 	        $("#vistos").html('');
 	        $("#considerandos").html('');
 	        $("#articulos-revision > tbody").html('');
-	        articulosResolucion.length=0;
+	        articulosSancion.length=0;
 	    	articulosRevision.length=0;
 		}
 
-		function habilitarControlesModalResolucion(idResolucion,idDictamen){
+		function habilitarControlesModalSancion(idSancion,idDictamen){
 
-			if (idResolucion==0 && idDictamen!=0){ //Alta por dictamen
+			if (idSancion==0 && idDictamen!=0){ //Alta por dictamen
 				$("#selTipoRedaccion").attr("disabled",true);
 				$("#btn-modo-redaccion").attr("disabled",true);
 				$("#btn-modo-dictamen").attr("disabled",true);
-				$("#titulo-modal-resolucion").html("Alta Resolución");
+				$("#titulo-modal-sancion").html("Alta Sanción");
 			}
 
-			if (idResolucion==0 && idDictamen==0){//Alta por redaccion
+			if (idSancion==0 && idDictamen==0){//Alta por redaccion
 				$("#selTipoRedaccion").attr("disabled",false);
 				$("#btn-modo-redaccion").attr("disabled",true);
 				$("#btn-modo-dictamen").attr("disabled",true);
-				$("#titulo-modal-resolucion").html("Alta Resolución");
+				$("#titulo-modal-sancion").html("Alta Sanción");
 			}
 
-			if (idResolucion!=0 && idDictamen!=0){//Edicion de resolucion basada en dictamen
+			if (idSancion!=0 && idDictamen!=0){//Edicion de sancion basada en dictamen
 				$("#selTipoRedaccion").attr("disabled",true);
 				$("#btn-modo-redaccion").attr("disabled",false);
 				$("#btn-modo-dictamen").attr("disabled",false);
-				$("#titulo-modal-resolucion").html("Edición Resolución");
+				$("#titulo-modal-sancion").html("Edición Sanción");
 			}
 
-			if(idResolucion!=0 && idDictamen==0){//Edicion de resolucion basada en redaccion
+			if(idSancion!=0 && idDictamen==0){//Edicion de sancion basada en redaccion
 				$("#selTipoRedaccion").attr("disabled",false);
 				$("#btn-modo-redaccion").attr("disabled",true);
 				$("#btn-modo-dictamen").attr("disabled",false);
-				$("#titulo-modal-resolucion").html("Edición Resolución");
+				$("#titulo-modal-sancion").html("Edición Sanción");
 			}
 
 		}
 
-		function cargarDatosResolucion(idResolucion,idDictamen,articulosResolucion,articulosRevision,restauraDictamen){
+		function cargarDatosSancion(idSancion,idDictamen,restauraDictamen){
 
 			var traduccionCampo=[];
 			var urlDatos='';
+			var articulos=null;
 	    	
-	    	if (idResolucion!=0){
-		    	urlDatos='/api/sesion/getResolucion/'+idResolucion;
-		    	traduccionCampo.push("clase_resolucion");
-		    	traduccionCampo.push("id_tipo_resolucion");	
+	    	if (idSancion!=0){
+		    	urlDatos='/api/sesion/getSancion/'+idSancion;
+		    	traduccionCampo.push("clase_sancion");
+		    	traduccionCampo.push("id_tipo_sancion");	
 	    	}
 	    	else {
 	    			if (idDictamen!=0){
@@ -348,25 +352,26 @@
 	    	}
 			
 			$.ajax({
+				async:false,
 				type:'Get',
 				dataType: 'json	',
 				url:'{{ app.request.getBaseURL() }}'+urlDatos,
 				success: function(data){
 					debugger;
-					//controles comunes a todos las resoluciones
+					//controles comunes a todos las sanciones
 					$("#selTipoRedaccion").val(data[traduccionCampo[0]]);
 					$("#selTipoRedaccion").change();
 					$("#texto").data("wysihtml5").editor.setValue(data.texto_libre);	
 
-					//caso particular resolucion articulado
+					//caso particular sancion articulado
 					if (data[traduccionCampo[0]]=="articulado"){
 
-						$("#selTipoResolucion").val(data[traduccionCampo[1]]);
+						$("#selTipoSancion").val(data[traduccionCampo[1]]);
     				    $.each(data.texto_articulado,function(index,articulo){
     						agregarArticulo(articulo,'articulos');
     					});
 
-				    	articulosResolucion=data.texto_articulado; 
+    				    articulos=data.texto_articulado; 
 					} 
 
 					//caso particular dictamen por revision
@@ -379,7 +384,7 @@
     						agregarArticulo(articulo,'articulos-revision');
     					});
 
-				    	articulosRevision=data.articulos; 
+				        articulos=data.articulos; 
 
 						if (data.incluye_vistos_y_considerandos)
 							$("#vistosYConsiderandos").bootstrapToggle('on');
@@ -390,13 +395,17 @@
 					   	
     				} 
 
-    				if (idResolucion!=0){
+    				if (idSancion!=0){
         				$("#poseeSancion").attr("checked",(data.numero_sancion!=""));
 						$("#numeroSancion").val(data.numero_sancion);
+						$("#selDestinoNotificacion").val(data.destino_notificacion);
+					    $("#selComisionReserva").val(data.comision_reserva);
+					    $("#aplicaNotificacion").val(data.destino_notificacion!=0 &&
+					    							 data.comision_reserva!=0);
     				}
 
     				if (restauraDictamen==true)
-    					$("#modalResolucion").find('input[name="idDictamen"]').val(data.id_dictamen);
+    					$("#modalSancion").find('input[name="idDictamen"]').val(data.id_dictamen);
 					
 				},
 				error: function(jqXHR,textStatus,errorThrown ){
@@ -404,9 +413,10 @@
 				}
 	      	});
 
+			return articulos;
 		}
 		
-		function abrirModalResolucion(idProyecto,idExpediente,idDictamen,idResolucion){
+		function abrirModalSancion(idProyecto,idExpediente,idDictamen,idSancion){
 			
 			htmlTipoRedaccion="<option value='basico' selected='selected'>Básico</option>" +
 						      "<option value='articulado'>Articulado</option>";	
@@ -415,31 +425,45 @@
 
 			$("#selTipoRedaccion").html(htmlTipoRedaccion);
 
-			$("#modalResolucion").find('input[name="idExpediente"]').val(idExpediente);
-	        $("#modalResolucion").find('input[name="idProyecto"]').val(idProyecto);
-	        $("#modalResolucion").find('input[name="idDictamen"]').val(idDictamen);
-	        $("#modalResolucion").find('input[name="idResolucion"]').val(idResolucion);
+			$("#modalSancion").find('input[name="idExpediente"]').val(idExpediente);
+	        $("#modalSancion").find('input[name="idProyecto"]').val(idProyecto);
+	        $("#modalSancion").find('input[name="idDictamen"]').val(idDictamen);
+	        $("#modalSancion").find('input[name="idSancion"]').val(idSancion);
 		   	$("#editaRevision").bootstrapToggle('on');
 		   	$("#vistosYConsiderandos").bootstrapToggle('on');
 		   	$("#poseeSancion").bootstrapToggle('off');
 		   	$("#aplicaNotificacion").bootstrapToggle('off');
-		    $("#modalResolucion").modal('show');
+		    $("#modalSancion").modal('show');
 
 		}
 
-		function establecerDictamenModalResolucion(idDictamen,articulosResolucion,articulosRevision){
-        	$("#modalResolucion").find('input[name="idDictamen"]').val(idDictamen);
-        	cargarDatosResolucion(0,idDictamen,articulosResolucion,articulosRevision,false);
+		function establecerDictamenModalSancion(idDictamen){
+        	$("#modalSancion").find('input[name="idDictamen"]').val(idDictamen);
+        	return cargarDatosSancion(0,idDictamen,false);
         }
 
-		function reestablecerRedaccionOriginal(idResolucion,articulosResolucion,articulosRevision){
-			limpiarFormularioResolucion(articulosResolucion,articulosRevision);
-        	cargarDatosResolucion(idResolucion,0,articulosResolucion,articulosRevision,true);
+		function reestablecerRedaccionOriginal(idSancion){
+			limpiarFormularioSancion(articulosSancion,articulosRevision);
+        	cargarDatosSancion(idSancion,0,true);
 		}
+
+		function validarNumeroSancion(control){
+			
+			var valorControl=$(control).val();
+			var idControl=$(control).attr("id");
+			//debugger;
+			if (!$.isNumeric(valorControl)){
+				toastr.error("El contenido ingresado no es numérico");
+				setTimeout(function(){
+					   $("#"+idControl).select();
+				},10);
+			}
+		}
+			
 		
 		$(document).ready(function () {
 
-			var articulosResolucion=[];
+			var articulosSancion=[];
 			var articulosRevision=[];
 
 			var tablaRevisiones;
@@ -489,14 +513,15 @@
 									            "data": null,
 									            "orderable":true,
 									            "render": function(data, type, row){
+										            debugger;
 										            var html="";
-										            if (row.tiene_resolucion=='No'){
-									            		html="<button type='button'title='Redactar Resolucion' class='btn btn-primary btn-xs btn-redactar-resolucion'><span class='glyphicon glyphicon-plus'></span></button> ";
+										            if (row.tiene_sancion=='No'){
+									            		html="<button type='button'title='Redactar Sancion' class='btn btn-primary btn-xs btn-redactar-sancion'><span class='glyphicon glyphicon-plus'></span></button> ";
 									            		if (row.dictamenes>0)
-									            			html+="<button type='button'title='Usar Dictamen' class='btn btn-primary btn-xs btn-resolucion-dictamen'><span class='glyphicon glyphicon-paperclip'></span></button> ";
+									            			html+="<button type='button'title='Usar Dictamen' class='btn btn-primary btn-xs btn-sancion-dictamen'><span class='glyphicon glyphicon-paperclip'></span></button> ";
 										            }
 								            		else
-								            			html="<button type='button'title='Editar Resolucion' class='btn btn-info btn-xs btn-editar-resolucion'><h6>Editar <span class='glyphicon glyphicon-pencil'></span></h6></button> ";
+								            			html="<button type='button'title='Editar Sancion' class='btn btn-info btn-xs btn-editar-sancion'><span class='glyphicon glyphicon-pencil'></span></button> ";
 								     
 								            		return html;
 									            }
@@ -506,12 +531,12 @@
 									            "data": "numero_sancion",
 									            "orderable":false,
 									            "render": function(data, type, row){
-									            	 var html="";
+									            	 var html="<div class='text-center'>";
 										            if (row.numero_sancion=="")
 										            	html+="<h4><span class='label label-danger'>Sin Sanción</span></h4>";
 										            else
-										            	html+="<h4><span class='label label-succes'>"+row.numero_sancion+"</span></h4>";
-									            	return html;
+										            	html+="<h4><span class='label label-success'>"+row.numero_sancion+"</span></h4>";
+									            	return html+'</div>';
 									            }
 									        },   
 						  ],
@@ -520,7 +545,7 @@
 					      		{ "data": "numero_expediente","width":"10%"},
 					            { "data": "letras_o_d","width":"40%" },
 					            { "data": "tipo_expediente","width":"20%" },
-					            { "data": "tiene_resolucion", "width": "6%"},
+					            { "data": "tiene_sancion", "width": "6%"},
 					            { "data": "numero_sancion", "width": "10%"},
 					            { "data": "tiene_notificacion", "width": "6%"}
 					        ],
@@ -539,80 +564,89 @@
 		  //-----------------------------------------------------------------------------------------------------------------
 
 		    //EVENTO REDACTAR RESOLUCION DE LA GRILLA DE ORDEN DEL DIA	
-		    $('#registroOrdenDia tbody').on( 'click', '.btn-redactar-resolucion', function () {
+		    $('#registroOrdenDia tbody').on( 'click', '.btn-redactar-sancion', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
-		        abrirModalResolucion(data['id_proyecto'],data['id_expediente'],0,0);
+		        abrirModalSancion(data['id_proyecto'],data['id_expediente'],0,0);
 		    });
 
 		    //EVENTO USAR DICTAMEN DE LA GRILLA DE ORDEN DEL DIA	
-		    $('#registroOrdenDia tbody').on( 'click', '.btn-resolucion-dictamen', function () {
+		    $('#registroOrdenDia tbody').on( 'click', '.btn-sancion-dictamen', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        $("#modalDictamenes").find('input[name="idExpediente"]').val(data["id_expediente"]);
 		        $("#modalDictamenes").find('input[name="idProyecto"]').val(data["id_proyecto"]);
-		        $("#modalDictamenes").find('input[name="idResolucion"]').val(0);
+		        $("#modalDictamenes").find('input[name="idSancion"]').val(0);
 		        $("#modalDictamenes").find('input[name="modo"]').val("alta");
 		        $("#modalDictamenes").modal("show");
 		    });
 
 			//EVENTO EDITAR RESOLUCION DE LA GRILLA DE ORDEN DEL DIA
-		    $('#registroOrdenDia tbody').on( 'click', '.btn-editar-resolucion', function () {
+		    $('#registroOrdenDia tbody').on( 'click', '.btn-editar-sancion', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
-		        abrirModalResolucion(data['id_proyecto'],data['id_expediente'],data['id_dictamen'],data['id_resolucion']);
+		        abrirModalSancion(data['id_proyecto'],data['id_expediente'],data['id_dictamen'],data['id_sancion']);
 		    });
 		   
 			//EVENTO MOSTRAR DEL MODAL DE RESOLUCION
-			$("#modalResolucion").on('show.bs.modal', function () {
+			$("#modalSancion").on('show.bs.modal', function () {
 			
-				var idResolucion=$("#modalResolucion").find('input[name="idResolucion"]').val();
-				var idDictamen=$("#modalResolucion").find('input[name="idDictamen"]').val();
-				var obtenerDatos=(idResolucion!=0 || idDictamen!=0);
+				var idSancion=$("#modalSancion").find('input[name="idSancion"]').val();
+				var idDictamen=$("#modalSancion").find('input[name="idDictamen"]').val();
+				var obtenerDatos=(idSancion!=0 || idDictamen!=0);
 
-				limpiarFormularioResolucion(articulosResolucion,articulosRevision);
+				limpiarFormularioSancion(articulosSancion,articulosRevision);
 				debugger;
-				if (obtenerDatos)
-					cargarDatosResolucion(idResolucion,idDictamen,articulosResolucion,articulosRevision,false);
+				if (obtenerDatos){
+					var articulos=cargarDatosSancion(idSancion,idDictamen,false);
+					if ($("#selTipoRedaccion").val()=="articulado")
+						articulosSancion=articulos;
+					else
+						articulosRevision=articulos;
+				}	
 
-				habilitarControlesModalResolucion(idResolucion,idDictamen);
+				habilitarControlesModalSancion(idSancion,idDictamen);
 					 
 		    });
 
 		    //GUARDAR DE DICTAMEN
-		    $("#btn-guardar-dictamen").click(function(){
+		    $("#btn-guardar-sancion").click(function(){
 
 		    	$(this).prop("disabled",true);
 		    	
-		    	var idAsignacion=$("#modalDictamen").find('input[name="idAsignacion"]').val();
-				var idDictamen=$("#modalDictamen").find('input[name="idDictamen"]').val();
-				var idProyecto=$("#idProyecto").val();
-				var idExpediente=$("#modalDictamen").find('input[name="idExpediente"]').val();
-				var numeroDictaminantes=$("#modalDictamen").find('input[name="idDictaminantes"]').val();
+		    	var idSancion=$("#modalSancion").find('input[name="idSancion"]').val();
+				var idDictamen=$("#modalSancion").find('input[name="idDictamen"]').val();
+				var idProyecto=$("#modalSancion").find('input[name="idProyecto"]').val();
+				var idExpediente=$("#modalSancion").find('input[name="idExpediente"]').val();
 				
 				var tipoRedaccion= $("#selTipoRedaccion").val();
-				var tipoDictamen=$("#selTipoDictamen").val();
-		        var comisiones=$("#selComisiones").val();
+				var tipoSancion=$("#selTipoSancion").val();
+				var poseeSancion=$("#poseeSancion").is(":checked");
+				var numeroSancion=$("#numeroSancion").val();
+				var aplicaNotificacion=$("#aplicaNotificacion").is(":checked");
+				var destinoNotificacion=$("#selDestinoNotificacion").val();
+				var comisionReserva=$("#selComisionReserva").val();
+			       
 		        var texto=$("#texto").val();
 		        var articulos=null;
 		        if (tipoRedaccion!="basico")
-		        	articulos=((tipoRedaccion=="articulado")?articulosResolucion:articulosRevision);
+		        	articulos=((tipoRedaccion=="articulado")?articulosSancion:articulosRevision);
 	        	var vistosYConsiderandos= $("#vistosYConsiderandos").is(":checked");
 	        	var editaRevision=$("#editaRevision").is(":checked");
-	        	debugger;
 	        	var idRevision=$("#idRevision").val();
 		        var vistos=$("#vistos").html();
 		        var considerandos=$("#considerandos").html();
-
+		        var idSesion=$("#idSesion").val();
+				debugger;
 		        var validacion='';
 				var formData=new FormData();
 
 				validacion+=((texto.replace(/ /g, '').length==0)
-						 	 ?'<li>Debe poveer un texto para el dictamen</li>':'');
+						 	 ?'<li>Debe poveer un texto para la resolución</li>':'');
 			 	 
-				validacion+=((tipoDictamen==0 && tipoRedaccion=="articulado")
-							 ?'<li>Debe especificar el tipo de dictamen</li>':'');
+				validacion+=((tipoSancion==0 && tipoRedaccion=="articulado")
+							 ?'<li>Debe especificar el tipo de resolución</li>':'');
 				 
 				if (tipoRedaccion=="articulado")					
 					validacion+=((articulos.length==0)
-							      ? '<li>Debe poveer los articulos para el dictamen articulado</li>':'') ;
+							      ? '<li>Debe poveer los articulos para la resolución articulada</li>':'') ;
 				
 				if (tipoRedaccion=="revision" && editaRevision){
 
@@ -625,22 +659,10 @@
 					              ?'<li>Debe poveer un texto para los considerandos de la revision</li>':'');
 				}
 
-				
-				formData.append('idAsignacion',idAsignacion);
-				formData.append('idDictamen',idDictamen);
-				formData.append('idExpediente',idExpediente);
-				formData.append('idProyecto',idProyecto);
-				formData.append('numeroDictaminantes',numeroDictaminantes);
-				formData.append('tipoRedaccion',tipoRedaccion);
-				formData.append('tipoDictamen',tipoDictamen);
-				formData.append('comisiones',comisiones);
-				formData.append('texto',texto);
-				formData.append('idRevision',idRevision);
-				formData.append('editaRevision',editaRevision);
-				formData.append('vistosYConsiderandos',vistosYConsiderandos);
-				formData.append('vistos',vistos);
-				formData.append('considerandos',considerandos);
-				formData.append('articulos',JSON.stringify(articulos));
+				validacion+=((numeroSancion=="" && poseeSancion==true)
+								?'<li>Debe poveer el número de sanción</li>':'');
+				validacion+=((aplicaNotificacion==true && (destinoNotificacion==0 || comisionReserva==0))
+						 		?'<li>Debe poveer tanto un destino como una comisión de reserva para la notificación</li>':'');
 				
 				if (validacion.length>0) 
 				{
@@ -652,9 +674,28 @@
 				}
 				else{
 
+					formData.append('idSesion',idSesion);
+					formData.append('idSancion',idSancion);
+					formData.append('idDictamen',idDictamen);
+					formData.append('idExpediente',idExpediente);
+					formData.append('idProyecto',idProyecto);
+					formData.append('tipoRedaccion',tipoRedaccion);
+					formData.append('tipoSancion',tipoSancion);
+					formData.append('numeroSancion',numeroSancion);
+					formData.append('aplicaNotificacion',aplicaNotificacion);
+					formData.append('destinoNotificacion',destinoNotificacion);
+					formData.append('comisionReserva',comisionReserva);
+					formData.append('texto',texto);
+					formData.append('idRevision',idRevision);
+					formData.append('editaRevision',editaRevision);
+					formData.append('vistosYConsiderandos',vistosYConsiderandos);
+					formData.append('vistos',vistos);
+					formData.append('considerandos',considerandos);
+					formData.append('articulos',JSON.stringify(articulos));
+
 	            	$.ajax({
 		                async: true,
-		                url: '{{ app.request.getBaseURL() }}'+ '/api/comisionAsignacion/saveDictamen',
+		                url: '{{ app.request.getBaseURL() }}'+ '/api/sesion/saveSancion',
 		                data: formData,
 		                type: 'post',
 		                cache: false,
@@ -663,10 +704,10 @@
 	                success: function(data) {
 	                    toastr.success(data);
 						tabla.ajax.reload();
-						$('#modalDictamen').modal('hide');
+						$('#modalSancion').modal('hide');
 	                	},
 	                complete: function(){
-	                	$("#btn-guardar-dictamen").prop("disabled",false);
+	                	$("#btn-guardar-sancion").prop("disabled",false);
 	                	},
 	                error: function(jqXHR,textStatus,errorThrown ){
 						toastr.error(jqXHR.responseText);
@@ -675,8 +716,8 @@
 	            }  
 			});
 
-		    $("#modalDictamen").on('show.bs.modal', function () {
-		    	$("#btn-guardar-dictamen").prop("disabled",false);
+		    $("#modalSancion").on('show.bs.modal', function () {
+		    	$("#btn-guardar-sancion").prop("disabled",false);
 		    });
 		    		    
 		  //---------------------------------------------------------------------------------------------------------------
@@ -726,7 +767,7 @@
 					var articulo;
 					
 					if (tabla=="articulos")
-    					articulo=traerArticuloPorNumero(numeroArticulo,articulosResolucion);
+    					articulo=traerArticuloPorNumero(numeroArticulo,articulosSancion);
 					else
 						articulo=traerArticuloPorNumero(numeroArticulo,articulosRevision);
 					
@@ -742,10 +783,10 @@
 			$("#articulos > tbody").on('click','.btn-eliminar-articulo',function(){
 				var numero=$(this).parents("tr").find('td:first').text();
 				var tabla = $("#modalArticulo").find('input[name="tabla"]').val();
-				articulosResolucion.eliminar('numero',numero);
-				articulosResolucion.renumerar('numero','digito');
+				articulosSancion.eliminar('numero',numero);
+				articulosSancion.renumerar('numero','digito');
 				$("#articulos > tbody").html('');
-    				$.each(articulosResolucion,function(i,articulo){
+    				$.each(articulosSancion,function(i,articulo){
     					agregarArticulo(articulo,'articulos');
     				});
 			});
@@ -826,7 +867,7 @@
 
 						articuloActual=agregarArticulo(articuloActual,tabla);
 						if (tabla=="articulos")
-							articulosResolucion.push(articuloActual);
+							articulosSancion.push(articuloActual);
 						else
 							articulosRevision.push(articuloActual);
 					}
@@ -839,7 +880,7 @@
 							
 							actualizarArticulo(articuloActual,tabla);
 							if (tabla=="articulos")
-								articulosResolucion.reemplazar(articuloActual,'numero'); 
+								articulosSancion.reemplazar(articuloActual,'numero'); 
 							else
 								articulosRevision.reemplazar(articuloActual,'numero'); 
 						}
@@ -855,7 +896,7 @@
 
 			$('#modalRevisiones').on('show.bs.modal', function () {
 
-				var idProyecto=$("#modalResolucion").find('input[name="idProyecto"]').val();
+				var idProyecto=$("#modalSancion").find('input[name="idProyecto"]').val();
 
 				tablaRevisiones=$('#revisiones').DataTable({
 					    			  "language": {
@@ -952,9 +993,9 @@
 			$('#revisiones tbody').on( 'click', '.btn-usar', function () {
 				debugger;
 		        var data = tablaRevisiones.row( $(this).parents('tr') ).data();
-		        $("#modalResolucion").find('div[id="vistos"]').html(data[ "visto" ]);
-		        $("#modalResolucion").find('input[id="idRevision"]').val(data[ "id" ]);
-		        $("#modalResolucion").find('div[id="considerandos"]').html(data[ "considerandos" ]);
+		        $("#modalSancion").find('div[id="vistos"]').html(data[ "visto" ]);
+		        $("#modalSancion").find('input[id="idRevision"]').val(data[ "id" ]);
+		        $("#modalSancion").find('div[id="considerandos"]').html(data[ "considerandos" ]);
 		        $("#articulos-revision > tbody	").html('');
 		        articulosRevision=data[ "articulos" ];
 		        $.each(articulosRevision,function(index,articulo){
@@ -1051,17 +1092,22 @@
 		        var data = tablaDictamenes.row( $(this).parents('tr') ).data();
 		        var idExpediente=$("#modalDictamenes").find('input[name="idExpediente"]').val();
 		        var idProyecto=$("#modalDictamenes").find('input[name="idProyecto"]').val();
-		        var idResolucion=$("#modalDictamenes").find('input[name="idResolucion"]').val();
+		        var idSancion=$("#modalDictamenes").find('input[name="idSancion"]').val();
 		        var idDictamen=data['id'];
 		        
-		        limpiarFormularioResolucion(articulosResolucion,articulosRevision);
+		        limpiarFormularioSancion(articulosSancion,articulosRevision);
 		        
 		        if (modo="alta")
-		        	abrirModalResolucion(idProyecto,idExpediente,idDictamen,0);
-		        else
-			        establecerDictamenModalResolucion(idDictamen,articulosResolucion,articulosRevision);
+		        	abrirModalSancion(idProyecto,idExpediente,idDictamen,0);
+		        else{
+			        var articulos=establecerDictamenModalSancion(idDictamen);
 
-		        habilitarControlesModalResolucion(idResolucion,idDictamen);
+					if($("#selTipoRedaccion").val()=="articulado")
+						articulosSancion=articulos;
+					else
+						articulosRevision=articulos;
+		        }
+		        habilitarControlesModalSancion(idSancion,idDictamen);
 
 				$('#modalDictamenes').modal('hide');
 		       
@@ -1075,7 +1121,7 @@
 		    $("#btn-editar-vistos-revision").click(function(){
 
 		    	$("#modalTexto").find('input[name="idTexto"]').val("vistos");
-		    	var htmlEdicion=$("#modalResolucion").find('div[id="vistos"]').html();
+		    	var htmlEdicion=$("#modalSancion").find('div[id="vistos"]').html();
 		    	$("#edicion-texto").data("wysihtml5").editor.setValue(htmlEdicion)
 		   		$("#modalTexto").modal("show");
 			});
@@ -1083,7 +1129,7 @@
 		    $("#btn-editar-considerandos-revision").click(function(){
 
 		    	$("#modalTexto").find('input[name="idTexto"]').val("considerandos");
-		    	var htmlEdicion=$("#modalResolucion").find('div[id="considerandos"]').html();
+		    	var htmlEdicion=$("#modalSancion").find('div[id="considerandos"]').html();
 		    	$("#edicion-texto").data("wysihtml5").editor.setValue(htmlEdicion)
 		   		$("#modalTexto").modal("show");
 			});
@@ -1092,9 +1138,9 @@
 
 			   var divTexto=$("#modalTexto").find('input[name="idTexto"]').val(); 
 			   if (divTexto=="vistos")
-				   $("#modalResolucion").find('div[id="vistos"]').html($("#edicion-texto").val());
+				   $("#modalSancion").find('div[id="vistos"]').html($("#edicion-texto").val());
 			   else
-				   $("#modalResolucion").find('div[id="considerandos"]').html($("#edicion-texto").val());
+				   $("#modalSancion").find('div[id="considerandos"]').html($("#edicion-texto").val());
 
 			   $("#modalTexto").modal("hide");
 				
@@ -1159,6 +1205,7 @@
 
 			
 			 $("#aplicaNotificacion").change(function(){
+				 
 				 if ($(this).is(":checked")){
 					 $("#selComisionReserva").attr("disabled",false);
 				 	 $("#selDestinoNotificacion").attr("disabled",false);
@@ -1166,6 +1213,8 @@
 				 else{
 					 $("#selComisionReserva").attr("disabled",true);
 				 	 $("#selDestinoNotificacion").attr("disabled",true);
+				 	 $("#selDestinoNotificacion").val(0);
+				     $("#selComisionReserva").val(0);
 				 }
 			 });
 			 
@@ -1173,8 +1222,10 @@
 			 $("#poseeSancion").change(function(){
 				 if ($(this).is(":checked"))
 					 $("#numeroSancion").attr("disabled",false);
-				 else
+				 else{
 					 $("#numeroSancion").attr("disabled",true);
+					 $("#numeroSancion").val("");
+				 }
 			 });
 
 			
@@ -1198,13 +1249,13 @@
 
 			 $("#btn-modo-dictamen").click(function(){
 
-				 	var idExpediente=$("#modalResolucion").find('input[name="idExpediente"]').val();
-			        var idProyecto=$("#modalResolucion").find('input[name="idProyecto"]').val();
-			        var idResolucion=$("#modalResolucion").find('input[name="idResolucion"]').val();
+				 	var idExpediente=$("#modalSancion").find('input[name="idExpediente"]').val();
+			        var idProyecto=$("#modalSancion").find('input[name="idProyecto"]').val();
+			        var idSancion=$("#modalSancion").find('input[name="idSancion"]').val();
 			        
 			        $("#modalDictamenes").find('input[name="idExpediente"]').val(idExpediente);
 			        $("#modalDictamenes").find('input[name="idProyecto"]').val(idProyecto);
-			        $("#modalDictamenes").find('input[name="idResolucion"]').val(idResolucion);
+			        $("#modalDictamenes").find('input[name="idSancion"]').val(idSancion);
 			        $("#modalDictamenes").find('input[name="modo"]').val("edicion");
 			        $("#modalDictamenes").modal("show");
 			 });
@@ -1249,10 +1300,16 @@
 			});
 
 			$("#selTipoRedaccion").change(function(){
+
+				$("#sancion-panel").removeClass("hidden");
+				$("#notificacion-panel").removeClass("hidden");
+
 				if ($(this).val()=="basico"){
 					$("#group-tipoDictamen").addClass("hidden");
 					$("#link-tab-2").addClass("hidden");
 					$("#link-tab-3").addClass("hidden");
+					$("#sancion-panel").addClass("hidden");
+					$("#notificacion-panel").addClass("hidden");
 				}
 				if ($(this).val()=="articulado") {
 					$("#group-tipoDictamen").removeClass("hidden");
@@ -1340,7 +1397,7 @@
 	                		<th>Expdiente</th>
 			                <th>Letras Orden del Día</th>
 			                <th>Tipo Expediente</th>
-			                <th>Resolución</th>
+			                <th>Sanción</th>
 			                <th>Sanción</th>
 			                <th>Notificacion</th>
 	                	</tr>
@@ -1350,20 +1407,20 @@
                	</table>     
 	        </div> {# col #}
 	    </div> {# row #}
-		<div id="modalResolucion" class="modal fade custom-modal" role="dialog" data-backdrop="static" 
+		<div id="modalSancion" class="modal fade custom-modal" role="dialog" data-backdrop="static" 
    data-keyboard="false">
 		 	<div class="modal-dialog modal-xl">
 			    <!-- Modal content-->
 			    <div class="modal-content">
 				    <div class="modal-header" style="background-color:#666	;color:#FFF">
 		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title" id="titulo-modal-resolucion"></h4>
+		    			<h4 class="modal-title" id="titulo-modal-sancion"></h4>
 				    </div>
 				    <div class="modal-body" style="background-color:#ecf0f5">
 				    	<input type="hidden" id="idDictamen" name="idDictamen">
 				    	<input type="hidden" id="idProyecto" name="idProyecto">
 				    	<input type="hidden" id="idExpediente" name="idExpediente">
-				    	<input type="hidden" id="idResolucion" name="idResolucion">
+				    	<input type="hidden" id="idSancion" name="idSancion">
 					    <div class="row">
 					    	<div class="col-md-3">
 					    		<div class="row">
@@ -1375,10 +1432,9 @@
         				        		</div>
         					        	<div style="min-height: 68.78px">
             					    		<div class="form-group hidden" style="margin-bottom: 0px!important" id="group-tipoDictamen">
-            					        		<label for="selTipoDictamen">Tipo Dictamen</label>
-            					        		<select class="form-control" id="selTipoDictamen" 
-            					        				name="selTipoDictamen">
-            					        			<option value="0">Seleccione Tipo Dictamen</option>
+            					        		<label for="selTipoSancion">Tipo Sanción</label>
+            					        		<select class="form-control" id="selTipoSancion" name="selTipoSancion">
+            					        			<option value="0">Seleccione Tipo Sanción</option>
             					        			{% for tipo in tiposProyecto %}
             							                <option value="{{ tipo.id }}">{{ tipo.tipoProyecto }}</option>
             							            {% endfor %}
@@ -1388,7 +1444,7 @@
             						</div>
         					    </div>
     					        <hr>
-    					        <div class="panel panel-primary">
+    					        <div class="panel panel-primary" id="sancion-panel">
                                     <div class="panel-heading text-center"><strong>Sancion</strong></div>
                                 	<div class="panel-body">
         					        	<div class="row">
@@ -1399,14 +1455,14 @@
                     					        	</div>
                     					        	<div class="form-group">
                     					        		<input type="text" class="form-control text-center" placeholder="Número Sancion" 
-                    					        			    id="numeroSancion" name="numeroSancion">
+                    					        			    id="numeroSancion" name="numeroSancion" onblur="validarNumeroSancion(this);">
                     					        	</div>
                     					        </div>
                     					    </div>
                     					</div>
                     				</div>
                         		</div>
-                        		 <div class="panel panel-primary">
+                        		 <div class="panel panel-primary" id="notificacion-panel">
                                     <div class="panel-heading text-center"><strong>Notificación</strong></div>
                                 	<div class="panel-body">
         					        	<div class="row">
@@ -1436,21 +1492,6 @@
                     					</div>
                     				</div>
                         		</div>
-    					       <!-- <hr>
-    					         <div class="col-md-12 hidden" id="div-modo-dictamen">
-        					        <div class="text-center">
-        					        	<div class="form-group">
-        					        		<button type="button" class="btn btn-primary" id="btn-modo-dictamen">Copiar Desde Dictamen</button>
-        					        	</div>
-        					        </div>
-    					        </div>
-    					           <div class="col-md-12 hidden" id="div-modo-redaccion">
-        					        <div class="text-center">
-        					        	<div class="form-group">
-        					        		<button type="button" class="btn btn-primary" id="btn-modo-redaccion">Cambiar A Redacción</button>
-        					        	</div>
-        					        </div>
-    					        </div> -->
 					    	</div>
 					    	<div class="col-md-9">
 					    		<div class="row" style="padding-top: 5px;">
@@ -1567,7 +1608,7 @@
 				        		<div class="text-center">
 					    			<div class="btn-group">
 							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
-						       			 <button type="button" class="btn btn-primary" id="btn-guardar-resolucion">Guardar</button>
+						       			 <button type="button" class="btn btn-primary" id="btn-guardar-sancion">Guardar</button>
 							        </div>
 						        </div>
 						    </div>
@@ -1724,7 +1765,7 @@
 				    <div class="modal-body" style="background-color:#ecf0f5">
 				    	<input type="hidden" name="idProyecto" id="idProyecto">
 				  		<input type="hidden" name="idExpediente" id="idExpediente"> 
-				  		<input type="hidden" name="idResolucion" id="idResolucion">
+				  		<input type="hidden" name="idSancion" id="idSancion">
 				  		<input type="hidden" name="modo" id="modo">
 			        	<div class="row">
 			        		<div class="col-md-12">

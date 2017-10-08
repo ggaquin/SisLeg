@@ -288,12 +288,13 @@
 		function abrirAltaDictamen(data,numeroDictaminantes){
 
 			var idAsignacion=data[ "id" ];
-			debugger;
-			$.ajax({
-				type:'Get',
-				contentType: "application/x-www-form-urlencoded;charset=utf-8",
-				url:'{{ app.request.getBaseURL() }}/api/comisionAsignacion/validarAltaDictamen/'+numeroDictaminantes+'/'+idAsignacion,
-				success: function(response){
+				
+//			debugger;
+//			$.ajax({
+//				type:'Get',
+//				contentType: "application/x-www-form-urlencoded;charset=utf-8",
+//				url:/api/comisionAsignacion/validarAltaDictamen/+numeroDictaminantes+/+idAsignacion,
+//				success: function(response){
 					
 					var idProyecto=data[ "id_proyecto" ];
 					htmlTipoRedaccion="<option value='basico' selected='selected'>Básico</option>" +
@@ -316,13 +317,13 @@
 				   	$("#selComisiones").append(newOption).trigger('change');
 				   	$("#editaRevision").bootstrapToggle('on');
 				   	$("#vistosYConsiderandos").bootstrapToggle('on');
-				    actualizarSesiones($("#selSesion"),0);	
+				    //actualizarSesiones($("#selSesion"),0);	
 				    $("#modalDictamen").modal('show');
-				},
-				error: function(jqXHR,textStatus,errorThrown ){
-					toastr.error(JSON.parse(jqXHR.responseText));
-				}
-	      	});
+//				},
+//				error: function(jqXHR,textStatus,errorThrown ){
+//					toastr.error(JSON.parse(jqXHR.responseText));
+//				}
+//	      	});
 
 			/*
 	        var idProyecto=data[ "id_proyecto" ];
@@ -392,6 +393,7 @@
 		   	$("#editaRevision").bootstrapToggle('on');
 	    }
 
+		
 		function actualizarSesiones(control,valorSeleccionado){
 
 			$.ajax({
@@ -463,7 +465,8 @@
 									            "orderable":false,
 									            "render": function(data, type, row){
 										            var html="<div class='btn-group'>";
-											        html+="<button type='button' title='Anular Asignación' class='btn btn-danger btn-xs btn-anular'><span class='glyphicon glyphicon-minus-sign'></span></button>";
+											        html+="<button type='button' title='Anular Asignación' class='btn btn-danger btn-xs btn-anular' "+
+											        	  ((row.edicion_habilitada==false)?"disabled":"")+" ><span class='glyphicon glyphicon-minus-sign'></span></button>";
 													html+="</div>";
 									            	return html;
 									            }
@@ -471,106 +474,138 @@
 									        {
 									            "targets": [ 3 ],
 									            "data": null,
-									            "orderable":true,
+									            "orderable":false,
 									            "render": function(data, type, row){
-									            	html="<button type='button'title='Editar Comision' class='btn btn-primary btn-xs btn-editar'><span class='glyphicon glyphicon-pencil'></span></button> ";
+									            	html="<button type='button'title='Editar Comision' class='btn btn-primary btn-xs btn-editar' "+
+									            	     ((row.edicion_habilitada==false)?"disabled":"")+ "><span class='glyphicon glyphicon-pencil'></span></button> ";
 								            		html+=data+' ('+row.letra+')';
 								            		return html;
 									            }
 									        },
-									       /*  {
-									            "targets": [ 4 ],
-									            "data": null,
-									            "orderable":true,
-									            "render": function(data, type, row){
-										            var html="<div class='text-center'>";
-										            if (row.sesion_muestra ==null)
-										            	html+="<button type='button'title='Asignar a Sesion' class='btn btn-primary btn-xs btn-asignar-sesion ' data-toggle='modal' data-target='#modalSesion'><span class='glyphicon glyphicon-calendar'></span></button> ";
-										            else{
-										            	html+="<button type='button' title='Editar Sesion' class='btn btn-primary btn-xs btn-editar-sesion' data-toggle='modal' data-target='#modalSesion'>"+row.sesion_muestra+"   <span class='glyphicon glyphicon-pencil'></span></button>";
-											            //html+="<span class='label label-success'>"+row.sesion_muestra+"</span>";
-														
-										            }
-												    return html+"</div>";
-									            }
-									        }, */
 									        {
-									        	"targets": [ 4 ],
+									            "targets": [ 4 ],
+									            "data": "",
+									            "orderable":false,
+									            "render": function(data, type, row){
+								            		var html="<div class='text-center'>";
+								            		if (row.sesion!=""){
+
+														html+="<button type='button' class='btn btn-sm btn-success btn-editar-sesion' ";
+														html+=((row.edicion_habilitada==false)?"disabled":"")+" data-toggle='modal' data-target='#modalSesion' >";
+														html+="<span>"+row.sesion;
+														html+= ((row.edicion_habilitada==false)
+																	?" <li class='fa fa-lock'></li>"
+																	:" <li class='fa fa-unlock'></li>");
+														html+="</span></button>";
+													
+									            	}
+								            		else{
+															html+="<button type='button' class='btn btn-sm btn-primary btn-asignar-sesion' data-toggle='modal' data-target='#modalSesion' >Asignar Sesión</button>";
+
+									            		}
+
+								            		return html+"</div>";
+									            }
+									        },
+									        {
+									            "targets": [ 5 ],
+									            "data": "",
+									            "orderable":false,
+									            "render": function(data, type, row){
+								            		return "<div class='text-center'>"+((row.recibido==true)
+										            			?"<span class='label label-success'>SI</span>"
+												            	:"<span class='label label-danger'>NO</span>")+"</div>";
+									            }
+									        },
+									        {
+									        	"targets": [ 6 ],
 									         	"data": "",
 									         	"orderable":false,
 									         	"render": function(data, type, row){
 										         	
-													var html="<div class='btn-group'style='margin-left:5px'>";
+													var html="<div class='text-center'><div class='btn-group'>";
 												
-    												if (row.dictamenes_mayoria.length==0)
-    													html+="<span class='label label-danger'>Sin Dictamen</span>";
-    												
-    												if (row.recibido==true)
-    													html+="<button type='button' title='Agregar Dictamen' "+
-    														  "class='btn btn-primary btn-xs btn-nuevo-dictamen-mayoria' >"+
-    														  "<span class='glyphicon glyphicon-paperclip'></span></button>";
-    												
-													$.each(row.dictamenes_mayoria,function(index,dictamen){
-														debugger;
-														html+="<button type='button' title='Editar Dictamen' "+
-															  "class='btn btn-info btn-xs btn-editar-dictamen-mayoria' "+
-															  "data-toggle='modal' data-target='#modalDictamen' id='"+dictamen.id+"'>"+
-															  dictamen.sesion+"</button>";
-													});
-								
-    								            	return html+"</div>";		
+    												if (row.dictamen_mayoria_id==0){
+    													
+        												if (row.recibido==true)
+            												
+        													html+="<button type='button' title='Agregar Dictamen' "+
+        														  "class='btn btn-primary btn-xs btn-nuevo-dictamen-mayoria' "+
+        														  ((row.edicion_habilitada==false)?"disabled":"")+" >Agregar Dictamen</button>";
+        												else
+
+        													html+="<span class='label label-danger'>Sin Dictamen</span>";
+    												}
+    												else{
+													
+    														html+="<button type='button' title='Editar Dictamen' "+
+    															  "class='btn btn-success btn-xs btn-editar-dictamen-mayoria' "+
+    															  ((row.edicion_habilitada==false)?"disabled":"")+
+    															  " data-toggle='modal' data-target='#modalDictamen' id='"+row.dictamen_mayoria_id+"'>"+
+    															  "Editar Dictamen</button>";
+    												}
+													
+    								            	return html+"</div></div>";		
 									         	}
 									        },
 										    {
-									         	"targets": [ 5 ],
+									         	"targets": [ 7 ],
 									         	"data": "",
 									         	"orderable":false,
 									         	"render": function(data, type, row){
 										         	
-									         		var html="<div class='btn-group'style='margin-left:5px'>";
+									         		var html="<div class='text-center'><div class='btn-group'>";
 													
-    												if (row.dictamenes_primera_minoria.length==0)
-    													html+="<span class='label label-danger'>Sin Dictamen</span>";
+    												if (row.dictamen_primera_minoria_id==0){
+    													
+    													if (row.recibido==true)
+        													
+        													html+="<button type='button' title='Agregar Dictamen' "+
+        														  "class='btn btn-primary btn-xs btn-nuevo-dictamen-primera-minoria'" +
+        														  ((row.edicion_habilitada==false)?"disabled":"")+" >Agregar Dictamen</button>";
+        												else
+        													html+="<span class='label label-danger'>Sin Dictamen</span>";
+    												}
+        											else{
     												
-    												if (row.recibido==true)
-    													html+="<button type='button' title='Agregar Dictamen' "+
-    														  "class='btn btn-primary btn-xs btn-nuevo-dictamen-primera-minoria' >"+
-    														  "<span class='glyphicon glyphicon-paperclip'></span></button>";
-    												
-													$.each(row.dictamenes_primera_minoria,function(index,dictamen){
-														html+="<button type='button' title='Editar Dictamen' "+
-															  "class='btn btn-info btn-xs btn-editar-dictamen-primera-minoria' "+
-															  "data-toggle='modal' data-target='#modalDictamen' id='"+dictamen.id+"'>"+
-															  dictamen.sesion+"</button>";
-													});
-								
-    								            	return html+"</div>";
+            			    								html+="<button type='button' title='Editar Dictamen' "+
+        														  "class='btn btn-success btn-xs btn-editar-dictamen-primera-minoria' "+
+        														  ((row.edicion_habilitada==false)?"disabled":"")+
+        														  " data-toggle='modal' data-target='#modalDictamen' id='"+row.dictamen_primera_minoria_id+"'>"+
+        														  "Editar Dictamen</button>";
+        											}
+																					
+    								            	return html+"</div></div>";
 									         	}
 										    },
 											{
-									            "targets": [ 6 ],
+									            "targets": [ 8 ],
 									            "data": "",
 									            "orderable":false,
 									            "render": function(data, type, row){
 									            	
-									         		var html="<div class='btn-group'style='margin-left:5px'>";
+									         		var html="<div class='text-center'><div class='btn-group'>";
 													
-    												if (row.dictamenes_segunda_minoria.length==0)
-    													html+="<span class='label label-danger'>Sin Dictamen</span>";
-    												
-    												if (row.recibido==true)
-    													html+="<button type='button' title='Agregar Dictamen' "+
-    														  "class='btn btn-primary btn-xs btn-nuevo-dictamen-segunda-minoria' >"+
-    														  "<span class='glyphicon glyphicon-paperclip'></span></button>";
-    												
-													$.each(row.dictamenes_segunda_minoria,function(index,dictamen){
-														html+="<button type='button' title='Editar Dictamen' "+
-															  "class='btn btn-info btn-xs btn-editar-dictamen-segunda-minoria' "+
-															  "data-toggle='modal' data-target='#modalDictamen' id='"+dictamen.id+"'>"+
-															  dictamen.sesion+"</button>";
-													});
+    												if (row.dictamen_segunda_minoria_id==0){
+    													    												
+        												if (row.recibido==true)
+            												
+        													html+="<button type='button' title='Agregar Dictamen' "+
+        														  "class='btn btn-primary btn-xs btn-nuevo-dictamen-segunda-minoria' "+
+        														  ((row.edicion_habilitada==false)?"disabled":"")+" >Agregar Dictamen</button>";
+        												else
+
+        													html+="<span class='label label-danger'>Sin Dictamen</span>";
+    												}
+    												else{    												
+        													html+="<button type='button' title='Editar Dictamen' "+
+        														  "class='btn btn-success btn-xs btn-editar-dictamen-segunda-minoria' "+
+        														  ((row.edicion_habilitada==false)?"disabled":"")+
+        														  " data-toggle='modal' data-target='#modalDictamen' id='"+row.dictamen_segunda_minoria_id+"'>"+
+        														  "Editar Dictamen</button>";
+    												}													
 								
-    								            	return html+"</div>";
+    								            	return html+"</div></div>";
 									         	}
 									        }	       
 						  ],
@@ -579,11 +614,11 @@
 					      		{ "data": "null","width":"7%"},
 					      		{ "data": "numero_completo","width":"8%"},
 					            { "data": "comision_nombre","width":"29%" },
-					        /*     { "data": "null","width":"11%" }, */
-					        /*     { "data": "fecha_publicacion_formateada","width":"6%" }, */
-					            { "data": "null", "width": "16%"},
-					            { "data": "null", "width": "16%"},
-					            { "data": "null", "width": "16%"}
+					            { "data": "null", "width": "6%"},
+					            { "data": "null", "width": "4%"},
+					            { "data": "null", "width": "6%"},
+					            { "data": "null", "width": "6%"},
+					            { "data": "null", "width": "6%"}
 					        ],
 					      "autoWidth":false,
 					      "paging": true,
@@ -606,7 +641,7 @@
 		  //-----------------------------------------------------------------------------------------------------------------
 
 		  //EVENTO ASIGNAR SESION DE LA GRILLA DE ASIGNACIONES	
-		    $('#registroAsignaciones tbody').on( 'click', '.btn-asignar-sesion', function (event) {
+		  $('#registroAsignaciones tbody').on( 'click', '.btn-asignar-sesion', function (event) {
 				debugger;
 		    	var data = tabla.row( $(this).parents('tr') ).data();
 		        $("#modalSesion").find("input[name='idAsignacion']").val(data[ "id" ]);
@@ -615,7 +650,7 @@
 		    } );
 		    
 		  //EVENTO EDITAR SESION DE LA GRILLA DE ASIGNACIONES	
-		    $('#registroAsignaciones tbody').on( 'click', '.btn-editar-sesion', function () {
+		  $('#registroAsignaciones tbody').on( 'click', '.btn-editar-sesion', function () {
 		    	var data = tabla.row( $(this).parents('tr') ).data();
 		        $("#modalSesion").find("input[name='idAsignacion']").val(data[ "id" ]);
 		        actualizarSesiones($("#selSesion"),data[ "id_sesion" ]);
@@ -650,7 +685,7 @@
 
 	            	$.ajax({
 		                async: true,
-		                url: '{{ app.request.getBaseURL() }}'+ '/api/comisionAsignacion/updateSesion',
+		                url: '{{ app.request.getBaseURL() }}'+'/api/comisionAsignacion/updateSesion',
 		                data: formData,
 		                type: 'post',
 		                cache: false,
@@ -781,7 +816,7 @@
             					 $("#selComisiones").prop("disabled", true); 
             					 $(".select2-selection__choice").addClass("bootstrap-primary-background"); 	
 
-            					 actualizarSesiones($("#selSesion"),data.sesion_id);		
+            					 //actualizarSesiones($("#selSesion"),data.sesion_id);		
             				},
             				error: function(jqXHR,textStatus,errorThrown ){
             					toastr.error(jqXHR.responseText);
@@ -806,7 +841,7 @@
 				var tipoDictamen=$("#selTipoDictamen").val();
 		        var comisiones=$("#selComisiones").val();
 		        var texto=$("#texto").val();
-		        var	idSesion=$("#selSesion").val();
+		        //var	idSesion=$("#selSesion").val();
 		        var articulos=null;
 		        if (tipoRedaccion!="basico")
 		        	articulos=((tipoRedaccion=="articulado")?articulosDictamen:articulosRevision);
@@ -853,7 +888,7 @@
 				formData.append('tipoDictamen',tipoDictamen);
 				formData.append('comisiones',comisiones);
 				formData.append('texto',texto);
-				formData.append('idSesion',idSesion);
+				//formData.append('idSesion',idSesion);
 				formData.append('idRevision',idRevision);
 				formData.append('editaRevision',editaRevision);
 				formData.append('vistosYConsiderandos',vistosYConsiderandos);
@@ -1661,9 +1696,11 @@
 						    </th>	
 						    <th>Expdiente</th>
 			                <th>Comision</th>
-			                <th>Dict. May.</th>
-			                <th>Dict. Prim. Min.</th>
-			                <th>Dict. Seg. Min.</th>
+			                <th class="text-center">O. D.</th>
+			                <th class="text-center">Recibido</th>
+			                <th class="text-center">Dict. May.</th>
+			                <th class="text-center">Dict. Prim. Min.</th>
+			                <th class="text-center">Dict. Seg. Min.</th>
 	                	</tr>
 	                </thead>
 	                <tbody>
@@ -1760,11 +1797,11 @@
 						        			id="selComisiones" name="selComisiones">
 						        	</select>
 						        </div>
-						        <div class="form-group">
+						        <!-- <div class="form-group">
 				    				<label for="selSesion">Sesión:</label>
 						        	<select class="form-control" id="selSesion" name="selSesion">
 						        	</select>
-								</div>
+								</div> -->
 					    	</div>
 					    	<div class="col-md-9">
 					    		<div class="row">
@@ -2076,7 +2113,7 @@
 				</div>
 			</div>
 		</div>
-		<!-- <div id="modalSesion" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
+		<div id="modalSesion" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
 			<div class="modal-dialog modal-sm">
 				    <div class="modal-header" style="background-color:#666	;color:#FFF">
 		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
@@ -2109,7 +2146,7 @@
 				    	</form>
 				    </div>
 				</div>
-			</div> -->
+			</div>
 		</div>
 	</section>
 {% endblock %}

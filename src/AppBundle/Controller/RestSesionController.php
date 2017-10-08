@@ -18,6 +18,15 @@ use AppBundle\Entity\Sesion;
 use FOS\RestBundle\Controller\Annotations\Get;
 use FOS\RestBundle\Controller\Annotations\Route;
 use AppBundle\Entity\ExpedienteSesion;
+use AppBundle\Entity\Sancion;
+use AppBundle\Entity\Dictamen;
+use AppBundle\Entity\SancionArticulada;
+use AppBundle\Entity\SancionRevisionProyecto;
+use AppBundle\Entity\ProyectoRevision;
+use AppBundle\Entity\Notificacion;
+use AppBundle\Entity\Remito;
+use AppBundle\Entity\Comision;
+use AppBundle\Entity\Pase;
 
 /**
  * @Route("/api/sesion")
@@ -209,8 +218,6 @@ class RestSesionController extends FOSRestController{
     	$tipoCriterio=$request->get('tipoCriterio');
     	$criterio=$request->get('criterio');
     	
-    	//$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
-    	//$sesion=$sesionRepository->find($idSesion);
     	$expedienteSesionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteSesion');
     	$expedientesEnSesion=null;
     	
@@ -222,27 +229,7 @@ class RestSesionController extends FOSRestController{
     		$expedientesEnSesion=$expedienteSesionRepository->findDistinctByTipoExpediente_Id($criterio,$idSesion);
     	if ($tipoCriterio=='busqueda-3') //estado expediente sesion
     		$expedientesEnSesion=$expedienteSesionRepository->findDistinctByletraOrdenDia($criterio,$idSesion);
-    	
-    	/*
-    	$resutado=[];
-    	foreach ($expedientesEnSesion as $expedienteSesion){
-    		$registro=array('id'=>$expedienteSesion->getId(),
-    						'numero_expediente'=>$expedienteSesion->getExpediente()->getNumeroCompleto(),
-    						'letra_orden_dia'=>$expedienteSesion->getTipoExpedienteSesion()->getLetra(),
-    						'tipo'=>$expedienteSesion->getExpediente()->getTipoExpediente()->getTipoExpediente(),
-    						'tiene_resolucion'=>(!is_null($expedienteSesion->getResolucion())?'Si':'No'),
-    						'mumero_sancion'=>((!is_null($expedienteSesion->getResolucion()) &&
-    								   		   !($expedienteSesion->getResolucion() instanceof ResolucionBasicaSinSancion))
-    												?$expedienteSesion->getResolucion()->getNumeroSancion():''
-    										   )
-    				
-    		);
-    		$resutado[]=$registro;		
-    	}
-    		
-    	return $this->view($resutado,200);
-    	*/
-    		
+    	    		
     	return $this->view($expedientesEnSesion,200);
     }
     
@@ -272,6 +259,275 @@ class RestSesionController extends FOSRestController{
     	$sesiones=$sesionRepository->findByPeriodo($periodo);
     	
     	return $sesiones;
+    }
+    
+    /**
+     * @Rest\Post("/saveSancion")
+     */
+    public function guardarSancion(Request $request){
+    	
+    	$idSesion=$request->request->get('idSesion');
+    	$idSancion=$request->request->get('idSancion');
+    	$idDictamen=$request->request->get('idDictamen');
+    	$idExpediente=$request->request->get('idExpediente');
+    	$idProyecto=$request->request->get('idProyecto');
+    	$tipoRedaccion=$request->request->get('tipoRedaccion');
+    	$idTipoSancion=$request->request->get('tipoSancion');
+    	$numeroSancion=$request->request->get('numeroSancion');
+    	$aplicaNotificacion=$request->request->get('aplicaNotificacion');
+    	$destinoNotificacion=$request->request->get('destinoNotificacion');
+    	$comisionReserva=$request->request->get('comisionReserva');
+    	$texto_libre=$request->request->get('texto');
+    	$idRevision=$request->request->get('idRevision');
+    	$editaRevision=$request->request->get('editaRevision');
+    	$vistosYConsiderandos=$request->request->get('vistosYConsiderandos');
+    	$vistos=$request->request->get('vistos');
+    	$considerandos=$request->request->get('considerandos');
+    	$articulos=json_decode($request->request->get('articulos'));
+    	
+    	$sancion=null;
+    	$sancionOriginal=null;
+    	$remitoExterno=null;
+    	$usuario=$this->getUser();
+    	$estadoExpediente=null;
+    	
+    	$sancionRepository=$this->getDoctrine()->getRepository('AppBundle:Sancion');
+    	$dictamenRepository=$this->getDoctrine()->getRepository('AppBundle:Dictamen');
+    	$tipoProyectoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoProyecto');
+    	$proyectoRevisionRepository=$this->getDoctrine()->getRepository('AppBundle:ProyectoRevision');
+    	$proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
+    	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+    	$estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
+    	$oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
+    	$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
+    	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+    	$expedienteSesionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteSesion');
+    	$em = $this->getDoctrine()->getManager();
+
+    	/*--------------------------obtener datos del proceso -----------------------------------*/
+    	    	
+    	$expediente=$expedienteRepository->find($idExpediente);
+    	$sesion=$sesionRepository->find($idSesion);
+    	
+    	if ($idSancion!=0)
+    		$sancionOriginal= $sancionRepository->find($idSancion);
+   
+    	
+    	/*-------------------------------crear resolución----------------------------------------*/
+    		
+    	if ($tipoRedaccion=="basico")
+    		$sancion=new Sancion();
+    	if ($tipoRedaccion=="articulado")
+    		$sancion=new SancionArticulada();
+    	if ($tipoRedaccion=="revision")
+    		$sancion=new SancionRevisionProyecto();
+    					
+    	$sancion->setFechaCreacion(new \DateTime('now'));
+    	$sancion->setUsuarioCreacion($usuario->getUsuario());
+    					
+    	//campos comunes a todos los tipos
+    	$sancion->setTextoLibre($texto_libre);
+    	$dictamen=(($idDictamen==0)?null:$dictamenRepository->find($idDictamen));
+	    $sancion->setDictamen($dictamen);
+    				
+    	//para el tipo articulado
+    	if ($tipoRedaccion=="articulado"){
+    		$tipoSancion=$tipoProyectoRepository->find($idTipoSancion);
+    		$sancion->setTextoArticulado($articulos);
+    		$sancion->setTipoSancion($tipoSancion);
+    	}
+    					
+    	//para el tipo revision
+    	if ($tipoRedaccion=="revision"){
+    		$revision=null;
+    		if ($editaRevision=="false")
+    		{	//usa le revisión elegida sin modificaciones
+    							
+    			if ($idRevision==0)
+    			{	// usa el proyecto original sin modificaciones
+    								
+    				$proyecto=$proyectoRepository->find($idProyecto);
+    				$revision=new ProyectoRevision();
+    				$revision->setArticulos($proyecto->getArticulos());
+    				$revision->setConsiderandos($proyecto->getConsiderandos());
+    				$revision->setVisto($proyecto->getVistos());
+    				$revision->setFechaCreacion(new \DateTime('now'));
+    				$revision->setIncluyeVistosYConsiderandos($vistosYConsiderandos);
+    				$revision->setOficina($usuario->getRol()->getOficina);
+    				$revision->setProyecto($proyecto);
+    				$revision->setUsuarioCreacion($usuario->getUsuario());
+    			}
+    			else
+    				{	//usa una revision existente sin modfificaciones
+    					$revision=$proyectoRevisionRepository->find($idRevision);
+    				}
+    		}
+    		else
+    			{	//edita la revisión seleccionada
+    				$proyecto=$proyectoRepository->find($idProyecto);
+    				$revision=new ProyectoRevision();
+    				$revision->setArticulos($articulos);
+    				$revision->setConsiderandos($considerandos);
+    				$revision->setVisto($vistos);
+    				$revision->setFechaCreacion(new \DateTime('now'));
+    				$revision->setIncluyeVistosYConsiderandos((($vistosYConsiderandos=="true")?true:false));
+    				$revision->setOficina($usuario->getRol()->getOficina);
+    				$revision->setProyecto($proyecto);
+    				$revision->setUsuarioCreacion($usuario->getUsuario());
+    			}
+    						
+    		$sancion->setRevisionProyecto($revision);
+    		$sancion->setNumeroSancion($numeroSancion);
+    	}
+    	 
+    	/*----------------determinación del nuevo estado del expediente-----------------------*/
+    	
+    	if ($numeroSancion!="")
+    		
+    		if ($aplicaNotificacion=="false") 							//estado sancionado
+	    		$estadoExpediente=$estadoExpedienteRepository->find(5);
+    		else														//estado reserva comision
+    			$estadoExpediente=$estadoExpedienteRepository->find(4);
+    	else															//estado en trámite
+    		$estadoExpediente=$estadoExpedienteRepository->find(10);
+    		    	
+ 		/*----------------------------actualización del expediente-----------------------------*/
+    		
+    	$expediente->setEstadoExpediente($estadoExpediente);
+    	$expediente->setNumeroSancion($numeroSancion);
+   		
+    	/*------------------------crear notificacion y pase a comisiones-----------------------*/
+    	    	
+    	if($aplicaNotificacion=="true"){
+    		
+    		$idOficinaComisiones=$this->getParameter('id_comisiones');
+    		$oficinaNotificacion=$oficinaRepository->find($destinoNotificacion);
+    		$oficinaComisiones=$oficinaRepository->find($idOficinaComisiones);
+    		$comision=$comisionRepository->find($comisionReserva);
+    		
+    		//cambio de oficina actual
+    		$expediente->setOficinaActual($oficinaComisiones);
+    		    		    		
+    		//notificacion
+    		$remitoExterno=new Remito();
+    		$remitoExterno->setAnulado(false);
+    		$remitoExterno->setDestino($oficinaNotificacion);
+    		$remitoExterno->setFechaCreacion(new \DateTime('now'));
+    		$remitoExterno->setUsuarioCreacion($usuario->getUsuario());
+    		
+    		$notificacion=new Notificacion();
+    		$notificacion->setAnulado(false);
+    		$notificacion->setExpediente($expediente);
+    		$notificacion->setComision($comision);
+    		$notificacion->setFechaCreacion(new \DateTime('now'));
+    		$notificacion->setUsuarioCreacion($usuario->getUsuario());
+    		
+    		$remitoExterno->addMovimiento($notificacion);
+    		$em->persist($remitoExterno);
+    		
+    		//movimiento a comisiones
+    		$remitoInterno=new Remito();
+    		$remitoInterno->setAnulado(false);
+    		$remitoInterno->setDestino($oficinaComisiones);
+    		$remitoInterno->setFechaCreacion(new \DateTime('now'));
+    		$remitoInterno->setUsuarioCreacion($usuario->getUsuario());
+    		
+    		$pase=new Pase();
+    		$pase->setAnulado(false);
+    		$pase->setExpediente($expediente);
+    		$pase->setFojas($expediente->getFolios());
+    		$pase->setFechaCreacion(new \DateTime('now'));
+    		$pase->setUsuarioCreacion($usuario->getUsuario());
+
+    		$remitoInterno->addMovimiento($pase);
+    		$em->persist($remitoInterno);
+    		
+    		$sancion->setNotificacion($notificacion);
+    		$sancion->setPase($pase);
+    		    		
+    	}
+    	
+    	/*-------------impacto de la sancion en los expedientes de la sesion-------------------*/
+    	
+    	$expedientesEnSesion=$expedienteSesionRepository->findBy(array('expediente'=>$expediente,
+    																   'sesion'=>$sesion));
+    	
+    	foreach ($expedientesEnSesion as $expedienteSesion){
+    		$expedienteSesion->setSancion($sancion);
+    		$em->persist($expedienteSesion);
+    	}
+    	
+    	/*-------------borrado de los datos anteriores si es edición------------------------------*/
+    			
+    	if (!is_null($sancionOriginal)){
+    		
+    		if (($sancionOriginal instanceof SancionArticulada) || 
+    			($sancionOriginal instanceof  SancionRevisionProyecto)) {
+    		
+	    		$notificacionOriginal=$sancionOriginal->getNotificacion();
+	    		$paseOriginal=$sancionOriginal->getPase();
+	    		
+	    		if (!is_null($notificacionOriginal)){
+	    			
+	    			$remitoOriginal=$notificacionOriginal->getRemito();
+	    			$em->remove($remitoOriginal);
+	    		}
+	    		
+	    		if (!is_null($paseOriginal)){
+	    			
+	    			$remitoOriginal=$paseOriginal->getRemito();
+	    			$em->remove($remitoOriginal);
+	    		}
+    		}
+    		
+    		$em->remove($sancionOriginal);
+    	}
+    						
+    	$em->flush();
+    					
+    	return $this->view("La resolución se guardó en forma exitosa",200);
+    	
+    }
+    
+    /**
+     * @Rest\Get("/getSancion/{id}")
+     */
+    public  function traerSancionPorId(Request $request){
+    	
+    	$idSancion=$request->get('id');
+    	$sancionRepository=$this->getDoctrine()->getRepository('AppBundle:Sancion');
+    	$sancion=$sancionRepository->find($idSancion);
+    	$resultado=array(
+		    			'clase_sancion'=>$sancion->getClaseSancion(),
+		    			'id_tipo_sancion'=>(($sancion instanceof SancionArticulada)
+		    									?$sancion->getTipoSancion()->getId():0),
+		    			'texto_libre'=>$sancion->getTextoLibre(),
+		    			'texto_articulado'=>(($sancion instanceof SancionArticulada)
+		    									?$sancion->getTextoArticulado():[]),
+		    			'vistos'=>(($sancion instanceof SancionRevisionProyecto)
+		    						 ?$sancion->getRevisionProyecto()->getVisto():''),
+		    			'considerandos'=>(($sancion instanceof SancionRevisionProyecto)
+		    								?$sancion->getRevisionProyecto()->getConsiderandos():''),
+		    			'articulos'=>(($sancion instanceof SancionRevisionProyecto)
+		    							?$sancion->getRevisionProyecto()->getArticulos():[]),
+		    			'incluye_vistos_y_considerandos'=>(($sancion instanceof SancionRevisionProyecto)
+		    							?$sancion->getRevisionProyecto()->getIncluyeVistosyConsiderandos():true),
+		    			'revision_id'=>(($sancion instanceof SancionRevisionProyecto)
+		    							?$sancion->getRevisionProyecto()->getId():0),
+		    			'numero_sancion'=>(($sancion->getClaseSancion()!="basico")
+		    								?$sancion->getNumeroSancion():''),
+		    			'destino_notificacion'=>(($sancion->getClaseSancion()!="basico" &&
+		    									  !is_null($sancion->getNotificacion()))
+		    										?$sancion->getNotificacion()->getRemito()
+		    													->getDestino()->getId():0),
+		    			'comision_reserva'=>(($sancion->getClaseSancion()!="basico" &&
+		    								  !is_null($sancion->getNotificacion()))
+						    					?$sancion->getNotificacion()
+						    								->getComision()->getId():0),
+				    	);
+    	
+    	return $this->view($resultado,200);
+    	
     }
     
 }

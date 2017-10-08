@@ -98,12 +98,12 @@ class ExpedienteRepository extends EntityRepository{
 		$rsm->addScalarResult('idExpediente', 'id');
 		$rsm->addScalarResult('numeroExpediente', 'numero');
 		$rsm->addScalarResult('letra', 'letra');
-		$rsm->addScalarResult('fechaCreacion', 'fecha');
+		$rsm->addScalarResult('periodo', 'periodo');
 		$rsm->addScalarResult('folios', 'folios');
 		
 		$fechaActual=new \DateTime('now');
 		
-		$sql='SELECT e.idExpediente, e.numeroExpediente, t.letra, e.fechaCreacion, e.folios '.
+		$sql='SELECT e.idExpediente, e.numeroExpediente, t.letra, e.periodo, e.folios '.
 			 'FROM expediente e '.
 			 'inner join tipoExpediente t '.
 			 'on e.idTipoExpediente=t.idTipoExpediente ';
@@ -131,7 +131,7 @@ class ExpedienteRepository extends EntityRepository{
 			if ($oficina->getId()==9)
 				$query->setParameter('fechaActual',$fechaActual);
 		}
-		return $query->getOneOrNullResult();
+		return $query->getResult();
 		
 	}
 	

@@ -10,11 +10,11 @@ use AppBundle\AppBundle;
 use Doctrine\ORM\Mapping\Column;
 
 /**
- * ResolucionRevisionProyectoConSancion
+ * SancionRevisionProyecto
  * 
  * @ORM\Entity
  */
-class ResolucionRevisionProyectoConSancion extends Resolucion
+class SancionRevisionProyecto extends Sancion
 {
 	// ------------------------------atributos de la clase-----------------------------------------
 	
@@ -35,10 +35,28 @@ class ResolucionRevisionProyectoConSancion extends Resolucion
     private $notificacion;
     
     /**
+     * @var \AppBundle\Entity\Pase
+     * @ORM\OneToOne(targetEntity="AppBundle\Entity\Pase")
+     * @ORM\JoinColumn(name="idPase", referencedColumnName="idMovimiento")
+     */
+    private $pase;
+    
+    /**
      * @var string
      * @Column(name="numeroSancion", type="string", length=6)
      */
     private $numeroSancion='';
+    
+    
+    //------------------------------------constructor---------------------------------------------
+    
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+    	$this->numeroSancion= "";
+    }
     
     //-------------------------------------setters y getters------------------------------------
 
@@ -56,7 +74,7 @@ class ResolucionRevisionProyectoConSancion extends Resolucion
      * 
      * @param \AppBundle\Entity\ProyectoRevision $revisionProyecto
      * 
-     * @return ResolucionRevisionProyectoConSancion
+     * @return SancionRevisionProyecto
      */
     public function setRevisionProyecto($revisionProyecto) {
     	$this->revisionProyecto = $revisionProyecto;
@@ -77,10 +95,31 @@ class ResolucionRevisionProyectoConSancion extends Resolucion
      * 
      * @param \AppBundle\Entity\Notificacion $notificacion
      * 
-     * @return ResolucionRevisionProyectoConSancion
+     * @return SancionRevisionProyecto
      */
     public function setNotificacion($notificacion) {
     	$this->notificacion = $notificacion;
+    	return $this;
+    }
+    
+    /**
+     * Get Pase
+     *
+     * @return \AppBundle\Entity\Pase
+     */
+    public function getPase() {
+    	return $this->pase;
+    }
+    
+    /**
+     * Set Pase
+     *
+     * @param \AppBundle\Entity\Pase $pase
+     *
+     * @return \AppBundle\Entity\SancionArticulada
+     */
+    public function setPase($pase) {
+    	$this->pase = $pase;
     	return $this;
     }
     
@@ -98,7 +137,7 @@ class ResolucionRevisionProyectoConSancion extends Resolucion
      * 
      * @param string $numeroSancion
      * 
-     * @return ResolucionRevisionProyectoConSancion
+     * @return SancionRevisionProyecto
      */
     public function setNumeroSancion($numeroSancion) {
     	$this->numeroSancion = $numeroSancion;

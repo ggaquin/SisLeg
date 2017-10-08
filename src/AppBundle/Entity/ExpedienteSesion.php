@@ -11,8 +11,8 @@ use Doctrine\ORM\Mapping as ORM;
  *                                          	@ORM\Index(name="agendaSesion_sesion_idx", columns={"idSesion"}), 
  *                                          	@ORM\Index(name="expedienteSesion_estadoExpedienteSesion_idx", columns={"idEstadoExpedienteSesion"}),
  *                                          	@ORM\Index(name="expedienteSesion_tipoExpedienteSesion_idx", columns={"idTipoExpedienteSesion"}),
+ *                                          	@ORM\Index(name="expedienteSesion_sancion_idx", columns={"idSancion"}),
  *            					 			   },
- *            							uniqueConstraints={@ORM\UniqueConstraint(name="expedienteSesion_resolucion_idx", columns={"idResolucion"})}
  *            )
  * @ORM\Entity(repositoryClass="AppBundle\Repository\ExpedienteSesionRepository")
  */
@@ -105,12 +105,12 @@ class ExpedienteSesion
     private $sesion;
     
     /**
-     * @var \AppBundle\Entity\Resolucion
+     * @var \AppBundle\Entity\Sancion
      *
-     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Resolucion")
-     * @ORM\JoinColumn(name="idResolucion", referencedColumnName="idResolucion")
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Sancion", cascade={"persist","merge","refresh"})
+     * @ORM\JoinColumn(name="idSancion", referencedColumnName="idSancion")
      */
-    private $resolucion;
+    private $sancion;
 
     //------------------------------------setters y getters---------------------------------------
 
@@ -331,23 +331,23 @@ class ExpedienteSesion
     }
     
     /**
-     * Get resolucion
+     * Get sancion
      * 
-     * @return \AppBundle\Entity\Resolucion
+     * @return \AppBundle\Entity\Sancion
      */
-	public function getResolucion() {
-		return $this->resolucion;
+	public function getSancion() {
+		return $this->sancion;
 	}
 	
 	/**
-	 * Set resolucion
+	 * Set sancion
 	 * 
-	 * @param \AppBundle\Entity\Resolucion $resolucion
+	 * @param \AppBundle\Entity\Sancion $sancion
 	 * 
 	 * @return \AppBundle\Entity\ExpedienteSesion
 	 */
-	public function setResolucion($resolucion) {
-		$this->resolucion = $resolucion;
+	public function setSancion($sancion) {
+		$this->sancion = $sancion;
 		return $this;
 	}
 	    

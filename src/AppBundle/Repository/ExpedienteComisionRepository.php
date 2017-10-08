@@ -4,21 +4,107 @@
 namespace AppBundle\Repository;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Select;
-use AppBundle\Entity\Dictamen;
 
 class ExpedienteComisionRepository extends EntityRepository{
 	
+	/*********************************************************************************************
+	 * búsqueda de expedientes asignados a comisiones                                            *
+	 *********************************************************************************************/
+	
+	public function findAllActivos(){
+		
+		$qb = $this->createQueryBuilder('ec')	
+			->leftJoin('ec.sesion', 's');
+		$qb ->where($qb->expr()->eq('ec.anulado', ':anulado'))
+// 		$qb ->where($qb->expr()->andX(
+// 										$qb->expr()->orX(
+// 															$qb->expr()->isNull('ec.sesion'),
+// 															$qb->expr()->eq('s.tieneOrdenDelDia', ':tieneOrdenDia')
+// 														 ),
+// 										$qb->expr()->eq('ec.anulado', ':anulado')
+										
+// 									 )
+// 				   )
+// 			->setParameter('tieneOrdenDia', false)
+			->setParameter('anulado', false);
+		
+		return $qb->getQuery()->getResult();
+				
+	}
+	
 	public function findByExpediente_Numero($numeroExpediente,$anulados){
-
+				
 		$qb = $this->createQueryBuilder('ec')
-				   ->innerJoin('ec.expediente','e')
-                   ->where('e.numeroExpediente = :numeroExpediente and e.numeroSancion is null and ec.anulado = :anulado')
-                   ->setParameter('numeroExpediente', $numeroExpediente)
-                   ->setParameter('anulado', $anulados);
-
+			->innerJoin('ec.expediente','e')
+			->leftJoin('ec.sesion', 's');
+		$qb ->where($qb->expr()->andX(
+									  $qb->expr()->eq('e.numeroExpediente', ':numeroExpediente'),
+// 									  $qb->expr()->orX(
+// 									  					$qb->expr()->isNull('ec.sesion'),
+// 									  					$qb->expr()->eq('s.tieneOrdenDelDia', ':tieneOrdenDia')
+// 									  				  ),
+									  $qb->expr()->eq('ec.anulado', ':anulado')
+				
+									  )
+				    )
+			->setParameter('numeroExpediente', $numeroExpediente)
+// 			->setParameter('tieneOrdenDia', false)
+			->setParameter('anulado', $anulados);
+		
         return $qb->getQuery()->getResult();
 
 	}
+	
+	public function findByComision_Id($idComision){
+		
+		$qb = $this->createQueryBuilder('ec')
+			->innerJoin('ec.comision','c')
+			->leftJoin('ec.sesion', 's');
+		$qb ->where($qb->expr()->andX(
+										$qb->expr()->eq('c.id', ':idComision'),
+// 										$qb->expr()->orX(
+// 												$qb->expr()->isNull('ec.sesion'),
+// 												$qb->expr()->eq('s.tieneOrdenDelDia', ':tieneOrdenDia')
+// 												),
+										$qb->expr()->eq('ec.anulado', ':anulado')
+				                     )
+				   )
+			->setParameter('idComision', $idComision)
+// 			->setParameter('tieneOrdenDia', false)
+			->setParameter('anulado', false);
+		
+		return $qb->getQuery()->getResult();
+		
+	}
+	
+	public function findExpedienteComisionByExpediente_Estado($idEstadoExpediente){
+		
+		$qb = $this->createQueryBuilder('ec');
+		$qb ->innerJoin('ec.expediente', 'e')
+			->innerJoin('e.estadoExpediente', 'ee')
+			->leftJoin('ec.sesion', 's');	
+		$qb ->where($qb->expr()->andX(
+										$qb->expr()->orX(
+															 $qb->expr()->eq('ee.id', ':idEstado'),
+															 $qb->expr()->eq('ee.id', ':idEsperaRecepcion')
+														),
+// 										$qb->expr()->orX(
+// 															$qb->expr()->isNull('ec.sesion'),
+// 															$qb->expr()->eq('s.tieneOrdenDelDia', ':tieneOrdenDia')
+// 														 ),
+										$qb->expr()->eq('ec.anulado', ':anulado')
+									  )
+					)
+			->setParameter('idEstado', $idEstadoExpediente)
+			->setParameter('idEsperaRecepcion', 9)
+// 			->setParameter('tieneOrdenDia', false)
+			->setParameter('anulado', false);
+		
+		return $qb->getQuery()->getResult();
+		
+	}
+	
+	/*
 	
 	public  function findDictamenByAsignacionAndSesionPendiente($idAsignacion,$numeroDictaminantes){
 		
@@ -47,7 +133,8 @@ class ExpedienteComisionRepository extends EntityRepository{
 		
 		return $qb->getQuery()->getResult();
 	}
-	
+	*/
+		
 	public function findExpedienteVigenteByNumero($numeroExpediente){
 		
 		$qb = $this->createQueryBuilder('ec')
@@ -71,29 +158,6 @@ class ExpedienteComisionRepository extends EntityRepository{
 		
 	}
 
-	public function findExpedienteComisionByExpediente_Estado($idEstadoExpediente){
-
-		$qb = $this->createQueryBuilder('ec');
-		$qb ->innerJoin('e.Expediente', 'e')
-			->innerJoin('e.estadoExpediente', 'ee')
-			->where($qb->expr()->eq('ee.id', '?1'))
-			->setParameter(1, $idEstadoExpediente);
-                   
-        return $qb->getQuery()->getResult();
-
-	}
-
-	public function findByComision_Id($idComision){
-
-		$qb = $this->createQueryBuilder('ec')
-				   ->innerJoin('ec.comision','c')
-                   ->where('c.id = :idComision and ec.anulado=false')
-                   ->setParameter('idComision', $idComision);
-
-        return $qb->getQuery()->getResult();
-
-	}
-	
 	public  function findByDictamen($idDictamen){
 		
 		$qb = $this->createQueryBuilder('ec');
@@ -194,18 +258,12 @@ class ExpedienteComisionRepository extends EntityRepository{
 			->innerJoin('e.estadoExpediente', 'es')
 			->where($qb->expr()->andX(
 										$qb->expr()->eq('e.id', '?1'),
-										$qb->expr()->like('c.id', '?2'),
-										$qb->expr()->orX(
-														$qb->expr()->eq('es.id','?3'),
-														$qb->expr()->eq('es.id','?4')
-														)
-												)										
-										)
+										$qb->expr()->like('c.id', '?2')										
+									  )
+				   )
 			->setParameter(1, $idExpediente)
-			->setParameter(2, $idComision)
-			->setParameter(3, 2)
-			->setParameter(4, 3);
-		return $qb->getQuery()->getSingleResult();
+			->setParameter(2, $idComision);
+		return $qb->getQuery()->getOneOrNullResult();
 	}
 	
 	

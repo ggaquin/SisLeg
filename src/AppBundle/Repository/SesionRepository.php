@@ -103,6 +103,7 @@ class SesionRepository extends EntityRepository{
 	
 	public function createOrdenDelDia($idSesion){
 		
+		$params=[];
 		$params['idSesion']=$idSesion;
 		$stmt= $this->getEntityManager()->getConnection()->prepare('call crearOrdenDelDia(:idSesion)');
 		$stmt->execute($params);
@@ -111,6 +112,7 @@ class SesionRepository extends EntityRepository{
 	
 	public function removeOrdenDelDia($idSesion){
 		
+		$params=[];
 		$params['idSesion']=$idSesion;
 		$stmt= $this->getEntityManager()->getConnection()->prepare('call borrarOrdenDelDia(:idSesion)');
 		$stmt->execute($params);

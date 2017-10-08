@@ -8,28 +8,31 @@ use JMS\Serializer\Annotation\Exclude;
 use Doctrine\ORM\Mapping\JoinTable;
 
 /**
- * Resolucion
+ * Sancion
  * 
- * @ORM\Table(name="resolucion",  indexes={@ORM\Index(name="resolucion_proyectoRevision_idx",columns={"idProyectoRevision"}),
- * 										   @ORM\Index(name="resolucion_notificacion_idx", columns={"idNotificacion"}),
- * 										   @ORM\Index(name="resolucion_tipoResolucion_idx",columns={"idTipoResolucion"}),
- * 										   @ORM\Index(name="resolucion_dictamen_idx",columns={"idDictamen"})
+ * @ORM\Table(name="sancion",  indexes={@ORM\Index(name="sancion_proyectoRevision_idx",columns={"idProyectoRevision"}),
+ * 										   @ORM\Index(name="sancion_notificacion_idx", columns={"idNotificacion"}),
+ * 										   @ORM\Index(name="sancion_tipoSancion_idx",columns={"idTiposancion"}),
+ * 										   @ORM\Index(name="sancion_dictamen_idx",columns={"idDictamen"}),
+ * 										   @ORM\Index(name="sancion_pase_idx",columns={"idPase"}),
+ * 										   @ORM\Index(name="sancion_encabezadoRedaccion_idx",columns={"idEncabezadoRedaccion"}),
+ * 										   @ORM\Index(name="sancion_pieRedaccion_idx",columns={"idPieRedaccion"})
  * 										})
  * @ORM\Entity
  * @ORM\InheritanceType("SINGLE_TABLE")
  * @ORM\DiscriminatorColumn(name="discriminador", type="string", length=17)
- * @ORM\DiscriminatorMap({"basica" = "AppBundle\Entity\Resolucion", 
- *                        "articulado" = "AppBundle\Entity\ResolucionArticuladaConSancion",
- *                        "revision" = "AppBundle\Entity\ResolucionRevisionProyectoConSancion"})
+ * @ORM\DiscriminatorMap({"basica" = "AppBundle\Entity\Sancion", 
+ *                        "articulado" = "AppBundle\Entity\SancionArticulada",
+ *                        "revision" = "AppBundle\Entity\SancionRevisionProyecto"})
  */
-class Resolucion
+class Sancion
 {
     //------------------------------atributos de la clase-----------------------------------------
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="idResolucion", type="integer")
+     * @ORM\Column(name="idSancion", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -43,18 +46,28 @@ class Resolucion
      * })
      */
     private $dictamen;
-    
-    /**
-     * @var boolean
-     * @ORM\Column(name="modificaDictamen", type="boolean", nullable=false)
-     */
-    private $modificaDictamen=false;
-    
+        
     /**
      * @var string
      * @ORM\Column(name="textoLibre",type="text",nullable=true)
      */
     private $textoLibre;
+    
+    /**
+     * @var \AppBundle\Entity\PlantillaTexto
+     * 
+     * @ORM\ManyToOne(targetEntity="\AppBundle\Entity\PlantillaTexto")
+     * @ORM\JoinColumn(name="idEncabezadoRedaccion", referencedColumnName="idPlantillaTexto")
+     */
+    private $encabezadoRedaccion;
+    
+    /**
+     * @var \AppBundle\Entity\PlantillaTexto
+     * 
+     * @ORM\ManyToOne(targetEntity="\AppBundle\Entity\PlantillaTexto")
+     * @ORM\JoinColumn(name="idPieRedaccion", referencedColumnName="idPlantillaTexto")
+     */
+    private $pieRedaccion;
 	
     /**
      * @var string
@@ -95,30 +108,10 @@ class Resolucion
 	 * Set Dictamen
 	 * 
 	 * @param \AppBundle\Entity\Dictamen $dictamen
-	 * @return Resolucion
+	 * @return Sancion
 	 */
 	public function setDictamen($dictamen) {
 		$this->dictamen = $dictamen;
-		return $this;
-	}
-	
-	/**
-	 * Get modificaDictamen
-	 * 
-	 * @return boolean
-	 */
-	public function getModificaDictamen() {
-		return $this->modificaDictamen;
-	}
-	
-	/**
-	 * Set modificaDictamen
-	 * 
-	 * @param boolean $modificaDictamen
-	 * @return Resolucion
-	 */
-	public function setModificaDictamen($modificaDictamen) {
-		$this->modificaDictamen = $modificaDictamen;
 		return $this;
 	}
 	
@@ -136,19 +129,59 @@ class Resolucion
 	 *
 	 * @param string $textoLibre
 	 *
-	 * @return Resolucion
+	 * @return Sancion
 	 */
 	public function setTextoLibre($textoLibre) {
 		$this->textoLibre = $textoLibre;
 		return $this;
 	}
-	       
+	
+	/**
+	 * Get encabezadoRedaccion
+	 * 
+	 * @return PlantillaTexto
+	 */
+	public function getEncabezadoRedaccion() {
+		return $this->encabezadoRedaccion;
+	}
+	
+	/**
+	 * Set encabezadoRedaccion
+	 * 
+	 * @param \AppBundle\Entity\PlantillaTexto $encabezadoRedaccion
+	 * @return Sancion
+	 */
+	public function setEncabezadoRedaccion($encabezadoRedaccion) {
+		$this->encabezadoRedaccion = $encabezadoRedaccion;
+		return $this;
+	}
+	
+	/**
+	 * Get pieRedaccion
+	 * 
+	 * @return PlantillaTexto
+	 */
+	public function getPieRedaccion() {
+		return $this->pieRedaccion;
+	}
+	
+	/**
+	 * Set pieRedaccion
+	 * 
+	 * @param \AppBundle\Entity\PlantillaTexto $pieRedaccion
+	 * @return \AppBundle\Entity\Sancion
+	 */
+	public function setPieRedaccion($pieRedaccion) {
+		$this->pieRedaccion = $pieRedaccion;
+		return $this;
+	}
+		       
     /**
      * Set usuarioCreacion
      *
      * @param string $usuarioCreacion
      *
-     * @return Resolucion
+     * @return Sancion
      */
     public function setUsuarioCreacion($usuarioCreacion)
     {
@@ -172,7 +205,7 @@ class Resolucion
      *
      * @param \DateTime $fechaCreacion
      *
-     * @return Resolucion
+     * @return Sancion
      */
     public function setFechaCreacion($fechaCreacion)
     {
@@ -194,13 +227,13 @@ class Resolucion
     //------------------------------Propiedades virtuales-----------------------------------------
     
     /**
-     * get claseResolucion
+     * get claseSancion
      * 
      * @return string
      * @VirtualProperty()
      */
-    public function getClaseResolucion(){
-    	return "basica";
+    public function getClaseSancion(){
+    	return "basico";
     }
       
 }

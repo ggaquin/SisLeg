@@ -4,7 +4,6 @@
 namespace AppBundle\Repository;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\ResultSetMapping;
-use AppBundle\Entity\ResolucionBasicaSinSancion;
 
 class ExpedienteSesionRepository extends EntityRepository{
 
@@ -37,8 +36,8 @@ class ExpedienteSesionRepository extends EntityRepository{
 		$rsm->addScalarResult('numero_expediente', 'numero_expediente');
 		$rsm->addScalarResult('tipoExpediente', 'tipo_expediente');
 		$rsm->addScalarResult('letrasOD', 'letras_o_d');
-		$rsm->addScalarResult('tiene_resolucion', 'tiene_resolucion');
-		$rsm->addScalarResult('idResolucion', 'id_resolucion');
+		$rsm->addScalarResult('tiene_sancion', 'tiene_sancion');
+		$rsm->addScalarResult('idSancion', 'id_sancion');
 		$rsm->addScalarResult('idDictamen', 'id_dictamen');
 		$rsm->addScalarResult('numero_sancion', 'numero_sancion');
 		$rsm->addScalarResult('tiene_notificacion', 'tiene_notificacion');
@@ -67,8 +66,8 @@ class ExpedienteSesionRepository extends EntityRepository{
 		$rsm->addScalarResult('numero_expediente', 'numero_expediente');
 		$rsm->addScalarResult('tipoExpediente', 'tipo_expediente');
 		$rsm->addScalarResult('letrasOD', 'letras_o_d');
-		$rsm->addScalarResult('tiene_resolucion', 'tiene_resolucion');
-		$rsm->addScalarResult('idResolucion', 'id_resolucion');
+		$rsm->addScalarResult('tiene_sancion', 'tiene_sancion');
+		$rsm->addScalarResult('idSancion', 'id_sancion');
 		$rsm->addScalarResult('idDictamen', 'id_dictamen');
 		$rsm->addScalarResult('numero_sancion', 'numero_sancion');
 		$rsm->addScalarResult('tiene_notificacion', 'tiene_notificacion');
@@ -96,8 +95,8 @@ class ExpedienteSesionRepository extends EntityRepository{
 		$rsm->addScalarResult('numero_expediente', 'numero_expediente');
 		$rsm->addScalarResult('tipoExpediente', 'tipo_expediente');
 		$rsm->addScalarResult('letrasOD', 'letras_o_d');
-		$rsm->addScalarResult('tiene_resolucion', 'tiene_resolucion');
-		$rsm->addScalarResult('idResolucion', 'id_resolucion');
+		$rsm->addScalarResult('tiene_sancion', 'tiene_sancion');
+		$rsm->addScalarResult('idSancion', 'id_sancion');
 		$rsm->addScalarResult('idDictamen', 'id_dictamen');
 		$rsm->addScalarResult('numero_sancion', 'numero_sancion');
 		$rsm->addScalarResult('tiene_notificacion', 'tiene_notificacion');
@@ -125,8 +124,8 @@ class ExpedienteSesionRepository extends EntityRepository{
 		$rsm->addScalarResult('numero_expediente', 'numero_expediente');
 		$rsm->addScalarResult('tipoExpediente', 'tipo_expediente');
 		$rsm->addScalarResult('letrasOD', 'letras_o_d');
-		$rsm->addScalarResult('tiene_resolucion', 'tiene_resolucion');
-		$rsm->addScalarResult('idResolucion', 'id_resolucion');
+		$rsm->addScalarResult('tiene_sancion', 'tiene_sancion');
+		$rsm->addScalarResult('idSancion', 'id_sancion');
 		$rsm->addScalarResult('idDictamen', 'id_dictamen');
 		$rsm->addScalarResult('numero_sancion', 'numero_sancion');
 		$rsm->addScalarResult('tiene_notificacion', 'tiene_notificacion');

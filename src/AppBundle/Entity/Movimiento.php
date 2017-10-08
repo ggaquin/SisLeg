@@ -15,7 +15,7 @@ use JMS\Serializer\Annotation\VirtualProperty;
  *
  * @ORM\Entity
  * @ORM\InheritanceType("SINGLE_TABLE")
- * @ORM\DiscriminatorColumn(name="discriminador", type="string", length=7)
+ * @ORM\DiscriminatorColumn(name="discriminador", type="string", length=12)
  * @ORM\DiscriminatorMap({"pase" = "AppBundle\Entity\Pase",
  *                        "informe" = "AppBundle\Entity\SolicitudInforme",
  *                        "notificacion" ="AppBundle\Entity\Notificacion"})
@@ -42,7 +42,8 @@ abstract class Movimiento {
 	/**
 	 * @var \AppBundle\Entity\Expediente
 	 *
-	 * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Expediente", inversedBy="movimientos", cascade={"persist"})
+	 * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Expediente", inversedBy="movimientos", 
+	 * 				  cascade={"persist","merge","refresh"})
 	 * @ORM\JoinColumns({@ORM\JoinColumn(name="idExpediente", referencedColumnName="idExpediente")})
 	 */
 	private $expediente;
