@@ -24,6 +24,7 @@ use AppBundle\Entity\Sesion;
 use AppBundle\Entity\TipoComision;
 use AssistBundle\Entity\AdministracionSesion;
 use FOS\RestBundle\Controller\Annotations\Get;
+use AppBundle\Entity\PlantillaTexto;
 
 
 class RestController extends FOSRestController{
@@ -533,6 +534,72 @@ class RestController extends FOSRestController{
     	$comisiones=$comisionRepository->findComisionByPatronBusqueda($term);
     	
     	return $this->view($comisiones,200);
+    }
+    
+    /**
+     * @Rest\Get("/api/plantilla/getOne/{id}")
+     */
+    public function traerPlanillaPorId(Request $request){
+    
+    	$id=$request->get('id');
+    	
+    	$plantillaRepository=$this->getDoctrine()->getRepository('AppBundle:PlantillaTexto');
+    	$plantilla=$plantillaRepository->find($id);
+    	
+    	return $this->view($plantilla,200);
+    }
+    
+    /**
+     * @Rest\Get("/api/plantilla/getByType/{tipo}")
+     */
+    public function traerPlanillaPorTipo(Request $request){
+    	
+    	$tipo=$request->get('tipo');
+    	
+    	$tipoPlantillaRepository=$this->getDoctrine()->getRepository('AppBundle:TipoPlantillaTexto');
+    	$plantillaRepository=$this->getDoctrine()->getRepository('AppBundle:PlantillaTexto');
+    	
+    	$tipoPlantilla=null;
+    	
+    	if ($tipo=="encabezado")
+    		$tipoPlantilla=$tipoPlantillaRepository->find(1);
+    	else
+    		$tipoPlantilla=$tipoPlantillaRepository->find(2);
+    	
+    	$plantillas=$plantillaRepository->findBy(array('tipoPlantillaTexto'=>$tipoPlantilla));
+    	
+    	return $this->view($plantillas,200);
+    }
+    
+    /**
+     * @Rest\Post("/api/plantilla/save")
+     */
+    public function guardarPlantilla(Request $request){
+    	
+    	$formatoPlantilla=$request->request->get("formatoPlantilla");
+    	$textoPlantilla=$request->request->get("plantilla");
+    	
+    	$tipoPlantillaRepository=$this->getDoctrine()->getRepository('AppBundle:TipoPlantillaTexto');
+    	$tipoPlantilla=null;
+    	
+    	if ($formatoPlantilla=="encabezado")
+    		$tipoPlantilla=$tipoPlantillaRepository->find(1);
+    	else 
+    		$tipoPlantilla=$tipoPlantillaRepository->find(2);
+    	
+    	$plantillaTexto=new PlantillaTexto();
+    	$plantillaTexto->setPlantillaTexto($textoPlantilla);
+    	$plantillaTexto->setTipoPlantillaTexto($tipoPlantilla);
+    	
+    	$em = $this->getDoctrine()->getManager();
+    	$em->persist($plantillaTexto);
+    	$em->flush();
+    	
+    	$respuesta=array('mensaje'=>'La plantilla de '.$formatoPlantilla.' se guardó en forma exitosa',
+    					 'id'=>$plantillaTexto->getId()
+    					);
+    	
+    	return $this->view($respuesta,200);
     }
     
     /**

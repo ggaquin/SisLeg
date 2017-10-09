@@ -27,6 +27,7 @@ use AppBundle\Entity\Notificacion;
 use AppBundle\Entity\Remito;
 use AppBundle\Entity\Comision;
 use AppBundle\Entity\Pase;
+use AppBundle\Entity\PlantillaTexto;
 
 /**
  * @Route("/api/sesion")
@@ -273,6 +274,8 @@ class RestSesionController extends FOSRestController{
     	$idProyecto=$request->request->get('idProyecto');
     	$tipoRedaccion=$request->request->get('tipoRedaccion');
     	$idTipoSancion=$request->request->get('tipoSancion');
+    	$numeroEncabezado=$request->request->get('numeroEncabezado');
+    	$numeroPie=$request->request->get('numeroPie');
     	$numeroSancion=$request->request->get('numeroSancion');
     	$aplicaNotificacion=$request->request->get('aplicaNotificacion');
     	$destinoNotificacion=$request->request->get('destinoNotificacion');
@@ -302,6 +305,7 @@ class RestSesionController extends FOSRestController{
     	$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
     	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
     	$expedienteSesionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteSesion');
+    	$plantillaTextoRepository=$this->getDoctrine()->getRepository('AppBundle:PlantillaTexto');
     	$em = $this->getDoctrine()->getManager();
 
     	/*--------------------------obtener datos del proceso -----------------------------------*/
@@ -329,6 +333,10 @@ class RestSesionController extends FOSRestController{
     	$sancion->setTextoLibre($texto_libre);
     	$dictamen=(($idDictamen==0)?null:$dictamenRepository->find($idDictamen));
 	    $sancion->setDictamen($dictamen);
+	    $encabezadoRedaccion=$plantillaTextoRepository->find($numeroEncabezado);
+	    $sancion->setEncabezadoRedaccion($encabezadoRedaccion);
+	    $pieRedaccion=$plantillaTextoRepository->find($numeroPie);
+	    $sancion->setPieRedaccion($pieRedaccion);
     				
     	//para el tipo articulado
     	if ($tipoRedaccion=="articulado"){
@@ -524,6 +532,8 @@ class RestSesionController extends FOSRestController{
 		    								  !is_null($sancion->getNotificacion()))
 						    					?$sancion->getNotificacion()
 						    								->getComision()->getId():0),
+    					'id_encabezado'=>$sancion->getEncabezadoRedaccion()->getId(),
+    					'id_pie'=>$sancion->getPieRedaccion()->getId(),
 				    	);
     	
     	return $this->view($resultado,200);

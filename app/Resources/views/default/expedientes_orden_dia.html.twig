@@ -40,6 +40,12 @@
 			height: 80px!important;
 		}
 		
+		.text-area-plantilla{
+			height: 200px!important;
+			max-height: 201px;
+			overflow-y: auto; 
+		}
+		
 		.numero-fila{
 			font-size: 150%;
 			font-weight: bold;
@@ -53,6 +59,11 @@
 			max-height: 449px;
 			overflow-y:auto;
 			overflow-x: hidden; 
+		}
+		
+		.div-detalle-plantilla{
+			max-height: 449px;
+			overflow-y:auto;
 		}
 		
 		.div-incisos{
@@ -286,16 +297,21 @@
 		}
 
 		function limpiarFormularioSancion(articulosSancion,articulosRevision){
+			
 			$("#selTipoRedaccion").val("basico");
 	        $("#selTipoRedaccion").change();
 	        $("#numeroSancion").val("");
-	        $("#selDestinoNotificacion").val(0);
-	        $("#selComisionReserva").val(0);
+	        inicializarSeleccionPlantillas( $("#selEncabezado"),'encabezado',0);
+	        inicializarSeleccionPlantillas( $("#selPie"),'pie',0);
 	        $("#texto").data("wysihtml5").editor.setValue('');
 	        $("#articulos > tbody").html('');
 	        $("#vistos").html('');
 	        $("#considerandos").html('');
 	        $("#articulos-revision > tbody").html('');
+	        $("#textoEncabezado").data("wysihtml5").editor.setValue('');
+	        $("#textoPie").data("wysihtml5").editor.setValue('');
+			$("#textoEncabezado").data("wysihtml5").editor.composer.element.setAttribute('contenteditable', false);
+			$("#textoPie").data("wysihtml5").editor.composer.element.setAttribute('contenteditable', false);
 	        articulosSancion.length=0;
 	    	articulosRevision.length=0;
 		}
@@ -307,6 +323,7 @@
 				$("#btn-modo-redaccion").attr("disabled",true);
 				$("#btn-modo-dictamen").attr("disabled",true);
 				$("#titulo-modal-sancion").html("Alta Sanción");
+				$("#btn-group-modo-creacion").addClass("hidden");
 			}
 
 			if (idSancion==0 && idDictamen==0){//Alta por redaccion
@@ -314,6 +331,7 @@
 				$("#btn-modo-redaccion").attr("disabled",true);
 				$("#btn-modo-dictamen").attr("disabled",true);
 				$("#titulo-modal-sancion").html("Alta Sanción");
+				$("#btn-group-modo-creacion").addClass("hidden");
 			}
 
 			if (idSancion!=0 && idDictamen!=0){//Edicion de sancion basada en dictamen
@@ -321,6 +339,7 @@
 				$("#btn-modo-redaccion").attr("disabled",false);
 				$("#btn-modo-dictamen").attr("disabled",false);
 				$("#titulo-modal-sancion").html("Edición Sanción");
+				$("#btn-group-modo-creacion").removeClass("hidden");
 			}
 
 			if(idSancion!=0 && idDictamen==0){//Edicion de sancion basada en redaccion
@@ -328,6 +347,7 @@
 				$("#btn-modo-redaccion").attr("disabled",true);
 				$("#btn-modo-dictamen").attr("disabled",false);
 				$("#titulo-modal-sancion").html("Edición Sanción");
+				$("#btn-group-modo-creacion").removeClass("hidden");
 			}
 
 		}
@@ -361,6 +381,8 @@
 					//controles comunes a todos las sanciones
 					$("#selTipoRedaccion").val(data[traduccionCampo[0]]);
 					$("#selTipoRedaccion").change();
+    				$("#selEncabezado").val((idSancion!=0)?data.id_encabezado:0);
+    				$("#selPie").val((idSancion!=0)?data.id_pie:0);
 					$("#texto").data("wysihtml5").editor.setValue(data.texto_libre);	
 
 					//caso particular sancion articulado
@@ -413,6 +435,8 @@
 				}
 	      	});
 
+			$("#selEncabezado").change();
+			$("#selPie").change();
 			return articulos;
 		}
 		
@@ -459,8 +483,76 @@
 				},10);
 			}
 		}
+
+		function inicializarSeleccionPlantillas(control,tipo,valorSeleccionado){
+
+			$.ajax({
+				async:false,
+				type:'Get',
+				dataType: 'json	',
+				url:'{{ app.request.getBaseURL() }}'+ '/api/plantilla/getByType/'+tipo,
+				success: function(data){
+
+					var html="<option value='0'>--</option>";
+					
+					$.each(data,function(index,dato){
+						html+="<option value='"+dato.id+"'>"+dato.id+"</option>";
+					});
+
+					$(control).html(html);
+					$(control).val(valorSeleccionado);
+					$(control).change();
+				},
+				error: function(jqXHR,textStatus,errorThrown ){
+					toastr.error(jqXHR.responseText);
+				}
+	      	});
+		}
+
+		function actualizarPlantilla(idSeleccion,plantilla){
+
+			$.ajax({
+				async:false,
+				type:'Get',
+				dataType: 'json	',
+				url:'{{ app.request.getBaseURL() }}'+ '/api/plantilla/getOne/'+idSeleccion,
+				success: function(data){
+					$(plantilla).data("wysihtml5").editor.setValue(data.plantilla_texto);
+				},
+				error: function(jqXHR,textStatus,errorThrown ){
+					toastr.error(jqXHR.responseText);
+				}
+	      	});
+	      	
+		}
+
+		function cargarDetalle(tipo){
+
+			$.ajax({
+				async:false,
+				type:'Get',
+				dataType: 'json	',
+				url:'{{ app.request.getBaseURL() }}'+ '/api/plantilla/getByType/'+tipo,
+				success: function(data){
+					var html="<table width='100%' class='table table-striped'><tbody>";
+					/* html+="<thead><tr><th width='10%'>COD.</th><th width='90%'>TEXTO</th></tr></thead><tbody>"; */
+					$.each(data,function(index,dato){
+						html+="<tr><td width='10%'><h3>"+dato.id+"</h3></td><td width='90%'>"+dato.plantilla_texto+"</td></tr>";
+					});
+					
+					html+="</tbody></table>";
+					$("#detalle-plantilla").html(html);
+
+					$("#titulo-modal-detalle-plantillas").html("DETALLE PLANTILLAS DE "+tipo.toUpperCase());
+				},
+				error: function(jqXHR,textStatus,errorThrown ){
+					toastr.error(jqXHR.responseText);
+				}
+	      	});
 			
-		
+			$("#modalDetallePlantillas").modal('show');
+		}
+			
 		$(document).ready(function () {
 
 			var articulosSancion=[];
@@ -585,7 +677,7 @@
 		        abrirModalSancion(data['id_proyecto'],data['id_expediente'],data['id_dictamen'],data['id_sancion']);
 		    });
 		   
-			//EVENTO MOSTRAR DEL MODAL DE RESOLUCION
+			//EVENTO MOSTRAR DEL MODAL DE SANCION
 			$("#modalSancion").on('show.bs.modal', function () {
 			
 				var idSancion=$("#modalSancion").find('input[name="idSancion"]').val();
@@ -596,17 +688,20 @@
 				debugger;
 				if (obtenerDatos){
 					var articulos=cargarDatosSancion(idSancion,idDictamen,false);
+					
 					if ($("#selTipoRedaccion").val()=="articulado")
 						articulosSancion=articulos;
 					else
-						articulosRevision=articulos;
+						if ($("#selTipoRedaccion").val()=="revision")
+							articulosRevision=articulos;
+					
 				}	
 
 				habilitarControlesModalSancion(idSancion,idDictamen);
 					 
 		    });
 
-		    //GUARDAR DE DICTAMEN
+		    //GUARDAR DE SANCION
 		    $("#btn-guardar-sancion").click(function(){
 
 		    	$(this).prop("disabled",true);
@@ -618,6 +713,8 @@
 				
 				var tipoRedaccion= $("#selTipoRedaccion").val();
 				var tipoSancion=$("#selTipoSancion").val();
+				var numeroEncabezado=$("#selEncabezado").val();
+				var numeroPie=$("#selPie").val();
 				var poseeSancion=$("#poseeSancion").is(":checked");
 				var numeroSancion=$("#numeroSancion").val();
 				var aplicaNotificacion=$("#aplicaNotificacion").is(":checked");
@@ -681,6 +778,8 @@
 					formData.append('idProyecto',idProyecto);
 					formData.append('tipoRedaccion',tipoRedaccion);
 					formData.append('tipoSancion',tipoSancion);
+					formData.append('numeroEncabezado',numeroEncabezado);
+					formData.append('numeroPie',numeroPie);
 					formData.append('numeroSancion',numeroSancion);
 					formData.append('aplicaNotificacion',aplicaNotificacion);
 					formData.append('destinoNotificacion',destinoNotificacion);
@@ -1105,7 +1204,8 @@
 					if($("#selTipoRedaccion").val()=="articulado")
 						articulosSancion=articulos;
 					else
-						articulosRevision=articulos;
+						if($("#selTipoRedaccion").val()=="revision")
+							articulosRevision=articulos;
 		        }
 		        habilitarControlesModalSancion(idSancion,idDictamen);
 
@@ -1146,6 +1246,77 @@
 				
 		    });
 
+		  	//------------------------------------------------------------------------------------------------------------
+			//----------------------------------------ALTA DE PLANTILLAS--------------------------------------------------
+			//------------------------------------------------------------------------------------------------------------	
+		    
+		    $("#btn-alta-encabezado").click(function(){
+				$("#modalPlantilla").find('input[name="tipoPlantilla"]').val('encabezado');
+				$("#texto-plantilla").data("wysihtml5").editor.setValue('');
+			});
+
+			$("#btn-alta-pie").click(function(){
+				$("#modalPlantilla").find('input[name="tipoPlantilla"]').val('pie');
+				$("#texto-plantilla").data("wysihtml5").editor.setValue('');
+			});
+
+			$("#btn-alta-plantilla").click(function(){
+
+				$("#btn-alta-plantilla").prop("disabled",true);
+				debugger;
+				var formatoPlantilla = $("#modalPlantilla").find('input[name="tipoPlantilla"]').val();
+				var plantilla = $("#modalPlantilla").find('textarea[name="texto-plantilla"]').val();
+				var validacion="";
+
+				if (plantilla.replace(/ /g,'').length==0)
+					validacion='<li>La nueva plantilla no posee texto</li>';
+					
+				if (validacion.length>0) 
+				{
+					Validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+								validacion+'</ul>':'');
+					toastr.error(validacion);
+					return false;
+				}
+				else{
+
+					var formData=new FormData();
+    				formData.append('formatoPlantilla',formatoPlantilla);
+    				formData.append('plantilla',plantilla);
+    
+                	$.ajax({
+    	                async: true,
+    	                url: '{{ app.request.getBaseURL() }}'+ '/api/plantilla/save',
+    	                data: formData,
+    	                type: 'post',
+    	                cache: false,
+    	                contentType: false,
+    	                processData: false,
+                        success: function(data) {
+
+                        		var control=null;
+                        		debugger;
+                                if (formatoPlantilla=="encabezado")
+                                	control=$("#modalSancion").find('select[name="selEncabezado"]');
+                                else
+                                	control=$("#modalSancion").find('select[name="selPie"]');
+                                
+                                inicializarSeleccionPlantillas(control,formatoPlantilla,data.id);
+                                  
+            					$('#modalPlantilla').modal('hide');
+    
+            					toastr.success(data.mensaje);
+                        	},
+                        complete: function(){
+                        	$("#btn-alta-plantilla").prop("disabled",false);
+                        	},
+                        error: function(jqXHR,textStatus,errorThrown ){
+        					toastr.error(jqXHR.responseText);
+        					}
+                    	});
+            	}  
+			});
+
 		    //------------------------------------------------------------------------------------------------------------
 			//---------------------------------INICIALIZACIÓN DE CONTROLES------------------------------------------------
 			//------------------------------------------------------------------------------------------------------------
@@ -1157,7 +1328,21 @@
 					"size": "xs",
 				},
 			});
-			
+
+			$(".text-area-plantilla").wysihtml5({
+				 toolbar: {
+				    "font-styles": false, // Font styling, e.g. h1, h2, etc.
+				    "emphasis": false, // Italics, bold, etc.
+				    "lists": false, // (Un)ordered lists, e.g. Bullets, Numbers.
+				    "html": false, // Button which allows you to edit the generated HTML.
+				    "link": false, // Button to insert a link.
+				    "image": false, // Button to insert an image.
+				    "color": false, // Button to change color of font
+				    "blockquote": false, // Blockquote
+				    "size": "xs" // options are xs, sm, lg
+				 },
+			});
+						
 			$('#estadoFiltro').bootstrapToggle({
 		      on:  'Activo',
 		      off: 'Inactivo',
@@ -1306,6 +1491,7 @@
 
 				if ($(this).val()=="basico"){
 					$("#group-tipoDictamen").addClass("hidden");
+					$("#link-tab-1").removeClass("hidden");
 					$("#link-tab-2").addClass("hidden");
 					$("#link-tab-3").addClass("hidden");
 					$("#sancion-panel").addClass("hidden");
@@ -1313,19 +1499,41 @@
 				}
 				if ($(this).val()=="articulado") {
 					$("#group-tipoDictamen").removeClass("hidden");
+					$("#link-tab-1").addClass("hidden");
 					$("#link-tab-3").addClass("hidden");
 					$("#link-tab-2").removeClass("hidden");
 					$("#selTipoDictamen").val(0);
 				}
 				if ($(this).val()=="revision") {
 					$("#group-tipoDictamen").addClass("hidden");
+					$("#link-tab-1").addClass("hidden");
 					$("#link-tab-2").addClass("hidden");
 					$("#link-tab-3").removeClass("hidden");
 				}
 				
-				habilitar("tab-1");	
+				habilitar("tab-0");	
 			});
 
+			$("#selEncabezado").change(function(){
+
+				var id = $("#selEncabezado").val();
+				var plantilla=$("#textoEncabezado");
+
+				if(id!=0) actualizarPlantilla(id,plantilla);
+				else $(plantilla).data("wysihtml5").editor.setValue('');
+				
+			});
+
+			$("#selPie").change(function(){
+				
+				var id = $("#selPie").val();
+				var plantilla=$("#textoPie");
+
+				if(id!=0) actualizarPlantilla(id,plantilla);
+				else $(plantilla).data("wysihtml5").editor.setValue('');
+				
+			});
+			
 	});
 	</script>
 	<section class="content-header">
@@ -1498,6 +1706,7 @@
 					    			<div class="col-md-6">
 					    				<nav>
         								    <ul class="nav nav-pills">
+        								    	<li role="presentation"><a href="#" id="link-tab-0" class="selectable" onclick = "habilitar('tab-0')" ><h4>Plantilla</h4></h4></a></li>
         									    <li role="presentation"><a href="#" id="link-tab-1" class="selectable" onclick = "habilitar('tab-1')" ><h4>Texto</h4></h4></a></li>
         										<li role="presentation"><a href="#" id="link-tab-2" class="selectable hidden" onclick = "habilitar('tab-2')"><h4>Artículos</h4></a></li>
         										<li role="presentation"><a href="#" id="link-tab-3" class="selectable hidden" onclick = "habilitar('tab-3')"><h4>Revision Proyecto</h4></a></li>
@@ -1505,13 +1714,87 @@
         								</nav>
 					    			</div>	
 					    			<div class="col-md-6">
-					    				<div class="btn-group pull-right">
+					    				<div class="btn-group pull-right" id="btn-group-modo-creacion">
     					    				<button type="button" class="btn btn-primary" id="btn-modo-redaccion">Cambiar A Redacción</button>
     					    				<button type="button" class="btn btn-primary" id="btn-modo-dictamen">Copiar Desde Dictamen</button>
 					    				</div>
 					    			</div>		
 					    		</div>
 					    		<br>
+					    		<div class="row tab" id="tab-0">
+							    	<div class="col-md-12">
+									    <div class="row">
+									    	<div class="col-md-3">
+    									    	<div class="input-group">
+    									    		<span class="input-group-addon">
+    									    			<a href="javascript:void(0);" onclick="cargarDetalle('encabezado');" style="cursor:help">Encabezado</a>
+    									    		</span>
+                                                	<select class="form-control" id="selEncabezado" name=selEncabezado>
+    									    			<option value="0">--</option>
+    									    		</select>
+                                                  	<span class="input-group-btn">
+                                                    	<button type="button" class="btn btn-primary" id="btn-alta-encabezado" 
+                									    		data-toggle='modal' data-target='#modalPlantilla'>
+                									    			Agregar
+        									    		</button>
+                                                  	</span>
+                                                </div>
+                                            </div>
+									    	<!-- <div class="col-md-4">
+									    		<select class="form-control" id="selEncabezado" name=selEncabezado>
+									    			<option value="0">Seleccione plantilla encabezado</option>
+									    		</select>
+									    	</div>
+									    	<div class="col-md-2">
+									    		<button type="button" class="btn btn-primary" id="btn-alta-encabezado" 
+									    		 data-toggle='modal' data-target='#modalPlantilla'>
+									    			Agregar
+									    		</button>
+									    	</div> -->
+									    </div>
+									    <div class="row" style="padding-top: 5px;">
+									    	<div class="col-md-12">
+								        		<textarea class="form-control text-area-plantilla"
+								        		id="textoEncabezado" name="textoEncabezado"></textarea>
+									        </div>
+								        </div>
+								        <hr>
+								        <div class="row">
+								        	<div class="col-md-3">
+    									    	<div class="input-group">
+    									    		<span class="input-group-addon">
+    									    			<a href="javascript:void(0);" style="cursor:help" onclick="cargarDetalle('pie');">Pie</a></span>
+                                                	<select class="form-control" id="selPie" name="selPie">
+    									    			<option value="0">--</option>
+    									    		</select>
+                                                  	<span class="input-group-btn">
+                                                    	<button type="button" class="btn btn-primary" id="btn-alta-pie"
+                									    		data-toggle='modal' data-target='#modalPlantilla'>
+                									    			Agregar
+        									    		</button>
+                                                  	</span>
+                                                </div>
+                                            </div>
+									    	<!-- <div class="col-md-4">
+									    		<select class="form-control" id="selPie" name="selPie">
+									    			<option value="0">--</option>
+									    		</select>
+									    	</div>
+									    	<div class="col-md-2">
+									    		<button type="button" class="btn btn-primary" id="btn-alta-pie"
+									    		 data-toggle='modal' data-target='#modalPlantilla'>
+									    			Agregar
+									    		</button>
+									    	</div> -->
+									    </div>
+									    <div class="row" style="padding-top: 5px;">
+									    	<div class="col-md-12">
+								        		<textarea class="form-control text-area-plantilla"
+								        		id="textoPie" name="textoPie"></textarea>
+									        </div>
+								        </div> 
+							        </div> 
+					        	</div>
 							    <div class="row tab" id="tab-1">
 							    	<div class="col-md-12">
 									    <div class="row">
@@ -1755,6 +2038,40 @@
 				</div>
 			</div>
 		</div>
+		<div id="modalPlantilla" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
+			<div class="modal-dialog">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Alta Plantilla</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				    	<form role="form">
+				    		<input type="hidden" id="tipoPlantilla" name="tipoPlantilla">
+				    		<div class="row">
+				    			<div class="form-group col-md-12">
+    				    			<textarea class="form-control text-area text-area-larga" 
+								       		  id="texto-plantilla" name="texto-plantilla">
+								    </textarea>
+    							</div>
+                			</div>
+                			<hr>
+    				    	<div class="row">
+    				    		<div class="col-md-12">
+					        		<div class="text-center">
+						    			<div class="btn-group">
+								        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+				       			 			<button type="button" class="btn btn-primary" id="btn-alta-plantilla">Aceptar</button>
+								        </div>
+							        </div>
+							    </div>
+    				    	</div>
+				    	</form>
+				    </div>
+				</div>
+			</div>
+		</div>
 		<div id="modalDictamenes" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
 			<div class="modal-dialog modal-lg">
 			    <div class="modal-content">
@@ -1803,6 +2120,43 @@
 			    		</div>
 				    </div>
 			    </div>
+			</div>
+		</div>
+		<div id="modalDetallePlantillas" class="modal fade custom-modal" role="dialog">
+		 	<div class="modal-dialog modal-xl" style="padding-top: 125px">
+			    <!-- Modal content-->
+			    <div class="modal-content" style="border-top-left-radius: 2em;border-top-right-radius: 2em;
+			    								  border-bottom-left-radius: 2em;border-bottom-right-radius: 2em">
+				    <div class="modal-header" style="background-color:#FFF;color:#000;
+				    								 border-top-left-radius: 2em;border-top-right-radius: 2em;">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title text-center" id="titulo-modal-detalle-plantillas"></h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#FFF;">
+				    	 <div class="row">
+				        	<div class="col-md-12">
+				        		<table width='100%' class='table' style="">
+				        			<thead><tr><th width='10%'><h3>COD.</h3></th><th width='90%'><h3>TEXTO</h3></th></tr></thead>
+				        		</table>
+        				    	<div class="div-detalle-plantilla" id="detalle-plantilla">
+        				    		
+        				    	</div>
+        				    </div>
+        				 </div>
+				    </div>
+				    <div class="modal-footer" style="background-color:#FFF;
+				    							     border-bottom-left-radius: 2em;border-bottom-right-radius: 2em">  	
+				        <div class="row">
+				        	<div class="col-md-12">
+				        		<div class="text-center">
+					    			<div class="btn-group">
+							        	<button type="button" class="btn btn-primary" data-dismiss="modal">Cerrar</button>
+							        </div>
+						        </div>
+						    </div>
+			    		</div>
+				    </div>
+				</div>
 			</div>
 		</div>
 	</section>
