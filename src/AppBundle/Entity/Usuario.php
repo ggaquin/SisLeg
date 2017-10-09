@@ -17,7 +17,7 @@ use Symfony\Component\Security\Core\User\EquatableInterface;
  *                                @ORM\UniqueConstraint(name="UNIQ_usuario_perfil_idx", columns={"idPerfil"})
  *                      }
  *             )
- * @ORM\Entity
+ * @ORM\Entity()
  */
 class Usuario implements AdvancedUserInterface ,\Serializable
 {
