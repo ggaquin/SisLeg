@@ -227,6 +227,7 @@ class DefaultController extends Controller
     	$tipoOficinaRepository=$this->getDoctrine()->getRepository('AppBundle:TipoOficina');
     	$oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
     	$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
+    	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
     	
     	$tipoOficina=$tipoOficinaRepository->find(2);
     	$oficinas=$oficinaRepository->findBy(array('tipoOficina' => $tipoOficina));
@@ -234,11 +235,12 @@ class DefaultController extends Controller
     	$tiposExpedienteSesion=$tipoExpedienteSesionRepository->findAll();
     	$tiposProyecto=$tipoProyectoRepository->findAll();
     	$comisiones=$comisionRepository->findAll();
+    	$sesiones=$sesionRepository->findAllActivas();
     	return $this->render('default/expedientes_orden_dia.html.twig',array(
     			'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
     			'tiposExpediente'=> $tiposExpediente, 'tiposExpedienteSesion'=>$tiposExpedienteSesion,
     			'idSesion'=>$idSesion, 'tiposProyecto'=>$tiposProyecto, 'comisiones'=>$comisiones,
-    			'oficinas'=>$oficinas
+    			'oficinas'=>$oficinas, 'sesiones'=>$sesiones
     	));
     }
     

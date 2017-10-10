@@ -257,7 +257,7 @@ class RestSesionController extends FOSRestController{
     	$periodo=$request->get('periodo');
     	
     	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
-    	$sesiones=$sesionRepository->findByPeriodo($periodo);
+    	$sesiones=$sesionRepository->findActivasByPeriodo($periodo);
     	
     	return $sesiones;
     }
