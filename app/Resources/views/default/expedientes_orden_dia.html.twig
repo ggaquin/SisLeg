@@ -589,7 +589,7 @@
 			          	  },
 					      "processing": false,
 					      "ajax": {
-							        "url": "api/sesion/getExpedienteSesionByCriteria/"+$("#selSesion").val()+
+							        "url": "api/sesion/getExpedienteSesionByCriteria/"+$("#idSesion").val()+
 							        												"/"+tipoCriterio()+
 							        												"/"+criterio(),
 			            			"dataSrc": '',
@@ -606,15 +606,21 @@
 									            "data": null,
 									            "orderable":true,
 									            "render": function(data, type, row){
-										            debugger;
+										            
 										            var html="<div class='text-center'><div class='btn-group'>";
 										            if (row.tiene_sancion=='No'){
-									            		html+="<button type='button' title='Redactar Sancion' class='btn btn-primary btn-xs btn-redactar-sancion'><span class='glyphicon glyphicon-plus'></span></button> ";
+									            		html+="<button type='button' title='Redactar Sancion' "+(($("#permiteEdicion").val()==0)?"disabled":"")+
+											            	  " class='btn btn-primary btn-xs btn-redactar-sancion'>"+
+											            	  "<span class='glyphicon glyphicon-plus'></span></button> ";
 									            		if (row.dictamenes>0)
-									            			html+="<button type='button'title='Usar Dictamen' class='btn btn-primary btn-xs btn-sancion-dictamen'><span class='glyphicon glyphicon-paperclip'></span></button> ";
+									            			html+="<button type='button'title='Usar Dictamen' "+(($("#permiteEdicion").val()==0)?"disabled":"")+
+											            		  " class='btn btn-primary btn-xs btn-sancion-dictamen'>"+
+											            		  "<span class='glyphicon glyphicon-paperclip'></span></button> ";
 										            }
 								            		else
-								            			html+="<button type='button'title='Editar Sancion' class='btn btn-info btn-xs btn-editar-sancion'><span class='glyphicon glyphicon-pencil'></span></button> ";
+								            			html+="<button type='button'title='Editar Sancion' "+(($("#permiteEdicion").val()==0)?"disabled":"")+
+										            		  " class='btn btn-info btn-xs btn-editar-sancion'>"+
+										            		  "<span class='glyphicon glyphicon-pencil'></span></button> ";
 
 									     			html+="</div></div>";	
 								            		return html;
@@ -740,7 +746,7 @@
 	        	var idRevision=$("#idRevision").val();
 		        var vistos=$("#vistos").html();
 		        var considerandos=$("#considerandos").html();
-		        var idSesion=$("#selSesion").val();
+		        var idSesion=$("#idSesion").val();
 				debugger;
 		        var validacion='';
 				var formData=new FormData();
@@ -819,7 +825,7 @@
 	                	$("#btn-guardar-sancion").prop("disabled",false);
 	                	},
 	                error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(jqXHR.responseText);
+						toastr.error(JSON.parse(jqXHR.responseText));
 						}
 	            	});
 	            }  
@@ -1122,7 +1128,7 @@
 			$('#modalDictamenes').on('show.bs.modal', function () {
 
 				var idExpediente=$("#modalDictamenes").find('input[name="idExpediente"]').val();
-				var idSesion=$("#selSesion").val();
+				var idSesion=$("#idSesion").val();
 
 				tablaDictamenes=$('#dictamenes').DataTable({
 					    			  "language": {
@@ -1472,19 +1478,20 @@
 				}
 			});
 
+			/*
 			$("#selSesion").change(function(){
 				debugger;
 				if($('#estadoFiltro').is(':checked'))
 					$("#estadoFiltro").bootstrapToggle('off');
 				else
 					tabla.ajax.url("api/sesion/getExpedienteSesionByCriteria/"+$("#selSesion").val()+"/"+tipoCriterio()+"/"+criterio()).load();
-			})
+			})*/
 
 			$("#btn-busqueda").click(function(){
 				var valorBusqueda=$("#selBusqueda").val();
 				if(((valorBusqueda=="busqueda-1"|| valorBusqueda=="busqueda-2" || valorBusqueda=="busqueda-3") && criterio()!="" && criterio()!="0"))
 				{
-					tabla.ajax.url("api/sesion/getExpedienteSesionByCriteria/"+$("#selSesion").val()+"/"+tipoCriterio()+"/"+criterio()).load();
+					tabla.ajax.url("api/sesion/getExpedienteSesionByCriteria/"+$("#idSesion").val()+"/"+tipoCriterio()+"/"+criterio()).load();
 					$(".filtro").prop('disabled',true);
 					$('#estadoFiltro').bootstrapToggle('enable');
 					$("#estadoFiltro").bootstrapToggle('on');
@@ -1496,7 +1503,7 @@
 					$(".filtro").prop('disabled',false);
 					$("#selBusqueda").val("todo").change();
 					$(".filtro").prop('disabled',false);
-					tabla.ajax.url("api/sesion/getExpedienteSesionByCriteria/"+$("#selSesion").val()+"/"+tipoCriterio()+"/"+criterio()).load();
+					tabla.ajax.url("api/sesion/getExpedienteSesionByCriteria/"+$("#idSesion").val()+"/"+tipoCriterio()+"/"+criterio()).load();
 					$(this).bootstrapToggle('disable');
 					
 				}
@@ -1563,25 +1570,12 @@
 		        
 		    </ol>
 		</div>
-		<hr>
+	
 		<div class="row">
     		<div class="col-md-12">
-				<nav class="navbar navbar-default">
-					<div class="container-fluid">
-						<div class="navbar-header">
-							<label class="navbar-brand">Sesión</label>
-						</div>
-						<div class="collapse navbar-collapse">
-							<form class="navbar-form navbar-left">
-            			        <select class="form-control" style="font-weight: bold;color: red;" id="selSesion">
-                					{% for sesion in sesiones %}
-                		                <option value="{{ sesion.id }}">{{ sesion.fechaFormateada }}</option>
-                		            {% endfor %}
-                				</select>
-                			</form>
-    					</div>
-    				</div>
-    			</nav>
+    			<div class="alert alert-info" style="color: #31708f!important">
+                  <strong>Sesión {{ nombreSesion }}</strong>
+                </div>
 			</div>
     	</div>
 		<div class="row">
@@ -1636,6 +1630,7 @@
 	  	<div class="row">
 	    	<div class="col-xs-12">
 	    		<input type="hidden" id="idSesion" value="{{ idSesion }}">
+	    		<input type="hidden" id="permiteEdicion" value="{{ permiteEdicion }}">
               	<table id="registroOrdenDia" class="table table-striped">
 	                <thead>
 	                	<tr>

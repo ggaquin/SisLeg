@@ -123,6 +123,7 @@ class SesionRepository extends EntityRepository{
 		
 		$qb = $this->createQueryBuilder('s')
 			-> select('s.periodo')
+			->orderBy('s.periodo','desc')
 			-> distinct();
 
 		$resultado = $qb->getQuery()->getResult();
@@ -136,17 +137,17 @@ class SesionRepository extends EntityRepository{
 		
 	}
 	
-	public function findAllActivas(){
+	public function findActivasByPeriodo($periodo){
 		
 		$qb = $this->createQueryBuilder('s');
 		$qb	-> where($qb->expr()->andX(
-										$qb->expr()->gt('s.cantidadExpedientes', '?1'),
-										$qb->expr()->eq('s.tieneEdicionBloqueada', '?2')
+										$qb->expr()->eq('s.periodo', '?1'),
+										$qb->expr()->eq('s.tieneOrdenDelDia', '?2')
 					                   )
 					 )
 			->orderBy('s.fecha','desc')
-			->setParameter('1', 0)
-			->setParameter('2', false);
+			->setParameter('1', $periodo)
+			->setParameter('2', true);
 					
 		return $qb->getQuery()->getResult();
 			

@@ -34,7 +34,8 @@
 				success: function(data){
 
 					$("#selSesion").html('');
-					var html='<option value="0">Seleccione Sesión</option>';
+					var html='';
+					//var html='<option value="0">Seleccione Sesión</option>';
 					$.each(data, function(index,sesion){
 						html+='<option value="'+sesion.id +'">'+sesion.fecha_formateada+'</option>';
 					});
@@ -52,6 +53,10 @@
     		cargarMenuConParametro('/expedientesOrdenDia','idSesion',$("#selSesion").val());
     	}
 
+		$(document).ready(function () {
+			cambioPeriodo($("#selPeriodo").val());
+		});
+
 	</script>
 	
 	<section class="content">
@@ -68,7 +73,7 @@
                 	    			<div class="form-group">
                 	    				<label for="selPeriodo">Periodo</label>
                 						<select class="form-control" id="selPeriodo" onchange="cambioPeriodo(this.value);">
-                							<option value="0">Seleccione Año</option>
+                							<!-- <option value="0">Seleccione Año</option> -->
                 							{% for año in años %}
                 				                <option value="{{ año }}">{{ año }}</option>
                 				            {% endfor %}
@@ -79,7 +84,6 @@
                 	    			<div class="form-group">
                 	    				<label for="selSesion">Sesión</label>
                 						<select class="form-control" id="selSesion">
-                							<option value="0">Seleccione Sesión</option>
                 						</select>
                 					</div>
                 				</div>

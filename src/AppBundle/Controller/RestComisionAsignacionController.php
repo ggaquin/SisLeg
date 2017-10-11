@@ -415,29 +415,33 @@ class RestComisionAsignacionController extends FOSRestController{
     	foreach ($comisionesArray as $idComision){
        		
        		$expedienteComision=$expedienteComisionRepository->findByExpediente_IdAndComision_Id($idExpediente, $idComision);
-  	
-       		if($numeroDictaminantes==1)
-	       	{	//dictamen mayoria
-	       		if (!is_null($dictamenOriginal))
-		       		$dictamenOriginal->removeAsignacionPorMayoria($expedienteComision);
-	       		
-       			$dictamen->addAsignacionPorMayoria($expedienteComision);
+       		if($expedienteComision->getPermiteEdicion()){
+       		
+	       		if($numeroDictaminantes==1)
+		       	{	//dictamen mayoria
+		       		if (!is_null($dictamenOriginal))
+			       		$dictamenOriginal->removeAsignacionPorMayoria($expedienteComision);
+		       		
+	       			$dictamen->addAsignacionPorMayoria($expedienteComision);
+	       		}
+	       		if($numeroDictaminantes==2)
+	       		{	//dictamen primera Minoria
+	       			if (!is_null($dictamenOriginal))
+	       				$dictamenOriginal->removeAsignacionPorPrimeraMinoria($expedienteComision);
+	       			$dictamen->addAsignacionPorPrimeraMinoria($expedienteComision);
+	       		}
+	       		if($numeroDictaminantes==3)
+	       		{	//dictamen segunda Minoria
+	       			if (!is_null($dictamenOriginal))
+	       				$dictamenOriginal->removeAsignacionSegundaMinoria($expedienteComision);
+	       			$dictamen->addAsignacionPorSegundaMinoria($expedienteComision);
+	       		}
+	       		   
+	       		if (!is_null($dictamenOriginal) && !$dictamenOriginal->getTieneAsignaciones()) 
+	       			$em->remove($dictamenOriginal);
        		}
-       		if($numeroDictaminantes==2)
-       		{	//dictamen primera Minoria
-       			if (!is_null($dictamenOriginal))
-       				$dictamenOriginal->removeAsignacionPorPrimeraMinoria($expedienteComision);
-       			$dictamen->addAsignacionPorPrimeraMinoria($expedienteComision);
-       		}
-       		if($numeroDictaminantes==3)
-       		{	//dictamen segunda Minoria
-       			if (!is_null($dictamenOriginal))
-       				$dictamenOriginal->removeAsignacionSegundaMinoria($expedienteComision);
-       			$dictamen->addAsignacionPorSegundaMinoria($expedienteComision);
-       		}
-       		   
-       		if (!is_null($dictamenOriginal) && !$dictamenOriginal->getTieneAsignaciones()) 
-       			$em->remove($dictamenOriginal);
+       		else 
+       			return $this->view("El dictamen no está habilitado para edición",500);
        	}
        	
       	$expediente=$expedienteRepository->find($idExpediente);

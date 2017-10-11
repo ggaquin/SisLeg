@@ -923,7 +923,7 @@
 	                	$("#btn-guardar-dictamen").prop("disabled",false);
 	                	},
 	                error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(jqXHR.responseText);
+						toastr.error(JSON.parse(jqXHR.responseText));
 						}
 	            	});
 	            }  

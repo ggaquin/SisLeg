@@ -235,12 +235,15 @@ class DefaultController extends Controller
     	$tiposExpedienteSesion=$tipoExpedienteSesionRepository->findAll();
     	$tiposProyecto=$tipoProyectoRepository->findAll();
     	$comisiones=$comisionRepository->findAll();
-    	$sesiones=$sesionRepository->findAllActivas();
+    	$sesion=$sesionRepository->find($idSesion);
+    	$nombreSesion=$sesion->getFechaFormateada().' ( '.($sesion->getTipoSesion()->getTipoSesion()).' )';
     	return $this->render('default/expedientes_orden_dia.html.twig',array(
     			'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
     			'tiposExpediente'=> $tiposExpediente, 'tiposExpedienteSesion'=>$tiposExpedienteSesion,
-    			'idSesion'=>$idSesion, 'tiposProyecto'=>$tiposProyecto, 'comisiones'=>$comisiones,
-    			'oficinas'=>$oficinas, 'sesiones'=>$sesiones
+    			'idSesion'=>$idSesion, 'nombreSesion'=>$nombreSesion, 
+    			'permiteEdicion'=>(($sesion->getTieneEdicionBloqueada()==true)?0:1),
+    			'tiposProyecto'=>$tiposProyecto, 'comisiones'=>$comisiones,
+    			'oficinas'=>$oficinas, 
     	));
     }
     
