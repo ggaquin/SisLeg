@@ -154,7 +154,7 @@
 				valorRetorno=$("#selSesionFiltro").val();
 
 			if (tipo=="busqueda-1" || tipo=="busqueda-2" )
-				valorRetorno=$("#"+tipo).val();
+				valorRetorno=$("#"+tipo).val();	
 			
 			return valorRetorno;	
 		}
@@ -769,7 +769,7 @@
 				
 				$("#selTipoRedaccion").val("basico");
 		        $("#selTipoRedaccion").change();
-		        $("#selComisiones").prop("disabled", false);
+		        //$("#selComisiones").prop("disabled", false);
 		        $("#texto").data("wysihtml5").editor.setValue('');
 		        $("#articulos > tbody").html('');
 		        $("#vistos").html('');
@@ -825,8 +825,8 @@
             					   	
                 				} 
 
-            					 $("#selComisiones").prop("disabled", true); 
-            					 $(".select2-selection__choice").addClass("bootstrap-primary-background"); 	
+            					 //$("#selComisiones").prop("disabled", true); 
+            					 //$(".select2-selection__choice").addClass("bootstrap-primary-background"); 	
 
             					 //actualizarSesiones($("#selSesion"),data.sesion_id);		
             				},

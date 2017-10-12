@@ -92,7 +92,7 @@ class ExpedienteRepository extends EntityRepository{
 				
 	}
 	
-	public function findNumeroCompletoByNumero($numero,$oficina){
+	public function findNumeroCompletoByNumero($numero,$oficina,$destino){
 		
 		$rsm = new ResultSetMapping();
 		$rsm->addScalarResult('idExpediente', 'id');
@@ -114,7 +114,7 @@ class ExpedienteRepository extends EntityRepository{
 			$sql.='inner join oficina o on e.idOficina=o.idOficina ';
 			$condition.=' and o.idOficina=:idOficina';
 			
-			if($oficina->getId()==9){
+			if($oficina->getId()==9 && $destino==3){
 				$sql.='inner join sesion s on e.idSesion=s.idSesion ';
 				$condition.=' and (e.idTipoExpediente in (2,7,9) or s.fecha<:fechaActual)';
 			}

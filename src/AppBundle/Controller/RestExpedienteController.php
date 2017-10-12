@@ -58,12 +58,15 @@ class RestExpedienteController extends FOSRestController{
     	try{
     		
     		$numero=$request->query->get('q');
+    		$destino=$request->query->get('r');
     		$usuario=$this->getUser();
     		   	    		
     		$valorRetorno=[];
     		$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
     		$resultados=$expedienteRepository->findNumeroCompletoByNumero($numero,
-																		  $usuario->getRol()->getOficina());
+																		  $usuario->getRol()->getOficina(),
+    																	  $destino
+    																	 );
     		
     		if (count($resultados)>0){
     			

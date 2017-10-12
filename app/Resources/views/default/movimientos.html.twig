@@ -340,6 +340,7 @@
 		    	$("#total-filas").val("");
 				$("#total-filas").addClass("hidden");
 		    	$("#selExpedientes").empty().change();
+		    	$("#selExpedientes").prop("disabled", true);
 			});
 						
 			//GUARDAR REMITO
@@ -461,8 +462,18 @@
 					$(".filtro").prop('disabled',false);
 					tabla.ajax.url("api/expediente/getRemitosByCriteria/"+tipoCriterio()+"/"+criterio()).load();
 					$(this).bootstrapToggle('disable');
-					
 				}
+			});
+
+			$("#selDestino").change(function(){
+				if($(this).val()!=0){
+					$("#selExpedientes").prop("disabled", false);
+					$("#selExpedientes").empty().change();
+				}
+				else{
+					$("#selExpedientes").prop("disabled", true);
+					$("#selExpedientes").empty().change();
+				}	
 			});
 
 			$("#selExpedientes").select2({
@@ -474,6 +485,7 @@
     			    data: function (params) {
     			      return {
     			        q: params.term, // search term
+    			        r: $("#selDestino").val(),
     			        page: params.page
     			      };
     			    },

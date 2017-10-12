@@ -138,20 +138,19 @@ class ExpedienteComisionRepository extends EntityRepository{
 		
 		$qb = $this->createQueryBuilder('ec')
 			->innerJoin('ec.expediente','e')
-			->innerJoin('e.estadoExpediente', 'es');
+			->leftJoin('ec.sesion', 's');
 		$qb ->where($qb->expr()->andX(
 										$qb->expr()->eq('e.numeroExpediente', '?1'),
 										$qb->expr()->orX(
-															$qb->expr()->eq('es.id','?2'),
-															$qb->expr()->eq('es.id','?3')
+															$qb->expr()->isNull('s.id'),
+															$qb->expr()->eq('s.tieneOrdenDelDia','?2')
 														 ),
-										$qb->expr()->eq('ec.anulado', '?5')
+										$qb->expr()->eq('ec.anulado', '?3')
 									 )
 				   )
 			->setParameter(1, $numeroExpediente)
-			->setParameter(2, 2)
-			->setParameter(3, 3)
-			->setParameter(5, false);
+			->setParameter(2, false)
+			->setParameter(3, false);
 			
 		return $qb->getQuery()->getResult();
 		
@@ -175,24 +174,23 @@ class ExpedienteComisionRepository extends EntityRepository{
 		$qb = $this->createQueryBuilder('ec');
 		$qb ->innerJoin('ec.expediente', 'e')
 			->innerJoin('ec.comision', 'c')
-			->innerJoin('e.estadoExpediente', 'es')
+			->leftJoin('ec.sesion', 's')
 			->where($qb->expr()->andX(
 										$qb->expr()->eq('e.id', '?1'),
 										$qb->expr()->like('c.comision', '?2'),
 										$qb->expr()->orX(
-														 $qb->expr()->eq('es.id','?3'),
-														 $qb->expr()->eq('es.id','?4')
-												),
-										$qb->expr()->neq('c.id', '?5')
+															$qb->expr()->isNull('s.id'),
+															$qb->expr()->eq('s.tieneOrdenDelDia','?3')
+														),
+										$qb->expr()->neq('c.id', '?4')
 									  )
 				
 			
 					)
 			->setParameter(1, $idExpediente)
 			->setParameter(2, '%'.$nombre.'%')
-			->setParameter(3, 2)
-			->setParameter(4, 3)
-			->setParameter(5, $filtro);
+			->setParameter(3, false)
+			->setParameter(4, $filtro);
 		return $qb->getQuery()->getResult();
 	}
 	
@@ -202,20 +200,19 @@ class ExpedienteComisionRepository extends EntityRepository{
 		$qb ->select('count(ec.id)')
 			->innerJoin('ec.expediente', 'e')
 			->innerJoin('ec.comision', 'c')
-			->innerJoin('e.estadoExpediente', 'es')
+			->leftJoin('ec.sesion', 's')
 			->where($qb->expr()->andX(
 										$qb->expr()->eq('e.id', '?1'),
 										$qb->expr()->orX(
-												$qb->expr()->eq('es.id','?2'),
-												$qb->expr()->eq('es.id','?3')
-												),
-										$qb->expr()->neq('c.id', '?4')
+															$qb->expr()->isNull('s.id'),
+															$qb->expr()->eq('s.tieneOrdenDelDia','?2')
+														),
+										$qb->expr()->neq('c.id', '?3')
 									  )
 					)
 			->setParameter(1, $idExpediente)
-			->setParameter(2, 2)
-			->setParameter(3, 3)
-			->setParameter(4, $filtro);
+			->setParameter(2, false)
+			->setParameter(3, $filtro);
 			return $qb->getQuery()->getSingleResult();
 		}
 	
@@ -225,12 +222,12 @@ class ExpedienteComisionRepository extends EntityRepository{
 		$qb1 -> select('ecsc.id')
 			 -> innerJoin('ecs.comision', 'ecsc')
 			 -> innerJoin('ecs.expediente', 'ecse')
-			 -> innerJoin('ecse.estadoExpediente', 'es')
+			 ->leftJoin('ec.sesion', 's')
 			 -> where($qb1->expr()->andX(
 								 		$qb1->expr()->eq('ecse.id', '?1'),
 								 		$qb1->expr()->orX(
-											 				$qb1->expr()->eq('es.id','?3'),
-											 				$qb1->expr()->eq('es.id','?4')
+											 				$qb1->expr()->isNull('s.id'),
+											 				$qb1->expr()->eq('s.tieneOrdenDelDia','?3')
 											 			  )
 								 	   )
 				 	);
@@ -243,8 +240,7 @@ class ExpedienteComisionRepository extends EntityRepository{
 					)
 			-> setParameter(1, $idExpediente)
 			-> setParameter(2, '%'.$nombre.'%')
-			-> setParameter(3, 2)
-			-> setParameter(4, 3);
+			-> setParameter(3, false);
 		
 		return $qb->getQuery()->getResult();
 	}
@@ -271,13 +267,13 @@ class ExpedienteComisionRepository extends EntityRepository{
 		$qb1 = $this->createQueryBuilder('ec');
 		$qb1 ->select('MIN(ec.id) as primerAsignacion')
 			 ->innerJoin('ec.expediente', 'e')
-			 ->innerJoin('e.estadoExpediente', 'es')
+			 ->leftJoin('ec.sesion', 's')
 			 ->where($qb1->expr()->andX(
 										$qb1->expr()->eq('e.id', '?1'),
 										$qb1->expr()->orX(
-												$qb1->expr()->eq('es.id','?2'),
-												$qb1->expr()->eq('es.id','?3')
-												)
+															$qb1->expr()->isNull('s'),
+															$qb1->expr()->eq('s.tieneOrdenDelDia','?2')
+														 )
 										)
 					)
 			->groupBy('e.id');
@@ -285,8 +281,7 @@ class ExpedienteComisionRepository extends EntityRepository{
 		$qb = $this->createQueryBuilder('ecp');
 		$qb -> where($qb->expr()->in('ecp.id', $qb1->getDQL()))
 			->setParameter(1, $idExpediente)
-			->setParameter(2, 2)
-			->setParameter(3, 3);
+			->setParameter(2, false);
 		
 		return $qb->getQuery()->getResult();
 				
