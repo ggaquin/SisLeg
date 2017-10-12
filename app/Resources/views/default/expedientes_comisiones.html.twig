@@ -143,10 +143,22 @@
 		};
 
 		function criterio(){
+
 			var tipo=$("#selBusqueda").val();
 			var valorRetorno;
-			return ((tipo=="todo" || tipo=="busqueda-3")?"0":$("#"+tipo).val());	
+
+			if (tipo=="busqueda-0" || tipo=="busqueda-3" || tipo=="busqueda-5")
+				valorRetorno="0";
+
+			if (tipo=="busqueda-4")
+				valorRetorno=$("#selSesionFiltro").val();
+
+			if (tipo=="busqueda-1" || tipo=="busqueda-2" )
+				valorRetorno=$("#"+tipo).val();
+			
+			return valorRetorno;	
 		}
+		
 		function tipoCriterio(){
 			return $("#selBusqueda").val();
 		}
@@ -1564,25 +1576,60 @@
 			 });
 
 			$(".busqueda").addClass('hidden');
-			$("#selBusqueda").val("todo");
+			$("#selBusqueda").val("busqueda-0");
 			$('#estadoFiltro').bootstrapToggle('disable');
 
+			$("#selAñoFiltro").change(function(){
+
+				var periodo=$(this).val();
+
+				if (periodo==0)
+					$("#selSesionFiltro").html('<option value="0">Seleccione Sesion</option>');
+				else {
+    					$.ajax({
+        					type:'Get',
+        					dataType: 'json	',
+        					url:'{{ app.request.getBaseURL() }}'+'/api/sesion/getAllByPeriodo/'+periodo,
+        					success: function(data){
+        						$("#selSesionFiltro").html('');
+        						var html='<option value="0">Seleccione Sesion</option>'
+        						$.each(data, function(index,sesion){
+        							html+='<option value="'+sesion.id+'">'+sesion.fecha_formateada+'</option>';
+        						}); 
+        						$("#selSesionFiltro").html(html);    			
+        					},
+        					error: function(jqXHR,textStatus,errorThrown ){
+        						toastr.error(jqXHR.responseText);
+        					}
+        		      	});
+				}
+
+			})
+			
 			$("#selBusqueda").change(function(){
 
 				var control=$(this).val();
 				$(".busqueda").addClass('hidden');
-				if(control!="todo")
-					$("#"+control).removeClass('hidden');
+				debugger;
+				if(control!="busqueda-0"){
+					if (control=="busqueda-4")
+						$(".sesion").removeClass('hidden');
+					else
+						$("#"+control).removeClass('hidden');
+				}
 				else{
 					$("#busqueda-1").val("");
 					$("#busqueda-2").val("0");
+					$("#selAñoFiltro").val("0");
+					$("#selAñoFiltro").change();
 				}
 			});
 
 			$("#btn-busqueda").click(function(){
 				var valorBusqueda=$("#selBusqueda").val();
-				if(((valorBusqueda=="busqueda-1"|| valorBusqueda=="busqueda-2") && criterio()!="" && criterio()!="0") ||
-					valorBusqueda=="busqueda-3")
+				if(((valorBusqueda=="busqueda-1"|| valorBusqueda=="busqueda-2" || valorBusqueda=="busqueda-4") 
+					 && criterio()!="" && criterio()!="0") || valorBusqueda=="busqueda-0" || valorBusqueda=="busqueda-3" ||
+					 valorBusqueda=="busqueda-5")
 				{
 					tabla.ajax.url("api/comisionAsignacion/getByCriteria/"+tipoCriterio()+"/"+criterio()).load();
 					$(".filtro").prop('disabled',true);
@@ -1594,7 +1641,7 @@
 			$('#estadoFiltro').change(function() {
 				if(!$(this).is(':checked')){
 					$(".filtro").prop('disabled',false);
-					$("#selBusqueda").val("todo").change();
+					$("#selBusqueda").val("busqueda-0" ).change();
 					$(".filtro").prop('disabled',false);
 					tabla.ajax.url("api/comisionAsignacion/getByCriteria/"+tipoCriterio()+"/"+criterio()).load();
 					$(this).bootstrapToggle('disable');
@@ -1641,7 +1688,7 @@
 			        Expedientes Girados
 			    </h2>
 			</div>
-			<div class="col-md-7 col-md-offset-2">
+			<div class="col-md-8 col-md-offset-1">
 				<nav class="navbar navbar-default">
 					<div class="container-fluid">
 						<div class="navbar-header">
@@ -1656,10 +1703,12 @@
 							        	</div> 
 										<button type="button" class="btn btn-primary filtro" id="btn-busqueda">Aplicar</button>
 										<select class="form-control filtro" id="selBusqueda">
-											<option value="todo">Todo</option>
+											<option value="busqueda-0">Vigentes</option>
 											<option value="busqueda-1">Número Expediente</option>
 											<option value="busqueda-2">Comision</option>
 											<option value="busqueda-3">Sin Dictamen</option>
+											<option value="busqueda-4">Sesión</option>
+											<option value="busqueda-5">Todo</option>
 										</select>
 										<input class="form-control busqueda hidden filtro" id="busqueda-1"/>
 										<select class="form-control busqueda hidden filtro" id="busqueda-2">
@@ -1667,7 +1716,18 @@
 											{% for comision in comisiones %}
 								                <option value="{{ comision.id }}">{{ comision.comision }}</option>
 								            {% endfor %}
-										</select>										
+										</select>
+					
+										<select class="form-control busqueda hidden filtro sesion" id="selAñoFiltro">
+											<option value="0">Seleccione Año</option>
+											{% for año in años %}
+								                <option value="{{ año}}">{{ año }}</option>
+								            {% endfor %}
+										</select>
+										<select class="form-control busqueda hidden filtro sesion" id="selSesionFiltro">
+											<option value="0">Seleccione Sesión</option>
+										</select>
+																				
 									</div>
 								</form>
 							</div>

@@ -15,6 +15,7 @@ use AppBundle\Entity\Comision;
 use AppBundle\Entity\TipoSesion;
 use AppBundle\Entity\TipoExpedienteSesion;
 use AppBundle\Entity\Oficina;
+use AppBundle\Entity\Sesion;
 
 
 class DefaultController extends Controller
@@ -183,17 +184,15 @@ class DefaultController extends Controller
     {
     	$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
     	$tipoProyectoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoProyecto');
-    	/*
-    	 dictaminantes_en_mayoria: 1
-    	 dictaminantes_en_primer_minoria: 2  
-    	 dictaminantes_en_segunda_minoria: 
-    	*/
+    	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
     	
+    	$años=$sesionRepository->findByDistinctPeriodos();
     	$comisiones=$comisionRepository->findBy(array('activa' => true));
     	$tipoProyectos=$tipoProyectoRepository->findAll();
     	return $this->render('default/expedientes_comisiones.html.twig',array(
     		   'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
     		   'comisiones' => $comisiones, 'tipoProyectos'=> $tipoProyectos,
+    		   'años'=>$años,
     		   'MAYORIA' => $this->getParameter('dictaminantes_en_mayoria'),
     		   'PRIMERA_MINORIA' => $this->getParameter('dictaminantes_en_primer_minoria'),
     		   'SEGUNDA_MINORIA' => $this->getParameter('dictaminantes_en_segunda_minoria')

@@ -145,7 +145,18 @@ class RestSesionController extends FOSRestController{
     	$sesionesValidas=$sesionRepository->findLastActivoByTipo();
     	return $this->view($sesionesValidas,200);
     }
-        
+    
+    
+    /**
+     * @Rest\Get("/getAllByPeriodo/{periodo}")
+     */
+    public function traerSesiones(Request $request){
+    	$periodo=$request->get('periodo');
+    	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+    	$sesiones=$sesionRepository->findActivasByPeriodo($periodo);
+    	return $this->view($sesiones,200);
+    }
+           
     /**
      * @Rest\Post("/ordenDia/create")
      */
@@ -171,9 +182,15 @@ class RestSesionController extends FOSRestController{
     public function  borrarOrdenDelDia(Request $request){
     	
     	$idSesion=$request->request->get('idSesion');
+    	$usuario=$this->getUser();
+    	$idRolAdministrador=$this->getParameter('id_rol_administrador');
     	
     	try {
     		$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+    		$sanciones=$sesionRepository->countSancionesPorSesion($idSesion);
+    		if ($sanciones['cuenta']!=0 && $usuario->getRol()->getId()!=$idRolAdministrador) 
+    			return $this->view('Existen sanciones cargadas para esta sesión. Solo el administrador puede eliminarla',500);
+    		
     		$sesionRepository->removeOrdenDelDia($idSesion);
     		
     		return $this->view('La orden del día se eliminó en forma correcta',200);
@@ -347,6 +364,7 @@ class RestSesionController extends FOSRestController{
 	    		$tipoSancion=$tipoProyectoRepository->find($idTipoSancion);
 	    		$sancion->setTextoArticulado($articulos);
 	    		$sancion->setTipoSancion($tipoSancion);
+	    		$sancion->setNumeroSancion($numeroSancion);
 	    	}
 	    					
 	    	//para el tipo revision

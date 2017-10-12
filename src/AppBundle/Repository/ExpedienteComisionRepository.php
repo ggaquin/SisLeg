@@ -15,17 +15,16 @@ class ExpedienteComisionRepository extends EntityRepository{
 		
 		$qb = $this->createQueryBuilder('ec')	
 			->leftJoin('ec.sesion', 's');
-		$qb ->where($qb->expr()->eq('ec.anulado', ':anulado'))
-// 		$qb ->where($qb->expr()->andX(
-// 										$qb->expr()->orX(
-// 															$qb->expr()->isNull('ec.sesion'),
-// 															$qb->expr()->eq('s.tieneOrdenDelDia', ':tieneOrdenDia')
-// 														 ),
-// 										$qb->expr()->eq('ec.anulado', ':anulado')
+		$qb ->where($qb->expr()->andX(
+										$qb->expr()->orX(
+															$qb->expr()->isNull('ec.sesion'),
+															$qb->expr()->eq('s.tieneOrdenDelDia', ':tieneOrdenDia')
+														 ),
+										$qb->expr()->eq('ec.anulado', ':anulado')
 										
-// 									 )
-// 				   )
-// 			->setParameter('tieneOrdenDia', false)
+									 )
+				   )
+			->setParameter('tieneOrdenDia', false)
 			->setParameter('anulado', false);
 		
 		return $qb->getQuery()->getResult();

@@ -93,13 +93,13 @@ class RestComisionAsignacionController extends FOSRestController{
     public function traerExpedientesComisionPorCriterioAction(Request $request)
     {
     	try {
-	    		$tipoCriterio=$request->get('tipoCriterio');
+	    	$tipoCriterio=$request->get('tipoCriterio');
     		$criterio=$request->get('criterio');
     		
     		$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
     		$expedientesAsignados=null;
     		
-    		if ($tipoCriterio=='todo')
+    		if ($tipoCriterio=='busqueda-0')
     			$expedientesAsignados=$expedienteComisionRepository->findAllActivos();
     		if($tipoCriterio=='busqueda-1')
     			$expedientesAsignados=$expedienteComisionRepository->findByExpediente_Numero($criterio,false);
@@ -111,6 +111,14 @@ class RestComisionAsignacionController extends FOSRestController{
     			$expedientesAsignados=$expedienteComisionRepository
     									->findExpedienteComisionByExpediente_Estado($idEstadoEstudioComision);
     		}
+    		if($tipoCriterio=='busqueda-4'){
+    			$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+    			$sesion=$sesionRepository->find($criterio);
+    			$expedientesAsignados=$expedienteComisionRepository->findBy(array('anulado'=>false,
+    																			  'sesion'=>$sesion));
+    		}
+    		if ($tipoCriterio=='busqueda-5')
+    			$expedientesAsignados=$expedienteComisionRepository->findBy(array('anulado'=>false));
     		$respuesta=[];
     		foreach ($expedientesAsignados as $e){
     			$datosAsignacion=array( 'id'=>$e->getId(), 

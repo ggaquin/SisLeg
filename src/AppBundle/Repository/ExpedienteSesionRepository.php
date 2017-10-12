@@ -144,5 +144,5 @@ class ExpedienteSesionRepository extends EntityRepository{
 		return  $resultado;
 				
 	}
-	
+		
 }

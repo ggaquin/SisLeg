@@ -751,8 +751,9 @@
 		        var validacion='';
 				var formData=new FormData();
 
-				validacion+=((texto.replace(/ /g, '').length==0)
-						 	 ?'<li>Debe poveer un texto para la resolución</li>':'');
+				if (tipoRedaccion=="basico")
+    				validacion+=((texto.replace(/ /g, '').length==0)
+    						 	 ?'<li>Debe poveer un texto para la resolución</li>':'');
 			 	 
 				validacion+=((tipoSancion==0 && tipoRedaccion=="articulado")
 							 ?'<li>Debe especificar el tipo de resolución</li>':'');

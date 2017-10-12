@@ -223,7 +223,7 @@
 						tabla.ajax.reload();
 	                },
 	                error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(jqXHR.responseText);
+						toastr.error(JSON.parse(jqXHR.responseText));
 						}
 	            	});
 			});

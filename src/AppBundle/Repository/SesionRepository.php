@@ -153,4 +153,19 @@ class SesionRepository extends EntityRepository{
 			
 	}
 	
+	public function countSancionesPorSesion($idSesion){
+		
+		$rsm = new ResultSetMapping();
+		$rsm->addScalarResult('cuenta', 'cuenta');
+		
+		$query = $this->getEntityManager()
+		->createNativeQuery('select count(*) as cuenta from expedienteSesion es '.
+				'inner join sancion s on es.idSancion=s.idSancion '.
+				'where es.idSesion=:idSesion', $rsm);
+		
+		$query -> setParameter('idSesion', $idSesion);
+		return $query->getOneOrNullResult();
+		
+	}
+		
 }
