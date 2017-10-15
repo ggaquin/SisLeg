@@ -34,9 +34,13 @@ class RestProyectoController extends FOSRestController{
     public function traerTodosLosProyectosAction(Request $request)
     {
 
-        $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:proyecto');
-        $proyecto=$proyectoRepository->findAll();
-        return $this->view($proyecto,200);
+        try {
+		    	$proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:proyecto');
+		        $proyecto=$proyectoRepository->findAll();
+		        return $this->view($proyecto,200);
+        }catch(\Exception $e) {
+		        	return $this->view($e->getMessage(),500);
+        }
          
     }
 
@@ -53,9 +57,8 @@ class RestProyectoController extends FOSRestController{
             $idRolLegislador=$this->getParameter('id_rol_legislador');
             $filtroPerfil=null;
             if($rol->getId()==$idRolLegislador)
-            	$filtroPerfil=$usuario->getPerfil()->getId();
+            $filtroPerfil=$usuario->getPerfil()->getId();
             
-            	//TODO: Implementar los filtros por perfil
             $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
             $proyectos=null;
             if ($tipoCriterio=='todo'){

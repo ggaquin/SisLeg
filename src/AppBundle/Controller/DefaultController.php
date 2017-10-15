@@ -95,15 +95,8 @@ class DefaultController extends Controller
         $usuarios=$usuarioRepository->findAll();
         $bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
         $bloques=$bloqueRepository->findAll();
-        
-        $usuario=$this->getUser();
-        
-        $data=[];
-        $permisos=$usuario->getPermisos();
-        $permisos_usuario=[];
-        foreach ($permisos as $permiso) $permisos_usuario[]=$permiso;
-        
-        $data['permisos_usuario']=new \ArrayObject($permisos_usuario);
+             
+        $data=[];       
         $data['base_dir']=realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR;
         $data['roles']=$roles;
         $data['usuarios']=$usuarios;
@@ -120,15 +113,7 @@ class DefaultController extends Controller
     {
         $bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
         $bloques=$bloqueRepository->findBy(array(), array('bloque' => 'ASC'));
-        /*
-        $usuario=$this->getUser();
-        
-        $data=[];
-        $permisos=$usuario->getPermisos();
-        foreach ($permisos as $permiso){
-        	$data[$permiso]=true;
-        }*/
-        
+     
         return $this->render('default/legisladores.html.twig', array(
             'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
             'bloques' => $bloques));
@@ -169,16 +154,9 @@ class DefaultController extends Controller
         $tiposExpediente=$tiposExpedienteRepository->findBy(array(),array('tipoExpediente' => 'ASC'));
         $estadosExpediente=$estadoExpedienteRepository->findBy(array(),array('estadoExpediente' => 'ASC'));
         $tipoOficinaExterna=$tipoOficinaRepository->find($idOficinaExterna);
-        $oficinasExternas=$oficinaRepository->findBy(array('tipoOficina' => $tipoOficinaExterna));
-        $usuario=$this->getUser();    
+        $oficinasExternas=$oficinaRepository->findBy(array('tipoOficina' => $tipoOficinaExterna));    
         
         $array=[];
-        $permisos=$usuario->getPermisos();
-        $permisos_usuario="";
-        foreach ($permisos as $permiso){
-        	$permisos_usuario.=$permiso;
-        }
-        $array['permisos_usuario']=$permisos_usuario;
         $array['base_dir']=realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR;
         $array['tipos']=$tiposExpediente;
         $array['estados']=$estadosExpediente;
@@ -450,12 +428,12 @@ class DefaultController extends Controller
     
     /**
      * @Route("/imprimir/remito")
-     */
+     /
     public function impresionRemitoAction(Request $request)
     {
     	
  
-    }
+    }*/
 
     /**
      * @Route("/imprimir")
