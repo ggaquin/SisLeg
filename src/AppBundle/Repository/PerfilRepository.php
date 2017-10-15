@@ -5,6 +5,7 @@ namespace AppBundle\Repository;
 use Doctrine\ORM\EntityRepository;
 use AppBundle\AppBundle;
 use AppBundle\Entity\PerfilLegislador;
+use Doctrine\ORM\Query\ResultSetMapping;
 
 class PerfilRepository extends EntityRepository{
 
@@ -99,6 +100,26 @@ class PerfilRepository extends EntityRepository{
 			->setParameter(1, $fechaActual);
 		
 		return $qb->getQuery()->getResult();
+	}
+	
+	public function findPermisosByIdRol($idRol){
+		
+		$rsm = new ResultSetMapping();
+		$rsm->addScalarResult('menu', 'menu');
+		$rsm->addScalarResult('menuItem', 'menu_item');
+		$rsm->addScalarResult('abreviacion', 'abreviacion');
+		
+		$query = $this->getEntityManager()
+					  ->createNativeQuery('SELECT m.menu, mi.menuItem, mi.abreviacion '.
+										  'FROM menu m inner join menuItem mi on mi.idMenu=m.idMenu '.
+										  'inner join rol_menuItem rmi on mi.idMenuItem=rmi.idMenuItem '.
+										  'where rmi.idRol=:idRol order by 1,2', $rsm);
+		
+		$query -> setParameter('idRol', $idRol);
+		
+		$resultado = $query->getResult();
+		return  $resultado;
+		
 	}
 }
 

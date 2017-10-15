@@ -108,7 +108,7 @@ class RestExpedienteController extends FOSRestController{
             if ($tipoCriterio=='busqueda-2')
                 $expedientes=$expedienteRepository->findByEstado_Id($criterio);
             if($tipoCriterio=='busqueda-3')
-                $expedientes=$expedienteRepository->findBy(array('numeroExpediente'=>$criterio));
+            	$expedientes=$expedienteRepository->findByNumeroCompleto($criterio);
             if ($tipoCriterio=='busqueda-4')
                 $expedientes=$expedienteRepository->findByTipoExpediente_Id($criterio);
             if ($tipoCriterio=='busqueda-5')
@@ -548,22 +548,35 @@ class RestExpedienteController extends FOSRestController{
     {
     	$id=$request->get('id');
     	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
-    	$informes=$expedienteRepository->findInformesByExpediente_Id($id);
+    	$movimientos=$expedienteRepository->findInformesByExpediente_Id($id);
     	
-    	$resultado=[];
-    	foreach ($informes as $informe){
-    		$registro=array('id'=>$informe->getId(),'numero_remito'=>$informe->getRemito()->getNumeroRemito(),
-    						'destino'=>$informe->getDestino(),'fecha_envio'=>$informe->getFechaEnvio(),
-    						'observacion'=>$informe->getObservacion(),
-    						'fecha_recepcion'=>$informe->getFechaRecepcion, 
-    						'fecha_respuesta_formateada'=>$informe->getFechaRespuestaFormateada(),
-    						'remito_retorno'=>$informe->getRemitoRetorno()
-    		);
-    		$resultado[]=$registro;
-    	}
-    	
-    	return $this->view($resultado,200);
+    	return $this->view($movimientos,200);
     }
+    
+    /**
+     * @Rest\Get("/getInformesByCriteria/{tipoCriterio}/{criterio}")
+     */
+    public function traerInformesPorCriterioAction(Request $request)
+    {
+    	$tipoCriterio=$request->get('tipoCriterio');
+    	$criterio=$request->get('criterio');
+    	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+    	$informes=null;
+    	if ($tipoCriterio=='todo')
+    		$informes=$expedienteRepository->findAllInformes();
+    	if ($tipoCriterio=='busqueda-1')
+    			$informes=$expedienteRepository->findInformeByNumeroExpediente($criterio);
+    	if ($tipoCriterio=='busqueda-2')
+    		$informes=$expedienteRepository->findInformeByTipo($criterio);
+    	if ($tipoCriterio=='busqueda-3')
+    		$informes=$expedienteRepository->findInformeByDestino($criterio);
+    	if($tipoCriterio=='busqueda-4')
+    		$informes=$expedienteRepository->findInformeByComisionReserva($criterio);
+  
+      	
+    	return $this->view($informes,200);
+    }
+    
     
     /**
      * @Rest\Post("/updateRespuestaInforme")

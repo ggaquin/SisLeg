@@ -137,20 +137,21 @@ class ExpedienteRepository extends EntityRepository{
 	
 	public function findByNumeroCompleto($numero,$oficina){
 		
+		$numeroSeparado=explode('-', $numero);
 		
-		$periodo='20'.substr($numero, -2);
-		$numerador=substr($numero, 0,strlen($numero)-2);
-		$inicio= new \DateTime($periodo.'-01-01 00:00:00');
-		$fin= new \DateTime($periodo.'-12-31 23:59:59');
+		if (count($numeroSeparado)!=2)
+			throw new \Exception('El criterio de busqueda debe tener el formato {numero}-{año} (por ejemplo 1-17)');
+		
+		$periodo='20'.$numeroSeparado[1];
+		$numerador=$numeroSeparado[0];
 		$qb = $this->createQueryBuilder('e');
 		$qb -> where($qb->expr()->andX(
 										$qb->expr()->eq('e.numeroExpediente', '?1'),
-										$qb->expr()->between('e.fechaCreacion','?2','?3')
+										$qb->expr()->eq('e.periodo','?2')
 									  )
 				)
 			->setParameter(1, $numerador)
-			->setParameter(2, $inicio->format('Y-m-d'))
-			->setParameter(3, $fin->format('Y-m-d'));
+			->setParameter(2,$periodo);
 		return $qb->getQuery()->getResult();
 			
 	}
@@ -170,18 +171,219 @@ class ExpedienteRepository extends EntityRepository{
 		return $qb->getQuery()->getResult();
 	}
 	
-	public function findInformesByExpediente_Id($idExpediente){
+// 	public function findInformesByExpediente_Id($idExpediente){
 		
-		$rep = $this->getEntityManager()->getRepository('AppBundle:SolicitudInforme');
-		$qb = $rep->createQueryBuilder('m');
-		$qb -> innerJoin('m.expediente', 'e')
-			-> where($qb->expr()->andX(
-										$qb->expr()->eq('e.id', '?1'),
-										$qb->expr()->eq('m.anulado', '?2')	
-									   )
-					)
-			->setParameter(1, $idExpediente)
-			->setParameter(2, false);
-		return $qb->getQuery()->getResult();
+// 		$rep = $this->getEntityManager()->getRepository('AppBundle:SolicitudInforme');
+// 		$qb = $rep->createQueryBuilder('m');
+// 		$qb -> innerJoin('m.expediente', 'e')
+// 			-> where($qb->expr()->andX(
+// 										$qb->expr()->eq('e.id', '?1'),
+// 										$qb->expr()->eq('m.anulado', '?2')	
+// 									   )
+// 					)
+// 			->setParameter(1, $idExpediente)
+// 			->setParameter(2, false);
+// 		return $qb->getQuery()->getResult();
+// 	}
+	
+	public function findInformesByExpediente_Id($idExpediente){
+			
+		$rsm = new ResultSetMapping();
+		$rsm->addScalarResult('idMovimiento', 'id');
+		$rsm->addScalarResult('tipo', 'tipo');
+		$rsm->addScalarResult('numero_Remito', 'numero_remito');
+		$rsm->addScalarResult('destino', 'destino');
+		$rsm->addScalarResult('fecha_envio', 'fecha_envio');
+		$rsm->addScalarResult('observacion', 'observacion');
+		$rsm->addScalarResult('fecha_recepcion', 'fecha_recepcion');
+		$rsm->addScalarResult('fecha_respuesta', 'fecha_respuesta');
+		$rsm->addScalarResult('remito_retorno', 'remito_retorno');
+		$rsm->addScalarResult('comision', 'comision');
+		
+		$sql="select m.idMovimiento, upper(m.discriminador) as tipo, r.numeroRemito as numero_remito, ".
+			 		 "o.oficina as destino, DATE_FORMAT(r.fechaCreacion, '%d/%m/%Y') as fecha_envio, ".
+					 "ifnull(m.observacion,'') as observacion, ifnull(DATE_FORMAT(r.fechaRecepcion, '%d/%m/%Y'),'') as fecha_recepcion, ".
+					 "ifnull(DATE_FORMAT(m.fechaRespuesta, '%d/%m/%Y'),'') as fecha_respuesta, ".
+					 "m.remitoRetorno as remito_retorno, ifnull(upper(c.comision),'') as comision ".
+			 "from 	movimiento m ".
+			 "inner join	remito r on	m.idRemito=r.idRemito ".
+			 "inner join oficina o on r.idDestino=o.IdOficina ".
+			 "left join comision c on m.idComision=c.idComision ".
+			 "where   m.discriminador<> :pase ";
+		
+		$query = $this -> getEntityManager() -> createNativeQuery($sql, $rsm);
+		$query -> setParameter('idExpediente', $idExpediente)
+			   -> setParameter('pase', 'pase');
+
+		return  $query->getResult();
+		
+	}
+	
+	public function findAllInformes()
+	{
+		
+		$rsm = new ResultSetMapping();
+		$rsm->addScalarResult('idMovimiento', 'id');
+		$rsm->addScalarResult('numeroExpediente', 'numero_expediente');
+		$rsm->addScalarResult('tipo', 'tipo');
+		$rsm->addScalarResult('destino', 'destino');
+		$rsm->addScalarResult('fecha_envio', 'fecha_envio');
+		$rsm->addScalarResult('observacion', 'observacion');
+		$rsm->addScalarResult('fechaRespuesta', 'fecha_respuesta');
+		$rsm->addScalarResult('comision', 'comision_reserva');
+		
+		
+		$sql="select m.idMovimiento, concat(e.numeroExpediente,'-',t.letra,'-',e.periodo) as numeroExpediente, ".
+					"m.discriminador as tipo, o.oficina as destino, DATE_FORMAT(r.fechaCreacion, '%d/%m/%Y') as fecha_envio, ".
+					"ifnull(m.observacion,'') as observacion, ifnull(DATE_FORMAT(m.fechaRespuesta, '%d/%m/%Y'),'') as fechaRespuesta, ".
+					"ifnull(upper(c.comision),'') as comision ".
+			"from 	movimiento m ".
+			"inner join	remito r on	m.idRemito=r.idRemito ".
+			"inner join oficina o on r.idDestino=o.IdOficina ".
+			"inner join expediente e on e.idExpediente=m.idExpediente ".
+			"inner join tipoExpediente t on e.idTipoExpediente=t.idTipoExpediente ".
+			"left join comision c on m.idComision=c.idComision ".
+			"where   m.discriminador<>:pase";
+		
+		$query = $this -> getEntityManager() -> createNativeQuery($sql, $rsm);
+		$query -> setParameter('pase', 'pase');
+			
+		return $query->getResult();
+		
+	}
+	
+	public function findInformeByNumeroExpediente($numero)
+	{
+		$rsm = new ResultSetMapping();
+		$rsm->addScalarResult('idMovimiento', 'id');
+		$rsm->addScalarResult('numeroExpediente', 'numero_expediente');
+		$rsm->addScalarResult('tipo', 'tipo');
+		$rsm->addScalarResult('destino', 'destino');
+		$rsm->addScalarResult('fecha_envio', 'fecha_envio');
+		$rsm->addScalarResult('observacion', 'observacion');
+		$rsm->addScalarResult('fechaRespuesta', 'fecha_respuesta');
+		$rsm->addScalarResult('comision', 'comision_reserva');
+	
+		$numeroSeparado=explode('-', $numero);
+		
+		if (count($numeroSeparado)!=2)
+			throw new \Exception('El criterio de busqueda debe tener el formato {numero}-{año} (por ejemplo 1-17)');
+			
+		$periodo='20'.$numeroSeparado[1];
+		$numerador=$numeroSeparado[0];
+		
+		$sql="select m.idMovimiento, concat(e.numeroExpediente,'-',t.letra,'-',e.periodo) as numeroExpediente, ".
+					"m.discriminador as tipo, o.oficina as destino, DATE_FORMAT(r.fechaCreacion, '%d/%m/%Y') as fecha_envio, ".
+					"ifnull(m.observacion,'') as observacion, ifnull(DATE_FORMAT(m.fechaRespuesta, '%d/%m/%Y'),'') as fechaRespuesta, ".
+					"ifnull(upper(c.comision),'') as comision ".
+			 "from 	movimiento m ".
+			 "inner join	remito r on	m.idRemito=r.idRemito ".
+			 "inner join oficina o on r.idDestino=o.IdOficina ".
+			 "inner join expediente e on e.idExpediente=m.idExpediente ".
+			 "inner join tipoExpediente t on e.idTipoExpediente=t.idTipoExpediente ".
+			 "left join comision c on m.idComision=c.idComision ".
+			 "where   m.discriminador<>:pase and e.numeroExpediente=:numeroExpediente and e.periodo=:periodo";
+		
+		$query = $this -> getEntityManager() -> createNativeQuery($sql, $rsm);
+		$query -> setParameter('pase', 'pase')
+			   -> setParameter('numeroExpediente', $numerador)
+			   -> setParameter('periodo', $periodo);
+				
+		return $query->getResult();
+	}
+
+	public function findInformeByTipo($tipo)
+	{
+		
+		$rsm = new ResultSetMapping();
+		$rsm->addScalarResult('idMovimiento', 'id');
+		$rsm->addScalarResult('numeroExpediente', 'numero_expediente');
+		$rsm->addScalarResult('tipo', 'tipo');
+		$rsm->addScalarResult('destino', 'destino');
+		$rsm->addScalarResult('fecha_envio', 'fecha_envio');
+		$rsm->addScalarResult('observacion', 'observacion');
+		$rsm->addScalarResult('fechaRespuesta', 'fecha_respuesta');
+		$rsm->addScalarResult('comision', 'comision_reserva');
+		
+		$sql="select m.idMovimiento, concat(e.numeroExpediente,'-',t.letra,'-',e.periodo) as numeroExpediente, ".
+					"m.discriminador as tipo, o.oficina as destino, DATE_FORMAT(r.fechaCreacion, '%d/%m/%Y') as fecha_envio, ".
+					"ifnull(m.observacion,'') as observacion, ifnull(DATE_FORMAT(m.fechaRespuesta, '%d/%m/%Y'),'') as fechaRespuesta, ".
+					"ifnull(upper(c.comision),'') as comision ".
+				"from 	movimiento m ".
+				"inner join	remito r on	m.idRemito=r.idRemito ".
+				"inner join oficina o on r.idDestino=o.IdOficina ".
+				"inner join expediente e on e.idExpediente=m.idExpediente ".
+				"inner join tipoExpediente t on e.idTipoExpediente=t.idTipoExpediente ".
+				"left join comision c on m.idComision=c.idComision ".
+				"where   m.discriminador=:tipo";
+			
+		$query = $this -> getEntityManager() -> createNativeQuery($sql, $rsm);
+		$query -> setParameter('tipo', $tipo);
+			
+		return $query->getResult();
+	
+	}
+	
+	public function findInformeByDestino($idDestino)
+	{
+		$rsm = new ResultSetMapping();
+		$rsm->addScalarResult('idMovimiento', 'id');
+		$rsm->addScalarResult('numeroExpediente', 'numero_expediente');
+		$rsm->addScalarResult('tipo', 'tipo');
+		$rsm->addScalarResult('destino', 'destino');
+		$rsm->addScalarResult('fecha_envio', 'fecha_envio');
+		$rsm->addScalarResult('observacion', 'observacion');
+		$rsm->addScalarResult('fechaRespuesta', 'fecha_respuesta');
+		$rsm->addScalarResult('comision', 'comision_reserva');
+			
+		$sql="select m.idMovimiento, concat(e.numeroExpediente,'-',t.letra,'-',e.periodo) as numeroExpediente, ".
+					"m.discriminador as tipo, o.oficina as destino, DATE_FORMAT(r.fechaCreacion, '%d/%m/%Y') as fecha_envio, ".
+					"ifnull(m.observacion,'') as observacion, ifnull(DATE_FORMAT(m.fechaRespuesta, '%d/%m/%Y'),'') as fechaRespuesta, ".
+					"ifnull(upper(c.comision),'') as comision ".
+					"from 	movimiento m ".
+			"inner join	remito r on	m.idRemito=r.idRemito ".
+			"inner join oficina o on r.idDestino=o.IdOficina ".
+			"inner join expediente e on e.idExpediente=m.idExpediente ".
+			"inner join tipoExpediente t on e.idTipoExpediente=t.idTipoExpediente ".
+			"left join comision c on m.idComision=c.idComision ".
+			"where   m.discriminador<>:pase and o.idOficina=:idDestino";
+		
+		$query = $this -> getEntityManager() -> createNativeQuery($sql, $rsm);
+		$query -> setParameter('pase', 'pase')
+			   -> setParameter('idDestino', $idDestino);
+		
+		return $query->getResult();
+	}
+	
+	public function findInformeByComisionReserva($idComisionReserva)
+	{
+		$rsm = new ResultSetMapping();
+		$rsm->addScalarResult('idMovimiento', 'id');
+		$rsm->addScalarResult('numeroExpediente', 'numero_expediente');
+		$rsm->addScalarResult('tipo', 'tipo');
+		$rsm->addScalarResult('destino', 'destino');
+		$rsm->addScalarResult('fecha_envio', 'fecha_envio');
+		$rsm->addScalarResult('observacion', 'observacion');
+		$rsm->addScalarResult('fechaRespuesta', 'fecha_respuesta');
+		$rsm->addScalarResult('comision', 'comision_reserva');
+		
+		$sql="select m.idMovimiento, concat(e.numeroExpediente,'-',t.letra,'-',e.periodo) as numeroExpediente, ".
+				"m.discriminador as tipo, o.oficina as destino, DATE_FORMAT(r.fechaCreacion, '%d/%m/%Y') as fecha_envio, ".
+				"ifnull(m.observacion,'') as observacion, ifnull(DATE_FORMAT(m.fechaRespuesta, '%d/%m/%Y'),'') as fechaRespuesta, ".
+				"ifnull(upper(c.comision),'') as comision ".
+				"from 	movimiento m ".
+				"inner join	remito r on	m.idRemito=r.idRemito ".
+				"inner join oficina o on r.idDestino=o.IdOficina ".
+				"inner join expediente e on e.idExpediente=m.idExpediente ".
+				"inner join tipoExpediente t on e.idTipoExpediente=t.idTipoExpediente ".
+				"inner join comision c on m.idComision=c.idComision ".
+				"where   m.discriminador<>:pase and c.idComision=:idComisionReserva";
+		
+		$query = $this -> getEntityManager() -> createNativeQuery($sql, $rsm);
+		$query -> setParameter('pase', 'pase')
+		-> setParameter('idComisionReserva', $idComisionReserva);
+		
+		return $query->getResult();
+		
 	}
 }

@@ -608,20 +608,26 @@
 									            "render": function(data, type, row){
 										            
 										            var html="<div class='text-center'><div class='btn-group'>";
-										            if (row.tiene_sancion=='No'){
-									            		html+="<button type='button' title='Redactar Sancion' "+(($("#permiteEdicion").val()==0)?"disabled":"")+
-											            	  " class='btn btn-primary btn-xs btn-redactar-sancion'>"+
-											            	  "<span class='glyphicon glyphicon-plus'></span></button> ";
-									            		if (row.dictamenes>0)
-									            			html+="<button type='button'title='Usar Dictamen' "+(($("#permiteEdicion").val()==0)?"disabled":"")+
-											            		  " class='btn btn-primary btn-xs btn-sancion-dictamen'>"+
-											            		  "<span class='glyphicon glyphicon-paperclip'></span></button> ";
-										            }
-								            		else
-								            			html+="<button type='button'title='Editar Sancion' "+(($("#permiteEdicion").val()==0)?"disabled":"")+
-										            		  " class='btn btn-info btn-xs btn-editar-sancion'>"+
-										            		  "<span class='glyphicon glyphicon-pencil'></span></button> ";
 
+										            if ('{{ 'DESP_SANC_ADD' in app.user.listaPermisos }}'){
+											            
+    										            if (row.tiene_sancion=='No'){
+    											           										            	
+    									            		html+="<button type='button' title='Redactar Sancion' "+(($("#permiteEdicion").val()==0)?"disabled":"")+
+    											            	  " class='btn btn-primary btn-xs btn-redactar-sancion'>"+
+    											            	  "<span class='glyphicon glyphicon-plus'></span></button> ";
+        											            	  
+    									            		if (row.dictamenes>0)
+        									            			html+="<button type='button'title='Usar Dictamen' "+(($("#permiteEdicion").val()==0)?"disabled":"")+
+        											            		  " class='btn btn-primary btn-xs btn-sancion-dictamen'>"+
+        											            		  "<span class='glyphicon glyphicon-paperclip'></span></button> ";
+    										            }
+    								            		else
+    								            			html+="<button type='button'title='Editar Sancion' "+(($("#permiteEdicion").val()==0)?"disabled":"")+
+    										            		  " class='btn btn-info btn-xs btn-editar-sancion'>"+
+    										            		  "<span class='glyphicon glyphicon-pencil'></span></button> ";
+										            }
+										            
 									     			html+="</div></div>";	
 								            		return html;
 									            }

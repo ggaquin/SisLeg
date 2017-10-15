@@ -477,9 +477,11 @@
 									            "orderable":false,
 									            "render": function(data, type, row){
 										            var html="<div class='btn-group'>";
-											        html+="<button type='button' title='Anular Asignación' class='btn btn-danger btn-xs btn-anular' "+
-											        	  ((row.edicion_habilitada==false)?"disabled":"")+" ><span class='glyphicon glyphicon-minus-sign'></span></button>";
-													html+="</div>";
+										            if ('{{ 'COM_EXP_DEL' in app.user.listaPermisos }}')
+    											        html+="<button type='button' title='Anular Asignación' class='btn btn-danger btn-xs btn-anular' "+
+    											        	  ((row.edicion_habilitada==false)?"disabled":"")+" ><span class='glyphicon glyphicon-minus-sign'></span></button>";
+										            
+										            html+="</div>";
 									            	return html;
 									            }
 									        },
@@ -488,9 +490,12 @@
 									            "data": null,
 									            "orderable":false,
 									            "render": function(data, type, row){
-									            	html="<button type='button'title='Editar Comision' class='btn btn-primary btn-xs btn-editar' "+
-									            	     ((row.edicion_habilitada==false)?"disabled":"")+ "><span class='glyphicon glyphicon-pencil'></span></button> ";
-								            		html+=data+' ('+row.letra+')';
+										            var html='';
+										            if ('{{ 'COM_EXP_COM_EDIT' in app.user.listaPermisos }}'){
+    									            	html="<button type='button'title='Editar Comision' class='btn btn-primary btn-xs btn-editar' "+
+    									            	     ((row.edicion_habilitada==false)?"disabled":"")+ "><span class='glyphicon glyphicon-pencil'></span></button> ";
+    								            		html+=data+' ('+row.letra+')';
+										            }
 								            		return html;
 									            }
 									        },
@@ -500,23 +505,25 @@
 									            "orderable":false,
 									            "render": function(data, type, row){
 								            		var html="<div class='text-center'>";
-								            		if (row.sesion!=""){
-
-														html+="<button type='button' class='btn btn-sm btn-success btn-editar-sesion' ";
-														html+=((row.edicion_habilitada==false)?"disabled":"")+" data-toggle='modal' data-target='#modalSesion' >";
-														html+="<span>"+row.sesion;
-														html+= ((row.edicion_habilitada==false)
-																	?" <li class='fa fa-lock'></li>"
-																	:" <li class='fa fa-unlock'></li>");
-														html+="</span></button>";
-													
-									            	}
-								            		else{
-															html+="<button type='button' class='btn btn-sm btn-primary btn-asignar-sesion' data-toggle='modal' data-target='#modalSesion' >Asignar Sesión</button>";
-
-									            		}
-
-								            		return html+"</div>";
+								            		if ('{{ 'COM_EXP_SES_EDIT' in app.user.listaPermisos }}'){
+    								            		if (row.sesion!=""){
+    
+    														html+="<button type='button' class='btn btn-sm btn-success btn-editar-sesion' ";
+    														html+=((row.edicion_habilitada==false)?"disabled":"")+" data-toggle='modal' data-target='#modalSesion' >";
+    														html+="<span>"+row.sesion;
+    														html+= ((row.edicion_habilitada==false)
+    																	?" <li class='fa fa-lock'></li>"
+    																	:" <li class='fa fa-unlock'></li>");
+    														html+="</span></button>";
+    													
+    									            	}
+    								            		else{
+    															html+="<button type='button' class='btn btn-sm btn-primary btn-asignar-sesion' data-toggle='modal' data-target='#modalSesion' >Asignar Sesión</button>";
+    
+    									            		}
+								            		}
+								            		html+"</div>";
+								            		return html;
 									            }
 									        },
 									        {
@@ -536,27 +543,28 @@
 									         	"render": function(data, type, row){
 										         	
 													var html="<div class='text-center'><div class='btn-group'>";
-												
+
     												if (row.dictamen_mayoria_id==0){
     													
         												if (row.recibido==true)
             												
-        													html+="<button type='button' title='Agregar Dictamen' "+
-        														  "class='btn btn-primary btn-xs btn-nuevo-dictamen-mayoria' "+
-        														  ((row.edicion_habilitada==false)?"disabled":"")+" >Agregar Dictamen</button>";
+        													if ('{{ 'COM_EXP_DICT_ADD' in app.user.listaPermisos }}')
+            													html+="<button type='button' title='Agregar Dictamen' "+
+            														  "class='btn btn-primary btn-xs btn-nuevo-dictamen-mayoria' "+
+            														  ((row.edicion_habilitada==false)?"disabled":"")+" >Agregar Dictamen</button>";
         												else
 
         													html+="<span class='label label-danger'>Sin Dictamen</span>";
     												}
     												else{
-													
-    														html+="<button type='button' title='Editar Dictamen' "+
-    															  "class='btn btn-success btn-xs btn-editar-dictamen-mayoria' "+
-    															  ((row.edicion_habilitada==false)?"disabled":"")+
-    															  " data-toggle='modal' data-target='#modalDictamen' id='"+row.dictamen_mayoria_id+"'>"+
-    															  "Editar Dictamen</button>";
+    														if ('{{ 'COM_EXP_DICT_EDIT' in app.user.listaPermisos }}')
+        														html+="<button type='button' title='Editar Dictamen' "+
+        															  "class='btn btn-success btn-xs btn-editar-dictamen-mayoria' "+
+        															  ((row.edicion_habilitada==false)?"disabled":"")+
+        															  " data-toggle='modal' data-target='#modalDictamen' id='"+row.dictamen_mayoria_id+"'>"+
+        															  "Editar Dictamen</button>";
     												}
-													
+																										
     								            	return html+"</div></div>";		
 									         	}
 									        },
@@ -571,20 +579,21 @@
     												if (row.dictamen_primera_minoria_id==0){
     													
     													if (row.recibido==true)
-        													
-        													html+="<button type='button' title='Agregar Dictamen' "+
-        														  "class='btn btn-primary btn-xs btn-nuevo-dictamen-primera-minoria'" +
-        														  ((row.edicion_habilitada==false)?"disabled":"")+" >Agregar Dictamen</button>";
+
+    														if ('{{ 'COM_EXP_DICT_ADD' in app.user.listaPermisos }}')
+            													html+="<button type='button' title='Agregar Dictamen' "+
+            														  "class='btn btn-primary btn-xs btn-nuevo-dictamen-primera-minoria'" +
+            														  ((row.edicion_habilitada==false)?"disabled":"")+" >Agregar Dictamen</button>";
         												else
         													html+="<span class='label label-danger'>Sin Dictamen</span>";
     												}
         											else{
-    												
-            			    								html+="<button type='button' title='Editar Dictamen' "+
-        														  "class='btn btn-success btn-xs btn-editar-dictamen-primera-minoria' "+
-        														  ((row.edicion_habilitada==false)?"disabled":"")+
-        														  " data-toggle='modal' data-target='#modalDictamen' id='"+row.dictamen_primera_minoria_id+"'>"+
-        														  "Editar Dictamen</button>";
+        												if ('{{ 'COM_EXP_DICT_EDIT' in app.user.listaPermisos }}')
+                			    								html+="<button type='button' title='Editar Dictamen' "+
+            														  "class='btn btn-success btn-xs btn-editar-dictamen-primera-minoria' "+
+            														  ((row.edicion_habilitada==false)?"disabled":"")+
+            														  " data-toggle='modal' data-target='#modalDictamen' id='"+row.dictamen_primera_minoria_id+"'>"+
+            														  "Editar Dictamen</button>";
         											}
 																					
     								            	return html+"</div></div>";
@@ -602,19 +611,21 @@
     													    												
         												if (row.recibido==true)
             												
-        													html+="<button type='button' title='Agregar Dictamen' "+
-        														  "class='btn btn-primary btn-xs btn-nuevo-dictamen-segunda-minoria' "+
-        														  ((row.edicion_habilitada==false)?"disabled":"")+" >Agregar Dictamen</button>";
+        													if ('{{ 'COM_EXP_DICT_ADD' in app.user.listaPermisos }}')
+            													html+="<button type='button' title='Agregar Dictamen' "+
+            														  "class='btn btn-primary btn-xs btn-nuevo-dictamen-segunda-minoria' "+
+            														  ((row.edicion_habilitada==false)?"disabled":"")+" >Agregar Dictamen</button>";
         												else
 
         													html+="<span class='label label-danger'>Sin Dictamen</span>";
     												}
-    												else{    												
-        													html+="<button type='button' title='Editar Dictamen' "+
-        														  "class='btn btn-success btn-xs btn-editar-dictamen-segunda-minoria' "+
-        														  ((row.edicion_habilitada==false)?"disabled":"")+
-        														  " data-toggle='modal' data-target='#modalDictamen' id='"+row.dictamen_segunda_minoria_id+"'>"+
-        														  "Editar Dictamen</button>";
+    												else{    		
+    														if ('{{ 'COM_EXP_DICT_EDIT' in app.user.listaPermisos }}')										
+            													html+="<button type='button' title='Editar Dictamen' "+
+            														  "class='btn btn-success btn-xs btn-editar-dictamen-segunda-minoria' "+
+            														  ((row.edicion_habilitada==false)?"disabled":"")+
+            														  " data-toggle='modal' data-target='#modalDictamen' id='"+row.dictamen_segunda_minoria_id+"'>"+
+            														  "Editar Dictamen</button>";
     												}													
 								
     								            	return html+"</div></div>";
@@ -769,7 +780,7 @@
 				
 				$("#selTipoRedaccion").val("basico");
 		        $("#selTipoRedaccion").change();
-		        //$("#selComisiones").prop("disabled", false);
+		        $("#selComisiones").prop("disabled", false);
 		        $("#texto").data("wysihtml5").editor.setValue('');
 		        $("#articulos > tbody").html('');
 		        $("#vistos").html('');
@@ -1747,11 +1758,11 @@
 	                		<th>id</th>
 	                		<th>
 	                			<div class="btn-group">
-	                				{# if EXP_NEW is defined #}
-		                			<button type="button" title="Agregar Asignación"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modalNuevaAsignacion">
-							    			<span class="glyphicon glyphicon-plus"></span>
-							    	</button>
-							    	{# endif #}
+	                				{% if 'COM_EXP_COM_EDIT' in app.user.listaPermisos %}
+    		                			<button type="button" title="Agregar Asignación"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modalNuevaAsignacion">
+    							    			<span class="glyphicon glyphicon-plus"></span>
+    							    	</button>
+							    	{% endif %}
 							    </div>
 						    </th>	
 						    <th>Expdiente</th>

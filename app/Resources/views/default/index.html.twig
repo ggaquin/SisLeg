@@ -230,7 +230,7 @@
               <li><a href="#" onclick="cargarMenu('/bloques')"><i class="fa fa-sitemap"></i><span>Bloques</span></a></li>
               
               {# ------------------------------------------SECTOR DE COMISIONES----------------------------------- #}
-              {% if app.user.rol.oficina is null or app.user.rol.oficina.id==3 %}	
+                {% if app.user.rol.rol=="ROLE_ADMINISTRADOR" or app.user.rol.rol=="ROLE_COMISIONES" %}	
                   <li class="treeview">
                     <a href="#">
                       <i class="fa fa-users"></i>
@@ -241,26 +241,25 @@
                     </a>
                     <ul class="treeview-menu">
                       <li class="divider"></li>
-                      {% if COM_MAIN is defined %}
+                 
                       	<li><a href="#" onclick="cargarMenu('/comisiones');"><i class="fa fa-minus"></i>Alta y Modificación</a></li>
-                      {% endif %}
-                      {% if COM_EXP_MAIN is defined %}
+             
                       	<li><a href="#" onclick="cargarMenu('/expedientesComisiones');"><i class="fa fa-minus"></i>Expedientes Girados</a></li>
-                      {% endif %}
-                      {% if  MOV_MAIN is defined%}
+ 
                       	<li><a href="#" onclick="cargarMenu('/movimientos')"><i class="fa fa-minus"></i>Movimientos</a></li>
-                      {% endif %}
                     </ul>
                   </li>
               {% endif %}
               {# --------------------------------------FIN SECTOR DE COMISIONES----------------------------------- #}
               
-              {% if CON_MAIN is defined %}
+               {% if app.user.rol.rol=="ROLE_DESPACHO" or app.user.rol.rol=="ROLE_MESA_ENTRADA" or app.user.rol.rol=="ROLE_LEGISLADOR"%}
+              		<li><a href="#" onclick="cargarMenu('/comisiones');"><i class="fa fa-users"></i>Comisiones</a></li>
+               {% endif %}
+               
               	<li><a href="#" onclick="cargarMenu('/legisladores')"><i class="fa fa-address-card-o"></i><span>Concejales</span></a></li>
-              {% endif %}
               
               {# -------------------- -------------------SECTOR DE DESPACHO----------------- --------------------- #}
-              {% if app.user.rol.oficina is null or app.user.rol.oficina.id==5 %}
+              {% if app.user.rol.rol=="ROLE_ADMINISTRADOR" or app.user.rol.rol=="ROLE_DESPACHO" %}
                   <li class="treeview">
                     <a href="#">
                       <i class="fa fa-book"></i>
@@ -271,22 +270,20 @@
                     </a>
                     <ul class="treeview-menu">
                       <li class="divider"></li>
-                      {# {% if EXP_MAIN is defined %} #}
+
                       	<li><a href="#"  onclick="cargarMenu('/seleccionSesion')"><i class="fa fa-minus"></i>Expedientes Orden del Día</a></li>
-                      {# {% endif %} #}
-                      {# if  MOV_MAIN is defined #}
+                 
                       	<li><a href="#" onclick="noImplementado();"><i class="fa fa-minus"></i>Versiones Taquigráficas</a></li>
-                      {# endif #}
-                      {% if  MOV_MAIN is defined%}
+                      
                       	<li><a href="#" onclick="cargarMenu('/movimientos')"><i class="fa fa-minus"></i>Movimientos</a></li>
-                      {% endif %}
+                      
                     </ul>
                   </li>
               {% endif %}
               {# ------ -------------------------------FIN SECTOR DE COMISIONES----------------------------------- #}
               
               {# ---------------------------------------SECTOR DE EXPEDIENTES------------------------------------- #}
-              {% if app.user.rol.oficina is null or app.user.rol.oficina.id==9 %}
+              {% if app.user.rol.rol=="ROLE_ADMINISTRADOR" or app.user.rol.rol=="ROLE_MESA_ENTRADA" %}
                   <li class="treeview">
                     <a href="#">
                       <i class="fa fa-inbox"></i>
@@ -297,26 +294,51 @@
                     </a>
                     <ul class="treeview-menu">
                       <li class="divider"></li>
-                      {% if EXP_MAIN is defined %}
+                     
                       	<li><a href="#" onclick="cargarMenu('/expedientes')"><i class="fa fa-minus"></i>Gestión de Expedientes</a></li>
-                      {% endif %}
-                      {% if  MOV_MAIN is defined%}
+          
                       	<li><a href="#" onclick="cargarMenu('/movimientos')"><i class="fa fa-minus"></i>Movimientos</a></li>
-                      {% endif %}
+           
+                      	<li><a href="#" onclick="cargarMenu('/proyectos')"><i class="fa fa-file-text"></i><span>Proyectos</span></a></li>
+                  
                     </ul>
                   </li>
               {% endif %}
               {# ---------------------------------------FIN SECTOR DE EXPEDIENTES--------------------------------- #}
+                
+              {# ---------------------------------------SECTOR DE LEGISLADORES------------------------------------- #}  			
+  			  {% if app.user.rol.rol=="ROLE_LEGISLADOR" %}
+                  <li class="treeview">
+                    <a href="#">
+                      <i class="fa fa-graduation-cap" aria-hidden="true"></i>
+                      <span>Legisladores</span>
+                      <span class="pull-right-container">
+                        <i class="fa fa-angle-left pull-right"></i>
+                      </span>
+                    </a>
+                    <ul class="treeview-menu">
+                      <li class="divider"></li>
+                      
+                      	<li><a href="#" onclick="cargarMenu('/proyectos')"><i class="fa fa-file-text"></i><span>Proyectos</span></a></li>
+                 
+                      	<li><a href="#" onclick="cargarMenu('/listadoCh')"><i class="fa fa-bullhorn" aria-hidden="true"></i><span>CH</span></a></li>
+                 
+               		</ul>
+                  </li>
+              {% endif %}
               
-              <li><a href="#" onclick="cargarMenu('/oficinas')"><i class="fa fa-address-book-o"></i><span>Oficinas</span></a></li>
-  
-              {% if PROJ_MAIN is defined %}
-              	<li><a href="#" onclick="cargarMenu('/proyectos')"><i class="fa fa-file-text"></i><span>Proyectos</span></a></li>
+              {# ---------------------------------------FIN SECTOR DE LEGISLADORES--------------------------------- #}
+              
+              {% if app.user.rol.rol=="ROLE_ADMINISTRADOR" or 
+                     app.user.rol.rol=="ROLE_DESPACHO" or 
+                     app.user.rol.rol=="ROLE_MESA_ENTRADA" 
+              %}	
+              	<li><a href="#" onclick="cargarMenu('/oficinas')"><i class="fa fa-address-book-o"></i><span>Oficinas</span></a></li>
               {% endif %}
               
               <li><a href="#" onclick="cargarMenu('/sesion')"><i class="fa fa-calendar"></i><span>Sesiones</span></a></li>
               
-              {% if USR_MAIN is defined %}
+               {% if app.user.rol.rol=="ROLE_ADMINISTRADOR" %}
               	<li><a href='#' onclick="cargarMenu('/usuarios')"><i class="fa fa-user-circle"></i><span>Usuarios</span></a></li>
               {% endif %}
              

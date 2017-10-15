@@ -394,6 +394,23 @@ class Usuario implements AdvancedUserInterface ,\Serializable
         $roles = ["0"=>$objetoRol->getRol()];
         return $roles;
     }
+    
+    /**
+     * Get listaPermisos
+     * 
+     * @return string
+     */
+    public function  getListaPermisos()
+    {
+    	$permisos=$this->getPermisos();
+    	$permisos_usuario="";
+    	foreach ($permisos as $permiso){
+    		$permisos_usuario.=','.$permiso;
+    	}
+    	
+    	return $permisos_usuario;
+    	
+    }
 
      /**
      * Get RolComoString

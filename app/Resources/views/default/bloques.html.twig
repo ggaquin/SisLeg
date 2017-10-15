@@ -72,11 +72,14 @@
 									            "orderable":false,
 									            "render": function(data, type, row){
 										            var html="<div class='btn-group'>";
-										            html+="<button type='button'  title='Editar Bloque' class='btn btn-primary btn-xs btn-editar'><span class='glyphicon glyphicon-pencil'></span>"+
-									            		  "</button>";
-									       
-									            	html+="<button type='button'  class='btn btn-danger btn-xs btn-eliminar' title='Eliminar Bloque'><span class='glyphicon glyphicon-erase'></span>"+
-									            		  "</button>";
+										            if ('{{ 'BLOQ_EDIT' in app.user.listaPermisos }}')
+    										            html+="<button type='button'  title='Editar Bloque' class='btn btn-primary btn-xs btn-editar'><span class='glyphicon glyphicon-pencil'></span>"+
+    									            		  "</button>";
+    									            		  
+    									            if ('{{ 'BLOQ_DEL' in app.user.listaPermisos }}')
+    									            	html+="<button type='button'  class='btn btn-danger btn-xs btn-eliminar' title='Eliminar Bloque'><span class='glyphicon glyphicon-erase'></span>"+
+    									            		  "</button>";
+    									            		  
 									            	return html+"</div>";
 									            }
 									        }
@@ -221,9 +224,11 @@
 			                	<tr>
 			                		<th>id</th>
     		                		<th>
-    		                			<button type="button" title="Agregar Bloque"class="btn btn-primary btn-xs btn-alta">
-    							    			<span class="glyphicon glyphicon-plus"></span>
-    							    	</button>
+    		                			{% if 'BLOQ_ADD' in app.user.listaPermisos %}
+        		                			<button type="button" title="Agregar Bloque"class="btn btn-primary btn-xs btn-alta">
+        							    			<span class="glyphicon glyphicon-plus"></span>
+        							    	</button>
+        							    {% endif %}
     							    </th>
 					                <th>Bloque</th>
 					                <th>Concejales</th>

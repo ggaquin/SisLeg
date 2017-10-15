@@ -27,6 +27,10 @@
 		.custom-modal{
 			height: 2000%!important;
 		}
+		
+		.bootstrap-primary-background{
+			background: #3c8dbc!important;
+		}  
 
 		.select2-selection--multiple { max-height: 10rem; overflow-y: auto }
 
@@ -343,16 +347,17 @@
 									            "data": null,
 									            "orderable":false,
 									            "render": function(data, type, row){
-									            	// var html="<button type='button'title='Editar Proyecto' class='btn btn-primary btn-xs btn-editar-proyecto' data-toggle='modal' data-target='#editarProyecto'><span class='glyphicon glyphicon-pencil'></span></button>"
+									            	
 									            	var html="";
-
-									            	if("{{app.user.rol.rol}}"=="ROLE_ADMINISTRADOR" || row.numero_expediente=="---")
-
+													debugger;
+									            	if("{{app.user.rol.rol}}"=="ROLE_ADMINISTRADOR" || 
+											            (row.numero_expediente=="---" && '{{ 'EXP_FEC_ING_EDIT' in  app.user.listaPermisos }}'))
 									            		html="<button type='button'title='Editar Proyecto' class='btn btn-primary btn-xs btn-editar-proyecto' data-toggle='modal' data-target='#editarProyecto'><span class='glyphicon glyphicon-pencil'></span></button>";
 									            	else
 									            		html="<button type='button'title='Editar Proyecto' class='btn btn-danger btn-xs' disabled><span class='glyphicon glyphicon-lock'></span></button>";
-									            	"<span class='glyphicon glyphicon-lock' title='Editar Proyecto' ></span>";
-									             	html+="<button type='button' title='Descargar Documento' class='btn btn-info btn-xs btn-descargar'><span class='glyphicon glyphicon-save-file'></span></button>";
+									            	
+									            	if ('{{ 'PROJ_DOWNLOAD' in app.user.listaPermisos }}')
+									             		html+="<button type='button' title='Descargar Documento' class='btn btn-info btn-xs btn-descargar'><span class='glyphicon glyphicon-save-file'></span></button>";
 									            	return html;
 									            }
 									        }
@@ -614,6 +619,10 @@
 
 			//EVENTO ABRIR MODAL NUEVO PROYECTO
 		    $('#nuevoProyecto').on('show.bs.modal', function () {
+			    var rol='{{ app.user.rol.rol }}';
+			    var idPerfil='{{ app.user.perfil.id }}';
+			    var nombreCompletoPerfil='{{ app.user.perfil.nombreCompleto }}';
+
 		  		$("#selTipoProyecto").val(0);
 		    	$("#selConcejal").empty().change();
 				$("#visto").data("wysihtml5").editor.setValue('');
@@ -623,6 +632,17 @@
 				$('#btn-guardar-proyecto').prop("disabled",false);
 				articulosIngresados=[];
 				habilitar('tab-1');
+
+				if (rol=="ROLE_LEGISLADOR"){
+					var newOption = new Option(nombreCompletoPerfil, idPerfil, true, true);
+					$("#selConcejal").append(newOption).trigger('change');
+					$("#selConcejal").prop("disabled", true);
+					$(".select2-selection__choice").addClass("bootstrap-primary-background")
+				}
+				else{
+					$("#selConcejal").prop("disabled", false);
+					$(".select2-selection__choice").removeClass("bootstrap-primary-background")
+					}
 
 				/* descomentar si se acuerda notificacion */
 				/*
@@ -1075,7 +1095,9 @@
 
 										<select class="form-control filtro" id="selBusqueda">
 											<option value="todo">Todo</option>
-											<option value="busqueda-1">Autor</option>
+											{% if( app.user.rol.rol !="ROLE_LEGISLADOR") %}
+												<option value="busqueda-1">Autor</option>
+											{% endif %}
 											<option value="busqueda-2">Estado Expediente</option>
 											<option value="busqueda-3">Número Expediente</option>
 											<option value="busqueda-4">Tipo de Proyecto</option>
@@ -1115,10 +1137,12 @@
 	                	<tr>
 	                		<th>Reg.</th>
 	                		<th class="text-center">
-	                			<button type="button" title="Agregar Proyecto"class="btn btn-primary btn-xs pull-left"
-						    			data-toggle="modal" data-target="#nuevoProyecto">
-						    			<span class="glyphicon glyphicon-plus"></span>
-						    	</button>
+	                			{% if PROJ_NEW in app.user.listaPermisos %}
+    	                			<button type="button" title="Agregar Proyecto"class="btn btn-primary btn-xs pull-left"
+    						    			data-toggle="modal" data-target="#nuevoProyecto">
+    						    			<span class="glyphicon glyphicon-plus"></span>
+    						    	</button>
+    						    {% endif %}
 						    </th>
 						    <th>Expediente</th>
 						    <th>Tipo</th>

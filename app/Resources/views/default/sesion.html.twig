@@ -73,29 +73,35 @@
 										            var html="<div class='btn-group'>";
         									            	 
         									        if (row.tiene_orden_del_dia==false){
+														debugger;
+        									        	if ('{{ 'SES_EDIT' in app.user.listaPermisos }}' && 
+                									        !(row.tipo_sesion=="Ordinaria" && "{{ app.user.rol.oficina.id }}"== "9"))
+    														html+="<button type='button'  title='Editar Sesión' "+
+                								            	 		 "class='btn btn-primary btn-xs btn-editar'>"+
+                								            	 		 "<span class='glyphicon glyphicon-pencil'></span>"+
+                								            	 "</button>";
 
-														html+="<button type='button'  title='Editar Sesión' "+
-            								            	 		 "class='btn btn-primary btn-xs btn-editar'>"+
-            								            	 		 "<span class='glyphicon glyphicon-pencil'></span>"+
-            								            	 "</button>";
-        									        	
-        									        	html+="<button type='button'  title='Generar Orden del Día' "+
-   									            	 		 		  "class='btn btn-primary btn-xs btn-generar'>"+
-   									            	 		 		  "<span class='fa fa-cogs'></span>"+
-   									            	 		  "</button>";
+                								        if ('{{ 'SES_OD_NEW' in app.user.listaPermisos }}')
+            									        	html+="<button type='button'  title='Generar Orden del Día' "+
+       									            	 		 		  "class='btn btn-primary btn-xs btn-generar'>"+
+       									            	 		 		  "<span class='fa fa-cogs'></span>"+
+       									            	 		  "</button>";
         									        }
    									            	else{
 															if (row.tiene_edicion_bloqueada==false){
-       									            			html+="<button type='button'  title='Eliminar Orden del Día' "+
-        							            	 		 		  		  "class='btn btn-primary btn-xs btn-borrar'>"+
-        							            	 		 		  		  "<span class='glyphicon glyphicon-wrench'></span>"+
-        							            	 		 		  "</button>";
+																
+																if ('{{ 'SES_OD_DEL' in app.user.listaPermisos }}')	
+           									            			html+="<button type='button'  title='Eliminar Orden del Día' "+
+            							            	 		 		  		  "class='btn btn-primary btn-xs btn-borrar'>"+
+            							            	 		 		  		  "<span class='glyphicon glyphicon-wrench'></span>"+
+            							            	 		 		  "</button>";
 															}
 
-        							            	 		html+="<button type='button'  title='Descargar Orden del Día' "+
-        					            	 		 		  		  "class='btn btn-info btn-xs btn-descargar'>"+
-        					            	 		 		  		  "<span class='glyphicon glyphicon-save-file'></span>"+
-        					            	 		 		  	"</button>";
+															if ('{{ 'SES_OD_DOWNLOAD' in app.user.listaPermisos }}')	
+            							            	 		html+="<button type='button'  title='Descargar Orden del Día' "+
+            					            	 		 		  		  "class='btn btn-info btn-xs btn-descargar'>"+
+            					            	 		 		  		  "<span class='glyphicon glyphicon-save-file'></span>"+
+            					            	 		 		  	  "</button>";
    									            	}
 
 										            return html+"</div>";
@@ -127,17 +133,18 @@
 
 													var html="";
 									            	debugger;
-									             	if (row.tiene_orden_del_dia==true){
+									             	if (row.tiene_orden_del_dia==true && '{{ 'SES_EDIT_BLOQ' in app.user.listaPermisos }}'){
 
-										            	if(row.tiene_edicion_bloqueada==false)
+										            	if(row.tiene_edicion_bloqueada==false){
 											            	
 										            		html="<button type='button'  title='Bloquear Ediciones' "+
-        					            	 		 		  		  "class='btn btn-danger btn-xs btn-bloquear'>"+
-        					            	 		 		  		  "<span class='fa fa-unlock-alt' ></span>"+
-					            	 		 		  			 "</button>&nbsp;&nbsp;"+data; 	
-					            	 		 		   	else
-
-    					            	 		 		  	html="<span class='fa fa-lock'></span>&nbsp;&nbsp;"+data;
+        					            	 		 		  	 "class='btn btn-danger btn-xs btn-bloquear'>"+
+        					            	 		 		  	 "<span class='fa fa-unlock-alt' ></span>"+
+									            			 	 "</button>&nbsp;&nbsp;"+data; 	
+										            	}									             	
+    				            	 		 		   	else{
+    					            	 		 		  		html="<span class='fa fa-lock'></span>&nbsp;&nbsp;"+data;
+    				            	 		 		   	}
 									             	}
     					            	 		 	else
 
@@ -421,9 +428,11 @@
 	                	<tr>
 	                		<th>id</th>
 	                		<th>
-	                			<button type="button" title="Agregar Sesion"class="btn btn-primary btn-xs 
-	                					btn-alta"><span class="glyphicon glyphicon-plus"></span>
-						    	</button>
+	                			{% if 'SES_ADD' in app.user.listaPermisos %}
+    	                			<button type="button" title="Agregar Sesion"class="btn btn-primary btn-xs 
+    	                					btn-alta"><span class="glyphicon glyphicon-plus"></span>
+    						    	</button>
+    						    {% endif %}
 						    </th>
 						    <th>Orden del Día</th>
 						    <th>Tipo Sesión</th>

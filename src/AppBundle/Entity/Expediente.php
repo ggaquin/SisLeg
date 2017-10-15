@@ -1035,7 +1035,7 @@ class Expediente
     public function getListaAutores()
     {
         return ((!is_null($this->proyecto))
-                ?$this->getProyecto()->getListaConcejales()
+                ?$this->getProyecto()->getConcejal()
                 :'---');
     }
 

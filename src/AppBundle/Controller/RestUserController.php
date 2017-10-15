@@ -281,10 +281,29 @@ class RestUserController extends FOSRestController{
     public function traerPermisosRolAction(Request $request)
     {
     	$idRol=$request->get("idRol");
-    	$rolRepository=$this->getDoctrine()->getRepository('AppBundle:Rol');
-    	$rol=$rolRepository->find($idRol);
+    	$perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
+    	$permisos=$perfilRepository->findPermisosByIdRol($idRol);
     	
-    	return $this->view($rol->getMenus(),200);
+    	$resultado=[];
+    	$menu='';
+    	$array_menu=null;
+    	foreach ($permisos as $permiso){
+    		if ($permiso['menu']!=$menu){
+    			if (!is_null($array_menu)){
+    				$array_menu_object=new \ArrayObject($array_menu);
+    				$resultado[]=array('menu'=>$menu,'items'=>$array_menu_object->getArrayCopy());
+    			}
+    			$menu=$permiso['menu'];
+    			$array_menu=[];
+    		}
+    		
+    		$array_menu[]=array('menu_item'=>$permiso['menu_item'],'abreviacion'=>$permiso['abreviacion']);
+    	}
+    	
+    	$array_menu_object=new \ArrayObject($array_menu);
+    	$resultado[]=array('menu'=>$menu,'items'=>$array_menu_object->getArrayCopy());
+    	
+    	return $this->view($resultado,200);
     }
         
     /**

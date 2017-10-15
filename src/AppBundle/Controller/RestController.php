@@ -35,7 +35,7 @@ class RestController extends FOSRestController{
     public function traerTodosLosLegisladoresAction(Request $request)
     {
     	$criterio=$request->get('criterio');
-    	
+    	    	
     	if ($criterio=='todo'){
     		$perfilRepository=$this->getDoctrine()->getRepository('AppBundle:PerfilLegislador');
     		$perfiles=$perfilRepository->findAll();
@@ -731,12 +731,14 @@ class RestController extends FOSRestController{
      */
     public function ejemploAction(Request $request){
 
-//     	$oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
-//     	$oficina=$oficinaRepository->find(9);
-    	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
-    	$expediente=$expedienteRepository->findByNumeroCompleto('1/2017',null);
-    	return $this->view($expediente,200);
+		try {
+	    	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+	    	$expediente=$expedienteRepository->findByNumeroCompleto('117',null);
+	    	return $this->view($expediente,200);
         
+		}catch (\Exception $e){
+	    		return $this->view($e->getMessage(),500);
+	    }
     }
 
 

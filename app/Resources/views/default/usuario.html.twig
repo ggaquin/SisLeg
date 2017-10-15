@@ -133,7 +133,7 @@
 							html+='<option value="'+rol.id+'">'+rol.rol_como_string+'</option>';
 					});
 					$("#"+control).html('');
-					$("#"+control).html(html);
+					$("#"+control).html(html);						
 				},
 				error: function(jqXHR,textStatus,errorThrown ){
 					toastr.error(jqXHR.responseText);
@@ -181,44 +181,65 @@
 
 			var div="";
 			var html="";
-			if(controlNombre=="selRol")
+			
+			if(controlNombre=="selRol"){
 				div="divPermisos";
-			else div="divPermisosMod";
+				if (controlValor==1 || controlValor==0)
+					$("#tab-permisos").addClass('hidden');
+				else
+					$("#tab-permisos").removeClass('hidden');
+			}
+			else {
+					div="divPermisosMod";
+					if (controlValor==1 || controlValor==0)
+						$("#tab-permisos-mod").addClass('hidden');
+					else
+						$("#tab-permisos-mod").removeClass('hidden');
+			}
 
 			$("#"+div).html('');
 
+			debugger;
 			if(controlValor==0){
 				html="<div class='alert alert-info text-center' style='color:#00acd6!important;'>No hay ningún rol seleccionado</div>";
 				$("#"+div).html("<br>"+html);
 			}
 			else
 			{
-    			$.ajax({
-    				async:true,
-    				type:'Get',
-    				dataType: 'json	',
-    				url:'{{ app.request.getBaseURL() }}'+'/api/usuario/getPermisosByRol/'+controlValor,
-    				success: function(data){
-    					var menus=data;
-						$.each(menus,function(index,menu){
-								html+="<h4>"+menu.menu+"</h4>";
-								html+="<ul style='list-style: none;'>";
-								$.each(menu.items,function(index,item){
-									var habilitado=traerValorItem(permisos,item.abreviacion);
-									html+="<li data-value='"+item.abreviacion+"'>"+
-										  "<input type='checkbox' "+((habilitado)?'checked':'')+" ><span>"+item.menu_item+
-										  "</span></li>";
-								});
-								html+="</ul>";
-						});
-						$("#"+div).html("<br>"+html);
-    				},
-    				error: function(jqXHR,textStatus,errorThrown ){
-    					html="<div class='alert alert-danger'>Ocurrió un error al recuperar los permisos</div>";
-    					$("#"+div).html("<br>"+html);
-    					toastr.error(jqXHR.responseText);
-    				}
-    	      	});
+				if(controlValor!=1){
+					
+        			$.ajax({
+        				async:true,
+        				type:'Get',
+        				dataType: 'json	',
+        				url:'{{ app.request.getBaseURL() }}'+'/api/usuario/getPermisosByRol/'+controlValor,
+        				success: function(data){
+        					var menus=data;
+        					debugger;
+    						$.each(menus,function(index,menu){
+    								html+="<h4>"+menu.menu+"</h4>";
+    								html+="<ul style='list-style: none;'>";
+    								$.each(menu.items,function(index,item){
+    									var habilitado=traerValorItem(permisos,item.abreviacion);
+    									html+="<li data-value='"+item.abreviacion+"'>"+
+    										  "<input type='checkbox' "+((habilitado)?'checked':'')+" ><span>"+item.menu_item+
+    										  "</span></li>";
+    								});
+    								html+="</ul>";
+    						});
+    						$("#"+div).html("<br>"+html);
+    						if (controlNombre=="selRol")
+    							$('.nav-tabs a[href="#datos"]').tab('show');
+    						else
+    							$('.nav-tabs a[href="#datosMod"]').tab('show');
+        				},
+        				error: function(jqXHR,textStatus,errorThrown ){
+        					html="<div class='alert alert-danger'>Ocurrió un error al recuperar los permisos</div>";
+        					$("#"+div).html("<br>"+html);
+        					toastr.error(jqXHR.responseText);
+        				}
+        	      	});
+				}
 			}
 		}
 
@@ -291,15 +312,29 @@
 						            	var id= {{ app.user.id }};
 						            	var html="";
 						            	if(id!=data){
-						            		var html="<div class='btn-group'>"+
-						            	"<button type='button'  title='Editar datos' class='btn btn-primary btn-xs btn-editar' data-toggle='modal' data-target='#editarUsuario'><span class='glyphicon glyphicon-pencil'></span>"+
-						            	"</button>"+
-						            	"<button type='button'  class='btn btn-danger btn-xs btn-desactivar' title='Desactivar usuario'><span class='glyphicon glyphicon-ban-circle'></span>"+
-						            	"</button>"+
-						            	"<button type='button' title='Activar usuario' class='btn btn-info btn-xs btn-activar'><span class='glyphicon glyphicon-ok-circle'></span>"+
-						            	"</button></div>"
+							            	
+						            		var html="<div class='btn-group'>";
+
+						            		if ('{{ 'USR_EDIT' in app.user.listaPermisos }}')
+						            			html+="<button type='button'  title='Editar datos' class='btn btn-primary btn-xs btn-editar' " +
+							            			  "data-toggle='modal' data-target='#editarUsuario'><span class='glyphicon glyphicon-pencil'></span>"+
+						            				  "</button>";
+
+						            		if ('{{ 'USR_LOCK' in app.user.listaPermisos }}')
+						            			html+="<button type='button'  class='btn btn-danger btn-xs btn-desactivar' "+
+						            				  "title='Desactivar usuario'><span class='glyphicon glyphicon-ban-circle'></span>"+
+						            				  "</button>";
+
+						            		if ('{{ 'USR_UNLOCK' in app.user.listaPermisos }}')     				  
+						            			html+="<button type='button' title='Activar usuario' class='btn btn-info btn-xs btn-activar'> "+
+						            				  "<span class='glyphicon glyphicon-ok-circle'></span>"+
+						            				  "</button>";
+						            				  
+				            				html+="</div>";
 							            }
-							            else(html="<span class='label label-success fa fa-lock' aria-hidden='true'><strong>&nbsp;Mi Cuenta</strong></span>")
+							            else
+									          html="<span class='label label-success fa fa-lock' aria-hidden='true'><strong>&nbsp;Mi Cuenta</strong></span>";
+									          
 							            return html;
 							        }
 						        },
@@ -412,6 +447,7 @@
 			    $(".es-nombre").removeClass("hidden");
 			    $(".control-comun").prop("readonly",false);
 			    $("#file-container-mod").removeClass("locked");
+			    $('.nav-tabs a[href="#datosMod"]').tab('show');
 			 
 			 	if(perfil.tipo_perfil=="administrativo")
 					actualizarRoles(1,'selRolMod');
@@ -441,6 +477,7 @@
 			    $("#telefonoMod").val(perfil.telefono);
 
 			    $("#selRolMod").val(usuario.rol.id);
+			    //$("#selRolMod").change();
 
 			    $("#conservaContraseña").bootstrapToggle('on');
 			    $("#mensajeMod").html('');
@@ -461,6 +498,7 @@
 	                maxFileSize: 10240,                
         		});
 
+			    debugger;
         		permisosOriginales={
 									idRol:usuario.rol.id,
 									permisos:usuario.permisos
@@ -597,8 +635,8 @@
 				$(".control-comun").prop('readonly', false);
 				$(".es-nombre").removeClass("hidden");
 				$("#file-container").removeClass("locked");
-				rolChange("selRol",0,[]);
-			 
+				rolChange("selRol",0,[]);	
+				$('.nav-tabs a[href="#datos"]').tab('show');		 
 			});
 
 			//EVENTO CERRAR MODAL NUEVO USUARIO
@@ -963,10 +1001,12 @@
 	                	<tr>
 	                		<th>Id</th>
 	                		<th class="text-center">
-	                			<button type="button" title="Agregar usuario"class="btn btn-primary btn-xs pull-left" 
-						    			data-toggle='modal' data-target='#nuevoUsuario'>
-						    			<span class="glyphicon glyphicon-plus"></span>
-						    	</button>
+	                			{% if 'USR_ADD' in app.user.listaPermisos %}
+    	                			<button type="button" title="Agregar usuario"class="btn btn-primary btn-xs pull-left" 
+    						    			data-toggle='modal' data-target='#nuevoUsuario'>
+    						    			<span class="glyphicon glyphicon-plus"></span>
+    						    	</button>
+    						    {% endif %}
 						    </th>
 			                <th>Usuario</th>
 			                <th>Estado</th>
@@ -999,7 +1039,7 @@
                                         	<a href="#datos" aria-controls="datos" role="tab" data-toggle="tab">Datos</a>
                                         </li>
                                         <li role="presentation">
-                                        	<a href="#permisos" aria-controls="permisos" role="tab" data-toggle="tab">Permisos</a>
+                                        	<a href="#permisos" id="tab-permisos" aria-controls="permisos" role="tab" data-toggle="tab">Permisos</a>
                                         </li>
                                     </ul>
           							<div class="tab-content" >
@@ -1133,7 +1173,7 @@
                                         	<a href="#datosMod" aria-controls="datosMod" role="tab" data-toggle="tab">Datos</a>
                                         </li>
                                         <li role="presentation">
-                                        	<a href="#permisosMod" aria-controls="permisosMod" role="tab" data-toggle="tab">Permisos</a>
+                                        	<a href="#permisosMod" id="tab-permisos-mod" aria-controls="permisosMod" role="tab" data-toggle="tab">Permisos</a>
                                         </li>
                                     </ul>
           							<div class="tab-content" >

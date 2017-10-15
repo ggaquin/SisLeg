@@ -58,17 +58,29 @@ class Rol
     /**
      * @var \Doctrine\Common\Collections\Collection
      *
-     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Menu", orphanRemoval=true )
-     * @ORM\JoinTable(name="rol_menu",
+     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\MenuItem", orphanRemoval=true )
+     * @ORM\JoinTable(name="rol_menuItem",
      *   joinColumns={
      *     @ORM\JoinColumn(name="idRol", referencedColumnName="idRol")
      *   },
      *   inverseJoinColumns={
-     *     @ORM\JoinColumn(name="idMenu", referencedColumnName="idMenu")
+     *     @ORM\JoinColumn(name="idMenuItem", referencedColumnName="idMenuItem")
      *   }
      * )
      */
-    private $menus;
+    private $menuItems;
+    
+    //------------------------------------constructor---------------------------------------------
+    
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+   		$this->activo=true;
+   		$this->oficinaObligatoria=true;
+    	$this->menuItems= new \Doctrine\Common\Collections\ArrayCollection();
+    }
 
     //------------------------------------setters y getters---------------------------------------
 
@@ -179,39 +191,39 @@ class Rol
     }
 
     /**
-     * Add Menu
+     * Add menuItem
      *
-     * @param \AppBundle\Entity\Menu $menu
+     * @param \AppBundle\Entity\MenuItem $menuItem
      *
      * @return Rol
      */
-    public function addMenu(\AppBundle\Entity\Rol $menu)
+    public function addMenuItem(\AppBundle\Entity\MenuItem $menuItem)
     {
-    	$this->menus[] = $menu;
+    	$this->menuItems[] = $menuItem;
     	return $this;
     }
     
     /**
-     * Remove menu
+     * Remove menuItem
      *
-     * @param \AppBundle\Entity\Menu $menu
+     * @param \AppBundle\Entity\MenuItem $menuItem
      *
      * @return Rol
      */
-    public function removeMenu(\AppBundle\Entity\Menu $menu)
+    public function removeMenuItem(\AppBundle\Entity\MenuItem $menuItem)
     {
-    	$this->menus->removeElement($menu);
+    	$this->menuItems->removeElement($menuItem);
     	return $this;
     }
     
     /**
-     * Get menus
+     * Get menuItems
      *
      * @return \Doctrine\Common\Collections\Collection
      */
-    public function getMenus()
+    public function getMenuItems()
     {
-    	return $this->menus;
+    	return $this->menuItems;
     }
      
     /**

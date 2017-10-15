@@ -177,6 +177,10 @@
 					      "ajax": {
 							        "url": "api/expediente/getRemitosByCriteria/"+tipoCriterio()+"/"+criterio(),
 			            			"dataSrc": '',
+			            			"error": function (xhr, error, thrown) {
+				            			debugger;
+			            			    toastr.error(JSON.parse(xhr.responseText));
+			            			}
 							    },
 						  "columnDefs": [
             							  {
@@ -195,12 +199,13 @@
 										            debugger;
 									            	var html="<div class='text-center'>";
 									            	if (row.anulado==false && row.fecha_recepcion_formateada==""){
-										            	if ("{{ app.user.rol.oficina is null}}" || "{{ app.user.rol.oficina.oficina }}"== row.oficina_origen) {
+										            	if (("{{ app.user.rol.rol}}"=="ROLE_ADMINISTRADOR" || "{{ app.user.rol.oficina.oficina }}"== row.oficina_origen)
+												            && '{{ 'MOV_ABORT' in  app.user.listaPermisos }}') {
         									            	html+="<button type='button' title='Anular Remito' class='btn btn-danger btn-xs btn-anular' data-toggle='modal' data-target='#anulacion'>"+
         									            		 "<span class='glyphicon glyphicon-ban-circle'></span></button>";
 		    											}
-    									            	if ("{{ app.user.rol.oficina is null}}" || "{{ app.user.rol.oficina.oficina }}"== row.oficina_destino ||
-    									            		("{{ app.user.rol.oficina.id }}"== "9" && row.destino_externo)) {
+    									            	if (("{{ app.user.rol.rol}}"=="ROLE_ADMINISTRADOR"  || "{{ app.user.rol.oficina.oficina }}"== row.oficina_destino ||
+    									            		("{{ app.user.rol.oficina.id }}"== "9" && row.destino_externo)) && '{{ 'MOV_RECEIVE' in app.user.listaPermisos }}') {
     									            		html+="<button type='button' title='Marcar Recepción' class='btn btn-success btn-xs btn-recepcion'>"+
     									             		  	  "<span class='glyphicon glyphicon-ok'></span></button>";
 														}
@@ -215,7 +220,7 @@
 								                "visible": ("{{ muestra_remitos|raw }}"==1?true:false),
 								                "render": function(data, type, row){
 									                var html="";
-									                if (row.numero_remito>0){
+									                if (row.numero_remito>0 && '{{ 'MOV_DOWNLOAD' in app.user.listaPermisos }}'){
     									             	html+="<div class='text-center'><button type='button' title='Descargar Remito' class='btn btn-info btn-xs btn-descargar' onclick='noImplementado();'>"+
 									             		   +row.numero_remito+"</span></button></div>";
 								            		}							            	
@@ -631,7 +636,7 @@
 										</select>
 										<input class="form-control campo-fecha text-center busqueda hidden filtro" 
 											   id="busqueda-4">
-										<input class="form-control busqueda hidden filtro" placeholder="numero/año" id="busqueda-5">
+										<input class="form-control busqueda hidden filtro" placeholder="numero-año (ejemplo 1-17)" id="busqueda-5">
 									<div>
 								</form>
 							</div>
@@ -651,12 +656,15 @@
 	                	<tr>
 	                		<th>id</th>
 	                		<th>
-	                			<div style="display: table;margin: auto;">
-    	                			<button type="button" title="Agregar Remito"class="btn btn-primary btn-xs pull-left"
-    						    			data-toggle="modal" data-target="#nuevoMovimiento">
-    						    			<span class="glyphicon glyphicon-plus"></span>
-    						    	</button>
-    						    </div></div>
+	                			{% if MOV_NEW in app.user.listaPermisos %}
+    	                			<div style="display: table;margin: auto;">
+        	                			<button type="button" title="Agregar Remito"class="btn btn-primary btn-xs pull-left"
+        						    			data-toggle="modal" data-target="#nuevoMovimiento">
+        						    			<span class="glyphicon glyphicon-plus"></span>
+        						    	</button>
+        						    </div>
+        						{% endif %}
+        						
 						    </th>
 						    <th class="text-center">Remito</th>
 						    <th>Origen</th>

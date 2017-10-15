@@ -474,6 +474,10 @@
 					      "ajax": {
 							        "url": "api/expediente/getByCriteria/"+tipoCriterio()+"/"+criterio(),
 			            			"dataSrc": '',
+			            			"error": function (xhr, error, thrown) {
+				            			debugger;
+			            			    toastr.error(JSON.parse(xhr.responseText));
+			            			}
 							    },
 						  "columnDefs": [
 								            {
@@ -489,7 +493,7 @@
 										            var html="<div class='btn-group'>";
 											        html+="<button type='button' title='Giros' class='btn btn-info btn-xs btn-giros' data-toggle='modal' data-target='#giros'><span class='glyphicon glyphicon-refresh'></span></button>";
 											        html+="<button type='button' title='Informes' class='btn btn-info btn-xs btn-informes' data-toggle='modal' data-target='#informes'><span class='glyphicon glyphicon-list-alt'></span></button>";
-											        if('{{ EXP_EDIT is defined}}' && row.numero_sancion=='')
+											        if('{{ 'EXP_EDIT' in  app.user.listaPermisos }}' && row.numero_sancion=='')
 									            		html+="<button type='button'title='Editar expediente' class='btn btn-primary btn-xs btn-editar ' data-toggle='modal' data-target='#modificacionExpediente'><span class='glyphicon glyphicon-pencil'></span></button> ";
 													html+="</div>";
 									            	return html;
@@ -510,7 +514,7 @@
 									            "orderable":true,
 									            "render": function(data, type, row){
 										            var html="";
-										            if('{{ app.user.rol.rol}}'=="ROLE_ADMINISTRADOR")
+										            if('{{ app.user.rol.rol}}'=="ROLE_ADMINISTRADOR" && '{{ 'EXP_FEC_ING_EDIT' in  app.user.listaPermisos }}')
 									            		html+="<button type='button'title='Editar Fecha' class='btn btn-primary btn-xs btn-editar-fecha' data-toggle='modal' data-target='#modalFechaIngreso'><span class='glyphicon glyphicon-pencil'></span></button> ";
 									            		html+=data
 									            	return html;
@@ -527,9 +531,10 @@
 													              +row.lista_comisiones_asignadas
 													              +"'></span>  "+data;
 									            	}
-													else{             
+													else{   
+															debugger;          
         									            	if (("{{ app.user.rol.oficina is null}}" || "{{ app.user.rol.oficina.id }}"== "9" ) 
-                									            	&& row.oficina_actual_externa && '{{ EXP_RETURN is defined}}'){
+                									            	&& row.oficina_actual_externa && '{{ 'EXP_RETURN' in app.user.listaPermisos }}'){
         	    												html+="<button type='button' title='Retornar a HCD' class='btn btn-primary btn-xs btn-retorno'"+
         	    													  " data-toggle='modal' data-target='#retornoExterno'>" +
         	    						             		  	  	  "<span class='glyphicon glyphicon-repeat'></span></button>  "+data;
@@ -547,7 +552,7 @@
 									            "render": function(data, type, row){
 										            var html="";
 									            	html+="<span title='"+row.caratula_sin_html+"'>"+data+"</span>";
-									            	 if ('{{EXP_DOWNLOAD is defined}}')
+									            	 if ('{{'EXP_DOWNLOAD' in  app.user.listaPermisos }}')
 												        	html+="<button type='button' title='Descargar Documento' class='btn btn-info btn-xs btn-descargar'><span class='glyphicon glyphicon-save-file'></span></button>";
 									            	return html;
 									            }
@@ -1417,6 +1422,20 @@
                 						            },
                 						            {
             							                "targets": [ 1 ],
+            							                "data": 'observacion',
+            							                "visible": true,
+            							                "orderable":true,
+            							                "render": function(data, type, row){
+                							                		var html="";
+                							                		if (data!="")
+                							                			html+="<span title='"+data+"'>"+
+                							                				  "<i class='fa fa-commenting-o' aria-hidden='true'></i>"+
+                							                				  "</span>";
+                        							                return html;
+            										               },
+                						            },
+                						            {
+            							                "targets": [ 2 ],
             							                "data": 'numero_remito',
             							                "visible": true,
             							                "orderable":true,
@@ -1425,34 +1444,36 @@
             										               },
                 						            },
                 						            {
-            							                "targets": [ 6 ],
-            							                "data": 'fecha_respuesta_formateada',
+            							                "targets": [ 7 ],
+            							                "data": 'fecha_respuesta',
             							                "visible": true,
             							                "orderable":true,
             							                "render": function(data, type, row){
-                							                
-                    							                	if (("{{ app.user.rol.oficina is null}}" || "{{ app.user.rol.oficina.id }}"== "9" ) 
-                        									            	 && data=="" && '{{ EXP_REPORT_RETURN is defined}}'){
-                	    												return "<button type='button' title='Ingresar Fecha Respuesta' "+
-                	    													   "class='btn btn-primary btn-xs btn-respuesta-informe'"+
-                	    													   " data-toggle='modal' data-target='#respuestaInforme'>" +
-                	    						             		  	  	   "<span class='glyphicon glyphicon-paperclip'></span></button>";
-                									            	}
-                    							                	else
-                        							                	return data;
-                							                		 
-            										               },
+                							            
+                							                	if (("{{ app.user.rol.oficina is null }}" || "{{ app.user.rol.oficina.id }}"== "9" ) 
+                    									            	 && data=="" && '{{ EXP_REPORT_RETURN is defined}}'){
+            	    												return "<button type='button' title='Ingresar Fecha Respuesta' "+
+            	    													   "class='btn btn-primary btn-xs btn-respuesta-informe'"+
+            	    													   " data-toggle='modal' data-target='#respuestaInforme'>" +
+            	    						             		  	  	   "<span class='glyphicon glyphicon-paperclip'></span></button>";
+            									            	}
+                							                	else
+                    							                	return data;
+            							                		 
+        										               },
                 						            }
                 							       
                 				  ],
                 			      "columns": [
                         			      		{ "data": "id" },
+                        			      		{ "data": "observacion","width":"4%"},
                         			      		{ "data": "numero_remito","width":"9%" },
-                        			      		{ "data": "destino","width":"15%"},
+                        			      		{ "data": "tipo","width":"9%"},
+                        			      		{ "data": "destino","width":"18%"},
+                        			      		{ "data": "comision","width":"18%"},
                         			      		{ "data": "fecha_envio","width":"8%"},
-                        			      		{ "data": "observacion","width":"46%"},
                         			      		{ "data": "fecha_recepcion","width":"8%"},
-                        			      		{ "data": "fecha_respuesta_formateada","width":"8%"},
+                        			      		{ "data": "fecha_respuesta","width":"8%"},
                         			      		{ "data": "remito_retorno","width":"8%"}
                             			     ],
                 			      "autoWidth":false,
@@ -1868,7 +1889,7 @@
 								                <option value="{{ estado.id }}">{{ estado.estadoExpediente }}</option>
 								            {% endfor %}
 										</select>
-										<input class="form-control busqueda hidden filtro" id="busqueda-3"/>
+										<input class="form-control busqueda hidden filtro" id="busqueda-3" placeholder="numero-año (ejemplo 1-17)"/>
 										<select class="form-control busqueda hidden filtro" id="busqueda-4">
 											<option value="0">Seleccione Tipo</option>
 											{% for tipo in tipos %}
@@ -1891,6 +1912,7 @@
 	<section class="content">
 	  	<div class="row">
 	    	<div class="col-xs-12">
+	    		
               	<table id="registroExpediente" class="table table-striped">
 	                <thead>
 	                	<tr>
@@ -1898,12 +1920,12 @@
 	                		<th>
 	                			<!-- <div class="text-center"> -->
     	                			<div class="btn-group">
-    	                				{% if EXP_NEW is defined %}
+    	                				{% if 'EXP_NEW' in  app.user.listaPermisos %}
     		                			<button type="button" title="Agregar expediente"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#nuevoExpediente">
     							    			<span class="glyphicon glyphicon-plus"></span>
     							    	</button>
     							    	{% endif %}
-    							    	{% if EXP_ADD is defined %}
+    							    	{% if 'EXP_ADD' in app.user.listaPermisos %}
     							    	<button type="button" title="Ingresar proyecto"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#proyectosBusqueda">
     							    			<span class="glyphicon glyphicon-download-alt"></span>
     							    	</button>
@@ -2626,10 +2648,12 @@
 					        	<table class="table table-striped" id="tablaInformes">
 					        		<thead>
 					        			<th>id</th>
+					        			<th title="Observación">Obs.</th>
 					        			<th title="Remito">Rto.</th>
+					        			<th>Tipo</th>
 					        			<th>Destino</th>
+					        			<th>Reserva</th>
 					        			<th title="Fecha Emisión">Fec. Em.</th>
-					        			<th>Observación</th>
 					        			<th title="Fecha de Recepción Remito">Fec. Recep.</th>
 					        			<th title="Fecha Respuesta">Fec. Resp.</th>
 					        			<th title="Remito Externo">Rem. Ext.</th>

@@ -79,21 +79,9 @@ class DefaultController extends Controller
      */
     public function indexAction(Request $request)
     {
- 		$array=[];
- 		
- 		$usuario=$this->getUser();
- 		$menus=$usuario->getRol()->getMenus();
- 		foreach ($menus as $menu){
- 			$array[$menu->getAbreviacion()]=true;
- 		}
-//  		$permisos=$usuario->getPermisos();
-//  		foreach ($permisos as $permiso){
-//  			$array[$permiso]=true;
-//  		}
- 		$array['base_dir']=realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR;
- 		
-        return $this->render('default/index.html.twig', $array);
-        
+  		 		
+ 		return $this->render('default/index.html.twig', 
+ 							array('base_dir'=>realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR));
     }
 
     /**
@@ -107,10 +95,21 @@ class DefaultController extends Controller
         $usuarios=$usuarioRepository->findAll();
         $bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
         $bloques=$bloqueRepository->findAll();
-        return $this->render('default/usuario.html.twig', array(
-            'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
-            'roles'  => $roles,'usuarios' => $usuarios,'bloques' => $bloques, 'status' => 'render'
-        ));
+        
+        $usuario=$this->getUser();
+        
+        $data=[];
+        $permisos=$usuario->getPermisos();
+        $permisos_usuario=[];
+        foreach ($permisos as $permiso) $permisos_usuario[]=$permiso;
+        
+        $data['permisos_usuario']=new \ArrayObject($permisos_usuario);
+        $data['base_dir']=realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR;
+        $data['roles']=$roles;
+        $data['usuarios']=$usuarios;
+        $data['bloques']=$bloques;
+        $data['status']='render';
+        return $this->render('default/usuario.html.twig', $data);
          
     }
 
@@ -121,6 +120,15 @@ class DefaultController extends Controller
     {
         $bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
         $bloques=$bloqueRepository->findBy(array(), array('bloque' => 'ASC'));
+        /*
+        $usuario=$this->getUser();
+        
+        $data=[];
+        $permisos=$usuario->getPermisos();
+        foreach ($permisos as $permiso){
+        	$data[$permiso]=true;
+        }*/
+        
         return $this->render('default/legisladores.html.twig', array(
             'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
             'bloques' => $bloques));
@@ -166,9 +174,11 @@ class DefaultController extends Controller
         
         $array=[];
         $permisos=$usuario->getPermisos();
+        $permisos_usuario="";
         foreach ($permisos as $permiso){
-        	$array[$permiso]=true;
+        	$permisos_usuario.=$permiso;
         }
+        $array['permisos_usuario']=$permisos_usuario;
         $array['base_dir']=realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR;
         $array['tipos']=$tiposExpediente;
         $array['estados']=$estadosExpediente;
@@ -391,6 +401,24 @@ class DefaultController extends Controller
     	return $this->render('default/oficinas.html.twig', array(
     			'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
     			'tiposOficina'=>$tiposOficina
+    	));
+    }
+    
+    /**
+     * @Route("/listadoCh", name="listadoCH")
+     */
+    public  function listadoCH(Request $request)
+    {	
+    	$idTipoOficina=$this->getParameter('id_oficina_externa');
+    	$tipoOficinaRepository=$this->getDoctrine()->getRepository('AppBundle:TipoOficina');
+    	$tipoOficina=$tipoOficinaRepository->find($idTipoOficina);
+    	$oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
+    	$oficinas=$oficinaRepository->findBy(array('tipoOficina'=>$tipoOficina));
+    	$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
+    	$comisiones=$comisionRepository->findAll();
+    	return $this->render('default/listado_ch.html.twig', array(
+    			'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
+    			'destinos'=>$oficinas,'comisiones'=>$comisiones
     	));
     }
     

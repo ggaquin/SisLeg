@@ -48,20 +48,32 @@ class RestProyectoController extends FOSRestController{
         try{
             $tipoCriterio=$request->get('tipoCriterio');
             $criterio=$request->get('criterio');
+            $usuario=$this->getUser();
+            $rol=$usuario->getRol();
+            $idRolLegislador=$this->getParameter('id_rol_legislador');
+            $filtroPerfil=null;
+            if($rol->getId()==$idRolLegislador)
+            	$filtroPerfil=$usuario->getPerfil()->getId();
+            
+            	//TODO: Implementar los filtros por perfil
             $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
             $proyectos=null;
-            if ($tipoCriterio=='todo')
-                $proyectos=$proyectoRepository->findAll();
+            if ($tipoCriterio=='todo'){
+            	if($rol->getId()==$idRolLegislador)
+            		$proyectos=$proyectoRepository->findAllByFiltro($filtroPerfil);
+            	else
+                	$proyectos=$proyectoRepository->findAll();
+            }
             if($tipoCriterio=='busqueda-1')
-                $proyectos=$proyectoRepository->findByAutor_Nombres($criterio);
+            	$proyectos=$proyectoRepository->findByAutor_Nombres($criterio);
             if ($tipoCriterio=='busqueda-2')
-                $proyectos=$proyectoRepository->findByExpediente_Estado_Id($criterio);
+            	$proyectos=$proyectoRepository->findByExpediente_Estado_Id($criterio,$filtroPerfil);
             if($tipoCriterio=='busqueda-3')
-                $proyectos=$proyectoRepository->findByExpediente_Numero($criterio);
+            	$proyectos=$proyectoRepository->findByExpediente_Numero($criterio,$filtroPerfil);
             if ($tipoCriterio=='busqueda-4')
-                $proyectos=$proyectoRepository->findByTipoProyecto_Id($criterio);
+            	$proyectos=$proyectoRepository->findByTipoProyecto_Id($criterio,$filtroPerfil);
             if ($tipoCriterio=='busqueda-5')
-                $proyectos=$proyectoRepository->findByExpediente_Null();
+            	$proyectos=$proyectoRepository->findByExpediente_Null($filtroPerfil);
 
             $resultados=[];
             foreach ($proyectos as $proyecto){

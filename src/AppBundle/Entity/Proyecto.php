@@ -555,23 +555,6 @@ class Proyecto
 
     //------------------------------Propiedades virtuales-----------------------------------------
 
-    /*
-     * Get listaConsejales
-     *
-     * @return string
-     *
-     * @VirtualProperty
-     *
-    public function getListaConcejales()
-    {
-        $listaConcejales="";
-        $concejales=$this->concejales;
-        foreach ($concejales as $concejal) {
-           $listaConcejales.=($listaConcejales!=""?" / ":"").$concejal->getDescripcion();  
-        }
-        return $listaConcejales;
-    }
-    */
 
     /**
      * Get fechaEntradaFormateada

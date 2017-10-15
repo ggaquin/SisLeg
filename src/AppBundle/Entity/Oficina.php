@@ -28,7 +28,7 @@ class Oficina {
 	/**
 	 * @var string
 	 *
-	 * @ORM\Column(name="$oficina", type="string", length=100, nullable=false)
+	 * @ORM\Column(name="oficina", type="string", length=100, nullable=false)
 	 */
 	private $oficina;
 	

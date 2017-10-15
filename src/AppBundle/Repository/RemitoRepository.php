@@ -123,21 +123,25 @@ class RemitoRepository extends EntityRepository{
 	public function findByNumeroCompleto($oficina,$numero){
 		
 		
-		$periodo='20'.substr($numero, -2);
-		$numerador=substr($numero, 0,strlen($numero)-2);
-		$inicio= new \DateTime($periodo.'-01-01 00:00:00');
-		$fin= new \DateTime($periodo.'-12-31 23:59:59');
+		$numeroSeparado=explode('-', $numero);
+		
+		if (count($numeroSeparado)!=2)
+			throw new \Exception('El criterio de busqueda debe tener el formato {numero}-{año} (por ejemplo 1-17)');
+			
+		$periodo='20'.$numeroSeparado[1];
+		$numerador=$numeroSeparado[0];
+		
 		$qb = $this->createQueryBuilder('r')
 			-> innerJoin('r.movimientos', 'm')
 			-> innerJoin('m.expediente', 'e');
 		$qb -> where($qb->expr()->andX(
 										$qb->expr()->eq('e.numeroExpediente', '?1'),
-										$qb->expr()->between('e.fechaCreacion','?2','?3')
+										$qb->expr()->eq('e.periodo','?2')
 									)
 					)
 				->setParameter(1, $numerador)
-				->setParameter(2, $inicio->format('Y-m-d'))
-				->setParameter(3, $fin->format('Y-m-d'));
+				->setParameter(2, $periodo);
+		
 		return $qb->getQuery()->getResult();
 	}
 	
