@@ -123,6 +123,7 @@ assetic:
     filters:
         cssrewrite: ~
     assets:
+      
         fileinput_loading:
             inputs:
                 - '@AppBundle/Resources/Public/css/plugins/fileinput-4.3.9/img/loading.gif'
@@ -216,6 +217,7 @@ assetic:
                 - '@AppBundle/Resources/Public/js/plugins/bootstrap-troggle/bootstrap-toggle.js'
                 - '@AppBundle/Resources/Public/js/plugins/select2-4.0.3/js/select2.full.js'
                 - '@AppBundle/Resources/Public/js/plugins/toastr/toastr.min.js'
+                - '@AppBundle/Resources/Public/js/plugins/waitingfor/bootstrap-waitingfor.js'
         css_datatables:
             inputs:
                 - '@AppBundle/Resources/Public/css/plugins/datatables/dataTables.bootstrap.css'

@@ -116,7 +116,7 @@ class ExpedienteRepository extends EntityRepository{
 			
 			if($oficina->getId()==9 && $destino==3){
 				$sql.='inner join sesion s on e.idSesion=s.idSesion ';
-				$condition.=' and (e.idTipoExpediente in (2,7,9) or s.fecha<:fechaActual)';
+				$condition.=' and (e.idTipoExpediente in (2,7,9) or s.tieneEdicionBloqueada=1)';
 			}
 		}
 		

@@ -27,7 +27,7 @@
 
 	</style>
 	<script type="text/javascript">
-
+	
 		$(document).ready(function () {
 			
 		    var tabla=$('#registroSesiones').DataTable({
@@ -73,7 +73,7 @@
 										            var html="<div class='btn-group'>";
         									            	 
         									        if (row.tiene_orden_del_dia==false){
-														debugger;
+														
         									        	if ('{{ 'SES_EDIT' in app.user.listaPermisos }}' && 
                 									        !(row.tipo_sesion=="Ordinaria" && "{{ app.user.rol.oficina.id }}"== "9"))
     														html+="<button type='button'  title='Editar Sesión' "+
@@ -132,7 +132,7 @@
 									            "render": function(data, type, row){
 
 													var html="";
-									            	debugger;
+									            	
 									             	if (row.tiene_orden_del_dia==true && '{{ 'SES_EDIT_BLOQ' in app.user.listaPermisos }}'){
 
 										            	if(row.tiene_edicion_bloqueada==false){
@@ -181,8 +181,33 @@
 
 		    $('#registroSesiones tbody').on( 'click', '.btn-descargar', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
-		        window.location.href='{{ app.request.getBaseURL() }}'+
-		        					 '/imprimirOrdenDelDia?idSesion='+data[ "id" ];
+		        //window.location.href='/imprimirOrdenDelDia?idSesion='+data[ "id" ];
+	
+				waitingDialog.show('Por favor espere, generando orden del día ...');
+		        var urlToSend='{{ app.request.getBaseURL() }}/imprimirOrdenDelDia?idSesion='+data[ "id" ];
+
+		        var req = new XMLHttpRequest();
+		        req.open("GET", urlToSend, true);
+		        req.responseType = "blob";
+		        req.onload = function (event) { 
+    		        
+    		        if (event.currentTarget.status==200){
+    		        	var blob = req.response;
+    		            var	content=req.getResponseHeader("Content-Disposition").replace(/"/g,'').split(";");
+    		           	var content= content[1].split("=");
+    		            var fileName = content[1].trim();
+    		            var link=document.createElement('a');
+    		            link.href=window.URL.createObjectURL(blob);
+    		            link.download=fileName;
+    		            link.click();
+		        	}
+		        	else
+		        		toastr.error('No se pudo descargar el archivo');
+
+    		        waitingDialog.hide();
+			    };
+		        req.send();
+				
 		    } );
 
 		    $('#registroSesiones tbody').on( 'click', '.btn-bloquear', function () {
@@ -250,12 +275,17 @@
 		                contentType: false,
 		                processData: false,
 		                type:  'POST',
+		            beforeSend: function() {
+		            	//waitingDialog.show('Generando Orden del Día espere por favor');
+		            },
 	                success: function(data) {
 	                    toastr.success(data);
 						tabla.ajax.reload();
+						//waitingDialog.hide();
 	                },
 	                error: function(jqXHR,textStatus,errorThrown ){
 						toastr.error(jqXHR.responseText);
+						//waitingDialog.hide();
 						}
 	            	});
 			});
@@ -268,7 +298,7 @@
 			} );
 
 			$("#modalSesion").on('show.bs.modal', function () {
-				debugger;
+				
 				var idSesion=$("#modalSesion").find('input[name="id"]').val();
 
 				if(idSesion==0){

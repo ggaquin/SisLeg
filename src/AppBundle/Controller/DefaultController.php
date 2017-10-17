@@ -16,6 +16,7 @@ use AppBundle\Entity\TipoSesion;
 use AppBundle\Entity\TipoExpedienteSesion;
 use AppBundle\Entity\Oficina;
 use AppBundle\Entity\Sesion;
+use Symfony\Component\HttpFoundation\Cookie;
 
 
 class DefaultController extends Controller
@@ -620,9 +621,11 @@ class DefaultController extends Controller
             200,
             [
                 'Content-Type'        => 'application/pdf',
-                'Content-Disposition' => sprintf('attachment; filename="%s"', $nombre),
+                'Content-Disposition' => sprintf('attachment; filename="%s"', $nombre)
             ]
         );
+        
+          
     }
 
      /**
@@ -655,7 +658,7 @@ class DefaultController extends Controller
     	// set default header data
     	$pdf ->SetAuthor('SisLeg');
     	$pdf ->SetTitle('HCD Lomas de Zamora');
-    	$pdf ->SetSubject('Orden del Día '.$fecha);
+    	$pdf ->SetSubject('Orden del Dia '.$fecha);
     	$pdf ->SetHeaderData($urlImage, 8, 'HCD Lomas de Zamora - Orden del Día','Sesión: '.$fecha, array(0,0,0), array(0,0,0));
     	// set default monospaced font
     	$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
@@ -692,21 +695,25 @@ class DefaultController extends Controller
     	$pdf->SetFont('times', '', 20);
     	$pdf->writeHTMLCell(170, '', 25, '', '<H1><u>ORDEN DEL DÍA</u></H1>', 0, 1, 0, true, 'C', true);
     	 
-    	$pdf ->SetPrintHeader(true);
-    	$pdf->AddPage('P','LEGAL');
-    	$pdf->SetFont('times', '', 12);
+//     	$response = new Response();
+//     	$response->setStatusCode(500);
+//     	return $response;
     	
+    	$pdf ->SetPrintHeader(true);
     	
     	foreach ($tiposExpedientesSesion as $tipoExpedienteSesion){
-    		//$html='';
+    		    		
     		$content=$sesionRepository->findOrdenDiaBySesionYApartado($idSesion, $tipoExpedienteSesion->getId());
     		
     		if (count($content)>0){
-    			$html='<div style="text-align:center"><h1>'.$tipoExpedienteSesion->getLetra().')'.
+    			
+    			$pdf->AddPage('P','LEGAL');
+    			$pdf->SetFont('times', '', 12);
+    			$html='<div style="text-align:center"><h1>'.$tipoExpedienteSesion->getLetra().') '.
       				   $tipoExpedienteSesion->getTipoExpedienteSesion().'</h1></div>';
 	    		$html.=($content[0]["textoApartado"]);
 		    	$pdf->writeHTMLCell(170, '', 25, '', $html, 0, 1, 0, true, 'J', true);
-// 		    	$pdf->Ln(1);
+
     		}
     		
     	}
@@ -715,7 +722,7 @@ class DefaultController extends Controller
 //     	$pdf->Ln(1);
     		    	
     	return new Response(
-    			$pdf->Output('Orden del Día '.$fecha, 'D'),
+    			$pdf->Output('Orden del Dia '.$fecha, 'D'),
     			200,
     			[
     					'Content-Type'        => 'application/pdf',

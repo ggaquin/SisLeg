@@ -5,6 +5,10 @@ BEGIN
 	declare _idEstado int default 6;
     set @idTipo:=0;
     
+    SET lc_time_names = 'es_AR';
+    
+    start transaction;
+    
     DROP TEMPORARY TABLE IF EXISTS expedienteSesionTemporal;
     DROP TEMPORARY TABLE IF EXISTS dictamenesConjuntos;
     
@@ -29,11 +33,11 @@ BEGIN
 	select 
 			@idTipo,e.idExpediente,
             concat(upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
-				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',e.año,
+				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',(e.periodo-2000),
                    ')</strong></p>',e.caratula,
                    '<div style="text-align:center">-----------------------------------------------------------------------<\/div>'
 				  ),
-			'A',e.año, e.numeroExpediente
+			'A',(e.periodo-2000), e.numeroExpediente
 	from  	expediente e
 	inner
     join 	tipoExpediente te
@@ -50,12 +54,12 @@ BEGIN
 	select 
 			@idTipo,e.idExpediente,
             concat(upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
-				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',e.año,
+				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',(e.periodo-2000),
                    ')</strong></p>',e.caratula,
                    traerComisionesExpediente(e.idExpediente),
 				   '<div style="text-align:center">-----------------------------------------------------------------------<\/div>'
 				 ),
-            'B',e.año, e.numeroExpediente
+            'B',(e.periodo-2000), e.numeroExpediente
 	from  	expediente e
 	inner
     join 	tipoExpediente te
@@ -72,12 +76,12 @@ BEGIN
     select 
 			@idTipo,e.idExpediente,
             concat(upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
-				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',e.año,
+				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',(e.periodo-2000),
                    ' / ',b.bloque ,')</strong></p>',
                    conformarProyecto(p.visto,p.considerandos,p.articulos,te.tipoExpediente,1,0),
 				   '<div style="text-align:center">-----------------------------------------------------------------------<\/div>'
 				 ),
-			'C',e.año, e.numeroExpediente
+			'C',(e.periodo-2000), e.numeroExpediente
 	from  	expediente e
 	inner
     join 	tipoExpediente te
@@ -103,13 +107,13 @@ BEGIN
     select 
 			@idTipo,e.idExpediente,
             concat(upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
-				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',e.año,
+				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',(e.periodo-2000),
                    ' / ',b.bloque ,')</strong></p>',
                    traerComisionesExpediente(e.idExpediente),
                    conformarProyecto(p.visto,p.considerandos,p.articulos,te.tipoExpediente,1,0),
 				   '<div style="text-align:center">-----------------------------------------------------------------------<\/div>'
 				  ),
-			'D',e.año, e.numeroExpediente
+			'D',(e.periodo-2000), e.numeroExpediente
 	from  	expediente e
 	inner
     join 	tipoExpediente te
@@ -125,23 +129,30 @@ BEGIN
     on		b.idBloque=pf.idBloque
     where	e.idTipoExpediente=2 and e.idSesion=_idSesion;
 
-	#pedidos de informes (ordenanzas)
-    /*
+	#pedidos de informes y notificaciones
+    
     select idTipoExpedienteSesion into @idTipo 
     from tipoExpedienteSesion where letra='CH';
     
-    set @acumulador_orden:=0;
-    
+    INSERT INTO expedienteSesionTemporal
+		(`idTipoExpedienteSesion`,`idExpediente`,`texto`,`letra`,`añoExpediente`,`numeroExpediente`)
     select 
-			@idTipo,@acumulador_orden:=1+
-			(select count(ordenSesion) from expedienteSesion 
-			 where idTipoExpedienteSesion=t.idTipoExpedienteSesion and idSesion=_idSesion),
-            e.idExpediente,_idSesion,_idEstado,
+			@idTipo, e.idExpediente,
             concat('<strong>',upper(replace(e.caratula,'<p>','<p style="text-align: justify;margin-top: 0;text-indent: 1.5em">')),
-				   '<p>CH</p><p>',@acumulador_orden,'<\/p>',
-				   '<p>(Expediente N ',e.numeroExpediente,'<span style="padding-left:50px;"></span>',
-                   te.letra,' ??/??/??? <\/p><p>',te.tipoExpediente,'[¿sancion?][¿comision?]<\/p>'),
-			0,0,0
+				   '<p>CH</p><p>Δ<\/p>',
+				   '<p style="margin-top: 0;text-indent: 1.5em">Expediente N °',
+                   e.numeroExpediente,
+                   '<span style="padding-left:50px;"></span>',
+                   te.letra,' ',
+                   DATE_FORMAT(m.fechaRespuesta, "%d/%m/%Y"),
+                   '<\/p>',
+                   case when m.discriminador = 'notificacion' 
+							then concat('<p style="margin-top: 0;text-indent: 1.5em">',te.tipoExpediente,' ',e.numeroSancion,
+										' - ',c.comision,'.-<\/p>')
+							else ''
+					end,
+				   '<div style="text-align:center">-----------------------------------------------------------------------<\/div>')
+				   'CH',(e.periodo-2000), e.numeroExpediente
 	from  	expediente e
 	inner
     join 	tipoExpediente te
@@ -149,10 +160,15 @@ BEGIN
     inner
     join	movimiento m
     on		m.idExpediente=e.idExpediente
-    where	m.idSesion=_idSesion
+    left
+    join	comision c
+    on		m.idComision=c.idComision
+    where	m.idSesion=_idSesion and 
+			fechaRespuesta is not null and
+            discriminador in ('informe','notificacion')
     order 	
-	by		e.año, e.numeroExpediente;
-    */
+	by		m.discriminador,e.año, e.numeroExpediente;
+    
     
     #Exedientes Particulares
     
@@ -163,13 +179,12 @@ BEGIN
 		(`idTipoExpedienteSesion`,`idExpediente`,`texto`,`letra`,`añoExpediente`,`numeroExpediente`)
 	select 
 			@idTipo, e.idExpediente,
-            concat('<p><strong>E ',@acumulador_orden,'.- ',
-				   upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
-				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',e.año,
+            concat(upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
+				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',(e.periodo-2000),
                    ')</strong></p>',e.caratula,
 				   '<div style="text-align:center">-----------------------------------------------------------------------<\/div>'
 				  ),
-			'E',e.año, e.numeroExpediente
+			'E',(e.periodo-2000), e.numeroExpediente
 	from  	expediente e
 	inner
     join 	tipoExpediente te
@@ -184,34 +199,34 @@ BEGIN
     select 	d.idDictamen
     from	dictamen d
     inner
-    join	expedienteComision_dictamenesMayoria dm
-    on		d.idDictamen=dm.idDictamen
-    where	d.idSesion=_idSesion
+    join	expedienteComision ec
+    on		d.idDictamen=ec.idDictamenMayoria
+    where	ec.idSesion=_idSesion
     group
     by		d.idDictamen
-    having	count(dm.idExpedienteComision)>1;
+    having	count(ec.idExpedienteComision)>1;
     
     insert 	into dictamenesConjuntos(idDictamen)
     select 	d.idDictamen
     from	dictamen d
     inner
-    join	expedienteComision_dictamenesPrimeraMinoria dpm
-    on		d.idDictamen=dpm.idDictamen
-    where	d.idSesion=_idSesion
+    join	expedienteComision ec
+    on		d.idDictamen=ec.idDictamenPrimeraMinoria
+    where	ec.idSesion=_idSesion
     group
     by		d.idDictamen
-    having	count(dpm.idExpedienteComision)>1;
+    having	count(ec.idExpedienteComision)>1;
     
     insert 	into dictamenesConjuntos(idDictamen)
     select 	d.idDictamen
     from	dictamen d
     inner
-    join	expedienteComision_dictamenesPrimeraMinoria dsm
-    on		d.idDictamen=dsm.idDictamen
-    where	d.idSesion=_idSesion
+    join	expedienteComision ec
+    on		d.idDictamen=ec.idDictamenSegundaMinoria
+    where	ec.idSesion=_idSesion
     group
     by		d.idDictamen
-    having	count(dsm.idExpedienteComision)>1;
+    having	count(ec.idExpedienteComision)>1;
     
     #dictamenes de comisiones
     	
@@ -222,7 +237,7 @@ BEGIN
     select 
 			tes.idTipoExpedienteSesion, e.idExpediente, 
             concat(upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
-				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',e.año,
+				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',(e.periodo-2000),
 				   case when b.bloque is null then ''
 						else concat(' / ',b.bloque)
 				   end ,')</strong></p>',
@@ -236,7 +251,7 @@ BEGIN
 				   end,
                    '<div style="text-align:center">-----------------------------------------------------------------------<\/div>'
 				 ),
-			c.letraOrdenDelDia, e.año, e.numeroExpediente
+			c.letraOrdenDelDia, (e.periodo-2000), e.numeroExpediente
 	from  	expediente e
     inner
     join	tipoExpediente te
@@ -250,12 +265,9 @@ BEGIN
     inner
     join	tipoExpedienteSesion tes
     on 		tes.letra=c.letraOrdenDelDia
-    inner	 
-    join	expedienteComision_dictamenesMayoria dm
-    on		ec.idExpedienteComision=dm.idExpedienteComision
     inner
     join	dictamen d
-    on		dm.idDictamen=d.idDictamen
+    on		ec.idDictamenMayoria=d.idDictamen
     left
     join	tipoProyecto tpd
     on		d.idTipoDictamen=tpd.idTipoProyecto
@@ -274,8 +286,10 @@ BEGIN
     left
     join	tipoProyecto tp
     on		p.idTipoProyecto=tp.idTipoProyecto
-    where	d.idDictamen not in (select idDictamen from dictamenesConjuntos) and 
-			d.idSesion=_idSesion;
+    left
+    join	dictamenesConjuntos dc
+    on		d.idDictamen=dc.idDictamen
+    where	ec.idSesion=_idSesion and dc.idDictamen is null;
     
     #dictamenes por primera minoria
     
@@ -284,7 +298,7 @@ BEGIN
     select 
 			tes.idTipoExpedienteSesion, e.idExpediente, 
             concat(upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
-				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',e.año,
+				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',(e.periodo-2000),
 				   case when b.bloque is null then ''
 						else concat(' / ',b.bloque)
 				   end ,')</strong></p>',
@@ -298,7 +312,7 @@ BEGIN
 				   end,
 				   '<div style="text-align:center">-----------------------------------------------------------------------<\/div>'
 				 ),
-			c.letraOrdenDelDia, e.año, e.numeroExpediente
+			c.letraOrdenDelDia, (e.periodo-2000), e.numeroExpediente
 	from  	expediente e
     inner
     join	tipoExpediente te
@@ -312,12 +326,9 @@ BEGIN
     inner
     join	tipoExpedienteSesion tes
     on 		tes.letra=c.letraOrdenDelDia
-    inner	 
-    join	expedienteComision_dictamenesPrimeraMinoria dpm
-    on		ec.idExpedienteComision=dpm.idExpedienteComision
     inner
     join	dictamen d
-    on		dpm.idDictamen=d.idDictamen
+    on		ec.idDictamenPrimeraMinoria=d.idDictamen
     left
     join	tipoProyecto tpd
     on		d.idTipoDictamen=tpd.idTipoProyecto
@@ -336,8 +347,10 @@ BEGIN
     left
     join	tipoProyecto tp
     on		p.idTipoProyecto=tp.idTipoProyecto
-    where	d.idDictamen not in (select idDictamen from dictamenesConjuntos) and 
-			d.idSesion=_idSesion;
+    left
+    join	dictamenesConjuntos dc
+    on		d.idDictamen=dc.idDictamen
+    where	ec.idSesion=_idSesion and dc.idDictamen is null;
     
      #dictamenes por segunda minoria
     
@@ -346,7 +359,7 @@ BEGIN
     select 
 			tes.idTipoExpedienteSesion, e.idExpediente, 
             concat(upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
-				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',e.año,
+				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',(e.periodo-2000),
 				   case when b.bloque is null then ''
 						else concat(' / ',b.bloque)
 				   end ,')</strong></p>',
@@ -360,7 +373,7 @@ BEGIN
 				   end,
                    '<div style="text-align:center">-----------------------------------------------------------------------<\/div>'
 				 ),
-			c.letraOrdenDelDia, e.año, e.numeroExpediente
+			c.letraOrdenDelDia, (e.periodo-2000), e.numeroExpediente
 	from  	expediente e
     inner
     join	tipoExpediente te
@@ -374,12 +387,9 @@ BEGIN
     inner
     join	tipoExpedienteSesion tes
     on 		tes.letra=c.letraOrdenDelDia
-    inner	 
-    join	expedienteComision_dictamenesSegundaMinoria dsm
-    on		ec.idExpedienteComision=dsm.idExpedienteComision
     inner
     join	dictamen d
-    on		dsm.idDictamen=d.idDictamen
+    on		ec.idDictamenSegundaMinoria=d.idDictamen
     left
     join	tipoProyecto tpd
     on		d.idTipoDictamen=tpd.idTipoProyecto
@@ -398,8 +408,10 @@ BEGIN
     left
     join	tipoProyecto tp
     on		p.idTipoProyecto=tp.idTipoProyecto
-    where	d.idDictamen not in (select idDictamen from dictamenesConjuntos) and 
-			d.idSesion=_idSesion;
+    left
+    join	dictamenesConjuntos dc
+    on		d.idDictamen=dc.idDictamen
+    where	ec.idSesion=_idSesion and dc.idDictamen is null;
     
 	#dictamenes conjuntos
     
@@ -413,7 +425,7 @@ BEGIN
     select 
 			@idTipo, e.idExpediente, 
             concat(upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
-				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',e.año,
+				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',(e.periodo-2000),
 				   case when b.bloque is null then ''
 						else concat(' / ',b.bloque)
 				   end ,')</strong></p>',
@@ -427,7 +439,7 @@ BEGIN
 											  tp.tipoProyecto,pr.incluyeVistosYConsiderandos,1)
 				   end,
                    '<div style="text-align:center">-----------------------------------------------------------------------<\/div>'
-				 ),'Z', e.año, e.numeroExpediente
+				 ),'Z', (e.periodo-2000), e.numeroExpediente
 	from  	expediente e
     inner
     join	tipoExpediente te
@@ -435,12 +447,9 @@ BEGIN
     inner
     join	expedienteComision ec
     on		e.idExpediente=ec.idExpediente
-    inner	 
-    join	expedienteComision_dictamenesMayoria dm
-    on		ec.idExpedienteComision=dm.idExpedienteComision
     inner
     join	dictamen d
-    on		dm.idDictamen=d.idDictamen
+    on		ec.idDictamenMayoria=d.idDictamen
     left
     join	tipoProyecto tpd
     on		d.idTipoDictamen=tpd.idTipoProyecto
@@ -459,10 +468,12 @@ BEGIN
     left
     join	tipoProyecto tp
     on		p.idTipoProyecto=tp.idTipoProyecto
-    where	d.idDictamen in (select idDictamen from dictamenesConjuntos) and 
-			d.idSesion=_idSesion
+    inner
+    join	dictamenesConjuntos dc
+    on		d.idDictamen=dc.idDictamen
+    where	ec.idSesion=_idSesion
     order   
-    by		e.año, e.numeroExpediente;
+    by		e.periodo, e.numeroExpediente;
     
     #dictamenes por primera minoria
 	
@@ -471,7 +482,7 @@ BEGIN
     select 
 			@idTipo, e.idExpediente, 
             concat(upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
-				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',e.año,
+				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',(e.periodo-2000),
 				   case when b.bloque is null then ''
 						else concat(' / ',b.bloque)
 				   end ,')</strong></p>',
@@ -485,7 +496,7 @@ BEGIN
 											  tp.tipoProyecto,pr.incluyeVistosYConsiderandos,1)
 				   end,
 				   '<div style="text-align:center">-----------------------------------------------------------------------<\/div>'
-				 ),'Z', e.año, e.numeroExpediente
+				 ),'Z', (e.periodo-2000), e.numeroExpediente
 	from  	expediente e
     inner
     join	tipoExpediente te
@@ -493,12 +504,9 @@ BEGIN
     inner
     join	expedienteComision ec
     on		e.idExpediente=ec.idExpediente
-    inner	 
-    join	expedienteComision_dictamenesPrimeraMinoria dpm
-    on		ec.idExpedienteComision=dpm.idExpedienteComision
     inner
     join	dictamen d
-    on		dpm.idDictamen=d.idDictamen
+    on		ec.idDictamenPrimeraMinoria=d.idDictamen
     left
     join	tipoProyecto tpd
     on		d.idTipoDictamen=tpd.idTipoProyecto
@@ -517,10 +525,12 @@ BEGIN
     left
     join	tipoProyecto tp
     on		p.idTipoProyecto=tp.idTipoProyecto
-    where	d.idDictamen in (select idDictamen from dictamenesConjuntos) and 
-			d.idSesion=_idSesion
+	inner
+    join	dictamenesConjuntos dc
+    on		d.idDictamen=dc.idDictamen
+    where	ec.idSesion=_idSesion
     order   
-    by		e.año, e.numeroExpediente;
+    by		e.periodo, e.numeroExpediente;
     
 	#dictamenes por segunda minoria
 	
@@ -529,7 +539,7 @@ BEGIN
     select 
 			@idTipo, e.idExpediente, 
             concat(upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
-				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',e.año,
+				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',(e.periodo-2000),
 				   case when b.bloque is null then ''
 						else concat(' / ',b.bloque)
 				   end ,')</strong></p>',
@@ -543,7 +553,7 @@ BEGIN
 											  tp.tipoProyecto,pr.incluyeVistosYConsiderandos,1)
 				   end,
                    '<div style="text-align:center">-----------------------------------------------------------------------<\/div>'
-				 ),'Z', e.año, e.numeroExpediente
+				 ),'Z', (e.periodo-2000), e.numeroExpediente
 	from  	expediente e
     inner
     join	tipoExpediente te
@@ -551,12 +561,9 @@ BEGIN
     inner
     join	expedienteComision ec
     on		e.idExpediente=ec.idExpediente
-    inner	 
-    join	expedienteComision_dictamenesSegundaMinoria dsm
-    on		ec.idExpedienteComision=dsm.idExpedienteComision
     inner
     join	dictamen d
-    on		dsm.idDictamen=d.idDictamen
+    on		ec.idDictamenSegundaMinoria=d.idDictamen
     left
     join	tipoProyecto tpd
     on		d.idTipoDictamen=tpd.idTipoProyecto
@@ -575,32 +582,50 @@ BEGIN
     left
     join	tipoProyecto tp
     on		p.idTipoProyecto=tp.idTipoProyecto
-    where	d.idDictamen in (select idDictamen from dictamenesConjuntos) and 
-			d.idSesion=_idSesion
+	inner
+    join	dictamenesConjuntos dc
+    on		d.idDictamen=dc.idDictamen
+    where	ec.idSesion=_idSesion
     order   
-    by		e.año, e.numeroExpediente;
+    by		e.periodo, e.numeroExpediente;
 
 	#insercion en la tabla de la bd
     
     INSERT INTO `expedienteSesion`
 		(`idTipoExpedienteSesion`, `ordenSesion`,`idExpediente`,`idSesion`,
          `idEstadoExpedienteSesion`,`texto`,`aFavor`, `enContra`, `abstenciones`)
-	select 
+	select  
 			t.idTipoExpedienteSesion, 0,
             t.idExpediente, _idSesion, _idEstado,
-            concat('<p><strong>',t.letra,') Δ.- ',
-				   t.texto
-				 ),0,0,0
-	from	expedienteSesionTemporal t
+            case when idTipoExpedienteSesion<>25 then
+						concat('<p><strong>',t.letra,') Δ.- ',t.texto),
+				 else texto
+			end,0,0,0
+	from	(select distinct idTipoExpedienteSesion,idExpediente,
+							 letra,texto,añoExpediente,numeroExpediente
+			 from expedienteSesionTemporal
+             ) t
     order 
     by		t.letra ASC,t.añoExpediente ASC,t.numeroExpediente ASC;
     
     select count(distinct idExpediente) into _cantidadExpedientes
     from `expedienteSesion` where idSesion=_idSesion;
     
+    update 	expediente as e
+    inner
+    join	(select distinct idExpediente
+			 from 	expedienteSesion
+             where  idSesion=_idSesion
+             ) as t
+	on 		e.idExpediente=t.idExpediente
+    set		idOficina=5,
+			idEstadoExpediente=11;
+    
     update 	sesion
     set		tieneOrdenDelDia=1,
 			cantidadExpedientes=_cantidadExpedientes
 	where 	idSesion=_idSesion;
+    
+    commit;
     
 END
