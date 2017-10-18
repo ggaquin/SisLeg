@@ -102,7 +102,7 @@ class RestExpedienteController extends FOSRestController{
             $expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
             $expedientes=null;
             if ($tipoCriterio=='todo')
-                $expedientes=$expedienteRepository->findAll();
+                $expedientes=$expedienteRepository->findAll(array('fechaCreacion'=>null));
             if($tipoCriterio=='busqueda-1')
                 $expedientes=$expedienteRepository->findByAutor_Nombres($criterio);
             if ($tipoCriterio=='busqueda-2')
@@ -112,9 +112,11 @@ class RestExpedienteController extends FOSRestController{
             if ($tipoCriterio=='busqueda-4')
                 $expedientes=$expedienteRepository->findByTipoExpediente_Id($criterio);
             if ($tipoCriterio=='busqueda-5')
-                	$expedientes=$expedienteRepository->findByParticular_Nombres($criterio);
+                $expedientes=$expedienteRepository->findByParticular_Nombres($criterio);
             if ($tipoCriterio=='busqueda-6')
-                	$expedientes=$expedienteRepository->findByParticular_DNI($criterio);
+                $expedientes=$expedienteRepository->findByParticular_DNI($criterio);
+            if ($tipoCriterio=='busqueda-7')
+                $expedientes=$expedienteRepository->findByArchivo();
 		
             $resutado=[];	
             foreach ($expedientes as $expediente){
@@ -129,7 +131,9 @@ class RestExpedienteController extends FOSRestController{
             					'lista_comisiones_asignadas'=>$expediente->getListaComisionesAsignadas(),
             					'folios'=>$expediente->getFolios(),
             					'estado'=>$expediente->getEstadoExpediente()->getEstadoExpediente(),
-            					'numero_sancion'=>$expediente->getNumeroSancion()
+            					'numero_sancion'=>$expediente->getNumeroSancion(),
+            					'permite_edicion'=>$expediente->getPermiteEdicion(),
+            					'fecha_archivo_formateada'=>$expediente->getfechaArchivoFormateada()
             					);
             	$resutado[]=$registro;
             	
@@ -140,7 +144,67 @@ class RestExpedienteController extends FOSRestController{
             return $this->view($e->getMessage(),500);
         }
     }
-
+    
+    /**
+     * @Rest\Put("/archivar/{id}")
+     */
+    public function archivarExpedienteAction(Request $request){
+    	
+    	$id=$request->get('id');
+    	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+    	$estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
+    	$estadoExpediente=$estadoExpedienteRepository->find(6);
+    	$expediente=$expedienteRepository->find($id);
+    	$usuario=$this->getUser();
+    	
+    	if (!is_null($expediente->getFerchaArchivo()))
+    		return $this->view("El expediente ya se encuentra archivado desde "+$expediente->fechaArchivoFormateada(),500);
+    	else {
+    			$fechaActual=new \DateTime('now');
+    			$expediente->setFechaModificacion($fechaActual);
+    			$expediente->setUsuarioModificacion($usuario->getUsuario());
+    			$expediente->setFechaArchivo($fechaActual);
+    			$expediente->setEstadoExpediente($estadoExpediente);
+    			
+    			$em = $this->getDoctrine()->getManager();
+    			$em->persist($expediente);
+    			$em->flush();
+    			
+    			return $this->view("El expediente se archivó con exito ",200);
+    	}
+    	
+	}
+	
+	/**
+	 * @Rest\Put("/desarchivar/{id}")
+	 */
+	public function desarchivarExpediente(Request $request){
+		
+		$id=$request->request->get('id');
+		$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+		$estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
+		$estadoExpediente=$estadoExpedienteRepository->find(7);
+		$expediente=$expedienteRepository->find($id);
+		$usuario=$this->getUser();
+		
+		if($expediente->getNumeroSancion!='')
+			return $this->view("El expediente tiene sanción, no puede ser desarchivado ",500);
+		else{
+				$fechaActual=new \DateTime('now');
+				$expediente->setFechaModificacion($fechaActual);
+				$expediente->setUsuarioModificacion($usuario->getUsuario());
+				$expediente->setFechaArchivo(null);
+				$expediente->setEstadoExpediente($estadoExpediente);
+				
+				$em = $this->getDoctrine()->getManager();
+				$em->persist($expediente);
+				$em->flush();
+			
+				return $this->view("El expediente se archivó con exito ",200);
+		}
+	}
+	
+	
     /**
      * @Rest\Get("/getOne/{id}")
      */
@@ -753,6 +817,9 @@ class RestExpedienteController extends FOSRestController{
             $expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
             $expediente=$expedienteRepository->find($idExpediente); 
 			
+            if (!($expediente->getPermiteEdicion()))
+            	return $this->view('El expediente '.$numeroExpediente.' no puede ser editado',500);
+            
             //datos del HCD
             $expediente->setNumeroExpediente($numeroExpediente);
             $expediente->setPeriodo($año);

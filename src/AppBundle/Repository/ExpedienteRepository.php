@@ -28,9 +28,13 @@ class ExpedienteRepository extends EntityRepository{
 	public function findByTipoExpediente_Id($idTipoExpediente){
 
 		$qb = $this->createQueryBuilder('e')
-                   ->innerJoin('e.tipoExpediente', 't')
-                   ->where('t.id = :idTipoExpediente')
-                   ->setParameter('idTipoExpediente', $idTipoExpediente);
+                   ->innerJoin('e.tipoExpediente', 't');
+        $qb -> where($qb->expr()->andX(
+        								$qb->expr()->isNull('e.fechaArchivo'),
+        								$qb->expr()->eq('t.id', ':idTipoExpediente')
+        							  )
+               		)
+            ->setParameter('idTipoExpediente', $idTipoExpediente);
 
         return $qb->getQuery()->getResult();
 
@@ -39,9 +43,13 @@ class ExpedienteRepository extends EntityRepository{
 	public function findByEstado_Id($idEstadoExpediente){
 
 		$qb = $this->createQueryBuilder('e')
-                   ->innerJoin('e.estadoExpediente', 'es')
-                   ->where('es.id = :idEstadoExpediente')
-                   ->setParameter('idEstadoExpediente', $idEstadoExpediente);
+                   ->innerJoin('e.estadoExpediente', 'es');
+        $qb -> where($qb->expr()->andX(
+        								$qb->expr()->isNull('e.fechaArchivo'),
+        								$qb->expr()->eq('es.id', ':idEstadoExpediente')
+        								)	
+                   	)
+             -> setParameter('idEstadoExpediente', $idEstadoExpediente);
 
         return $qb->getQuery()->getResult();
 
@@ -57,9 +65,10 @@ class ExpedienteRepository extends EntityRepository{
 								       $qb->expr()->like('c.apellidos','?1')
 									)
 		   		  		)
-   		  	
+   		  	->where($qb->expr()->isNull('e.fechaArchivo'))
 		    ->distinct()
   		    ->setParameter(1, '%'.$patronBusqueda.'%');
+			
 	        return $qb->getQuery()->getResult();
 	  
 	}
@@ -73,7 +82,7 @@ class ExpedienteRepository extends EntityRepository{
 								$qb->expr()->like('d.apellidos','?1')
 								)
 						)
-						
+		    ->where($qb->expr()->isNull('e.fechaArchivo'))		
 			->distinct()
 			->setParameter(1, '%'.$patronBusqueda.'%');
 			return $qb->getQuery()->getResult();
@@ -86,6 +95,7 @@ class ExpedienteRepository extends EntityRepository{
 		$qb -> innerJoin('e.demandanteParticular','d',
 						 'with',$qb->expr()->eq('d.documento', '?1')
 						)
+			->where($qb->expr()->isNull('e.fechaArchivo'))	
 			->distinct()
 			->setParameter(1, $patronBusqueda);
 			return $qb->getQuery()->getResult();
@@ -112,7 +122,7 @@ class ExpedienteRepository extends EntityRepository{
 		
 		if(!is_null($oficina)){
 			$sql.='inner join oficina o on e.idOficina=o.idOficina ';
-			$condition.=' and o.idOficina=:idOficina';
+			$condition.=' and o.idOficina=:idOficina and e.fechaArchivo is null ';
 			
 			if($oficina->getId()==9 && $destino==3){
 				$sql.='inner join sesion s on e.idSesion=s.idSesion ';
@@ -147,7 +157,8 @@ class ExpedienteRepository extends EntityRepository{
 		$qb = $this->createQueryBuilder('e');
 		$qb -> where($qb->expr()->andX(
 										$qb->expr()->eq('e.numeroExpediente', '?1'),
-										$qb->expr()->eq('e.periodo','?2')
+										$qb->expr()->eq('e.periodo','?2'),
+										$qb->expr()->isNull('e.fechaArchivo')
 									  )
 				)
 			->setParameter(1, $numerador)
@@ -385,5 +396,13 @@ class ExpedienteRepository extends EntityRepository{
 		
 		return $query->getResult();
 		
+	}
+	
+	public function findByArchivo() {
+		
+		$qb = $this->createQueryBuilder('e');
+		$qb -> where($qb->expr()->isNotNull('e.fechaArchivo'));
+				
+		return $qb->getQuery()->getResult();
 	}
 }

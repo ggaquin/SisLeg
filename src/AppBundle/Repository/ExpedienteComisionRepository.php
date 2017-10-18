@@ -145,12 +145,15 @@ class ExpedienteComisionRepository extends EntityRepository{
 															$qb->expr()->isNull('s.id'),
 															$qb->expr()->eq('s.tieneOrdenDelDia','?2')
 														 ),
-										$qb->expr()->eq('ec.anulado', '?3')
+										$qb->expr()->eq('ec.anulado', '?3'),
+										$qb->expr()->isNull('e.fechaArchivo'),
+										$qb->expr()->eq('e.numeroSancion', '?4')
 									 )
 				   )
 			->setParameter(1, $numeroExpediente)
 			->setParameter(2, false)
-			->setParameter(3, false);
+			->setParameter(3, false)
+			->setParameter(4,'');
 			
 		return $qb->getQuery()->getResult();
 		

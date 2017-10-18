@@ -196,6 +196,13 @@ class Expediente
     
     /**
      * @var \DateTime
+     * 
+     * @ORM\Column(name="fechaArchivo", type="datetime",nullable=true)
+     */
+    private $fechaArchivo;
+    
+    /**
+     * @var \DateTime
      *
      * @ORM\Column(name="fechaCreacion", type="datetime", nullable=false)
      */
@@ -594,7 +601,26 @@ class Expediente
     {
     	return $this->numeroSancion;
     }
-
+    
+    /**
+     * Get fechaArchivo
+     * 
+     * @return DateTime
+     */
+	public function getFechaArchivo() {
+		return $this->fechaArchivo;
+	}
+	
+	/**
+	 * Set fechaArchivo
+	 * @param \DateTime $fechaArchivo
+	 * @return Expediente
+	 */
+	public function setFechaArchivo(\DateTime $fechaArchivo) {
+		$this->fechaArchivo = $fechaArchivo;
+		return $this;
+	}
+	
     /**
      * Set fechaCreacion
      *
@@ -1078,7 +1104,34 @@ class Expediente
     	}
     	return ((strlen($comisionesAsignadas)>0)?("A estudio de:".$comisionesAsignadas):'');
     }
-
+    
+    /**
+     * Get permiteEdición
+     * 
+     * @return boolean
+     * 
+     * @VirtualProperty()
+     */
+	public function getPermiteEdicion(){
+		
+		return !($this->numeroSancion!='' || 
+				 $this->sesion->getTieneOrdenDelDia() ||
+				 $this->sesion->getTieneEdicionBloqueada() ||
+				 !is_null($this->fechaArchivo)
+				);	
+	}
+	
+	/**
+	 * Get fechaArchivoFormateada
+	 *
+	 * @return string
+	 *
+	 * @VirtualProperty()
+	 */
+	public function getfechaArchivoFormateada(){
+		
+		return (!is_null($this->fechaArchivo)?$this->fechaArchivo->format('d/m/Y'):'');
+	}
 
 
     //----------------------------administracion de carga de archivos-------------------------------

@@ -154,7 +154,7 @@
 
 		function criterio(){
 			var tipo=$("#selBusqueda").val();
-			return ((tipo=="todo")?"0":$("#"+tipo).val());	
+			return ((tipo=="todo" || tipo=="busqueda-7")?"0":$("#"+tipo).val());	
 		}
 		function tipoCriterio(){
 			return $("#selBusqueda").val();
@@ -490,12 +490,20 @@
 									            "data": null,
 									            "orderable":false,
 									            "render": function(data, type, row){
+										            debugger;
 										            var html="<div class='btn-group'>";
 											        html+="<button type='button' title='Giros' class='btn btn-info btn-xs btn-giros' data-toggle='modal' data-target='#giros'><span class='glyphicon glyphicon-refresh'></span></button>";
 											        html+="<button type='button' title='Informes' class='btn btn-info btn-xs btn-informes' data-toggle='modal' data-target='#informes'><span class='glyphicon glyphicon-list-alt'></span></button>";
-											        if('{{ 'EXP_EDIT' in  app.user.listaPermisos }}' && row.numero_sancion=='')
+											        if('{{ 'EXP_EDIT' in  app.user.listaPermisos }}' && row.permite_edicion==true)
 									            		html+="<button type='button'title='Editar expediente' class='btn btn-primary btn-xs btn-editar ' data-toggle='modal' data-target='#modificacionExpediente'><span class='glyphicon glyphicon-pencil'></span></button> ";
-													html+="</div>";
+										            if ('{{ 'EXP_ARCH' in  app.user.listaPermisos }}' && row.fecha_archivo_formateada=='' && 
+												            row.permite_edicion==true && "{{ app.user.rol.oficina.id }}"== "9")
+										            	html+="<button type='button'title='Archivar expediente' class='btn btn-danger btn-xs btn-archivar '><i class='fa fa-level-down' aria-hidden='true'></i></button> ";
+										            if ('{{ 'EXP_DES_ARCH' in  app.user.listaPermisos }}' && row.fecha_archivo_formateada!=''
+											            && row.numero_sancion=='')
+											            html+="<button type='button'title='Desarchivar expediente' class='btn btn-success btn-xs btn-desarchivar '><i class='fa fa-level-up' aria-hidden='true'></i></button> ";
+											        html+="</div>";
+														
 									            	return html;
 									            }
 									        },
@@ -514,7 +522,10 @@
 									            "orderable":true,
 									            "render": function(data, type, row){
 										            var html="";
-										            if('{{ app.user.rol.rol}}'=="ROLE_ADMINISTRADOR" && '{{ 'EXP_FEC_ING_EDIT' in  app.user.listaPermisos }}')
+										            if('{{ app.user.rol.rol}}'=="ROLE_ADMINISTRADOR" && 
+												        '{{ 'EXP_FEC_ING_EDIT' in  app.user.listaPermisos }}' &&
+												        row.permite_edicion==true
+												       )
 									            		html+="<button type='button'title='Editar Fecha' class='btn btn-primary btn-xs btn-editar-fecha' data-toggle='modal' data-target='#modalFechaIngreso'><span class='glyphicon glyphicon-pencil'></span></button> ";
 									            		html+=data
 									            	return html;
@@ -541,7 +552,9 @@
         									            	}
         	    						             		else html+=data;
 														}
-													html+="</div><div style='padding-top: 9px'><span class='label label-info'>"+row.estado+"</span></div>";
+													html+="</div><div style='padding-top: 9px'><span class='label"+
+														  ((row.fecha_archivo_formateada=='')?" label-info'>":" label-danger'>")+
+														  row.estado+' '+row.fecha_archivo_formateada+"</span></div>";
 									            	return html;
 									            }
 									        },
@@ -584,6 +597,46 @@
 		        					 '/imprimir?tipoDocumento=expediente&id='+
 		        					  data[ "id" ];
 		    } );
+
+			//EVENTO ARCHIVAR
+		    $('#registroExpediente tbody').on('click','.btn-archivar',function(){
+
+				var data = tabla.row( $(this).parents('tr') ).data();
+				var id = data[ "id" ];
+				$.ajax({
+
+					type:'Put',
+					dataType: 'json	',
+					url:'{{ app.request.getBaseURL() }}/api/expediente/archivar/'+id,
+					success: function(data){
+						toastr.success(data);
+						tabla.ajax.reload();;
+					},
+					error: function(jqXHR,textStatus,errorThrown ){
+						toastr.error(JSON.parse(jqXHR.responseText));
+					}
+		     	});
+			})
+			
+			//EVENTO DESARCHIVAR
+			$('#registroExpediente tbody').on('click','.btn-desarchivar',function(){
+
+				var data = tabla.row( $(this).parents('tr') ).data();
+				var id = data[ "id" ];
+				$.ajax({
+
+					type:'Put',
+					dataType: 'json	',
+					url:'{{ app.request.getBaseURL() }}/api/expediente/desarchivar/'+id,
+					success: function(data){
+						toastr.success(data);
+						tabla.ajax.reload();;
+					},
+					error: function(jqXHR,textStatus,errorThrown ){
+						toastr.error(JSON.parse(jqXHR.responseText));
+					}
+		     	});
+			})
 
 			//EVENTO BOTÓN RETORNO EXPEDIENTE
 		    $('#registroExpediente tbody').on( 'click', '.btn-retorno', function () {
@@ -642,7 +695,7 @@
 					else{ 
         				$.ajax({
         	                async: true,
-        	                url: '{{ app.request.getBaseURL() }}/setRetornoExterno',
+        	                url: '{{ app.request.getBaseURL() }}/api/expediente/setRetornoExterno',
         	                data: formData,
         	                contentType: false,
         	                cache: false,
@@ -1737,7 +1790,7 @@
 
 				var control=$(this).val();
 				$(".busqueda").addClass('hidden');
-				if(control!="todo")
+				if(control!="todo" && control!="busqueda-7")
 					$("#"+control).removeClass('hidden');
 				else{
 					$("#busqueda-1").val("");
@@ -1748,7 +1801,8 @@
 			});
 
 			$("#btn-busqueda").click(function(){
-				if($("#selBusqueda").val()!="todo" && criterio()!="" && criterio()!="0")
+				debugger;
+				if(($("#selBusqueda").val()=="todo" || $("#selBusqueda").val()=="busqueda-7") || (criterio()!="" && criterio()!="0"))
 				{
 					tabla.ajax.url("api/expediente/getByCriteria/"+tipoCriterio()+"/"+criterio()).load();
 					$(".filtro").prop('disabled',true);
@@ -1881,6 +1935,7 @@
 											<option value="busqueda-4">Tipo de Expediente</option>
 											<option value="busqueda-5">Nombres Particular</option>
 											<option value="busqueda-6">DNI Particular</option>
+											<option value="busqueda-7">Archivados</option>
 										</select>
 										<input class="form-control busqueda hidden filtro" id="busqueda-1"/>
 										<select class="form-control busqueda hidden filtro" id="busqueda-2">
