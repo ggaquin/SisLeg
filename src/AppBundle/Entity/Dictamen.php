@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\VirtualProperty;
 use JMS\Serializer\Annotation\Exclude;
 use Doctrine\ORM\Mapping\JoinTable;
+use Doctrine\ORM\Mapping\Column;
 
 /**
  * Dictamen
@@ -73,7 +74,7 @@ class Dictamen
      * 				  cascade={"persist","merge","refresh"}, mappedBy="dictamenSegundaMinoria")
      */
     private $asignacionesPorSegundaMinoria;
-	
+    	
     /**
      * @var string
      *
@@ -99,7 +100,7 @@ class Dictamen
     	$this->asignacionesPorMayoria = new \Doctrine\Common\Collections\ArrayCollection();
     	$this->asignacionesPorPrimeraMinoria = new \Doctrine\Common\Collections\ArrayCollection();
     	$this->asignacionesPorSegundaMinoria = new \Doctrine\Common\Collections\ArrayCollection();
-    	
+     	
     }
 
     //-------------------------------------setters y getters------------------------------------
@@ -359,7 +360,7 @@ class Dictamen
     {
     	return $this->asignacionesPorSegundaMinoria;
     }
-    
+	    
     /**
      * Set usuarioCreacion
      *

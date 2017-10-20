@@ -7,6 +7,8 @@ use JMS\Serializer\Annotation\VirtualProperty;
 use \DateTime;
 use AppBundle\Popo\Image;
 use JMS\Serializer\Annotation\Exclude;
+use Symfony\Component\Validator\Constraints\Collection;
+use Doctrine\ORM\Mapping\Column;
 
 /**
  * Expediente
@@ -251,6 +253,13 @@ class Expediente
      * 				  cascade={"persist", "remove"},orphanRemoval=true)
      */
     private $asignacionComisiones;
+    
+    /**
+     * @var boolean
+     * 
+     * @Column(name="ultimoMomento", type="boolean", nullable=false)
+     */
+    private $ultimoMomento;
    
 
     //------------------------------------constructor---------------------------------------------
@@ -265,6 +274,7 @@ class Expediente
        $this->movimientos = new \Doctrine\Common\Collections\ArrayCollection();
        $this->proyecto=null;
        $this->numeroSancion='';
+       $this->ultimoMomento=false;
     }
 
     //-------------------------------setters y getters--------------------------------------------
@@ -833,6 +843,26 @@ class Expediente
     	return $this->asignacionComisiones;
     }
     
+    /**
+     * Get ultimoMomento
+     * 
+     * @return boolean
+     */
+	public function getUltimoMomento() {
+		return $this->ultimoMomento;
+	}
+	
+	/**
+	 * Set ultimoMomento
+	 * 
+	 * @param boolean $ultimoMomento
+	 * @return Expediente
+	 */
+	public function setUltimoMomento($ultimoMomento) {
+		$this->ultimoMomento = $ultimoMomento;
+		return $this;
+	}
+	    
     //--------------------------------propiedades protegidas---------------------------------------
 
     /**

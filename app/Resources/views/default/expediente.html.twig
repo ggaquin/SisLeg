@@ -307,20 +307,37 @@
 			}
 		}
 
-		function actualizarSesiones(control,valorSeleccionado){
+		function actualizarSesiones(control,valorSeleccionado,sesionPersistida){
 
 			$.ajax({
 				type:'Get',
 				dataType: 'json	',
 				url:'{{ app.request.getBaseURL() }}'+'/api/sesion/getLastByType',
 				success: function(data){
-					$(control).html('');
-					var html='<option value="0">Seleccione Sesion</option>'
+					debugger;
+					var html='<option value="0">Seleccione Sesion</option>';
+					var pertenece=false
+					
+					if (sesionPersistida!=null){
+						$.each(data, function(index,sesion){
+							if (sesion.id==sesionPersistida.id) pertenece=true;
+						});
+					}else pertenece=true;
+
+					if (pertenece==false)
+					
+						html+='<option value="'+sesionPersistida.id+'" selected >'+
+								 sesionPersistida.fecha_formateada+'</option>';
+					
+			
+					
 					$.each(data, function(index,sesion){
 						html+='<option value="'+sesion.id+'" '+
 							  ((valorSeleccionado==sesion.id)?'selected':'') +'>'+sesion.fecha_formateada+'</option>';
 					});
-					$(control).html(html);    			
+					$(control).html('');
+					$(control).html(html);  
+    							
 				},
 				error: function(jqXHR,textStatus,errorThrown ){
 					toastr.error(jqXHR.responseText);
@@ -896,9 +913,10 @@
 						$("#numeroExpedienteMod").val(data.numero_expediente);
 						$("#caratulaMod").data("wysihtml5").editor.setValue(data.caratula);
 						$("#foliosMod").val(data.folios);
-						$("#numerosancionMod").val(data.numero_sancion);
+						//$("#numerosancionMod").val(data.numero_sancion);
 						$("#añoIngresoMod").val(data.año);
-						actualizarSesiones($("#selSesionMod"),data.sesion);
+						debugger;
+						actualizarSesiones($("#selSesionMod"),data.sesion.id,data.sesion);
 
 						if(data.proyecto!=0){
 							$("#selTipoExpedienteMod").prop( "disabled", true );
@@ -948,7 +966,16 @@
 			                
 			                initialCaption: "Archivos Expediente " + data.numero_expediente
 			                
-			            });		    			
+			            });	
+						debugger;
+			            if (data.ultimo_momento==true){
+							$(".divChkUltimoMomento").removeClass("hidden");
+							$(".chkUltimoMomento").bootstrapToggle("on");
+				        }
+			            else{
+    			            	$(".divChkUltimoMomento").addClass("hidden");
+    							$(".chkUltimoMomento").bootstrapToggle("off");
+				            }			
 					},
 					error: function(jqXHR,textStatus,errorThrown ){
 						toastr.error(jqXHR.responseText);
@@ -1110,7 +1137,7 @@
 			  		mostrarTiposPara("proyectos");
 				}
 
-			  	actualizarSesiones($("#selSesion"),0);
+			  	actualizarSesiones($("#selSesion"),0,null);
 				mostrarOrigenParaNuevo($("#selTipoExpediente").val());
 				$("#numeroExpediente").val('');
 				$("#folios").val('');
@@ -1544,7 +1571,7 @@
 		        $("#respuestaInforme").find('input[name="idInforme"]').val(data[ "id" ]);
 		        $("#respuestaInforme").find('input[name="numeroRemitoInforme"]').val("");
 		        $("#respuestaInforme").find('input[name="fechaRespuesta"]').val("");
-		        actualizarSesiones($("#selSesionRespuesta"),0);
+		        actualizarSesiones($("#selSesionRespuesta"),0,null);
 		    } );
 
 			//EVENTO CERRAR MODAL DE INFORMES
@@ -1661,7 +1688,7 @@
 		                type:  'POST',
 	                success: function(data) {
 	                    toastr.success(data);
-	                    actualizarSesiones($("#"+control),0);
+	                    actualizarSesiones($("#"+control),0,null);
 						$('#modalSesion').modal('hide');
 	                	},
 	                complete:function(){
@@ -1773,6 +1800,16 @@
 		      height: "35px"
 		    });
 
+			$('.chkUltimoMomento').bootstrapToggle({
+			      on:  'SI',
+			      off: 'NO',
+			      offstyle: 'danger',
+			      onstyle: 'success',
+			      width: "136.66px",
+			      height: "34px"
+			    });
+
+			
 			$('.chkSesion').bootstrapToggle({
 			      on:  'SI',
 			      off: 'NO',
@@ -2490,13 +2527,19 @@
         						        		<input type="checkbox" class="form-control chkSesion" id="chkSesionMod" data-size="normal"/>
         						        	</div>
         						        </div>
-							        	<div class="col-md-4">
+        						         <div class="col-md-3">
+							        		<div class="form-group hidden divChkUltimoMomento">
+							        			<label for="chkUltimoMomento">Ultimo Momento</label>
+        						        		<input type="checkbox" class="form-control chkUltimoMomento" id="chkUltimoMomento" data-size="normal"/>
+        						        	</div>
+        						        </div> 
+							        	<!-- <div class="col-md-4">
 							        		<div class="form-group">
 								        		<label for="numerosancionMod">N° Sanción</label>
 								        		<input type="text" class="form-control es-numero" id="numerosancionMod"
 								        			   name="numerosancionMod" disabled>
 								        	</div>
-								        </div>
+								        </div> -->
 							        </div>
 						        </div>
 						        <div class="col-md-7">

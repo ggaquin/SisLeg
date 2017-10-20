@@ -220,7 +220,7 @@ class RestExpedienteController extends FOSRestController{
         				 'folios'=>$expediente->getFolios(),
         				 'numero_sancion'=>$expediente->getNumeroSancion(),
         				 'año'=>$expediente->getPeriodo(), 
-        				 'sesion'=>(($expediente->getSesion()!=null)?$expediente->getSesion()->getId():0),
+        				 'sesion'=>$expediente->getSesion(),
         				 'concejal'=>(!is_null($expediente->getProyecto())
         				 				?$expediente->getProyecto()->getConcejal()->getNombreCompleto()
         				 				:""),
@@ -244,7 +244,9 @@ class RestExpedienteController extends FOSRestController{
         				'origen_numeracion'=>(($expediente->getOrigenExterno()!=null)
         										?$expediente->getOrigenExterno()->getNumeracionOrigen():[]),
         				'lista_imagenes'=>$expediente->getListaImagenes(),
-        				'rutas_web_expediente'=>$expediente->getRutasWebExpediente()
+        				'rutas_web_expediente'=>$expediente->getRutasWebExpediente(),
+        				'ultimo_momento'=>$expediente->getUltimoMomento(),
+        				
         				);
         return $this->view($resultado,200);
     }

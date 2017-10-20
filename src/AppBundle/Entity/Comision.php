@@ -94,7 +94,7 @@ class Comision
     /**
      * @var string
      * 
-     * @ORM\Column(name="letraOrdenDelDia", length=1, nullable=false)
+     * @ORM\Column(name="letraOrdenDelDia", length=2, nullable=false)
      */
     private $letraOrdenDelDia;
 

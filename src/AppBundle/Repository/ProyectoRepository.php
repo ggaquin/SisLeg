@@ -114,4 +114,14 @@ class ProyectoRepository extends EntityRepository{
 	        return $qb->getQuery()->getResult();
 	  
 	}
+	
+	public function findRevisionesByProyecto($proyecto){
+		
+		$rep = $this->getEntityManager()->getRepository('AppBundle:ProyectoRevision');
+		$qb = $rep->createQueryBuilder('pr');
+		$qb -> innerJoin('pr.proyecto', 'p')
+			-> where($qb->expr()->eq('p.id', '?1'))
+			-> setParameter(1, $proyecto->getId());
+		return $qb->getQuery()->getResult();
+	}
 }
