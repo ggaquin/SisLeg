@@ -310,7 +310,8 @@ class RestController extends FOSRestController{
 							    			),
     					 'titulares'=>$titulares,
     					 'suplentes'=>$suplentes,
-    					 'tipo_comision'=>$comision->getTipoComision()->getId()
+    					 'tipo_comision'=>$comision->getTipoComision()->getId(),
+    					 'letra_orden_del_dia'=>$comision->getLetraOrdenDelDia()
     	);
     	
     	return $this->view($resultado,200);
@@ -354,6 +355,7 @@ class RestController extends FOSRestController{
     	$titulares=$request->request->get('titulares');
     	$suplentes=$request->request->get('suplentes');
     	$idComision=$request->request->get('idComision');
+    	$letra=$request->request->get('letra');
     	$usuarioSesion=$this->getUser();
     	
     	$mensaje="";
@@ -363,16 +365,24 @@ class RestController extends FOSRestController{
 		    	$perfilReposiory=$this->getDoctrine()->getRepository('AppBundle:Perfil');
 		    	$tipoComisionReposiory=$this->getDoctrine()->getRepository('AppBundle:TipoComision');
 		    	$tipoComision=$tipoComisionReposiory->find($idTipoComision);
+		    	$comisionPorLetra=$comisionReposiory->findOneBy(array('letraOrdenDelDia'=>$letra));
 		    	
 		    	$comision=null;
 		    	
 		    	if($idComision!=0){
 		    		$comision=$comisionReposiory->find($idComision);
+		    		if(!is_null($comisionPorLetra) && $comisionPorLetra->getId()!=$comision->getId())
+		    			return $this->view('La letra ya esta asignada a la comisión de '.
+		    							   $comisionPorLetra->getComision(),500);
 		    		$comision->setUsuarioModificacion($usuarioSesion->getUsername());
 		    		$comision->setFechaModificacion(new \DateTime("now"));
 		    		$mensaje="La comisión ".$comision->getComision()." se modificó con éxito";
 		    	}
 		    	else {
+		    			if(!is_null($comisionPorLetra))
+			    			return $this->view('La letra ya esta asignada a la comisión de'.
+			    					$comisionPorLetra->getComision(),500);
+		    		
 		    			$comision= new Comision();
 		    			$comision->setUsuarioCreacion($usuarioSesion->getUsername());
 		    			$comision->setFechaCreacion(new \DateTime("now"));
@@ -395,6 +405,7 @@ class RestController extends FOSRestController{
 		    	}
 		    	
 		    	$comision->setActiva(true);
+		    	$comision->setLetraOrdenDelDia(strtoupper($letra));
 		    	$comision->setComision($descripcion);
 		    	$comision->setTipoComision($tipoComision);
 		    	$comision->setPresidente($perfilPresidente);

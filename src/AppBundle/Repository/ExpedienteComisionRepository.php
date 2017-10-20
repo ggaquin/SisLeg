@@ -225,14 +225,14 @@ class ExpedienteComisionRepository extends EntityRepository{
 		$qb1 -> select('ecsc.id')
 			 -> innerJoin('ecs.comision', 'ecsc')
 			 -> innerJoin('ecs.expediente', 'ecse')
-			 ->leftJoin('ec.sesion', 's')
+			 ->leftJoin('ecs.sesion', 's')
 			 -> where($qb1->expr()->andX(
 								 		$qb1->expr()->eq('ecse.id', '?1'),
 								 		$qb1->expr()->orX(
 											 				$qb1->expr()->isNull('s.id'),
 											 				$qb1->expr()->eq('s.tieneOrdenDelDia','?3')
 											 			  )
-								 	   )
+									   )
 				 	);
 		$rep = $this->getEntityManager()->getRepository('AppBundle:Comision');
 		$qb = $rep->createQueryBuilder('c');
