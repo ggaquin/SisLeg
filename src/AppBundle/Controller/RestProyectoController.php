@@ -319,10 +319,9 @@ class RestProyectoController extends FOSRestController{
     {
     	$idProyecto=$request->get("idProyecto");
     	$proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
-    	$proyectoRevisionRepository=$this->getDoctrine()->getRepository('AppBundle:ProyectoRevision');
-    	
+      	
     	$proyecto=$proyectoRepository->find($idProyecto);
-    	$revisiones=$proyectoRevisionRepository->findAll(array('proyecto' => $proyecto), array('id' => 'ASC'));
+    	$revisiones=$proyectoRepository->findRevisionesByProyecto($proyecto);
     	
     	$resultado=[];
     	foreach ($revisiones as $revision){
