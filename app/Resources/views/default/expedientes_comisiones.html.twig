@@ -785,9 +785,11 @@
 		        $("#articulos > tbody").html('');
 		        $("#vistos").html('');
 		        $("#considerandos").html('');
+		        $("#idRevision").val(0);
 		        $("#articulos-revision > tbody").html('');
 		        articulosDictamen.length=0;
 		    	articulosRevision.length=0;
+		    	$(".dependiente-proyecto").addClass("hidden");
 				debugger;
 				if (idDictamen!=0){
             		    $.ajax({
@@ -890,17 +892,23 @@
 					validacion+=((articulos.length==0)
 							      ? '<li>Debe poveer los articulos para el dictamen articulado</li>':'') ;
 				
-				if (tipoRedaccion=="revision" && editaRevision){
-
-					validacion+=((articulos.length==0)?'<li>Debe poveer los articulos la revision</li>':'');
-			           
-					validacion+=((vistos.replace(/ /g,'').length==0 && vistosYConsiderandos)
-					           ?'<li>Debe poveer un texto para los vistos de la revision</li>':'');
-					
-					validacion+=((considerandos.replace(/ /g,'').length==0 && vistosYConsiderandos)
-					              ?'<li>Debe poveer un texto para los considerandos de la revision</li>':'');
-				}
-
+				if (tipoRedaccion=="revision"){
+					if (idRevision==0)
+						validacion+='<li>No se seleccionó ninguna revision del proyecto</li>';
+					else {
+        					if (editaRevision){
+        
+            					validacion+=((articulos.length==0)?'<li>Debe poveer los articulos la revision</li>':'');
+            			           
+            					validacion+=((vistos.replace(/ /g,'').length==0 && vistosYConsiderandos)
+            					           ?'<li>Debe poveer un texto para los vistos de la revision</li>':'');
+            					
+            					validacion+=((considerandos.replace(/ /g,'').length==0 && vistosYConsiderandos)
+            					              ?'<li>Debe poveer un texto para los considerandos de la revision</li>':'');
+            				}
+					}
+				
+		    	}	
 				debugger;
 				formData.append('idAsignacion',idAsignacion);
 				formData.append('idDictamen',idDictamen);
@@ -1333,6 +1341,7 @@
 		        $.each(articulosRevision,function(index,articulo){
 					agregarArticulo(articulo,'articulos-revision');
 				});
+				$(".dependiente-proyecto").removeClass("hidden");
 				$('#modalRevisiones').modal('hide');
 		       
 		    } );
@@ -1929,23 +1938,19 @@
         						        				id="btn-revisiones" data-toggle='modal' 
         						        				data-target='#modalRevisiones'>Revisiones</button>
         				        			</div>
-        				        			<div class="col-md-8" style="text-align: center;">
+        				        			<div class="col-md-8 dependiente-proyecto" style="text-align: center;">
     											<input type="checkbox" id="editaRevision" data-size="small"/>
     										</div>
-					        				<div class="col-md-3" style="text-align: right;" id="div-vistosYConsiderandos">
+					        				<div class="col-md-3 dependiente-proyecto" style="text-align: right;" id="div-vistosYConsiderandos">
     											<input type="checkbox" id="vistosYConsiderandos" data-size="small"/>
     										</div>
 					        			</div>
-            							<div class="div-revision" id="div-revision">
+            							<div class="div-revision dependiente-proyecto" id="div-revision">
     					        			<div class="row texto-revision"  style="padding-top:10px">
     					        				<div class="col-md-12" style="background: #f8f8ff">
         					        				<div class="form-group">
         					        					<label for="vistos">Vistos:</label>
-        					        					<div id="vistos" style="padding-left:15px">bla bla bla <br>
-    													<br><br><br><br><br><br><br><br>
-    													<br><br><br><br><br><br><br><br>	
-        					        					bla
-        					        					</div>
+        					        					<div id="vistos" style="padding-left:15px"></div>
         					        					<button type="button" class="btn btn-primary btn-xs" 
     								        				id="btn-editar-vistos-revision" style="margin-top:5px">Editar</button>
         					        				</div>
@@ -1955,11 +1960,7 @@
     					        				<div class="col-md-12" style="background: #f8f8ff">
         					        				<div class="form-group">
         					        					<label for="considerandos">Considerandos:</label>
-        					        					<div id="considerandos" style="padding-left:15px">bla bla bla
-            					        				<br><br><br><br><br><br><br><br><br>
-            					        				<br><br><br><br><br><br><br><br><br>
-        					        					bla
-        					        					</div>
+        					        					<div id="considerandos" style="padding-left:15px"></div>
         					        					<button type="button" class="btn btn-primary btn-xs" 
     								        				id="btn-editar-considerandos-revision" style="margin-top:5px">Editar</button>
         					        				</div>
