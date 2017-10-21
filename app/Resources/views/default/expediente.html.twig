@@ -324,17 +324,19 @@
 						});
 					}else pertenece=true;
 
-					if (pertenece==false)
+					if (pertenece==false)//no esta entre los próximos hábles es de 
+										  //una sesion pasada. No debería pasar
 					
 						html+='<option value="'+sesionPersistida.id+'" selected >'+
 								 sesionPersistida.fecha_formateada+'</option>';
-					
-			
-					
+						//$(control).prop("disabled",true);
+						//$(".divChkUltimoMomento").addClass("hidden");
+						 					
 					$.each(data, function(index,sesion){
 						html+='<option value="'+sesion.id+'" '+
 							  ((valorSeleccionado==sesion.id)?'selected':'') +'>'+sesion.fecha_formateada+'</option>';
 					});
+					
 					$(control).html('');
 					$(control).html(html);  
     							

@@ -194,6 +194,8 @@ class RestExpedienteController extends FOSRestController{
 				$expediente->setFechaModificacion($fechaActual);
 				$expediente->setUsuarioModificacion($usuario->getUsuario());
 				$expediente->setFechaArchivo(null);
+				$expediente->setSesion(null);
+				$expediente->setUltimoMomento(false);
 				$expediente->setEstadoExpediente($estadoExpediente);
 				
 				$em = $this->getDoctrine()->getManager();
