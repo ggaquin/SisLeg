@@ -140,7 +140,9 @@ class RestComisionAsignacionController extends FOSRestController{
     									'recibido'=>!is_null($e->getPaseOriginario()->getRemito()->getFechaRecepcion()),
     									'anulado'=>$e->getAnulado(),
     									'edicion_habilitada'=>$e->getPermiteEdicion(),
-    									'sesion'=>$e->getSesionMuestra()	
+    									'sesion'=>$e->getSesionMuestra(),
+    									'sesion_id'=>(is_null($e->getSesion())?0:$e->getSesion()->getId()),
+    									'ultimo_momento'=>$e->getUltimoMomento()
 				    				);
     			$respuesta[]=$datosAsignacion;
     		}
@@ -158,12 +160,20 @@ class RestComisionAsignacionController extends FOSRestController{
     {
     	$idAsignacion=$request->request->get('idAsignacion');
     	$idSesion=$request->request->get('idSesion');
+    	$ultimoMomento=$request->request->get('ultimoMomento');
     	$usuario=$this->getUser();
     	
     	$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
     	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
     	$expedienteComision=$expedienteComisionRepository->find($idAsignacion);
     	$sesion=$sesionRepository->find($idSesion);
+    	   	
+    	if($expedienteComision->getUltimoMomento()=="true" && $ultimoMomento=="false")
+    			$expedienteComision->setUltimoMomento(false);
+    	else 
+    		if (is_null($expedienteComision->getSesion()) || 
+    			$expedienteComision->getSesion()->getId()!=$sesion->getId())
+    			$expedienteComision->setUltimoMomento($sesion->getTieneOrdenDelDia());	
     	
     	$expedienteComision->setSesion($sesion);
     	$expedienteComision->setFechaModificacion(new \DateTime());

@@ -147,13 +147,13 @@ class SancionRevisionProyecto extends Sancion
     //------------------------------Propiedades virtuales-----------------------------------------
     
     /**
-     * get claseResolucion
+     * get claseSancion
      * 
      * @return string
      * @VirtualProperty()
      */
-    public function getClaseResolucion(){
-    	return "revisionProyecto";
+    public function getClaseSancion(){
+    	return "revision";
     }
       
 }

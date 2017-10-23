@@ -1008,7 +1008,7 @@
               	var nombresParticular=$("#nombresParticularMod").val();
               	var idOrigen=$("#selOrigenMod").val();
               	var idSesion=$("#selSesionMod").val();
-				//var numeroSancion=$("#numeroSancion").val();
+				var ultimoMomento=$("#chkUltimoMomento").is(":checked");
 				var año=$("#añoIngresoMod").val();
 				var numeros=[];
               	$("#tabla-numeros-mod > tbody > tr").each(function(){ 
@@ -1028,6 +1028,7 @@
 
                 var validacion='';
 
+                formData.append('ultimoMomento',ultimoMomento);
                 formData.append('idExpediente',idExpediente);
             	
               	formData.append('idTipoExpediente',idTipoExpediente);
@@ -1809,7 +1810,7 @@
 			      onstyle: 'success',
 			      width: "136.66px",
 			      height: "34px"
-			    });
+			});
 
 			
 			$('.chkSesion').bootstrapToggle({
@@ -2529,7 +2530,7 @@
         						        		<input type="checkbox" class="form-control chkSesion" id="chkSesionMod" data-size="normal"/>
         						        	</div>
         						        </div>
-        						         <div class="col-md-3">
+        						        <div class="col-md-3">
 							        		<div class="form-group hidden divChkUltimoMomento">
 							        			<label for="chkUltimoMomento">Ultimo Momento</label>
         						        		<input type="checkbox" class="form-control chkUltimoMomento" id="chkUltimoMomento" data-size="normal"/>

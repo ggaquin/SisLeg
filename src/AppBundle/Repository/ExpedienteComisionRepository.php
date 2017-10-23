@@ -274,7 +274,7 @@ class ExpedienteComisionRepository extends EntityRepository{
 			 ->where($qb1->expr()->andX(
 										$qb1->expr()->eq('e.id', '?1'),
 										$qb1->expr()->orX(
-															$qb1->expr()->isNull('s'),
+															$qb1->expr()->isNull('s.id'),
 															$qb1->expr()->eq('s.tieneOrdenDelDia','?2')
 														 )
 										)

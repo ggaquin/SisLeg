@@ -351,14 +351,17 @@ class RestSesionController extends FOSRestController{
 	    	$sancion->setUsuarioCreacion($usuario->getUsuario());
 	    					
 	    	//campos comunes a todos los tipos
-	    	$sancion->setTextoLibre($texto_libre);
 	    	$dictamen=(($idDictamen==0)?null:$dictamenRepository->find($idDictamen));
 		    $sancion->setDictamen($dictamen);
 		    $encabezadoRedaccion=$plantillaTextoRepository->find($numeroEncabezado);
 		    $sancion->setEncabezadoRedaccion($encabezadoRedaccion);
 		    $pieRedaccion=$plantillaTextoRepository->find($numeroPie);
 		    $sancion->setPieRedaccion($pieRedaccion);
-	    				
+	    		
+		    //para texto rápido
+		    if ($tipoRedaccion=="articulado")
+		    	$sancion->setTextoLibre($texto_libre);
+	    	
 	    	//para el tipo articulado
 	    	if ($tipoRedaccion=="articulado"){
 	    		$tipoSancion=$tipoProyectoRepository->find($idTipoSancion);

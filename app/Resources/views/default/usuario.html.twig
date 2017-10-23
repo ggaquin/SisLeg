@@ -219,7 +219,7 @@
 								html+="<h4>"+menu.menu+"</h4>";
 								html+="<ul style='list-style: none;'>";
 								$.each(menu.items,function(index,item){
-									var habilitado=((controlValor!=1)?true:traerValorItem(permisos,item.abreviacion));
+									var habilitado=((controlValor!=1)?traerValorItem(permisos,item.abreviacion):true);
 									html+="<li data-value='"+item.abreviacion+"'>"+
 										  "<input type='checkbox' "+((habilitado)?'checked':'')+" ><span>"+item.menu_item+
 										  "</span></li>";

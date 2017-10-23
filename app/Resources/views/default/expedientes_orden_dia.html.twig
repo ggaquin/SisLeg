@@ -298,6 +298,7 @@
 
 		function limpiarFormularioSancion(articulosSancion,articulosRevision){
 			
+			$("#idRevision").val(0);
 			$("#selTipoRedaccion").val("basico");
 	        $("#selTipoRedaccion").change();
 	        $("#numeroSancion").val("");
@@ -318,6 +319,8 @@
 
 		function habilitarControlesModalSancion(idSancion,idDictamen){
 
+			debugger; 
+			
 			if (idSancion==0 && idDictamen!=0){ //Alta por dictamen
 				$("#selTipoRedaccion").attr("disabled",true);
 				$("#btn-modo-redaccion").attr("disabled",true);
@@ -383,7 +386,9 @@
 					$("#selTipoRedaccion").change();
     				$("#selEncabezado").val((idSancion!=0)?data.id_encabezado:0);
     				$("#selPie").val((idSancion!=0)?data.id_pie:0);
-					$("#texto").data("wysihtml5").editor.setValue(data.texto_libre);	
+
+    				if (data[traduccionCampo[0]]=="basico")
+						$("#texto").data("wysihtml5").editor.setValue(data.texto_libre);	
 
 					//caso particular sancion articulado
 					if (data[traduccionCampo[0]]=="articulado"){
@@ -414,6 +419,8 @@
 							$("#vistosYConsiderandos").bootstrapToggle('off');
 
 				    	$("#modalDictamen").find('input[name="idRevision"]').val(data.revision_id);
+
+				    	$(".dependiente-revision").removeClass("hidden");
 					   	
     				} 
 
@@ -457,6 +464,7 @@
 		   	$("#vistosYConsiderandos").bootstrapToggle('on');
 		   	$("#poseeSancion").bootstrapToggle('off');
 		   	$("#aplicaNotificacion").bootstrapToggle('off');
+		   	$(".dependiente-revision").addClass("hidden");
 		    $("#modalSancion").modal('show');
 
 		}
@@ -1123,6 +1131,7 @@
 		        $.each(articulosRevision,function(index,articulo){
 					agregarArticulo(articulo,'articulos-revision');
 				});
+		        $(".dependiente-revision").removeClass("hidden");
 				$('#modalRevisiones').modal('hide');
 		       
 		    });
@@ -1455,6 +1464,16 @@
 				 }
 			 });
 
+			 $("#btn-modo-redaccion").click(function(){
+				$("#idDictamen").val(0);
+				$("#idRevision").val(0);
+				$(".dependiente-revision").addClass("hidden");
+				$("#selTipoRedaccion").prop("disabled",false);
+				$("#selTipoRedaccion").val("basico");
+				$("#selTipoRedaccion").change();
+				
+			 });
+
 			 $("#btn-modo-dictamen").click(function(){
 
 				 	var idExpediente=$("#modalSancion").find('input[name="idExpediente"]').val();
@@ -1484,15 +1503,6 @@
 					$("#busqueda-2").val("0");
 				}
 			});
-
-			/*
-			$("#selSesion").change(function(){
-				debugger;
-				if($('#estadoFiltro').is(':checked'))
-					$("#estadoFiltro").bootstrapToggle('off');
-				else
-					tabla.ajax.url("api/sesion/getExpedienteSesionByCriteria/"+$("#selSesion").val()+"/"+tipoCriterio()+"/"+criterio()).load();
-			})*/
 
 			$("#btn-busqueda").click(function(){
 				var valorBusqueda=$("#selBusqueda").val();
@@ -1875,14 +1885,14 @@
         						        				id="btn-revisiones" data-toggle='modal' 
         						        				data-target='#modalRevisiones'>Revisiones</button>
         				        			</div>
-        				        			<div class="col-md-8" style="text-align: center;">
+        				        			<div class="col-md-8 dependiente-revision" style="text-align: center;">
     											<input type="checkbox" id="editaRevision" data-size="small"/>
     										</div>
-					        				<div class="col-md-3" style="text-align: right;" id="div-vistosYConsiderandos">
+					        				<div class="col-md-3 dependiente-revision" style="text-align: right;" id="div-vistosYConsiderandos">
     											<input type="checkbox" id="vistosYConsiderandos" data-size="small"/>
     										</div>
 					        			</div>
-            							<div class="div-revision" id="div-revision">
+            							<div class="div-revision dependiente-revision" id="div-revision">
     					        			<div class="row texto-revision"  style="padding-top:10px">
     					        				<div class="col-md-12" style="background: #f8f8ff">
         					        				<div class="form-group">

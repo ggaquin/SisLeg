@@ -504,6 +504,7 @@
 									            "data": "",
 									            "orderable":false,
 									            "render": function(data, type, row){
+										            debugger;
 								            		var html="<div class='text-center'>";
 								            		if ('{{ 'COM_EXP_SES_EDIT' in app.user.listaPermisos }}'){
     								            		if (row.sesion!=""){
@@ -676,7 +677,17 @@
 		  $('#registroAsignaciones tbody').on( 'click', '.btn-editar-sesion', function () {
 		    	var data = tabla.row( $(this).parents('tr') ).data();
 		        $("#modalSesion").find("input[name='idAsignacion']").val(data[ "id" ]);
-		        actualizarSesiones($("#selSesion"),data[ "id_sesion" ]);
+		        var idSesion=data[ "sesion_id" ];
+		        var ultimoMomento=data[ "ultimo_momento" ];
+		        if (ultimoMomento==true){
+					$(".chkUltimoMomento").bootstrapToggle("on");
+					$(".divChkUltimoMomento").removeClass("hidden");
+			    }
+		        else{
+    		        	$(".chkUltimoMomento").bootstrapToggle("off");
+    					$(".divChkUltimoMomento").addClass("hidden");
+			        }
+		        actualizarSesiones($("#selSesion"),idSesion);
 		    });
 
 		  //EVENTO GUARDAR SESION DEL MODAL DE SESION
@@ -686,6 +697,7 @@
 			  
 				var idSesion=$("#modalSesion").find("select[name='selSesion']").val();
 				var idAsignacion=$("#modalSesion").find("input[name='idAsignacion']").val();
+				var ultimoMomento=$("#modalSesion").find("input[name='chkUltimoMomento']").is(":checked");
 
 				var validacion='';
 				var formData=new FormData();
@@ -695,6 +707,7 @@
 			 	
 				formData.append('idSesion',idSesion);
 				formData.append('idAsignacion',idAsignacion);
+				formData.append('ultimoMomento',ultimoMomento);
 				
 				if (validacion.length>0) 
 				{
@@ -1559,6 +1572,15 @@
 		      height: "35px"
 		    });
 
+			$('.chkUltimoMomento').bootstrapToggle({
+			      on:  'SI',
+			      off: 'NO',
+			      offstyle: 'danger',
+			      onstyle: 'success',
+			      width: "136.66px",
+			      height: "34px"
+			});
+
 			$('#vistosYConsiderandos').bootstrapToggle({
 			      on:  'Incluye Vistos y Considerandos',
 			      off: 'No Incluye Vistos y Considerandos',
@@ -2204,6 +2226,17 @@
     								</div>
 				    			</div>
                 			</div>
+                			<div class="row">
+                    			<div class="col-md-12">
+                    				<div class="text-center">
+        				        		<div class="form-group hidden divChkUltimoMomento">
+        				        			<label for="chkUltimoMomento">Ultimo Momento</label>
+        					        		<input type="checkbox" class="form-control chkUltimoMomento" 
+        					        			   id="chkUltimoMomento" name="chkUltimoMomento" data-size="normal"/>
+        					        	</div>
+        					        </div>
+    					        </div>
+    					    </div>
                 			<hr>
     				    	<div class="row">
     				    		<div class="col-md-12">

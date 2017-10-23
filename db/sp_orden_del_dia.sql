@@ -1,11 +1,9 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `crearOrdenDelDia`(IN _idSesion int)
+CREATE DEFINER=`root`@`localhost` PROCEDURE `crearOrdenDelDia`(IN _idSesion int, IN _tipo tinyint(1))
 BEGIN
 
 	declare _cantidadExpedientes int default 0;
 	declare _idEstado int default 6;
     set @idTipo:=0;
-    
-    SET lc_time_names = 'es_AR';
     
     start transaction;
     
@@ -42,7 +40,9 @@ BEGIN
 	inner
     join 	tipoExpediente te
     on		e.idTipoExpediente=te.idTipoExpediente
-    where	e.idTipoExpediente=4 and e.idSesion=_idSesion;
+    where	e.idTipoExpediente=4 and 
+			e.idSesion=_idSesion and
+            e.ultimoMomento=_tipo;
     
     #Mensajes del ejecutivo con giro a comisiones (Ordenanzas)
     
@@ -64,7 +64,9 @@ BEGIN
 	inner
     join 	tipoExpediente te
     on		e.idTipoExpediente=te.idTipoExpediente
-    where	e.idTipoExpediente=9 and e.idSesion=_idSesion;
+    where	e.idTipoExpediente=9 and 
+			e.idSesion=_idSesion and 
+            e.ultimoMomento=_tipo;
     
     #proyectos de los concejales (comunicaciones y resoluciones)
     
@@ -95,7 +97,9 @@ BEGIN
     inner
     join	bloque b
     on		b.idBloque=pf.idBloque
-    where	e.idTipoExpediente in (1,6) and e.idSesion=_idSesion;	
+    where	e.idTipoExpediente in (1,6) and 
+			e.idSesion=_idSesion and
+            e.ultimoMomento=_tipo;	
     
     #proyectos de los concejales (ordenanzas)
  
@@ -127,7 +131,9 @@ BEGIN
     inner
     join	bloque b
     on		b.idBloque=pf.idBloque
-    where	e.idTipoExpediente=2 and e.idSesion=_idSesion;
+    where	e.idTipoExpediente=2 and 
+			e.idSesion=_idSesion and
+            e.ultimoMomento=_tipo;
 
 	#pedidos de informes y notificaciones
     
@@ -138,20 +144,20 @@ BEGIN
 		(`idTipoExpedienteSesion`,`idExpediente`,`texto`,`letra`,`añoExpediente`,`numeroExpediente`)
     select 
 			@idTipo, e.idExpediente,
-            concat('<strong>',upper(replace(e.caratula,'<p>','<p style="text-align: justify;margin-top: 0;text-indent: 1.5em">')),
+            concat('<strong>',upper(replace(e.caratula,'<p>','<p style="text-align: justify;margin-top: 0;text-indent: 15em">')),
 				   '<p>CH</p><p>Δ<\/p>',
-				   '<p style="margin-top: 0;text-indent: 1.5em">Expediente N °',
+				   '<p style="margin-top: 0;text-indent: 5em">Expediente N ° ',
                    e.numeroExpediente,
-                   '<span style="padding-left:50px;"></span>',
-                   te.letra,' ',
+                   '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
+                   te.letra,'&nbsp;&nbsp;&nbsp;&nbsp;',
                    DATE_FORMAT(m.fechaRespuesta, "%d/%m/%Y"),
                    '<\/p>',
                    case when m.discriminador = 'notificacion' 
-							then concat('<p style="margin-top: 0;text-indent: 1.5em">',te.tipoExpediente,' ',e.numeroSancion,
+							then concat('<p style="margin-top: 0;text-indent: 5em">',te.tipoExpediente,' ',e.numeroSancion,
 										' - ',c.comision,'.-<\/p>')
 							else ''
 					end,
-				   '<div style="text-align:center">-----------------------------------------------------------------------<\/div>')
+				   '</strong><div style="text-align:center">-----------------------------------------------------------------------<\/div>'),
 				   'CH',(e.periodo-2000), e.numeroExpediente
 	from  	expediente e
 	inner
@@ -167,8 +173,7 @@ BEGIN
 			fechaRespuesta is not null and
             discriminador in ('informe','notificacion')
     order 	
-	by		m.discriminador,e.año, e.numeroExpediente;
-    
+	by		m.discriminador,e.periodo, e.numeroExpediente;
     
     #Exedientes Particulares
     
@@ -189,7 +194,9 @@ BEGIN
 	inner
     join 	tipoExpediente te
     on		e.idTipoExpediente=te.idTipoExpediente
-    where	e.idTipoExpediente=3 and e.idSesion=_idSesion;
+    where	e.idTipoExpediente=3 and 
+			e.idSesion=_idSesion and
+            e.ultimoMomento=_tipo;
     
     #id's de dictamenes conjuntos
     
@@ -201,7 +208,8 @@ BEGIN
     inner
     join	expedienteComision ec
     on		d.idDictamen=ec.idDictamenMayoria
-    where	ec.idSesion=_idSesion
+    where	ec.idSesion=_idSesion and
+            ec.ultimoMomento=_tipo	
     group
     by		d.idDictamen
     having	count(ec.idExpedienteComision)>1;
@@ -212,7 +220,8 @@ BEGIN
     inner
     join	expedienteComision ec
     on		d.idDictamen=ec.idDictamenPrimeraMinoria
-    where	ec.idSesion=_idSesion
+    where	ec.idSesion=_idSesion and
+            ec.ultimoMomento=_tipo
     group
     by		d.idDictamen
     having	count(ec.idExpedienteComision)>1;
@@ -223,7 +232,8 @@ BEGIN
     inner
     join	expedienteComision ec
     on		d.idDictamen=ec.idDictamenSegundaMinoria
-    where	ec.idSesion=_idSesion
+    where	ec.idSesion=_idSesion and
+            ec.ultimoMomento=_tipo
     group
     by		d.idDictamen
     having	count(ec.idExpedienteComision)>1;
@@ -289,7 +299,9 @@ BEGIN
     left
     join	dictamenesConjuntos dc
     on		d.idDictamen=dc.idDictamen
-    where	ec.idSesion=_idSesion and dc.idDictamen is null;
+    where	ec.idSesion=_idSesion and 
+			dc.idDictamen is null and
+            ec.ultimoMomento=_tipo;
     
     #dictamenes por primera minoria
     
@@ -350,7 +362,9 @@ BEGIN
     left
     join	dictamenesConjuntos dc
     on		d.idDictamen=dc.idDictamen
-    where	ec.idSesion=_idSesion and dc.idDictamen is null;
+    where	ec.idSesion=_idSesion and 
+			dc.idDictamen is null and
+            ec.ultimoMomento=_tipo;
     
      #dictamenes por segunda minoria
     
@@ -411,7 +425,9 @@ BEGIN
     left
     join	dictamenesConjuntos dc
     on		d.idDictamen=dc.idDictamen
-    where	ec.idSesion=_idSesion and dc.idDictamen is null;
+    where	ec.idSesion=_idSesion and 
+			dc.idDictamen is null and
+            ec.ultimoMomento=_tipo;
     
 	#dictamenes conjuntos
     
@@ -471,7 +487,8 @@ BEGIN
     inner
     join	dictamenesConjuntos dc
     on		d.idDictamen=dc.idDictamen
-    where	ec.idSesion=_idSesion
+    where	ec.idSesion=_idSesion and 
+            ec.ultimoMomento=_tipo
     order   
     by		e.periodo, e.numeroExpediente;
     
@@ -528,7 +545,8 @@ BEGIN
 	inner
     join	dictamenesConjuntos dc
     on		d.idDictamen=dc.idDictamen
-    where	ec.idSesion=_idSesion
+    where	ec.idSesion=_idSesion and
+            ec.ultimoMomento=_tipo
     order   
     by		e.periodo, e.numeroExpediente;
     
@@ -585,7 +603,8 @@ BEGIN
 	inner
     join	dictamenesConjuntos dc
     on		d.idDictamen=dc.idDictamen
-    where	ec.idSesion=_idSesion
+    where	ec.idSesion=_idSesion and
+            ec.ultimoMomento=_tipo
     order   
     by		e.periodo, e.numeroExpediente;
 
@@ -598,7 +617,7 @@ BEGIN
 			t.idTipoExpedienteSesion, 0,
             t.idExpediente, _idSesion, _idEstado,
             case when idTipoExpedienteSesion<>25 then
-						concat('<p><strong>',t.letra,') Δ.- ',t.texto),
+						concat('<p><strong>',t.letra,') Δ.- ',t.texto)
 				 else texto
 			end,0,0,0
 	from	(select distinct idTipoExpedienteSesion,idExpediente,

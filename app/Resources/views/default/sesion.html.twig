@@ -81,11 +81,16 @@
                 								            	 		 "<span class='glyphicon glyphicon-pencil'></span>"+
                 								            	 "</button>";
 
-                								        if ('{{ 'SES_OD_NEW' in app.user.listaPermisos }}')
+                								        if ('{{ 'SES_OD_NEW' in app.user.listaPermisos }}'){
             									        	html+="<button type='button'  title='Generar Orden del Día' "+
-       									            	 		 		  "class='btn btn-primary btn-xs btn-generar'>"+
+       									            	 		 		  "class='btn btn-primary btn-xs btn-generar-OD'>OD  "+
        									            	 		 		  "<span class='fa fa-cogs'></span>"+
        									            	 		  "</button>";
+            									        /* 	html+="<button type='button'  title='Generar Último Momento' "+
+								            	 		 		  "class='btn btn-primary btn-xs btn-generar-U'>U  "+
+								            	 		 		  "<span class='fa fa-cogs'></span>"+
+								            	 		  		  "</button>"; */
+                								        }
         									        }
    									            	else{
 															if (row.tiene_edicion_bloqueada==false){
@@ -260,7 +265,7 @@
 	            	});
 			});
 				
-			$('#registroSesiones tbody').on( 'click', '.btn-generar', function () {
+			$('#registroSesiones tbody').on( 'click', '.btn-generar-OD', function () {
 			     var data = tabla.row( $(this).parents('tr') ).data();
 			     var idSesion=data[ "id" ];
 

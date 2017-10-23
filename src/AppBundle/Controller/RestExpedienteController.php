@@ -811,7 +811,7 @@ class RestExpedienteController extends FOSRestController{
             $caratula=$request->request->get('caratula');
             $año=$request->request->get('año');
             $idSesion=$request->request->get('idSesion');
-            //$numeroSancion=$request->request->get('numeroSancion');
+            $ultimoMomento=$request->request->get('ultimoMomento');
             $archivos=$request->files->all();
             $usuario=$this->getUser();
 
@@ -830,8 +830,14 @@ class RestExpedienteController extends FOSRestController{
             $expediente->setFolios($folios);
             $expediente->setCaratula($caratula);
             $sesion=$sesionRepository->find($idSesion);
+                  
+            if($expediente->getUltimoMomento()=="true" && $ultimoMomento=="false")
+            	$expediente->setUltimoMomento(false);
+            else
+            	if ($expediente->getSesion()->getId()!=$sesion->getId())
+            		$expediente->setUltimoMomento($sesion->getTieneOrdenDelDia());	
+            
             $expediente->setSesion($sesion);
-            //$expediente->setNumeroSancion($numeroSancion);
             $expediente->setArchivos($archivos);
             $proyecto=$expediente->getProyecto();
             
