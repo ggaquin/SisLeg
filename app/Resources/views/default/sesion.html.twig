@@ -86,13 +86,14 @@
        									            	 		 		  "class='btn btn-primary btn-xs btn-generar-OD'>OD  "+
        									            	 		 		  "<span class='fa fa-cogs'></span>"+
        									            	 		  "</button>";
-            									        /* 	html+="<button type='button'  title='Generar Último Momento' "+
-								            	 		 		  "class='btn btn-primary btn-xs btn-generar-U'>U  "+
+            									        	html+="<button type='button'  title='Generar Último Momento' "+
+								            	 		 		  "class='btn btn-primary btn-xs btn-generar-UM'>U  "+
 								            	 		 		  "<span class='fa fa-cogs'></span>"+
-								            	 		  		  "</button>"; */
+								            	 		  		  "</button>";
                 								        }
         									        }
    									            	else{
+															
 															if (row.tiene_edicion_bloqueada==false){
 																
 																if ('{{ 'SES_OD_DEL' in app.user.listaPermisos }}')	
@@ -100,6 +101,7 @@
             							            	 		 		  		  "class='btn btn-primary btn-xs btn-borrar'>"+
             							            	 		 		  		  "<span class='glyphicon glyphicon-wrench'></span>"+
             							            	 		 		  "</button>";
+  							            	 		 		  
 															}
 
 															if ('{{ 'SES_OD_DOWNLOAD' in app.user.listaPermisos }}')	
@@ -107,6 +109,12 @@
             					            	 		 		  		  "class='btn btn-info btn-xs btn-descargar'>"+
             					            	 		 		  		  "<span class='glyphicon glyphicon-save-file'></span>"+
             					            	 		 		  	  "</button>";
+
+															if(row.tiene_ultimo_momento==false)
+           									            		html+="<button type='button'  title='Generar Último Momento' "+
+        						            	 		 		  "class='btn btn-primary btn-xs btn-generar-UM'>U  "+
+        						            	 		 		  "<span class='fa fa-cogs'></span>"+
+        						            	 		  		  "</button>";
    									            	}
 
 										            return html+"</div>";
@@ -275,6 +283,36 @@
 			     $.ajax({
 		                async: true,
 		                url: '{{ app.request.getBaseURL() }}/api/sesion/ordenDia/create',
+		                data: formData,
+		                cache: false,
+		                contentType: false,
+		                processData: false,
+		                type:  'POST',
+		            beforeSend: function() {
+		            	//waitingDialog.show('Generando Orden del Día espere por favor');
+		            },
+	                success: function(data) {
+	                    toastr.success(data);
+						tabla.ajax.reload();
+						//waitingDialog.hide();
+	                },
+	                error: function(jqXHR,textStatus,errorThrown ){
+						toastr.error(jqXHR.responseText);
+						//waitingDialog.hide();
+						}
+	            	});
+			});
+			
+			$('#registroSesiones tbody').on( 'click', '.btn-generar-UM', function () {
+			     var data = tabla.row( $(this).parents('tr') ).data();
+			     var idSesion=data[ "id" ];
+
+			     var formData=new FormData();
+			     formData.append('idSesion',idSesion);
+
+			     $.ajax({
+		                async: true,
+		                url: '{{ app.request.getBaseURL() }}/api/sesion/ultimoMomento/create',
 		                data: formData,
 		                cache: false,
 		                contentType: false,

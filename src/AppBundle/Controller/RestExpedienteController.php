@@ -834,7 +834,7 @@ class RestExpedienteController extends FOSRestController{
             if($expediente->getUltimoMomento()=="true" && $ultimoMomento=="false")
             	$expediente->setUltimoMomento(false);
             else
-            	if ($expediente->getSesion()->getId()!=$sesion->getId())
+            	if (is_null($expediente->getSesion()) || $expediente->getSesion()->getId()!=$sesion->getId())
             		$expediente->setUltimoMomento($sesion->getTieneOrdenDelDia());	
             
             $expediente->setSesion($sesion);

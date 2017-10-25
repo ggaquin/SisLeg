@@ -78,6 +78,13 @@ class Sesion
     private $tieneOrdenDelDia;
 
     /**
+     * @var tieneUltimoMomento
+     *
+     * @ORM\Column(name="tieneUltimoMomento", type="boolean", nullable=false)
+     */
+    private $tieneUltimoMomento;
+    
+    /**
      * @var tieneEdicionBloqueada
      *
      * @ORM\Column(name="tieneEdicionBloqueada", type="boolean", nullable=false)
@@ -100,6 +107,7 @@ class Sesion
     {
         //$this->ordenDelDia = new \Doctrine\Common\Collections\ArrayCollection();
         $this->tieneOrdenDelDia=false;
+        $this->tieneUltimoMomento=false;
         $this->tieneEdicionBloqueada=false;
         $this->quorum=false;
         $this->presentes=0;
@@ -282,6 +290,26 @@ class Sesion
 		return $this;
 	}
 	
+	/**
+	 * Get tieneUltimoMomento
+	 * 
+	 * @return boolean
+	 */
+	public function getTieneUltimoMomento() {
+		return $this->tieneUltimoMomento;
+	}
+	
+	/**
+	 * Set tieneUltimoMomento
+	 * 
+	 * @param boolean $tieneUltimoMomento
+	 * @return Sesion
+	 */
+	public function setTieneUltimoMomento($tieneUltimoMomento) {
+		$this->tieneUltimoMomento = $tieneUltimoMomento;
+		return $this;
+	}
+		
 	/**
 	 * Get tieneEdicionBloqueada
 	 *

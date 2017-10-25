@@ -617,7 +617,7 @@ BEGIN
 			t.idTipoExpedienteSesion, 0,
             t.idExpediente, _idSesion, _idEstado,
             case when idTipoExpedienteSesion<>25 then
-						concat('<p><strong>',t.letra,') Δ.- ',t.texto)
+						concat('<p><strong>',if(_tipo=1,'U',t.letra),') Δ.- ',t.texto)
 				 else texto
 			end,0,0,0
 	from	(select distinct idTipoExpedienteSesion,idExpediente,

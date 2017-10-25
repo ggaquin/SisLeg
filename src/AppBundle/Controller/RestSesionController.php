@@ -57,6 +57,7 @@ class RestSesionController extends FOSRestController{
     	foreach ($sesiones as $sesion){
     		$registro=array('id'=>$sesion->getId(), 
     						'tiene_orden_del_dia'=>$sesion->getTieneOrdenDelDia(),
+    						'tiene_ultimo_momento'=>$sesion->getTieneUltimoMomento(),
     						'tipo_sesion'=>$sesion->getTipoSesion()->getTipoSesion(),
     						'descripcion'=>$sesion->getDescripcion(),
     						'fecha_formateada'=>$sesion->getFechaFormateada(),
@@ -169,6 +170,25 @@ class RestSesionController extends FOSRestController{
     		$sesionRepository->createOrdenDelDia($idSesion);
     		
     		return $this->view('La orden del día se generó correctamente',200);
+    	}
+    	catch (\Exception $e){
+    		return $this->view($e->getMessage(),500);
+    	}
+    	
+    }
+    
+    /**
+     * @Rest\Post("/ultimoMomento/create")
+     */
+    public function  generarUltimoMomento(Request $request){
+    	
+    	$idSesion=$request->request->get('idSesion');
+    	
+    	try {
+    		$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+    		$sesionRepository->createUltimoMomento($idSesion);
+    		
+    		return $this->view('El contenido de último momento se generó correctamente',200);
     	}
     	catch (\Exception $e){
     		return $this->view($e->getMessage(),500);

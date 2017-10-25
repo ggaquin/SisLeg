@@ -918,7 +918,7 @@
 						//$("#numerosancionMod").val(data.numero_sancion);
 						$("#añoIngresoMod").val(data.año);
 						debugger;
-						actualizarSesiones($("#selSesionMod"),data.sesion.id,data.sesion);
+						actualizarSesiones($("#selSesionMod"),((data.sesion!=null)?data.sesion.id:0),data.sesion);
 
 						if(data.proyecto!=0){
 							$("#selTipoExpedienteMod").prop( "disabled", true );

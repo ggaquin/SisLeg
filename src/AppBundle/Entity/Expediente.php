@@ -1145,8 +1145,8 @@ class Expediente
 	public function getPermiteEdicion(){
 		
 		return !($this->numeroSancion!='' || 
-				 $this->sesion->getTieneOrdenDelDia() ||
-				 $this->sesion->getTieneEdicionBloqueada() ||
+				(!is_null($this->sesion) && $this->sesion->getTieneOrdenDelDia()) ||
+				(!is_null($this->sesion) && $this->sesion->getTieneEdicionBloqueada()) ||
 				 !is_null($this->fechaArchivo)
 				);	
 	}

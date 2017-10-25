@@ -105,9 +105,20 @@ class SesionRepository extends EntityRepository{
 		
 		$params=[];
 		$params['idSesion']=$idSesion;
-		$stmt= $this->getEntityManager()->getConnection()->prepare('call crearOrdenDelDia(:idSesion)');
+		$params['tipo']=0;
+		$stmt= $this->getEntityManager()->getConnection()->prepare('call crearOrdenDelDia(:idSesion,:tipo)');
 		$stmt->execute($params);
 				
+	}
+	
+	public function createUltimoMomento($idSesion){
+		
+		$params=[];
+		$params['idSesion']=$idSesion;
+		$params['tipo']=1;
+		$stmt= $this->getEntityManager()->getConnection()->prepare('call crearOrdenDelDia(:idSesion,:tipo)');
+		$stmt->execute($params);
+		
 	}
 	
 	public function removeOrdenDelDia($idSesion){
