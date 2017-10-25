@@ -402,6 +402,16 @@ class DefaultController extends Controller
     }
     
     /**
+     * @Route("/versionesTaquigraficas", name="versionesTaquigraficas")
+     */
+    public function versionesTaquigraficasAction(Request $request)
+    {
+    	return $this->render('default/versiones_taquigraficas.html.twig', array(
+    			'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR
+    	));
+    }
+    
+    /**
      * @Route("/votacion")
      */
     public function votacionAction(Request $request){

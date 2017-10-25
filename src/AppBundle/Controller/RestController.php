@@ -25,6 +25,7 @@ use AppBundle\Entity\TipoComision;
 use AssistBundle\Entity\AdministracionSesion;
 use FOS\RestBundle\Controller\Annotations\Get;
 use AppBundle\Entity\PlantillaTexto;
+use AppBundle\Entity\VersionTaquigrafica;
 
 
 class RestController extends FOSRestController{
@@ -425,117 +426,7 @@ class RestController extends FOSRestController{
 	    }
     	
     }
-    
-    /**
-     * @Rest\Get("/api/sesion/getByCriteria/{criterio}")
-     *
-    public function traerSesionesPorCriterioAction(Request $request){
-    	
-    	$criterio=$request->get('criterio');
-    	
-    	$sesionReposiory=$this->getDoctrine()->getRepository('AppBundle:Sesion');
-    	$sesiones=[];
-    	if ($criterio=="actuales"){
-    		$fecha=new \DateTime('now');
-    		$año = substr($fecha->format("Y"),2,2);    		
-    		$sesiones=$sesionReposiory->findBy(array('año' => $año));
-    	}
-    	else
-    		$sesiones=$sesionReposiory->findAll();
-    	
-    	$resutado=[];
-    	foreach ($sesiones as $sesion){
-    		$registro=array('id'=>$sesion->getId(), 
-    						'tiene_orden_del_dia'=>$sesion->getTieneOrdenDelDia(),
-    						'tipo_sesion'=>$sesion->getTipoSesion()->getTipoSesion(),
-    						'descripcion'=>$sesion->getDescripcion(),
-    						'fecha_formateada'=>$sesion->getFechaFormateada(),
-    						'año'=>$sesion->getAño(),
-    						'cantidad_expedientes'=>$sesion->getCantidadExpedientes(),
-    						'tiene_edicion_bloqueada'=>$sesion->getTieneEdicionBloqueada()
-    						);
-    		$resutado[]=$registro;
-    			
-    	}
-    		
-    	return $this->view($resutado,200);
-    }/*
-    
-    /**
-     * @Rest\Get("/api/sesion/getOne/{id}")
-     *
-    public function traerSesionPorId(Request $request){
-    	
-    	$idSesion=$request->get('id');
-    	
-    	$sesionReposiory=$this->getDoctrine()->getRepository('AppBundle:Sesion');
-    	$sesion=$sesionReposiory->find($idSesion);
-   
-    	return $this->view($sesion,200);
-    }*/
-    
-    /**
-     * @Rest\Post("/api/sesion/save")
-     *
-    public function guardarSesion(Request $request){
-    	
-    	try{
-	    	$idSesion=$request->request->get('idSesion');
-	    	$idTipoSesion=$request->request->get('idTipoSesion');
-	    	$fecha=$request->request->get('fecha');
-	    	$descripcion=$request->request->get('descripcion');
-	    	$fecha.=' 00:00:00';
-	    	$fechaSesion =\DateTime::createFromFormat('d/m/Y H:i:s',$fecha);
-	    	$año=substr($fechaSesion->format("Y"),2,2);
-	    	
-	    	$sesionReposiory=$this->getDoctrine()->getRepository('AppBundle:Sesion');
-	    	$tipoSesionReposiory=$this->getDoctrine()->getRepository('AppBundle:TipoSesion');
-	    	$tipoSesion=$tipoSesionReposiory->find($idTipoSesion);
-	    	$sesionesPersistidas=$sesionReposiory->findBy(array('tipoSesion' => $tipoSesion,'fecha' => $fechaSesion));
-	    	
-	    	if (count($sesionesPersistidas)>0)
-	    		return $this->view('Ya existe una sesion del tipo '.
-	    						   $tipoSesion->getTipoSesion().
-	    						   ' creada para la misma fecha',500);
-	    	
-	    	$sesion=null;
-	    	$mensaje="";
-	    	
-	    	if($idSesion==0){
-	    		$sesion=new Sesion();
-	    		$mensaje='La sesion fue creó en forma exitosa';
-	    	}
-	    	else {
-	    		$sesion=$sesionReposiory->find($idSesion);
-	    		$mensaje='La sesión se modifico en forma exitosa';
-	    	}
-	    	
-	    	$sesion->setTipoSesion($tipoSesion);
-	    	$sesion->setFecha($fechaSesion);
-	    	$sesion->setAño($año);
-	    	$sesion->setDescripcion($descripcion);
-	    	
-	    	$em = $this->getDoctrine()->getManager();
-	    	$em->persist($sesion);
-	    	$em->flush();
-	    
-	    	return $this->view($mensaje,200);
-    	}
-    	catch(\Exception $e){
-    		return $this->view($e->getMessage(),500);
-    	}
-    }*/
-    
-    /**
-     * @Rest\Get("/api/session/getLastByType")
-     *
-    public function  traerUltimasSesionesPorTipoAction(Request $request){
-    	
-    	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
-    	$sesionesValidas=$sesionRepository->findLastActivoByTipo();
-    	return $this->view($sesionesValidas,200);
-    }*/
-    
+        
     /**
      * @Rest\Get("/api/comision/getByCriteria")
      */
@@ -613,70 +504,96 @@ class RestController extends FOSRestController{
     	return $this->view($respuesta,200);
     }
     
-    /**
-     * @Rest\Post("/api/sesion/ordenDia/create")
-     *
-    public function  generarOrdenDelDia(Request $request){
+   /**
+    * @Rest\Get("/api/versionTaquigrafica/getAll")
+    */
+    public function traerTodasLasVersionesTaquigraficasAction(Request $request)
+    {
+    	$versionTaquigraficaRepository=$this->getDoctrine()->getRepository('AppBundle:VersionTaquigrafica');
+    	$versionesTaquigraficas=$versionTaquigraficaRepository->findBy(array(),array('id'=>'desc'));
     	
-    	$idSesion=$request->request->get('idSesion');
-    	
-    	try {
-    		$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
-    		$sesionRepository->createOrdenDelDia($idSesion);
+    	$resultados=[];
+    	foreach ($versionesTaquigraficas as $versionTaquigrafica){
+    		$resultado=array(
+			    				'id'=>$versionTaquigrafica->getId(),
+			    				'descripcion'=>$versionTaquigrafica->getDescripcion(),
+			    				'sesion'=>(!is_null($versionTaquigrafica->getSesion())
+			    							?$versionTaquigrafica->getSesion()->getFechaMuestra()
+			    							:""),
+			    				'sesion_id'=>(!is_null($versionTaquigrafica->getSesion())
+					    						?$versionTaquigrafica->getSesion()->getId()
+					    						:0)		
+			    			);
+    		$resultados[]=$resultado;
     		
-    		return $this->view('La orden del día se generó correctamente',200);
+    	}
+    	return $this->view($resultados,200);
+    }
+    
+    /**
+     * @Rest\Post("/api/versionTaquigrafica/remove/{id}")
+     */
+    public  function eliminarVersionTaquigraficaAction(Request $request)
+    {
+    	try {
+		    	$id=$request->get('id');
+		    	$versionTaquigraficaRepository=$this->getDoctrine()->getRepository('AppBundle:VersionTaquigrafica');
+		    	$versionTaquigrafica=$versionTaquigraficaRepository->find($id);
+		    	$em = $this->getDoctrine()->getManager();
+		    	$em->remove($versionTaquigrafica);
+		    	$em->flush();
+		    	
+		    	return $this->view("La versión taquigráfica se eliminó en forma exitosa",200);
+		    	
+    	}catch (\Exception $e){
+    		return $this->view($e->getMessage(),500);
+    	}
+    	
+    }
+    
+    /**
+     * @Rest\Post("/api/versionTaquigrafica/save")
+     */
+    public function guardarVersionTaquigraficaAction(Request $request)
+    {
+    	try {
+		    	$id=$request->request->get("id");
+		    	$descripcion=$request->request->get("descripcion");
+		    	$idSesion=$request->request->get("idSesion");
+		    	$usuario=$this->getUser();
+		    	
+		    	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+		    	$versionTaquigraficaRepository=$this->getDoctrine()->getRepository('AppBundle:VersionTaquigrafica');
+		    	$versionTaquigrafica=null;
+		    	$sesion=null;
+		    	
+		    	if ($id!=0){
+		    		$versionTaquigrafica=$versionTaquigraficaRepository->find($id);
+		    		$versionTaquigrafica->setFechaModificacion(new \DateTime("now"));
+		    		$versionTaquigrafica->setUsuarioModificacion($usuario->getUsuario());
+		    	}
+		    	else {
+		    			$versionTaquigrafica=new VersionTaquigrafica();
+		    			$versionTaquigrafica->setFechaCreacion(new \DateTime("now"));
+		    			$versionTaquigrafica->setUsuarioCreacion($usuario->getUsuario());
+		    	}
+		    	if ($idSesion!=0)
+		    		$sesion=$sesionRepository->find($idSesion);
+		    	
+		    	$versionTaquigrafica->setDescripcion($descripcion);
+		    	$versionTaquigrafica->setSesion($sesion);
+		    	
+		    	$em = $this->getDoctrine()->getManager();
+		    	$em->persist($versionTaquigrafica);
+		    	$em->flush();
+		    	
+		    	return $this->view("La versión taquigráfica se generó en forma exitosa",200);
     	}
     	catch (\Exception $e){
     		return $this->view($e->getMessage(),500);
     	}
     	
-    }*/
-    
-    /**
-     * @Rest\Post("/api/sesion/ordenDia/remove")
-     *
-    public function  borrarOrdenDelDia(Request $request){
-    	
-    	$idSesion=$request->request->get('idSesion');
-    	
-    	try {
-    		$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
-    		$sesionRepository->removeOrdenDelDia($idSesion);
-    		
-    		return $this->view('La orden del día se eliminó en forma correcta',200);
-    	}
-    	catch (\Exception $e){
-    		return $this->view($e->getMessage(),500);
-    	}
-    	
-    }*/
-    
-    /**
-     * @Rest\Post("/api/sesion/ordenDia/invalidate")
-     *
-    public function  invalidarEdicionOrdenDelDia(Request $request){
-    	
-    	$idSesion=$request->request->get('idSesion');
-    	
-    	try {
-    		$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
-    		$sesion=$sesionRepository->find($idSesion);
-    		$sesion->setTieneEdicionBloqueada(true);
-    		
-    		$em = $this->getDoctrine()->getManager();
-    		$em->persist($sesion);
-    		$em->flush();
-    		
-    		return $this->view('El bloqueo de ediciones sobre la orden del día'.
-    							$sesion->getFechaMuestra().'se realizó en forma exitosa',200);
-    	
-    	}
-    	catch (\Exception $e){
-    		return $this->view($e->getMessage(),500);
-    	}
-    	
-    }*/
-    
+    }
    
     
     // Ojo con las sesiones de abajo son sesiones de usuario

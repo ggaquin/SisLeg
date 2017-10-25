@@ -1,0 +1,326 @@
+{% extends 'layout.html.twig' %}
+
+
+
+{% block stylesheets %}
+	{# parent() #}
+  	{% stylesheets '@css_datatables' %}
+      	<link rel="stylesheet" href="{{ asset_url }}" /></link>
+  	{% endstylesheets %}
+{% endblock %}
+
+{% block javascripts %}
+	{# parent() #}
+    {% javascripts '@js_datatables'%}
+        <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+{% endblock %}
+
+{% block body %}
+	
+	<style type="text/css">
+	
+		.text-area-corta{
+			height: 200px!important;
+		}
+	
+	</style>
+
+	<script type="text/javascript">
+
+    	function actualizarSesiones(control,valorSeleccionado){
+    		debugger;
+    		$.ajax({
+    			type:'Get',
+    			dataType: 'json	',
+    			url:'{{ app.request.getBaseURL() }}'+'/api/sesion/getLastByType',
+    			success: function(data){
+    				$(control).html('');
+    				var html='<option value="0">Seleccione Sesion</option>'
+    				$.each(data, function(index,sesion){
+    					html+='<option value="'+sesion.id+'" '+
+    						  ((valorSeleccionado==sesion.id)?'selected':'') +'>'+sesion.fecha_formateada+'</option>';
+    				}); 
+    				$(control).html(html);    			
+    			},
+    			error: function(jqXHR,textStatus,errorThrown ){
+    				toastr.error(jqXHR.responseText);
+    			}
+          	});
+    	}
+
+		$(document).ready(function () {
+			
+		    var tabla=$('#registroVersionesTaquigraficas').DataTable({
+		    			  "language": {
+				              "infoEmpty": "Sin registros para mostrar",
+				              "paginate": {
+						          	"last": "Ultima Página",
+						          	"first": "Primer página",
+						          	"next": "Siguiente",
+						          	"previous": "Anterior"
+						       },
+						       "emptyTable": "Sin Datos",
+						       "lengthMenu": 'Registros Listados <select class="form-control input-sm">'+
+						       				 '<option value="-1">Todos</option>'+
+								             '<option value="10">10</option>'+
+								             '<option value="20">20</option>'+
+								             '<option value="30">30</option>'+
+								             '<option value="40">40</option>'+
+								             '<option value="50">50</option>'+
+								             '</select>',
+								"loadingRecords": "Espere...cargando datos",
+								"processing": "Procesando...",
+								"sInfo": "Mostrando  _START_ a _END_ de _TOTAL_ registros",
+
+			          	  },
+					      "processing": false,
+					      "ajax": {
+							        "url": "api/versionTaquigrafica/getAll",
+			            			"dataSrc": '',
+							    },
+						  "columnDefs": [
+								            {
+								                "targets": [ 0 ],
+								                "visible": false,
+								                "searchable": false
+								            },
+								            {
+									            "targets": [ 1 ],
+									            "data": null,
+									            "orderable":false,
+									            "render": function(data, type, row){
+										            var html="<div class='btn-group'>";
+										           
+    										            html+="<button type='button' title='Editar Versión Taquigráfica' "+
+    										            	  "class='btn btn-primary btn-xs btn-editar'><span class='glyphicon "+
+    										            	  "glyphicon-pencil'></span>"+
+    									            		  "</button>";
+    									            		  
+    									            
+    									            	html+="<button type='button'  class='btn btn-danger btn-xs btn-eliminar' "+
+    									            		  "title='Eliminar Version Taquigráfica'><span class='glyphicon "+
+    									            		  "glyphicon-erase'></span>"+
+    									            		  "</button>";
+    									            		  
+									            	return html+"</div>";
+									            }
+									        }
+						  ],
+					      "columns": [
+					      		{ "data": "id" },
+					      		{ "data": "", "width":"5%" },
+					      		{ "data": "sesion" ,"width":"5%" },
+					            { "data": "descripcion","width":"90%" }
+					            
+					        ],
+					      "autoWidth":false,
+					      "paging": true,
+					      "lengthChange": true,
+					      "searching": false,
+					      "ordering": false,
+					      "info": true,
+					      "autoWidth": false,
+			});
+
+		    $('.btn-alta').click( function () {
+		       $("#modalVersionTaquigrafica").find('input[name="idVersionTaquigrafica"]').val(0);
+		       $("#modalVersionTaquigrafica")
+		       		.find('textarea[name="textoVersionTaquigrafica"]')
+		       		.data("wysihtml5").editor.setValue("");
+		       actualizarSesiones("#selSesion",0);
+		       $("#modalVersionTaquigrafica").modal("show");
+		    } );
+
+		    $('#registroVersionesTaquigraficas tbody').on( 'click', '.btn-editar', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+			    $("#modalVersionTaquigrafica").find('input[name="idVersionTaquigrafica"]').val(data[ "id" ]);
+			    $("#modalVersionTaquigrafica")
+			    		.find('textarea[name="textoVersionTaquigrafica"]')
+			    		.data("wysihtml5").editor.setValue(data[ "descripcion" ]);
+			    actualizarSesiones("#selSesion",data[ "sesion_id" ]);
+			    $("#modalVersionTaquigrafica").modal("show");
+		    });
+
+		    $('#registroVersionesTaquigraficas tbody').on( 'click', '.btn-eliminar', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+			    var id=data[ "id" ];
+
+			    $.ajax({
+			    	async: true,
+	                data: null,
+	                url:'{{ app.request.getBaseURL() }}/api/versionTaquigrafica/remove/'+id,
+	                cache: false,
+	                contentType: false,
+	                processData: false,
+	                type: 'POST',
+    				success: function(data){
+    					toastr.success(data);
+  						tabla.ajax.reload();
+    				},
+    				error: function(jqXHR,textStatus,errorThrown ){
+    					toastr.error(jqXHR.responseText);
+    				}
+    	      	});
+		    });
+
+		    $("#modalVersionTaquigrafica").on('show.bs.modal', function () {
+			    
+			    var idVersionTaquigrafica=$("#modalVersionTaquigrafica").find('input[name="idVersionTaquigrafica"]').val();
+			    if (idVersionTaquigrafica!=0)
+				    $("#titulo-modal-version-taquigrafica").html("Editar Versión Taquigráfica");
+			    else $("#titulo-modal-version-taquigrafica").html("Nueva Versión Taquigráfica");
+
+			 });
+			 
+			$("#btn-guardar-version-taquigrafica").click(function(){
+
+				$("#btn-guardar-version-taquigrafica").prop("disabled", true);
+				
+				var id = $("#idVersionTaquigrafica").val();
+				var descripcion = $("#textoVersionTaquigrafica").val();
+				var idSesion=$("#selSesion").val();
+			
+				var formData=new FormData();
+                var validacion='';
+
+                validacion+=((descripcion.replace(/ /g,'')==0)
+                        		?'<li>Debe proporcionar un texto para la versión taquigráfica</li>':'');
+                              	
+              	if (validacion.length>0) 
+ 				{
+ 					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+ 								validacion+'</ul>':'');
+ 					toastr.error(validacion);
+ 					$("#btn-guardar-version-taquigrafica").prop("disabled", false);
+ 					return false;
+ 				}
+ 				else{
+
+ 					formData.append('id',id);
+ 	              	formData.append('descripcion',descripcion);
+ 	              	formData.append('idSesion',idSesion);
+
+ 	            	$.ajax({
+ 		                async: true,
+ 		                url: '{{ app.request.getBaseURL() }}/api/versionTaquigrafica/save',
+ 		                data: formData,
+ 		                cache: false,
+ 		                contentType: false,
+ 		                processData: false,
+ 		                type: 'POST',
+ 	                success: function(data) {
+ 	                    toastr.success(data);
+ 						tabla.ajax.reload();
+ 						$('#modalVersionTaquigrafica').modal('hide');
+ 	                	},
+ 	                complete:function(){
+ 	                	$("#btn-guardar-version-taquigrafica").prop("disabled", false);
+ 	                },
+ 	                error: function(jqXHR,textStatus,errorThrown ){
+ 						toastr.error(jqXHR.responseText);
+ 						}
+ 	            	});
+ 	            }
+			}); 
+
+			$(".text-area").wysihtml5({
+				toolbar: {
+				    "image": false,
+					"size": "xs",
+				},
+			});
+			
+			
+	});
+	</script>
+	
+	<section class="content-header">
+		<div class="row pull-right">
+		    <ol class="breadcrumb">
+		        <li><a href="#"><i class="fa fa-dashboard"></i> Principal</a></li>
+	        	<li class="active">Versiones Taquigráficas</li>
+		    </ol>
+		</div>
+		<hr>
+		<div class="row">
+			<div class="col-md-4">
+				<h2>
+			        Versiones Taquigráficas
+			    </h2>
+			</div>
+	    </div>  
+	</section>
+	<section class="content">
+	  	<div class="row">
+	    	<div class="col-xs-12">
+	     		{# <div class="box">
+		            <div class="box-body"> #}
+		              	<table id="registroVersionesTaquigraficas" class="table table-striped">
+			                <thead>
+			                	<tr>
+			                		<th>id</th>
+    		                		<th>
+    		                		
+        		                			<button type="button" title="Agregar Versión Taquigráfica"class="btn btn-primary btn-xs btn-alta">
+        							    			<span class="glyphicon glyphicon-plus"></span>
+        							    	</button>
+        				
+    							    </th>
+					                <th>Sesión</th>
+					                <th>Descripción</th>					                
+					            </tr>
+			                </thead>
+			                <tbody>
+			                </tbody>
+		               	</table>
+		            {# </div> #} {# box-body #}
+		        {# </div> #} {# box #}
+	        </div> {# col #}
+	    </div> {# row #}
+	   	<div id="modalVersionTaquigrafica" class="modal fade" role="dialog" data-backdrop="static" 
+   data-keyboard="false">
+		 	<div class="modal-dialog modal-lg">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+				        <button type="button" class="close" data-dismiss="modal">&times;</button>
+				        <h4 class="modal-title" id="titulo-modal-version-taquigrafica"></h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				        <form>
+				        	<input type="hidden" id="idVersionTaquigrafica" name="idVersionTaquigrafica">
+				        	   <div class="row">
+    				        	<div class="col-md-12">
+									<div class="form-group">
+    				    				<label for="selSesion">Sesión:</label>
+    						        	<select class="form-control" data-width="100%"
+    						        			id="selSesion" name="selSesion">
+						        		</select>
+									</div>
+    				        	</div>
+    				        </div>
+				        	<div class="row">
+				        		<div class="col-md-12">
+        				        	<div class="form-group">
+        				        		<label for="textoVersionTaquigrafica">Nombre</label>
+        				        		<textarea class="form-control text-area text-area-corta" 
+								       		  id="textoVersionTaquigrafica" name="textoVersionTaquigrafica"
+								       		  placeholder="Texto">
+								   		 </textarea>
+        				        	</div>
+        				        </div>
+    				        </div>
+					        <hr>
+					        <div class="btn-group">
+					        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+				       			 <button type="button" class="btn btn-primary" id="btn-guardar-version-taquigrafica">Guardar</button>
+					        </div>
+				        </form>
+				     </div>
+			    </div>
+		  	</div>
+		</div>
+	</section>
+	
+{% endblock %}
