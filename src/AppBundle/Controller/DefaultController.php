@@ -710,6 +710,20 @@ class DefaultController extends Controller
 //     	return $response;
     	
     	$pdf ->SetPrintHeader(true);
+    	$pdf->AddPage('P','LEGAL');
+    	$pdf->SetFont('times', '', 12);
+    	
+    	$html='<div style="text-align:left"><h1>I) <u>COMUNICACIONES DE PRESIDENCIA</u></h1></div>';
+      	$pdf->writeHTMLCell(170, '', 25, '', $html, 0, 1, 0, true, 'J', true);
+           	
+      	$pdf->AddPage('P','LEGAL');
+      	$pdf->SetFont('times', '', 12);
+      	$html='<div style="text-align:left"><h1>II) <u>VERSIONES TAQUIGRAFICAS</u></h1></div>';
+      	$content=$sesionRepository->findVersionesTaquigraficasBySesion($idSesion);
+      	$html.=$content[0]["versiones"];
+      	$pdf->writeHTMLCell(170, '', 25, '', $html, 0, 1, 0, true, 'J', true);
+      	
+      	$apartadoInicial=true;
     	
     	foreach ($tiposExpedientesSesion as $tipoExpedienteSesion){
     		    		
@@ -719,6 +733,12 @@ class DefaultController extends Controller
     			
     			$pdf->AddPage('P','LEGAL');
     			$pdf->SetFont('times', '', 12);
+    			if ($apartadoInicial==true){
+    				$html='<div style="text-align:left"><h1>IV) <u>ASUNTOS ENTRADOS</u></h1></div>';
+    				$pdf->writeHTMLCell(170, '', 25, '', $html, 0, 1, 0, true, 'J', true);
+//     				$pdf->ln(10);
+    				$apartadoInicial=false;
+    			}
     			$html='<div style="text-align:center"><h1>'.$tipoExpedienteSesion->getLetra().') '.
       				   $tipoExpedienteSesion->getTipoExpedienteSesion().'</h1></div>';
 	    		$html.=($content[0]["textoApartado"]);

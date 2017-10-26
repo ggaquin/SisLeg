@@ -101,6 +101,20 @@ class SesionRepository extends EntityRepository{
 		
 	}
 	
+	public function findVersionesTaquigraficasBySesion($idSesion){
+		
+		$rsm = new ResultSetMapping();
+		$rsm->addScalarResult('versiones', 'versiones', 'text');
+		
+		$query = $this-> getEntityManager()
+		-> createNativeQuery(
+				'call listadoVersionesTaquigraficas(:idSesion)',
+				$rsm)
+				-> setParameter('idSesion',$idSesion);
+				return $query->getResult();
+				
+	}
+	
 	public function createOrdenDelDia($idSesion){
 		
 		$params=[];

@@ -799,7 +799,7 @@
 		        $("#articulos > tbody").html('');
 		        $("#vistos").html('');
 		        $("#considerandos").html('');
-		        $("#idRevision").val(0);
+		        $("#idRevision").val(-1);
 		        $("#articulos-revision > tbody").html('');
 		        articulosDictamen.length=0;
 		    	articulosRevision.length=0;
@@ -908,7 +908,7 @@
 							      ? '<li>Debe poveer los articulos para el dictamen articulado</li>':'') ;
 				
 				if (tipoRedaccion=="revision"){
-					if (idRevision==0)
+					if (idRevision==-1)
 						validacion+='<li>No se seleccionó ninguna revision del proyecto</li>';
 					else {
         					if (editaRevision){
@@ -1694,6 +1694,9 @@
 			});
 
 			$("#selTipoRedaccion").change(function(){
+
+				$(".dependiente-proyecto").addClass("hidden");
+				
 				if ($(this).val()=="basico"){
 					$("#group-tipoDictamen").addClass("hidden");
 					$("#link-tab-2").addClass("hidden");
@@ -1709,8 +1712,8 @@
 					$("#group-tipoDictamen").addClass("hidden");
 					$("#link-tab-2").addClass("hidden");
 					$("#link-tab-3").removeClass("hidden");
-					if ($("#idRevision").val()!=0)
-						$(".dependiente-proyecto").removeClass("hidden")
+					if ($("#idRevision").val()!=-1)
+						$(".dependiente-proyecto").removeClass("hidden");
 				}
 
 				habilitar("tab-1");	
