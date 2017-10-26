@@ -777,7 +777,7 @@
 				
 				if (tipoRedaccion=="revision" && editaRevision){
 					
-					validacion+=(idRevision==-1)
+					if(idRevision==-1)
 						validacion+='<li>No se seleccionó ninguna revision del proyecto</li>';
 					else {
 
