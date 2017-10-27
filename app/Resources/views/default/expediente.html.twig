@@ -555,11 +555,19 @@
 									            "data": 'oficina_actual',
 									            "orderable":true,
 									            "render": function(data, type, row){
+										            debugger;
 									            	var html="<div>";
-									            	if(data=="COMISIONES" && row.lista_comisiones_asignadas.length>0){
-											        	html+= "<span style='color:#367fa9' class='glyphicon glyphicon-info-sign' title='"
-													              +row.lista_comisiones_asignadas
-													              +"'></span>  "+data;
+									            	if(data=="COMISIONES"){
+										            	if(row.lista_comisiones_asignadas.length>0)
+    											        	html+= "<span style='color:#367fa9' class='glyphicon glyphicon-info-sign' title='"
+    													              +row.lista_comisiones_asignadas
+    													              +"'></span>  "+data;
+
+    											       if(row.comision_reserva!="")
+        											        html+= "<span style='color:#367fa9' class='glyphicon glyphicon-info-sign' title='"
+        													           +row.comision_reserva
+        													           +"'></span>  "+data; 
+
 									            	}
 													else{   
 															debugger;          
@@ -1527,14 +1535,15 @@
             										               },
                 						            },
                 						            {
-            							                "targets": [ 7 ],
+            							                "targets": [ 8 ],
             							                "data": 'fecha_respuesta',
             							                "visible": true,
             							                "orderable":true,
             							                "render": function(data, type, row){
-                							            
+
+                    							            	debugger;
                 							                	if (("{{ app.user.rol.oficina is null }}" || "{{ app.user.rol.oficina.id }}"== "9" ) 
-                    									            	 && data=="" && '{{ EXP_REPORT_RETURN is defined}}'){
+                    									            	 && data=="" && '{{ "EXP_REPORT_RETURN" in app.user.listaPermisos}}'){
             	    												return "<button type='button' title='Ingresar Fecha Respuesta' "+
             	    													   "class='btn btn-primary btn-xs btn-respuesta-informe'"+
             	    													   " data-toggle='modal' data-target='#respuestaInforme'>" +
@@ -2884,7 +2893,9 @@
 						        		<select class="form-control" id="selTipoSesion" name="selTipoSesion">
 						        			<option value="0">Seleccione Tipo</option>
 						        			{% for tipoSesion in tiposSesion %}
-						        				<option value="{{ tipoSesion.id }}">{{ tipoSesion.tipoSesion }} - ({{ tipoSesion.abreviacion }})</option>
+						        				{% if tipoSesion.abreviacion!="O" and tipoSesion.abreviacion!="ES"%}
+						        					<option value="{{ tipoSesion.id }}">{{ tipoSesion.tipoSesion }} - ({{ tipoSesion.abreviacion }})</option>
+						        				{% endif %}
 						        			{% endfor %}
 						        		</select>
 						        	</div>

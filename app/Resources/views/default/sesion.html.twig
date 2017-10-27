@@ -71,7 +71,7 @@
 									            "render": function(data, type, row){
 
 										            var html="<div class='btn-group'>";
-        									            	 
+        									            debugger;	 
         									        if (row.tiene_orden_del_dia==false){
 														
         									        	if ('{{ 'SES_EDIT' in app.user.listaPermisos }}' && 
@@ -110,7 +110,8 @@
             					            	 		 		  		  "<span class='glyphicon glyphicon-save-file'></span>"+
             					            	 		 		  	  "</button>";
 
-															if(row.tiene_ultimo_momento==false)
+															if(row.tiene_ultimo_momento==false && 
+															   '{{ 'SES_UM_NEW' in app.user.listaPermisos }}')
            									            		html+="<button type='button'  title='Generar Último Momento' "+
         						            	 		 		  "class='btn btn-primary btn-xs btn-generar-UM'>U  "+
         						            	 		 		  "<span class='fa fa-cogs'></span>"+

@@ -345,6 +345,7 @@ class RestSesionController extends FOSRestController{
 	    	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
 	    	$expedienteSesionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteSesion');
 	    	$plantillaTextoRepository=$this->getDoctrine()->getRepository('AppBundle:PlantillaTexto');
+	    		    	
 	    	$em = $this->getDoctrine()->getManager();
 	
 	    	/*--------------------------obtener datos del proceso -----------------------------------*/
@@ -379,7 +380,7 @@ class RestSesionController extends FOSRestController{
 		    $sancion->setPieRedaccion($pieRedaccion);
 	    		
 		    //para texto rápido
-		    if ($tipoRedaccion=="articulado")
+		    if ($tipoRedaccion=="basico")
 		    	$sancion->setTextoLibre($texto_libre);
 	    	
 	    	//para el tipo articulado
@@ -451,11 +452,13 @@ class RestSesionController extends FOSRestController{
 	   		
 	    	/*------------------------crear notificacion y pase a comisiones-----------------------*/
 	    	    	
-	    	if($aplicaNotificacion=="true"){
+	    	if($aplicaNotificacion=="true" && $tipoRedaccion!="basico"){
 	    		
 	    		$idOficinaComisiones=$this->getParameter('id_comisiones');
+	    		$idMesaEntradas=$this->getParameter('id_mesa_entradas');
 	    		$oficinaNotificacion=$oficinaRepository->find($destinoNotificacion);
 	    		$oficinaComisiones=$oficinaRepository->find($idOficinaComisiones);
+	    		$oficinaMesaEntradas=$oficinaRepository->find($idMesaEntradas);
 	    		$comision=$comisionRepository->find($comisionReserva);
 	    		
 	    		//cambio de oficina actual
@@ -465,6 +468,7 @@ class RestSesionController extends FOSRestController{
 	    		$remitoExterno=new Remito();
 	    		$remitoExterno->setAnulado(false);
 	    		$remitoExterno->setDestino($oficinaNotificacion);
+	    		$remitoExterno->setOrigen($oficinaMesaEntradas);
 	    		$remitoExterno->setFechaCreacion(new \DateTime('now'));
 	    		$remitoExterno->setUsuarioCreacion($usuario->getUsuario());
 	    		
@@ -482,6 +486,7 @@ class RestSesionController extends FOSRestController{
 	    		$remitoInterno=new Remito();
 	    		$remitoInterno->setAnulado(false);
 	    		$remitoInterno->setDestino($oficinaComisiones);
+	    		$remitoInterno->setOrigen($usuario->getRol()->getOficina());
 	    		$remitoInterno->setFechaCreacion(new \DateTime('now'));
 	    		$remitoInterno->setUsuarioCreacion($usuario->getUsuario());
 	    		
@@ -538,7 +543,7 @@ class RestSesionController extends FOSRestController{
 	    						
 	    	$em->flush();
 	    					
-	    	return $this->view("La resolución se guardó en forma exitosa",200);
+	    	return $this->view("La sanción se guardó en forma exitosa",200);
     	}
     	catch (\Exception $e){
     		return $this->view($e->getMessage(),500);
@@ -551,7 +556,7 @@ class RestSesionController extends FOSRestController{
      */
     public  function traerSancionPorId(Request $request){
     	
-    	$idSancion=$request->get('id');
+	    $idSancion=$request->get('id');
     	$sancionRepository=$this->getDoctrine()->getRepository('AppBundle:Sancion');
     	$sancion=$sancionRepository->find($idSancion);
     	$resultado=array(

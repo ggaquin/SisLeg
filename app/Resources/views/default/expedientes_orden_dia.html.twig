@@ -301,6 +301,7 @@
 			$("#idRevision").val(-1);
 			$("#selTipoRedaccion").val("basico");
 	        $("#selTipoRedaccion").change();
+	        $("#selTipoSancion").val(0);
 	        $("#numeroSancion").val("");
 	        inicializarSeleccionPlantillas( $("#selEncabezado"),'encabezado',0);
 	        inicializarSeleccionPlantillas( $("#selPie"),'pie',0);
@@ -418,17 +419,25 @@
 						else
 							$("#vistosYConsiderandos").bootstrapToggle('off');
 
-				    	$("#modalDictamen").find('input[name="idRevision"]').val(data.revision_id);					   	
+				    	$("#modalSancion").find('input[id="idRevision"]').val(data.revision_id);					   	
     				} 
 
     				if (idSancion!=0){
-        				$("#poseeSancion").attr("checked",(data.numero_sancion!=""));
+
+        				if (data.numero_sancion!="")
+        					$("#poseeSancion").bootstrapToggle('on');
+        				else 
+        					$("#poseeSancion").bootstrapToggle('off');
+    					
 						$("#numeroSancion").val(data.numero_sancion);
 						$("#selDestinoNotificacion").val(data.destino_notificacion);
 					    $("#selComisionReserva").val(data.comision_reserva);
-					    $("#aplicaNotificacion").val(data.destino_notificacion!=0 &&
-					    							 data.comision_reserva!=0);
+					    if (data.destino_notificacion!=0 && data.comision_reserva!=0)
+					    	$("#aplicaNotificacion").bootstrapToggle('on');
+					    else
+					    	$("#aplicaNotificacion").bootstrapToggle('off');
     				}
+    				
 
     				if (restauraDictamen==true)
     					$("#modalSancion").find('input[name="idDictamen"]').val(data.id_dictamen);

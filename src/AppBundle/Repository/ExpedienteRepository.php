@@ -220,7 +220,7 @@ class ExpedienteRepository extends EntityRepository{
 			 "inner join	remito r on	m.idRemito=r.idRemito ".
 			 "inner join oficina o on r.idDestino=o.IdOficina ".
 			 "left join comision c on m.idComision=c.idComision ".
-			 "where   m.discriminador<> :pase ";
+			 "where   m.discriminador<> :pase and  m.idExpediente=:idExpediente";
 		
 		$query = $this -> getEntityManager() -> createNativeQuery($sql, $rsm);
 		$query -> setParameter('idExpediente', $idExpediente)

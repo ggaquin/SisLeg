@@ -133,7 +133,8 @@ class RestExpedienteController extends FOSRestController{
             					'estado'=>$expediente->getEstadoExpediente()->getEstadoExpediente(),
             					'numero_sancion'=>$expediente->getNumeroSancion(),
             					'permite_edicion'=>$expediente->getPermiteEdicion(),
-            					'fecha_archivo_formateada'=>$expediente->getfechaArchivoFormateada()
+            					'fecha_archivo_formateada'=>$expediente->getfechaArchivoFormateada(),
+            					'comision_reserva'=>$expediente->getComisionReserva()
             					);
             	$resutado[]=$registro;
             	

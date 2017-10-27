@@ -1136,6 +1136,23 @@ class Expediente
     }
     
     /**
+     * Get comisionReserva
+     * 
+     * @return string
+     * 
+     * @VirtualProperty
+     */
+    public function getComisionReserva()
+    {
+    	$comisionReserva="";
+    	foreach ($this->getMovimientos() as $movimiento)
+    		if ($movimiento instanceof Notificacion && is_null($movimiento->getFechaRespuesta()))
+    			$comisionReserva="reservado en: ".$movimiento->getComision()->getComision();
+    		
+    	return $comisionReserva;
+    }
+    
+    /**
      * Get permiteEdición
      * 
      * @return boolean
