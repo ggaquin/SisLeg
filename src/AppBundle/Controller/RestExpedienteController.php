@@ -718,6 +718,7 @@ class RestExpedienteController extends FOSRestController{
             $expediente->setCaratula($caratula);
             $sesion=$sesionRepository->find($idSesion);
             $expediente->setSesion($sesion);
+            $expediente->setUltimoMomento($sesion->getTieneOrdenDelDia());
             
             
             //establece la oficina actual (todos ingresan por mesa de entradas)
