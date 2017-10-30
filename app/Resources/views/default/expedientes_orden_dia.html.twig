@@ -122,8 +122,10 @@
     		var html;
     		if (event.clipboardData) {
     			html = event.clipboardData.getData('text/plain');
-		  	}
-		  	return html;
+    			html = html.replace(/\r?\n/g, '<br/>');
+                html = html.replace(/\t/g, '');
+    	  	}
+    	  	return html;
 		};
 
 		Array.prototype.reemplazar  = function(objeto, clave){
@@ -1327,8 +1329,11 @@
 				var plantilla = $("#modalPlantilla").find('textarea[name="texto-plantilla"]').val();
 				var validacion="";
 
-				if (plantilla.replace(/ /g,'').length==0)
-					validacion='<li>La nueva plantilla no posee texto</li>';
+				validacion+=((plantilla.replace(/ /g,'').length==0)?'<li>La nueva plantilla no posee texto</li>':0);
+
+				validacion+=((caratula.length>1000)
+						 	 ?'<li>El texto de la plantilla puede tener como máximo 1000 símbolos incluidos espacios y retornos de línea y formatos</li>':'');
+					
 					
 				if (validacion.length>0) 
 				{

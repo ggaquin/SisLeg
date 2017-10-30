@@ -197,6 +197,8 @@ class SesionRepository extends EntityRepository{
 		
 		$rsm = new ResultSetMapping();
 		$rsm->addScalarResult('texto', 'textoSancion', 'text');
+		$rsm->addScalarResult('expediente', 'expediente', 'string');
+		$rsm->addScalarResult('numeroSancion', 'numeroSancion', 'string');
 		
 		$query = $this -> getEntityManager()
 		-> createNativeQuery('call conformarSancion(:idSancion)',$rsm)

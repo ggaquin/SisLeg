@@ -107,14 +107,16 @@
 	</style>
 	<script type="text/javascript">
 	
-		wysihtml5.dom.getPastedHtml = function(event) {
+    	wysihtml5.dom.getPastedHtml = function(event) {
     		var html;
     		if (event.clipboardData) {
     			html = event.clipboardData.getData('text/plain');
-		  	}
-		  	return html;
-		};
-
+    			html = html.replace(/\r?\n/g, '<br/>');
+                html = html.replace(/\t/g, '');
+    	  	}
+    	  	return html;
+    	};
+    	
 		Array.prototype.reemplazar  = function(objeto, clave){
 			   var array = $.map(this, function(v,i){
 			      	return v[clave] == objeto[clave] ? objeto : v;

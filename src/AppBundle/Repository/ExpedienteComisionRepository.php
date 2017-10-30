@@ -249,6 +249,8 @@ class ExpedienteComisionRepository extends EntityRepository{
 		
 		$rsm = new ResultSetMapping();
 		$rsm->addScalarResult('texto', 'textoDictamen', 'text');
+		$rsm->addScalarResult('expediente', 'expediente', 'string');
+		$rsm->addScalarResult('comisiones', 'comisiones', 'string');
 		
 		$query = $this -> getEntityManager()
 					   -> createNativeQuery('call conformarDictamen(:idDictamen)',$rsm)

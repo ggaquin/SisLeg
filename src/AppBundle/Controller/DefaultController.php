@@ -790,9 +790,10 @@ class DefaultController extends Controller
     	$content=$expedienteComisionRepository->traerTextoDictamen($idDictamen);
     	$html.=($content[0]["textoDictamen"]);
     	$pdf->writeHTMLCell(170, '', 25, '', $html, 0, 1, 0, true, 'J', true);
-    	   	
+    	$expediente=$content[0]["expediente"];
+    	$comisiones=$content[0]["comisiones"];
     	return new Response(
-				    			$pdf->Output('Dictamen '.$fecha, 'D'),
+				    			$pdf->Output('Dictamen_Expediente_'.$expediente.'_'.$comisiones.'_'.$fecha, 'D'),
 				    			200,
 				    			[
 				    					'Content-Type'        => 'application/pdf',
@@ -809,7 +810,7 @@ class DefaultController extends Controller
     	
     	$idSancion = $request->query->get('idSancion');
     	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
-    	
+      	
     	$meses = array("Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre");
     	
     	$fechaActual=new \DateTime('now');
@@ -844,9 +845,11 @@ class DefaultController extends Controller
     	$content=$sesionRepository->traerTextoSancion($idSancion);
     	$html.=($content[0]["textoSancion"]);
     	$pdf->writeHTMLCell(170, '', 25, '', $html, 0, 1, 0, true, 'J', true);
+    	$numeroSancion=$content[0]["numeroSancion"];
+    	$expediente=$content[0]["expediente"];
     	
     	return new Response(
-    			$pdf->Output('Dictamen '.$fecha, 'D'),
+    			$pdf->Output('Sancion_'.$numeroSancion.'_Expediente_'.$expediente.'_'.$fecha, 'D'),
     			200,
     			[
     					'Content-Type'        => 'application/pdf',

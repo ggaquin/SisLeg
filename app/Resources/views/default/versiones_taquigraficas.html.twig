@@ -28,6 +28,16 @@
 
 	<script type="text/javascript">
 
+    	wysihtml5.dom.getPastedHtml = function(event) {
+    		var html;
+    		if (event.clipboardData) {
+    			html = event.clipboardData.getData('text/plain');
+    			html = html.replace(/\r?\n/g, '<br/>');
+                html = html.replace(/\t/g, '');
+    	  	}
+    	  	return html;
+    	};
+
     	function actualizarSesiones(control,valorSeleccionado){
     		debugger;
     		$.ajax({
@@ -186,6 +196,9 @@
 
                 validacion+=((descripcion.replace(/ /g,'')==0)
                         		?'<li>Debe proporcionar un texto para la versión taquigráfica</li>':'');
+                validacion+=((descripcion.length>1000)
+					 	 		?'<li>El texto de descripción puede tener como máximo 1000 símbolos incluidos espacios y retornos de línea y formatos</li>':'');
+   		
                               	
               	if (validacion.length>0) 
  				{

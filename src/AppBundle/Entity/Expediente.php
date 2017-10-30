@@ -161,7 +161,7 @@ class Expediente
     /**
      * @var string
      *
-     * @ORM\Column(name="caratula", type="string", length=500, nullable=false)
+     * @ORM\Column(name="caratula", type="string", length=1000, nullable=false)
      */
     private $caratula;
 

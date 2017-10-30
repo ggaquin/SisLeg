@@ -148,6 +148,8 @@
     		var html;
     		if (event.clipboardData) {
     			html = event.clipboardData.getData('text/plain');
+    			html = html.replace(/\r?\n/g, '<br/>');
+                html = html.replace(/\t/g, '');
 		  	}
 		  	return html;
 		};
@@ -1072,7 +1074,9 @@
 				formData.append('caratula',caratula);
 				validacion+=((caratula.replace(/ |\n/g, '').length==0)
 							  ?'<li>Debe especificar un texto para la caratula</li>':'');
-
+				validacion+=((caratula.length>1000)
+						  	  ?'<li>La carátula del expediente puede tener como máximo 1000 símbolos incluidos espacios y retornos de línea y formatos</li>':'');	
+		
 				formData.append('año',año);
 				validacion+=((año.replace(/ |\n/g, '').length==0)
 						  	 ?'<li>Debe especificar un año para el expediente</li>':'');
@@ -1236,6 +1240,8 @@
 				formData.append('caratula',caratula);
 				validacion+=((caratula.replace(/ |\n/g, '').length==0)
 							  ?'<li>Debe especificar un texto para la caratula</li>':'');
+				validacion+=((caratula.length>1000)
+						 	 ?'<li>La carátula del expediente puede tener como máximo 1000 símbolos incluidos espacios y retornos de línea y formatos</li>':'');
 
 				formData.append('año',año);
 				validacion+=((año.replace(/ |\n/g, '').length==0)

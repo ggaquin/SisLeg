@@ -28,7 +28,7 @@ class PlantillaTexto {
 	/**
 	 * @var string
 	 *
-	 * @ORM\Column(name="plantillaTexto", type="string", length=300)
+	 * @ORM\Column(name="plantillaTexto", type="string", length=1000)
 	 */
 	private $plantillaTexto;
 	

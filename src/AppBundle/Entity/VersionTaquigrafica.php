@@ -29,9 +29,9 @@ class VersionTaquigrafica
     private $id;
 
     /**
-     * @var text
+     * @var string
      *
-     * @ORM\Column(name="descripcion", type="text", nullable=false)
+     * @ORM\Column(name="descripcion", type="string", length=1000, nullable=false)
      */
     private $descripcion;
     
