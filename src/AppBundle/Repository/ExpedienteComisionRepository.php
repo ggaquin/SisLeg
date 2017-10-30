@@ -4,6 +4,7 @@
 namespace AppBundle\Repository;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Select;
+use Doctrine\ORM\Query\ResultSetMapping;
 
 class ExpedienteComisionRepository extends EntityRepository{
 	
@@ -38,16 +39,11 @@ class ExpedienteComisionRepository extends EntityRepository{
 			->leftJoin('ec.sesion', 's');
 		$qb ->where($qb->expr()->andX(
 									  $qb->expr()->eq('e.numeroExpediente', ':numeroExpediente'),
-// 									  $qb->expr()->orX(
-// 									  					$qb->expr()->isNull('ec.sesion'),
-// 									  					$qb->expr()->eq('s.tieneOrdenDelDia', ':tieneOrdenDia')
-// 									  				  ),
 									  $qb->expr()->eq('ec.anulado', ':anulado')
 				
 									  )
 				    )
 			->setParameter('numeroExpediente', $numeroExpediente)
-// 			->setParameter('tieneOrdenDia', false)
 			->setParameter('anulado', $anulados);
 		
         return $qb->getQuery()->getResult();
@@ -61,15 +57,10 @@ class ExpedienteComisionRepository extends EntityRepository{
 			->leftJoin('ec.sesion', 's');
 		$qb ->where($qb->expr()->andX(
 										$qb->expr()->eq('c.id', ':idComision'),
-// 										$qb->expr()->orX(
-// 												$qb->expr()->isNull('ec.sesion'),
-// 												$qb->expr()->eq('s.tieneOrdenDelDia', ':tieneOrdenDia')
-// 												),
 										$qb->expr()->eq('ec.anulado', ':anulado')
 				                     )
 				   )
 			->setParameter('idComision', $idComision)
-// 			->setParameter('tieneOrdenDia', false)
 			->setParameter('anulado', false);
 		
 		return $qb->getQuery()->getResult();
@@ -87,53 +78,17 @@ class ExpedienteComisionRepository extends EntityRepository{
 															 $qb->expr()->eq('ee.id', ':idEstado'),
 															 $qb->expr()->eq('ee.id', ':idEsperaRecepcion')
 														),
-// 										$qb->expr()->orX(
-// 															$qb->expr()->isNull('ec.sesion'),
-// 															$qb->expr()->eq('s.tieneOrdenDelDia', ':tieneOrdenDia')
-// 														 ),
 										$qb->expr()->eq('ec.anulado', ':anulado')
 									  )
 					)
 			->setParameter('idEstado', $idEstadoExpediente)
 			->setParameter('idEsperaRecepcion', 9)
-// 			->setParameter('tieneOrdenDia', false)
 			->setParameter('anulado', false);
 		
 		return $qb->getQuery()->getResult();
 		
 	}
-	
-	/*
-	
-	public  function findDictamenByAsignacionAndSesionPendiente($idAsignacion,$numeroDictaminantes){
-		
-		$fechactual=new \DateTime('now');
-		
-		$rep = $this->getEntityManager()->getRepository('AppBundle:Dictamen');
-		$qb = $rep->createQueryBuilder('d')
-			->select('d');
-		
-		if ($numeroDictaminantes==1)
-			$qb -> innerJoin('d.asignacionesPorMayoria', 'a');
-		if ($numeroDictaminantes==2)
-			$qb -> innerJoin('d.asignacionesPorPrimeraMinoria', 'a');
-		if ($numeroDictaminantes==3)
-			$qb -> innerJoin('d.asignacionesPorSegundaMinoria', 'a');
-		
-		$qb	-> innerJoin('d.sesion', 's')
-			-> where($qb->expr()->andX(
-										$qb->expr()->gte('s.fecha', '?1'),
-										$qb->expr()->eq('a.id', '?2')
-					
-									   )
-					)
-			-> setParameter(1, $fechactual)
-			-> setParameter(2, $idAsignacion);
-		
-		return $qb->getQuery()->getResult();
-	}
-	*/
-		
+			
 	public function findExpedienteVigenteByNumero($numeroExpediente){
 		
 		$qb = $this->createQueryBuilder('ec')
@@ -288,6 +243,18 @@ class ExpedienteComisionRepository extends EntityRepository{
 		
 		return $qb->getQuery()->getResult();
 				
+	}
+	
+	public function traerTextoDictamen($idDictamen) {
+		
+		$rsm = new ResultSetMapping();
+		$rsm->addScalarResult('texto', 'textoDictamen', 'text');
+		
+		$query = $this -> getEntityManager()
+					   -> createNativeQuery('call conformarDictamen(:idDictamen)',$rsm)
+					   -> setParameter('idDictamen',$idDictamen);
+		
+		return $query->getResult();
 	}
 	
 	

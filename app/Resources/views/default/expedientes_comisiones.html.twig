@@ -565,6 +565,12 @@
         															  ((row.edicion_habilitada==false)?"disabled":"")+
         															  " data-toggle='modal' data-target='#modalDictamen' id='"+row.dictamen_mayoria_id+"'>"+
         															  "Editar Dictamen</button>";
+
+    														html+="<button type='button' title='Descargar Dictamen' "+
+      															  "class='btn btn-info btn-xs btn-descargar-dictamen' " +
+      															  "id='"+row.dictamen_mayoria_id+"'>"+
+      															  "<span class='glyphicon glyphicon-save-file'></span></button>";  
+    														
     												}
 																										
     								            	return html+"</div></div>";		
@@ -590,12 +596,17 @@
         													html+="<span class='label label-danger'>Sin Dictamen</span>";
     												}
         											else{
-        												if ('{{ 'COM_EXP_DICT_EDIT' in app.user.listaPermisos }}')
+        													if ('{{ 'COM_EXP_DICT_EDIT' in app.user.listaPermisos }}')
                 			    								html+="<button type='button' title='Editar Dictamen' "+
             														  "class='btn btn-success btn-xs btn-editar-dictamen-primera-minoria' "+
             														  ((row.edicion_habilitada==false)?"disabled":"")+
             														  " data-toggle='modal' data-target='#modalDictamen' id='"+row.dictamen_primera_minoria_id+"'>"+
             														  "Editar Dictamen</button>";
+            														  
+        													html+="<button type='button' title='Descargar Dictamen' "+
+															  	  "class='btn btn-info btn-xs btn-descargar-dictamen' " +
+															  	  "id='"+row.dictamen_primera_minoria_id+"'>"+
+															  	  "<span class='glyphicon glyphicon-save-file'></span></button>"; 
         											}
 																					
     								            	return html+"</div></div>";
@@ -628,6 +639,12 @@
             														  ((row.edicion_habilitada==false)?"disabled":"")+
             														  " data-toggle='modal' data-target='#modalDictamen' id='"+row.dictamen_segunda_minoria_id+"'>"+
             														  "Editar Dictamen</button>";
+
+    														html+="<button type='button' title='Descargar Dictamen' "+
+														  	  	  "class='btn btn-info btn-xs btn-descargar-dictamen' " +
+														  	  	  "id='"+row.dictamen_segunda_minoria_id+"'>"+
+														  	  	  "<span class='glyphicon glyphicon-save-file'></span></button>"; 
+    													
     												}													
 								
     								            	return html+"</div></div>";
@@ -654,11 +671,10 @@
 					      "autoWidth": false,
 				});
 		    
-		    $('#registroAsignaciones tbody').on( 'click', '.btn-descargar', function () {
-		        var data = tabla.row( $(this).parents('tr') ).data();
+		    $('#registroAsignaciones tbody').on( 'click', '.btn-descargar-dictamen', function (e) {
 		        window.location.href='{{ app.request.getBaseURL() }}'+
-		        					 '/imprimir?tipoDocumento=expediente&id='+
-		        					  data[ "id" ];
+		        					 '/imprimirDictamen?idDictamen='+
+		        					 e.currentTarget.id;
 		    } );
 
 		  //-----------------------------------------------------------------------------------------------------------------

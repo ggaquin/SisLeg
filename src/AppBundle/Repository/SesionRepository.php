@@ -192,5 +192,17 @@ class SesionRepository extends EntityRepository{
 		return $query->getOneOrNullResult();
 		
 	}
+	
+	public function traerTextoSancion($idSancion) {
+		
+		$rsm = new ResultSetMapping();
+		$rsm->addScalarResult('texto', 'textoSancion', 'text');
+		
+		$query = $this -> getEntityManager()
+		-> createNativeQuery('call conformarSancion(:idSancion)',$rsm)
+		-> setParameter('idSancion',$idSancion);
+		
+		return $query->getResult();
+	}
 		
 }

@@ -491,8 +491,9 @@
 			
 			var valorControl=$(control).val();
 			var idControl=$(control).attr("id");
-			//debugger;
-			if (!$.isNumeric(valorControl)){
+			debugger;
+			//if (!$.isNumeric(valorControl)){
+			if (!(/^[0-9/]+$/g.test(valorControl))){
 				toastr.error("El contenido ingresado no es numérico");
 				setTimeout(function(){
 					   $("#"+idControl).select();
@@ -624,7 +625,7 @@
 									            "render": function(data, type, row){
 										            
 										            var html="<div class='text-center'><div class='btn-group'>";
-
+													
 										            if ('{{ 'DESP_SANC_ADD' in app.user.listaPermisos }}'){
 											            
     										            if (row.tiene_sancion=='No'){
@@ -638,10 +639,16 @@
         											            		  " class='btn btn-primary btn-xs btn-sancion-dictamen'>"+
         											            		  "<span class='glyphicon glyphicon-paperclip'></span></button> ";
     										            }
-    								            		else
-    								            			html+="<button type='button'title='Editar Sancion' "+(($("#permiteEdicion").val()==0)?"disabled":"")+
-    										            		  " class='btn btn-info btn-xs btn-editar-sancion'>"+
-    										            		  "<span class='glyphicon glyphicon-pencil'></span></button> ";
+    								            		else{
+        								            			html+="<button type='button'title='Editar Sancion' "+(($("#permiteEdicion").val()==0)?"disabled":"")+
+        										            		  " class='btn btn-info btn-xs btn-editar-sancion'>"+
+        										            		  "<span class='glyphicon glyphicon-pencil'></span></button> ";
+    
+        										            	html+="<button type='button' title='Descargar Sancion' "+
+            												  	  	  "class='btn btn-info btn-xs btn-descargar-sancion' " +
+            												  	  	  "id='"+row.id_sancion+"'>"+
+            												  	  	  "<span class='glyphicon glyphicon-save-file'></span></button>";
+    								            		} 
 										            }
 										            
 									     			html+="</div></div>";	
@@ -686,7 +693,14 @@
 					      "ordering": true,
 					      "info": true,
 					      "autoWidth": false
-			});  
+			});
+
+		    
+		    $('#registroOrdenDia tbody').on( 'click', '.btn-descargar-sancion', function (e) {
+		        window.location.href='{{ app.request.getBaseURL() }}'+
+		        					 '/imprimirSancion?idSancion='+
+		        					 e.currentTarget.id;
+		    } ); 
 	 
 
 		  //-----------------------------------------------------------------------------------------------------------------
@@ -1129,7 +1143,7 @@
 
 			});
 
-			$('#revisiones').on('hidden.bs.modal', function () {
+			$('#modalRevisiones').on('hidden.bs.modal', function () {
 				tablaRevisiones.destroy();
 			});
 			

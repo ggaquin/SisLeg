@@ -17,6 +17,7 @@ use AppBundle\Entity\TipoExpedienteSesion;
 use AppBundle\Entity\Oficina;
 use AppBundle\Entity\Sesion;
 use Symfony\Component\HttpFoundation\Cookie;
+use AppBundle\Entity\ExpedienteComision;
 
 
 class DefaultController extends Controller
@@ -641,7 +642,7 @@ class DefaultController extends Controller
      /**
      * @Route("/imprimirOrdenDelDia")
      */
-    public function pruebaAction(Request $request){
+    public function imprimirOrdenDelDiaAction(Request $request){
        
     	$idSesion = $request->query->get('idSesion');
     	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
@@ -662,8 +663,6 @@ class DefaultController extends Controller
     	// activa o desactiva el pie de página
     	
     	$pdf ->SetPrintFooter(false);
-    	//$base=$request->getSchemeAndHttpHost().$request->getBasePath();
-    	//$pdf->setBaseImagePath($base);
     	$urlImage='/web/document_bootstrap/escudopng2_mini.png';
     	// set default header data
     	$pdf ->SetAuthor('SisLeg');
@@ -686,13 +685,9 @@ class DefaultController extends Controller
     	
     	
     	$imagenpath=$basepath.'/web/document_bootstrap/portada_orden_dia.png';
-    	
-    	//$pdf->writeHTMLCell(170, '', 25, '', '<H1>'.$imagenpath.'</H1>', 0, 1, 0, true, 'C', true);
-    	
+    	    	
     	$pdf->Image($imagenpath, 25, '', 170, '', '', '', 'M', 
     				true, 700, '', false, false, 1, false, false, false);
-    	  	
-    	//$dias = array("Domingo","Lunes","Martes","Miercoles","Jueves","Viernes","Sábado");
     	   	
     	$pdf->ln(80);
     	$pdf->SetFont('times', 'I', 18);
@@ -704,11 +699,7 @@ class DefaultController extends Controller
     	$pdf->ln(50);
     	$pdf->SetFont('times', '', 20);
     	$pdf->writeHTMLCell(170, '', 25, '', '<H1><u>ORDEN DEL DÍA</u></H1>', 0, 1, 0, true, 'C', true);
-    	 
-//     	$response = new Response();
-//     	$response->setStatusCode(500);
-//     	return $response;
-    	
+    	     	
     	$pdf ->SetPrintHeader(true);
     	$pdf->AddPage('P','LEGAL');
     	$pdf->SetFont('times', '', 12);
@@ -736,7 +727,6 @@ class DefaultController extends Controller
     			if ($apartadoInicial==true){
     				$html='<div style="text-align:left"><h1>IV) <u>ASUNTOS ENTRADOS</u></h1></div>';
     				$pdf->writeHTMLCell(170, '', 25, '', $html, 0, 1, 0, true, 'J', true);
-//     				$pdf->ln(10);
     				$apartadoInicial=false;
     			}
     			$html='<div style="text-align:center"><h1>'.$tipoExpedienteSesion->getLetra().') '.
@@ -748,9 +738,6 @@ class DefaultController extends Controller
     		
     	}
     	
-//     	$pdf->writeHTMLCell(170, '', 25, '', $html, 0, 1, 0, true, 'J', true);
-//     	$pdf->Ln(1);
-    		    	
     	return new Response(
     			$pdf->Output('Orden del Dia '.$fecha, 'D'),
     			200,
@@ -760,6 +747,114 @@ class DefaultController extends Controller
     			]
     			);
     }
+    
+    /**
+     * @Route("/imprimirDictamen")
+     */
+    public function imprimirDictamenAction(Request $request){
+    	
+    	$idDictamen = $request->query->get('idDictamen');
+    	$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
+    	    	
+    	$meses = array("Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre");
+    	
+    	$fechaActual=new \DateTime('now');
+    	
+    	$fecha=$fechaActual->format('d')." de ".$meses[$fechaActual->format('n')-1].
+    	" de ".$fechaActual->format('Y') ;
 
+    	$pdf = $this->get('white_october.tcpdf')->create();
+    	
+    	// activa o desactiva encabezado de página
+    	$pdf ->SetPrintHeader(true);
+    	// activa o desactiva el pie de página
+    	$pdf ->SetPrintFooter(false);
+    	$urlImage='/web/document_bootstrap/escudopng2_mini.png';
+    	// set default header data
+    	$pdf ->SetAuthor('SisLeg');
+    	$pdf ->SetTitle('HCD Lomas de Zamora');
+    	$pdf ->SetSubject('Dictamen');
+    	$pdf ->SetHeaderData($urlImage, 8, 'HCD Lomas de Zamora - Dictamen Comisiones','Fecha Impresion: '.$fecha, array(0,0,0), array(0,0,0));
+    	// set default monospaced font
+    	$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+    	// set margins
+    	$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+    	$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+    	$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+    	// set auto page breaks
+    	$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+    	$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+    	
+    	$pdf->AddPage('P','LEGAL');
+    	$pdf->SetFont('times', '', 12);
+    	$content=$expedienteComisionRepository->traerTextoDictamen($idDictamen);
+    	$html.=($content[0]["textoDictamen"]);
+    	$pdf->writeHTMLCell(170, '', 25, '', $html, 0, 1, 0, true, 'J', true);
+    	   	
+    	return new Response(
+				    			$pdf->Output('Dictamen '.$fecha, 'D'),
+				    			200,
+				    			[
+				    					'Content-Type'        => 'application/pdf',
+				    					'Content-Disposition' => sprintf('attachment; filename="%s"', 'Dictamen'),
+				    			]
+			    			);
+    	
+    }
+    
+    /**
+     * @Route("/imprimirSancion")
+     */
+    public function imprimirSancionAction(Request $request){
+    	
+    	$idSancion = $request->query->get('idSancion');
+    	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+    	
+    	$meses = array("Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre");
+    	
+    	$fechaActual=new \DateTime('now');
+    	
+    	$fecha=$fechaActual->format('d')." de ".$meses[$fechaActual->format('n')-1].
+    	" de ".$fechaActual->format('Y') ;
+    	
+    	$pdf = $this->get('white_october.tcpdf')->create();
+    	
+    	// activa o desactiva encabezado de página
+    	$pdf ->SetPrintHeader(true);
+    	// activa o desactiva el pie de página
+    	$pdf ->SetPrintFooter(false);
+    	$urlImage='/web/document_bootstrap/escudopng2_mini.png';
+    	// set default header data
+    	$pdf ->SetAuthor('SisLeg');
+    	$pdf ->SetTitle('HCD Lomas de Zamora');
+    	$pdf ->SetSubject('Sancion');
+    	$pdf ->SetHeaderData($urlImage, 8, 'HCD Lomas de Zamora - Sancion','Fecha Impresion: '.$fecha, array(0,0,0), array(0,0,0));
+    	// set default monospaced font
+    	$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+    	// set margins
+    	$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+    	$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+    	$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+    	// set auto page breaks
+    	$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+    	$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+    	
+    	$pdf->AddPage('P','LEGAL');
+    	$pdf->SetFont('times', '', 12);
+    	$content=$sesionRepository->traerTextoSancion($idSancion);
+    	$html.=($content[0]["textoSancion"]);
+    	$pdf->writeHTMLCell(170, '', 25, '', $html, 0, 1, 0, true, 'J', true);
+    	
+    	return new Response(
+    			$pdf->Output('Dictamen '.$fecha, 'D'),
+    			200,
+    			[
+    					'Content-Type'        => 'application/pdf',
+    					'Content-Disposition' => sprintf('attachment; filename="%s"', 'Dictamen'),
+    			]
+    			);
+    	
+    }
+    
 }
 

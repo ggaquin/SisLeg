@@ -586,8 +586,12 @@ class RestSesionController extends FOSRestController{
 		    								  !is_null($sancion->getNotificacion()))
 						    					?$sancion->getNotificacion()
 						    								->getComision()->getId():0),
-    					'id_encabezado'=>$sancion->getEncabezadoRedaccion()->getId(),
-    					'id_pie'=>$sancion->getPieRedaccion()->getId(),
+    					'id_encabezado'=>(!is_null($sancion->getEncabezadoRedaccion())
+    										?$sancion->getEncabezadoRedaccion()->getId()
+    										:0),
+    					'id_pie'=>(!is_null($sancion->getPieRedaccion())
+    										?$sancion->getPieRedaccion()->getId()
+    										:0)
 				    	);
     	
     	return $this->view($resultado,200);
