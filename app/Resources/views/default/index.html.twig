@@ -21,6 +21,11 @@
         function cargarMenuConParametro(url,parametroNombre, parametroValor){
         	$("#contenidoUsuario").load('{{ app.request.getBaseURL() }}'+ url +'?'+parametroNombre+'='+parametroValor);
 		} 
+
+        function obtenerRecurso(url) {
+        	  var win = window.open(url, '_blank');
+        	  win.focus();
+        }
       </script>
       <div class="wrapper">
         <header class="main-header">
@@ -338,9 +343,31 @@
               
               <li><a href="#" onclick="cargarMenu('/sesion')"><i class="fa fa-calendar"></i><span>Sesiones</span></a></li>
               
-               {% if app.user.rol.rol=="ROLE_ADMINISTRADOR" %}
+              {% if app.user.rol.rol=="ROLE_ADMINISTRADOR" %}
               	<li><a href='#' onclick="cargarMenu('/usuarios')"><i class="fa fa-user-circle"></i><span>Usuarios</span></a></li>
               {% endif %}
+             
+            
+                  <li class="treeview">
+                    <a href="#">
+                      <i class="fa fa-graduation-cap" aria-hidden="true"></i>
+                      <span>Manuales</span>
+                      <span class="pull-right-container">
+                        <i class="fa fa-angle-left pull-right"></i>
+                      </span>
+                    </a>
+                    <ul class="treeview-menu">
+                      <li class="divider"></li>
+                      	{% if app.user.rol.rol=="ROLE_ADMINISTRADOR" or app.user.rol.rol=="ROLE_COMISIONES" %}
+                      	    <li><a href="#" onclick="obtenerRecurso('{{ app.request.getBaseURL() }}/recursos/manuales/MANUAL_DE_USUARIO_DE_COMISIONES_3.2_FINAL.pdf');" ><i class="fa fa-users"></i><span>Comisiones</span></a></li>
+                      	{% endif %}
+                      	{% if app.user.rol.rol=="ROLE_ADMINISTRADOR" or app.user.rol.rol=="ROLE_DESPACHO" %}
+                 			<li><a href="#" onclick="obtenerRecurso('{{ app.request.getBaseURL() }}/recursos/manuales/MANUAL_DE_USUARIO_DE_DESPACHO_3.3_FINAL.pdf');" ><i class="fa fa-book"></i><span>Despacho</span></a></li>
+                 		{% endif %}                 
+               		</ul>
+                  </li>
+             
+             
              
               {# <li class="treeview">
                 <a href="#">
