@@ -125,7 +125,7 @@ class Notificacion extends Movimiento{
 	 */
 	public function getFechaRespuestaFormateada()
 	{
-		return ((!is_null($this->fechaRespuesta))?$this->fechaRespuesta->format('d/m/Y'):'');
+		return ((!is_null($this->getFechaRespuesta()))?$this->getFechaRespuesta()->format('d/m/Y'):'');
 	}
 	
 }

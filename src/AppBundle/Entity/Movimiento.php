@@ -59,7 +59,7 @@ abstract class Movimiento {
 	/**
 	 * @var integer
 	 *
-	 * @ORM\Column(name="remitoRetorno", type="datetime", nullable=true)
+	 * @ORM\Column(name="remitoRetorno", type="string", nullable=true)
 	 */
 	private $remitoRetorno;
 		
@@ -196,7 +196,7 @@ abstract class Movimiento {
 	 *
 	 * @param integer $remitoRetorno
 	 *
-	 * @return Pase
+	 * @return Movimiento
 	 */
 	public function setRemitoRetorno($remitoRetorno) {
 		$this->remitoRetorno = $remitoRetorno;

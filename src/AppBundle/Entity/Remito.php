@@ -176,7 +176,7 @@ class Remito{
 	 *
 	 * @param boolean $anulado
 	 *
-	 * @return Movimiento
+	 * @return Remito
 	 */
 	public function setAnulado($anulado)
 	{
@@ -200,7 +200,7 @@ class Remito{
 	 *
 	 * @param string $motivoAnulacion
 	 *
-	 * @return Movimiento
+	 * @return Remito
 	 */
 	public function setMotivoAnulacion($motivoAnulacion)
 	{
@@ -323,7 +323,7 @@ class Remito{
 	 *
 	 * @param \DateTime $fechaCreacion
 	 *
-	 * @return Giro
+	 * @return Remito
 	 */
 	public function setFechaCreacion($fechaCreacion)
 	{
@@ -347,7 +347,7 @@ class Remito{
 	 *
 	 * @param string $usuarioCreacion
 	 *
-	 * @return Giro
+	 * @return Remito
 	 */
 	public function setUsuarioCreacion($usuarioCreacion)
 	{
@@ -371,7 +371,7 @@ class Remito{
 	 *
 	 * @param \DateTime $fechaModificacion
 	 *
-	 * @return Giro
+	 * @return Remito
 	 */
 	public function setFechaModificacion($fechaModificacion)
 	{
@@ -395,7 +395,7 @@ class Remito{
 	 *
 	 * @param string $usuarioModificacion
 	 *
-	 * @return Giro
+	 * @return Remito
 	 */
 	public function setUsuarioModificacion($usuarioModificacion)
 	{

@@ -657,13 +657,13 @@ class RestExpedienteController extends FOSRestController{
     	$idSesion=$request->request->get('idSesion');
     	$numeroRemito=$request->request->get('numeroRemito');
     	
-    	$informeRepository=$this->getDoctrine()->getRepository('AppBundle:SolicitudInforme');
+    	$movimientoRepository=$this->getDoctrine()->getRepository('AppBundle:Movimiento');
     	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
     	$sesion=$sesionRepository->find($idSesion);
     	$usuario=$this->getUser();
     	$fechaActual=new \DateTime('now');
     	
-    	$informe=$informeRepository->find($idInforme);
+    	$informe=$movimientoRepository->find($idInforme);
     	$fechaRespuesta=\DateTime::createFromFormat('d/m/Y', $fecha);
     	$informe->setSesion($sesion);
     	$informe->setFechaRespuesta($fechaRespuesta);
