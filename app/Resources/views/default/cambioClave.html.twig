@@ -1,0 +1,123 @@
+{% extends 'layout.html.twig' %}
+
+
+
+{% block body %}
+	
+	<style type="text/css">
+	
+    	#cambioClave{
+        	max-width: 330px;
+            text-align: center;
+            display: block;
+            margin: auto;
+        }
+      
+        .alert-danger-alt { border-color: #B63E5A;background: #dd4b39;color: #fff; }	
+
+	</style>
+
+	<script type="text/javascript">
+
+		$(document).ready(function(){
+
+			$("#btn-cambiar-clave").click(function(){
+
+				$("#btn-cambiar-clave").prop("disabled",true);
+				debugger;
+				var claveActual = $("#claveActual").val();
+				var nuevaClave = $("#nuevaClave").val();
+				var nuevaClaveConfirmada = $("#confirmaClave").val();
+				
+				var formData=new FormData();
+                var validacion='';
+			                
+                validacion+=((claveActual.replace(/ /g,'').length<8)
+        						?'<li>La clave actual proporcionada posee menos de 8 caracteres</li>':'');
+                validacion+=((claveActual.indexOf(' ')!=-1)
+                				?'<li>La clave actual proporcionada contiene espacios</li>':'');
+                validacion+=((nuevaClave.replace(/ /g,'').length<8)
+								?'<li>La longitud minima de la nueva clave debe ser de 8 caracteres</li>':'');
+                validacion+=((nuevaClave.indexOf(' ')!=-1)
+        						?'<li>La nueva clave proporcionada contiene espacios</li>':'');
+                validacion+=((nuevaClave!=nuevaClaveConfirmada)
+								?'<li>La nueva clave no coincide con su confirmación</li>':'');
+                validacion+=((claveActual==nuevaClave)
+								?'<li>La nueva clave no puede coincidir con la actual</li>':'');
+               
+              	
+              	if (validacion.length>0) 
+ 				{
+ 					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+ 								validacion+'</ul>':'');
+ 					toastr.error(validacion);
+ 					$("#btn-cambiar-clave").prop("disabled",false);
+ 					return false;
+ 				}
+ 				else{
+
+ 					formData.append('actual',claveActual);
+ 					formData.append('nueva',nuevaClave);
+ 	              
+ 	            	$.ajax({
+ 		                async: true,
+ 		                url: '{{ app.request.getBaseURL() }}'+'/api/usuario/cambiarClave',
+ 		                data: formData,
+ 		                cache: false,
+ 		                contentType: false,
+ 		                processData: false,
+ 		                type: 'POST',
+ 	                success: function(data) {
+ 	                   toastr.success(data);
+ 	                   setTimeout(
+ 	                   				$(location).attr('href','{{ app.request.getBaseURL() }}/logout'),
+ 	                   				10000
+ 	                   			   );
+ 	                	},
+ 	                complete:function(){
+ 	                	$("#btn-cambiar-clave").prop("disabled",false);
+ 	                },
+ 	                error: function(jqXHR,textStatus,errorThrown ){
+ 						toastr.error(JSON.parse(jqXHR.responseText));
+ 						}
+ 	            	});
+ 	            }
+			 
+				
+			});
+
+		});
+		
+	</script>
+	
+	<section class="content-header">
+	
+	</section>
+	<section class="content">
+	  	<div class="row" id="CambioClave">
+     		<div class="col-md-12">
+     			<form class="form-signin" role="form" id="cambioClave">
+     				<h3 class="form-signin-heading">Cambio de Clave</h3>
+     				<div class="form-group">
+         				<label for="claveActual">Clave Actual</label>
+         				<input type="password" class="form-control input-sm text-center" 
+         				id="claveActual" name="claveActual">
+         			</div> 
+         			<div class="form-group">
+         				<label for="nuevaClave">Nueva Clave</label>
+         				<input type="password" class="form-control input-sm text-center" 
+         				id="nuevaClave" name="nuevaClave">
+         			</div>
+         			<div class="form-group">
+         				<label for="confirmaClave">Confirme Nueva Clave</label>
+         				<input type="password" class="form-control input-sm text-center" 
+         				id="confirmaClave" name="confirmaClave">
+         			</div>
+         			<button type="button" class="btn btn-lg btn-primary btn-block" 
+         					id="btn-cambiar-clave">Cambiar</button>
+         		</form>	
+         	</div>
+     	</div>   
+	</section>
+	
+{% endblock %}

@@ -92,6 +92,8 @@ security:
         - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/login_check, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/accessDenied, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/renovarClave, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/cambiarClave, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
         #- { path: ^/, roles: ~ }
                 

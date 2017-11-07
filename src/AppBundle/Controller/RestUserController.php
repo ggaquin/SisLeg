@@ -64,7 +64,35 @@ class RestUserController extends FOSRestController{
         return $this->view($usuario,200);
     }
 
-    
+    /**
+     * @Rest\Post("/cambiarClave")
+     */
+    public function cambiarClave(Request $request)
+    {
+    	$actual=$request->request->get("actual");
+    	$nueva=$request->request->get("nueva");
+    	$usuarioSesion=$this->getUser();
+        
+    	$encoder = $this->container->get('security.password_encoder');
+    	$usuarioRepository=$this->getDoctrine()->getRepository('AppBundle:Usuario');
+    	
+    	$usuario=$usuarioRepository->find($usuarioSesion->getId());
+    	
+    	$esClaveValida=$encoder->isPasswordValid($usuario, $actual);
+    	
+    	if (!$esClaveValida)
+    		return $this->view('La clave actual no coincide con la proporcionada',500);
+    	
+    	$encoded = $encoder->encodePassword($usuario, $nueva);
+    	$usuario->setClave($encoded);
+    	
+    	$em = $this->getDoctrine()->getManager();
+    	$em->persist($usuario);
+    	$em->flush();
+    	
+    	return $this->view('La clave gue cambiada con exito',200);
+
+    }
 
     /**
      *  @Rest\Post("/create")
@@ -437,4 +465,4 @@ class RestUserController extends FOSRestController{
     	}
     }
     
-}
+  }

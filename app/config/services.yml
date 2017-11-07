@@ -16,3 +16,6 @@ services:
     impresion_servicio:
         class: AppBundle\Services\ImpresionServicio
         arguments: ["@doctrine.orm.entity_manager"]
+    utilidades_servicio:
+        class: AppBundle\Services\UtilServicio
+        #arguments: ["@doctrine.orm.entity_manager"]

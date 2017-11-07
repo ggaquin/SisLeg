@@ -352,8 +352,7 @@
 									            	
 									            	var html="";
 													debugger;
-									            	if("{{app.user.rol.rol}}"=="ROLE_ADMINISTRADOR" || 
-											            (row.numero_expediente=="---" && '{{ 'EXP_FEC_ING_EDIT' in  app.user.listaPermisos }}'))
+									            	if((row.numero_expediente=="---" && '{{ 'PROJ_EDIT' in  app.user.listaPermisos }}'))
 									            		html="<button type='button'title='Editar Proyecto' class='btn btn-primary btn-xs btn-editar-proyecto' data-toggle='modal' data-target='#editarProyecto'><span class='glyphicon glyphicon-pencil'></span></button>";
 									            	else
 									            		html="<button type='button'title='Editar Proyecto' class='btn btn-danger btn-xs' disabled><span class='glyphicon glyphicon-lock'></span></button>";

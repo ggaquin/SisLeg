@@ -654,20 +654,4 @@ class RestController extends FOSRestController{
 */
     }
 
-    /**
-     *  @Rest\Get("/api/ejemplo")
-     */
-    public function ejemploAction(Request $request){
-
-		try {
-	    	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
-	    	$expediente=$expedienteRepository->findByNumeroCompleto('117',null);
-	    	return $this->view($expediente,200);
-        
-		}catch (\Exception $e){
-	    		return $this->view($e->getMessage(),500);
-	    }
-    }
-
-
 }

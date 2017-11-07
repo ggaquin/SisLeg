@@ -109,19 +109,57 @@
     	});
 
     </script>
-      <input type="text" id="validadorSesion" value="1"/>
-
-      <div id="seccion1">
-        <tr>
-        <p>Sección 1</p>
-      </div>
-      <div id="seccion2">
-        <tr>
-        <p>Sección 2</p>
-      </div>
-      <div id="seccion3">
-        <tr>
-        <p>Sección 3</p>
-      </div>
+    
+     <div class="container">
+     
+     	<div class="row">
+     		<div class="col-md-3"><strong>
+     			H.C.D Lomas de Zamora - Sesión {{ sesion.tipoSesion.tipoSesion }} del día
+     			{{ sesion.fechaCompleta }}
+     		</strong></div>
+     		<div class="col-md-2">
+     			Presentes {{ presentes }}
+     		</div>
+     		<div class="col-md-7">
+     			<div class="form-inline">
+     				<div class="form-control">
+     					<label for="aFavor">A Favor</label>
+     					<input class="forn-control input-sm" id="aFavor" readonly="readonly">
+     				</div>
+     				<div class="form-control">
+     					<label for="enContra">En Contra</label>
+     					<input class="forn-control input-sm" id="enContra" readonly="readonly">
+     				</div>
+     				<div class="form-control">
+     					<label for="abstenciones">Abstenciones</label>
+     					<input class="forn-control input-sm" id="abstenciones" readonly="readonly">
+     				</div>
+     			</div>
+     		</div>
+     	</div>
+     	<div class="row">
+     		<div class="col-md-4">
+     			<div class="row">
+     				<div class="col-md-12">
+     				    {{ tipoExpedienteSesion.letra }} - {{ tipoExpedienteSesion. tipoExpedienteSesion}}
+     				</div>
+     			</div>
+     			<div class="row">
+     				<div class="col-md-12">
+     					<div class="list-group"></div>
+     					 <li class="list-group-item">1<span class="badge">A</span></li>
+     					 <li class="list-group-item">2<span class="badge">AT</span></li>
+     					 <li class="list-group-item">...<span class="badge">R</span></li>
+     				</div>
+     			</div>
+     		</div>
+     		<div class="col-md-8">
+     			<div id="contenido-expediente" style="text-align: justify;">
+     			
+     			</div>
+     		</div>
+     	</div>
+     	
+     </div>
     </body>
 </html>

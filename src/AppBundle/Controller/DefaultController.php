@@ -16,8 +16,8 @@ use AppBundle\Entity\TipoSesion;
 use AppBundle\Entity\TipoExpedienteSesion;
 use AppBundle\Entity\Oficina;
 use AppBundle\Entity\Sesion;
-use Symfony\Component\HttpFoundation\Cookie;
 use AppBundle\Entity\ExpedienteComision;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 
 
 class DefaultController extends Controller
@@ -66,22 +66,93 @@ class DefaultController extends Controller
         return $this->render('error/accesoDenegado.html.twig');
 
     }
-
+    
     /**
      * @Route("/cambioClave", name="cambioClave")
      */
-    public function cambioClaveAction()
-    {  
-        return $this->render('security/change_password.html.twig');
-
+    public function cambioClaveAction(Request $request)
+    {
+    	return $this->render('default/cambioClave.html.twig',
+    			array('base_dir'=>realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR));
     }
+    
+    /**
+     * @Route("/renovarClave", name="renovarClave")
+     * @Method("POST")
+     */
+    public function renovarClaveAction(Request $request){
+    	
+    	$mail=$request->request->get("loginEmail");
+    	$PerfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
+    	$perfil=$PerfilRepository->findOneBy(array('correoElectronico'=>$mail));
+    	$usuarioRepository=$this->getDoctrine()->getRepository('AppBundle:Usuario');
+    	$usuario=$usuarioRepository->findOneBy(array('perfil'=>$perfil));
+    	    	
+    	if (!is_null($usuario)){
+    		   		
+    		$randomString=$this->get('utilidades_servicio')->randomString();
+	    	$encoder = $this->container->get('security.password_encoder');
+	    	$encoded = $encoder->encodePassword($usuario, $randomString);
+	    	$usuario->setClave($encoded);
+	    	
+	    	$em = $this->getDoctrine()->getManager();
+	    	$em->persist($usuario);
+	    	$em->flush();
+
+	    	$message = \Swift_Message::newInstance()
+	    	->setSubject('Sisleg Reseteo de Clave')
+	    	->setFrom('administrador@sisleg.com')
+	    	->setTo($mail)
+	    	->setBody($this->renderView(
+						    			'default/recrearClave.html.twig',
+	    								array('nuevaClave' => $randomString)
+						    			),
+					 'text/html'
+	    			 );
+	    	$this->get('mailer')->send($message);
+	    	
+	    	$version=$this->getParameter('project_version');
+	    	$authenticationUtils = $this->get('security.authentication_utils');
+	    	$lastUsername = $authenticationUtils->getLastUsername();
+	    	    	
+	    	return $this->render('security/login.html.twig', array(
+	    			'last_username' => $lastUsername,
+	    			'otherSuccess'  => 'La clave se renovó con exito, consulte el mail que registró en el sistema',
+	    			'version'       =>$version
+	    	));
+    	}
+    	else{
+	    		$version=$this->getParameter('project_version');
+	    		$authenticationUtils = $this->get('security.authentication_utils');
+	    		$lastUsername = $authenticationUtils->getLastUsername();
+	    			    		
+	    		return $this->render('security/login.html.twig', array(
+				    				 'last_username' => $lastUsername,
+	    							 'otherError' => 'El mail proporcionado no se encuentra registrado',
+				    				 'version'       =>$version
+				    		        ));
+    	}
+    		
+    }
+    
+    /**
+     * @Route("/cambioClave", name="cambioClave")
+     * @Method("POST")
+     *
+    public function cambioClaveAction(Request $request)
+    {  
+    	$mail=$request->request->get("mail");
+    	
+       
+    	return $this->render('security/change_password.html.twig');
+
+    }*/
 
     /**
      * @Route("/", name="homepage")
      */
     public function indexAction(Request $request)
     {
-  		 		
  		return $this->render('default/index.html.twig', 
  							array('base_dir'=>realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR));
     }

@@ -188,12 +188,24 @@
                   </li> 
                   <!-- Menu Footer-->
                   <li class="user-footer">
-                    <div class="pull-left">
-                      <a href="#" class="btn btn-default btn-flat">Perfil</a>
-                    </div>
-                    <div class="pull-right">
-                      <a href="logout" class="btn btn-default btn-flat">Salir</a>
-                    </div>
+                  	<div class="row">
+                  		<div class="col-md-4">
+                  			<div class="pull-left">
+                              <a href="#" class="btn btn-info">Perfil</a>
+                            </div>
+                  		</div>
+                      	<div class="col-md-4">
+                            <div class="text-center">
+                              <a href="javascript:void(0);" onclick="cargarMenu('/cambioClave');" class="btn btn-info">Cambiar Clave</a>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="pull-right">
+                              <a href="logout" class="btn btn-primary">Salir</a>
+                            </div>
+                  		</div>
+                  		
+                  	</div>
                   </li>
                 </ul>
               </li>
@@ -346,6 +358,8 @@
               {% if app.user.rol.rol=="ROLE_ADMINISTRADOR" %}
               	<li><a href='#' onclick="cargarMenu('/usuarios')"><i class="fa fa-user-circle"></i><span>Usuarios</span></a></li>
               {% endif %}
+              
+              	
              
             
                   <li class="treeview">

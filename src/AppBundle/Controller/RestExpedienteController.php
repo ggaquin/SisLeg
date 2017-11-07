@@ -522,7 +522,7 @@ class RestExpedienteController extends FOSRestController{
     	$em->persist($remito);
     	$em->flush();
     	
-    	return $this->view("El remito se guardó en forma exitosa",200);
+    	return $this->view("El movimiento se guardó en forma exitosa",200);
     	
     }
     
@@ -539,10 +539,10 @@ class RestExpedienteController extends FOSRestController{
     	$remito = $remitoRepository->find($idRemito);
     	
     	if($remito->getFechaRecepcion()!=null)
-    		return $this->view("El movimiento ".$remito->getId()." tiene fecha de recepción. No se puede Anular",500);
+    		return $this->view("El movimiento tiene fecha de recepción. No se puede Anular",500);
     	
     	if($remito->getAnulado()==true)	
-    		return $this->view("El movimiento ".$remito->getId()." ya se encuentra anulado. No se puede Anular",500);
+    		return $this->view("El movimiento ya se encuentra anulado. No se puede Anular",500);
     	
     	$remito->setAnulado(true);
     	$remito->setUsuarioModificacion($usuario->getUsuario());
@@ -561,7 +561,7 @@ class RestExpedienteController extends FOSRestController{
     	$em->persist($remito);
     	$em->flush();
     	
-    	return $this->view("El remito se anuló en forma exitosa",200);
+    	return $this->view("El movimiento se anuló en forma exitosa",200);
     	
     }
     
@@ -579,10 +579,10 @@ class RestExpedienteController extends FOSRestController{
     	$remito = $remitoRepository->find($idRemito);
     	
     	if ($remito->getFechaRecepcion()!=null)
-    		return $this->view("El remito ".$remito->getId()." ya tiene fecha de recepción",500);
+    		return $this->view("El movimiento ya tiene fecha de recepción",500);
     	
     	if ($remito->getAnulado()==true)
-    		return $this->view("El remito ".$remito->getId()." se encuentra anulado",500);
+    		return $this->view("El movimiento se encuentra anulado",500);
     	
     	$remito->setFechaRecepcion($fecha);
     	$remito->setUsuarioModificacion($usuario->getUsuario());
@@ -606,7 +606,7 @@ class RestExpedienteController extends FOSRestController{
     	$em->persist($remito);
     	$em->flush();
     	
-    	return $this->view("El remito ".$remito->getId()." se actualizó en forma exitosa",200);
+    	return $this->view("El movimiento se actualizó en forma exitosa",200);
     }
     
             
