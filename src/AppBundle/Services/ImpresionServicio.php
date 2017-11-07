@@ -206,7 +206,9 @@ class ImpresionServicio
             $pgph_style='<p style="text-align: justify;margin-top: 0">&nbsp;&nbsp;&nbsp;&nbsp;';
             $tipoProyecto=$proyecto->getTipoProyecto()->getTipoProyecto();
             
-            $quienSanciona=$pgph_style.'<strong>EL HONORABLE CONCEJO DELIBERANTE EN USO DE LAS FACULTADES QUE LE SON PROPIAS SANCIONA '.(($tipoProyecto=='Decreto')?'EL':'LA').' SIGUIENTE:</strong></p>';
+            
+            $quienSanciona=$pgph_style.'<strong>EL HONORABLE CONCEJO DELIBERANTE EN USO DE LAS FACULTADES QUE LE SON PROPIAS SANCIONA '.
+            			  (($tipoProyecto=='Decreto')?'EL':'LA').' SIGUIENTE:</strong></p>';
             
             foreach ($articulos as $articulo) {
                 $textoArticulo=substr($articulo['texto'], 3,strlen($articulo['texto'])+3);

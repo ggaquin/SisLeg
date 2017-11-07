@@ -561,6 +561,8 @@
 				validacion+=((considerando.length==0)?'<li>Debe especificar las consideraciones</li>':'');
 				validacion+=((claves.replace(/ /g,'').length==0)
 						 		?'<li>Debe especificar al menos una palabra clave</li>':'');	
+				validacion+=((articulosIngresados.length==0)
+								?'<li>Debe especificar los artículos del proyecto</li>':'');
 		 		
 				formData.append("idProyecto",idProyecto);
 				formData.append("idtipoProyecto",idtipoProyecto);
@@ -680,6 +682,8 @@
 							 ?'<li>Debe especificar al menos una palabra clave</li>':'');
 				validacion+=((visto.length==0)?'<li>Debe especificar los vistos</li>':'');
 				validacion+=((considerando.length==0)?'<li>Debe especificar las consideraciones</li>':'');
+				validacion+=((articulosIngresados.length==0)
+							?'<li>Debe especificar los artículos del proyecto</li>':'');
 
 				formData.append("idtipoProyecto",idtipoProyecto);
 				formData.append("idConcejal",idConcejal);

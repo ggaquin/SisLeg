@@ -685,6 +685,10 @@ class DefaultController extends Controller
             $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'J', true);
             if($pdf->getY()+15<$max_pint_area || $pdf->getY()>28)
                 $pdf->Ln(15);
+            $html='<h4><u>POR TODO ELLO:</u></h4>';
+            $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'L', true);
+            if($pdf->getY()+15<$max_pint_area || $pdf->getY()>28)
+            	$pdf->Ln(5);
             $html=$documento["quienSanciona"];
             $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'C', true);
             if($pdf->getY()+15<$max_pint_area || $pdf->getY()>28)  

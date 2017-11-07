@@ -1340,6 +1340,7 @@
 					Validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
 								validacion+'</ul>':'');
 					toastr.error(validacion);
+					$("#btn-alta-plantilla").prop("disabled",false);
 					return false;
 				}
 				else{
