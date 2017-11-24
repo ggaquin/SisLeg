@@ -8,15 +8,15 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 // use twig\twig;
 
-use AppBundle\Entity\Rol;
 use AppBundle\Entity\Bloque;
-use AppBundle\Entity\Proyecto;
 use AppBundle\Entity\Comision;
-use AppBundle\Entity\TipoSesion;
-use AppBundle\Entity\TipoExpedienteSesion;
-use AppBundle\Entity\Oficina;
-use AppBundle\Entity\Sesion;
 use AppBundle\Entity\ExpedienteComision;
+use AppBundle\Entity\Oficina;
+use AppBundle\Entity\Proyecto;
+use AppBundle\Entity\Rol;
+use AppBundle\Entity\Sesion;
+use AppBundle\Entity\TipoExpedienteSesion;
+use AppBundle\Entity\TipoSesion;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 
 
@@ -245,6 +245,7 @@ class DefaultController extends Controller
     {
     	$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
     	$tipoProyectoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoProyecto');
+    	$tipoSesionRepository=$this->getDoctrine()->getRepository('AppBundle:TipoSesion');
     	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
     	
     	$años=$sesionRepository->findByDistinctPeriodos();
@@ -256,7 +257,8 @@ class DefaultController extends Controller
     		   'años'=>$años,
     		   'MAYORIA' => $this->getParameter('dictaminantes_en_mayoria'),
     		   'PRIMERA_MINORIA' => $this->getParameter('dictaminantes_en_primer_minoria'),
-    		   'SEGUNDA_MINORIA' => $this->getParameter('dictaminantes_en_segunda_minoria')
+    		   'SEGUNDA_MINORIA' => $this->getParameter('dictaminantes_en_segunda_minoria'),
+    		   'tiposSesion'=>$tipoSesionRepository->findAll()
     	));
     }
     
@@ -525,7 +527,7 @@ class DefaultController extends Controller
     {
         $tipoDocumento = $request->query->get('tipoDocumento');
         $id = $request->query->get('id');
-
+        
         $idExpediente=(($tipoDocumento=='expediente')?$id:null);
         $idProyecto=(($tipoDocumento=='proyecto')?$id:null);
         $parametrosCaratula=null;
@@ -716,7 +718,7 @@ class DefaultController extends Controller
 
      /**
      * @Route("/imprimirOrdenDelDia")
-     */
+     *
     public function imprimirOrdenDelDiaAction(Request $request){
        
     	$idSesion = $request->query->get('idSesion');
@@ -821,11 +823,97 @@ class DefaultController extends Controller
     					'Content-Disposition' => sprintf('attachment; filename="%s"', 'SisLeg'),
     			]
     			);
+    }*/
+    
+    /**
+     * @Route("/imprimirOrdenDelDia")
+     */
+    public function imprimirOrdenDelDiaAction(Request $request){
+    	
+    	$idSesion = $request->query->get('idSesion');
+    	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+    	$sesion=$sesionRepository->find($idSesion);
+    	$tipoSesion=$sesion->getTipoSesion()->getTipoSesion();
+    	$tipoExpedienteSesionRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpedienteSesion');
+    	$tiposExpedientesSesion=$tipoExpedienteSesionRepository->findAll();
+    	$servicioImpresion=$this->get('impresion_servicio');
+    	
+    	//fecha de la sesion
+    	$meses = array("Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre");
+    	$fecha=$sesion->getFecha()->format('d')." de ".$meses[$sesion->getFecha()->format('n')-1].
+    	" de ".$sesion->getFecha()->format('Y') ;
+    	//url base
+    	$base=$request->getSchemeAndHttpHost().$request->getBasePath();
+    	   	
+    	//crea el word
+    	$word = $servicioImpresion->getTemplateOD();
+    	
+     	//caratula
+     	$page=$servicioImpresion->getPage($word,'Legal');
+     	$page=$servicioImpresion->writeHTMLToPage('<p></p><p></p><p></p>', $page);
+     	$page=$servicioImpresion->addImageToPage($base.'/document_bootstrap/portada_orden_dia.png', $page);
+     	$html='<p></p><p></p><p></p><h1><strong>SESIÓN '.(($tipoSesion=='Mayores Contribuyentes')?'DE ':'').
+     		  strtoupper($tipoSesion	).' A CELEBRARSE EL DÍA '.
+     		  strtoupper($fecha).'</strong></h1><p></p><p></p><p></p><p></p><h2><strong>'.
+     		  'ORDEN DEL DÍA</strong></h2>';
+     	$page=$servicioImpresion->writeHTMLToPage($html, $page,1);
+     
+     	
+     	//primer página
+     	$page = $servicioImpresion->getPage($word,'Legal');
+     	//encabezado de primer página
+     	$page=$servicioImpresion->setHeader($page, $base.'/document_bootstrap/escudopng2_mini.png', 
+     										  'HCD Lomas de Zamora - Orden del Día', 
+     										  'Sesión: '.$fecha);
+          	 
+     	//encabezado de comunicaciones de la presidencia
+     	$html='<h3><strong>I) COMUNICACIONES DE PRESIDENCIA</strong></h3><p></p><p></p><p></p>';
+     	//encabezado de versiones taquigráficas
+     	$html.='<h3><strong>II) VERSIONES TAQUIGRÁFICAS</strong></h3>';
+     	//contenido de versiones taquigráficas
+     	$content=$sesionRepository->findVersionesTaquigraficasBySesion($idSesion);
+     	$html.=$content[0]["versiones"];
+     	$page=$servicioImpresion->writeHTMLToPage($html, $page,1);
+          	
+     	$apartadoInicial=true;
+     				
+     	//repote para cada apetado de la orden del día
+     	foreach ($tiposExpedientesSesion as $tipoExpedienteSesion){
+     							   	
+     		$content=$sesionRepository->findOrdenDiaBySesionYApartado($idSesion, $tipoExpedienteSesion->getId());
+     		$html="";
+     		
+     		if (count($content)>0){
+     			
+     			//nueva pagina del apartado
+     			$page=$servicioImpresion->getPage($word, 'Legal',1);
+     			//header de la nueva página del apartado
+     			$page=$servicioImpresion->setHeader($page, $base.'/document_bootstrap/escudopng2_mini.png', 
+     												  'HCD Lomas de Zamora - Orden del Día',
+     												  'Sesión: '.$fecha);
+     			//footer de la nueva página del apartado
+     			$textoFooter=$tipoExpedienteSesion->getLetra(). ').- {PAGE}';
+     			$page=$servicioImpresion->setFooter($page, $textoFooter);
+     			
+     			//texto del apartado
+     			if ($apartadoInicial==true){
+     				$html='<h3><strong>IV) ASUNTOS ENTRADOS</strong></h3>';
+     				$apartadoInicial=false;
+     			}
+     			$html.='<h4><strong>'.$tipoExpedienteSesion->getLetra().') '.
+       			$tipoExpedienteSesion->getTipoExpedienteSesion().'</strong></h4>';
+       			$html.=($content[0]["textoApartado"]);
+       			       			
+       			$page=$servicioImpresion->writeHTMLToPage($html, $page,1);				   		
+     		}			   	
+     	}
+         	     	
+    	return $servicioImpresion->getArchivoOD($word, $fecha);
     }
     
     /**
      * @Route("/imprimirDictamen")
-     */
+     *
     public function imprimirDictamenAction(Request $request){
     	
     	$idDictamen = $request->query->get('idDictamen');
@@ -876,11 +964,46 @@ class DefaultController extends Controller
 				    			]
 			    			);
     	
+    }*/
+    
+    /**
+     * @Route("/imprimirDictamen")
+     */
+    public function imprimirDictamenAction(Request $request){
+    	
+    	$idDictamen = $request->query->get('idDictamen');
+    	$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
+    	$servicioImpresion=$this->get('impresion_servicio');
+    	
+    	$meses = array("Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre");
+    	
+    	$fechaActual=new \DateTime('now');
+    	
+    	$fecha=$fechaActual->format('d')." de ".$meses[$fechaActual->format('n')-1].
+    	" de ".$fechaActual->format('Y') ;
+  
+    	//url base
+    	$base=$request->getSchemeAndHttpHost().$request->getBasePath();
+    	
+    	//crea el word
+    	$word = $servicioImpresion->getTemplateOD();
+    	$page=$servicioImpresion->getPage($word, 'Legal');
+    	$page=$servicioImpresion->setHeader($page,  $base.'/document_bootstrap/escudopng2_mini.png', 
+    									   'HCD Lomas de Zamora - Dictamen Comisiones', 
+    									   'Fecha Impresión: '.$fecha);
+    	
+    	$content=$expedienteComisionRepository->traerTextoDictamen($idDictamen);
+    	$html.=($content[0]["textoDictamen"]);
+    	$page=$servicioImpresion->writeHTMLToPage($html, $page);
+    	$expediente=$content[0]["expediente"];
+    	$comisiones=$content[0]["comisiones"];
+    	
+    	return  $servicioImpresion->getArchivoDictamen($word, $fecha, $expediente, $comisiones);	
     }
     
     /**
      * @Route("/imprimirSancion")
-     */
+     *
     public function imprimirSancionAction(Request $request){
     	
     	$idSancion = $request->query->get('idSancion');
@@ -931,6 +1054,132 @@ class DefaultController extends Controller
     					'Content-Disposition' => sprintf('attachment; filename="%s"', 'Dictamen'),
     			]
     			);
+    	
+    }*/
+    
+    /**
+     * @Route("/imprimirSancion")
+     */
+    public function imprimirSancionAction(Request $request){
+    	
+    	$idSancion = $request->query->get('idSancion');
+    	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+    	$servicioImpresion=$this->get('impresion_servicio');
+    	
+    	$meses = array("Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre");
+    	
+    	$fechaActual=new \DateTime('now');
+    	
+    	$fecha=$fechaActual->format('d')." de ".$meses[$fechaActual->format('n')-1].
+    	" de ".$fechaActual->format('Y') ;
+    	
+    	//url base
+    	$base=$request->getSchemeAndHttpHost().$request->getBasePath();
+    	
+    	//crea el word
+    	$word = $servicioImpresion->getTemplateOD();
+    	$page=$servicioImpresion->getPage($word, 'Legal');
+    	$page=$servicioImpresion->setHeader($page,  $base.'/document_bootstrap/escudopng2_mini.png',
+    									    'HCD Lomas de Zamora - Sanción',
+    			                            'Fecha Impresión: '.$fecha);
+    	
+    	$content=$sesionRepository->traerTextoSancion($idSancion);
+    	$html.=($content[0]["textoSancion"]);
+    	$page=$servicioImpresion->writeHTMLToPage($html, $page);
+    	$expediente=$content[0]["expediente"];
+    	$numeroSancion=$content[0]["numeroSancion"];
+    	
+    	return  $servicioImpresion->getArchivoSancion($word, $fecha, $expediente, $numeroSancion);	
+    	    	
+    }
+    
+    /**
+     * @Route("/imprimirProyecto")
+     */
+    public function imprimirProyectoAction(Request $request){
+    	
+    	$idProyecto = $request->query->get('idProyecto');   	
+    	$proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
+    	$servicioImpresion=$this->get('impresion_servicio');
+    	
+    	$meses = array("Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre");
+    	$fechaActual=new \DateTime('now');
+    	$fecha=$fechaActual->format('d')." de ".$meses[$fechaActual->format('n')-1].
+    	" de ".$fechaActual->format('Y') ;
+    	
+    	//url base
+    	$base=$request->getSchemeAndHttpHost().$request->getBasePath();
+    	
+    	//crea el word
+    	$word = $servicioImpresion->getTemplateOD();
+    	$page=$servicioImpresion->getPage($word, 'Legal');
+    	$page=$servicioImpresion->setHeader($page,  $base.'/document_bootstrap/escudopng2_mini.png',
+							    		    'HCD Lomas de Zamora - Proyecto',
+							    			'Fecha Impresión: '.$fecha);
+    	
+    	$content=$proyectoRepository->traerProyectoParaImpresion($idProyecto);
+    	$html.=($content[0]["textoProyecto"]);
+    	$page=$servicioImpresion->writeHTMLToPage($html, $page);
+    	$autor=$content[0]["autor"];
+    	$bloque=$content[0]["bloque"];
+    	$page=$servicioImpresion->addsignatureProyecto($page, $autor,$bloque);
+    	
+    	
+    	return  $servicioImpresion->getArchivoProyecto($word, $fecha,$autor);
+    	
+    }
+    
+    /**
+     * @Route("/imprimirExpediente")
+     */
+    public function imprimirExpedienteAction(Request $request){
+    	
+    	$idExpediente= $request->query->get('idExpediente');
+    	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+    	$servicioImpresion=$this->get('impresion_servicio');
+    	
+    	$meses = array("Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre");
+    	$fechaActual=new \DateTime('now');
+    	$fecha=$fechaActual->format('d')." de ".$meses[$fechaActual->format('n')-1].
+    	" de ".$fechaActual->format('Y') ;
+    	
+    	//url base
+    	$base=$request->getSchemeAndHttpHost().$request->getBasePath();
+    	
+    	//crea el word
+    	$word = $servicioImpresion->getTemplateOD();
+    	$page= $servicioImpresion->getPage($word, 'Legal');
+    	$page= $servicioImpresion->setHeader($page,  $base.'/document_bootstrap/escudopng2_mini.png',
+    			'HCD Lomas de Zamora - Expediente',
+    			'Fecha Impresión: '.$fecha);
+    	
+    	$content=$expedienteRepository->traerExpedienteParaImpresion($idExpediente);
+    	
+    	$numero=$content[0]["numeroExpediente"];
+    	$letra=$content[0]["letra"];
+    	$periodo=$content[0]["periodo"];
+    	$caratula=$content[0]["caratula"];
+    	$fechaIngreso=$content[0]["fechaIngreso"];
+    	$origen=$content[0]["origen"];
+    	$textoProyecto=$content[0]["textoProyecto"];
+    	
+    	$page=$servicioImpresion->crearCaratulaExpediente($page,$numero,$letra,$periodo,
+    													  $caratula,$fechaIngreso,$origen);
+    	if ($textoProyecto!=''){
+	    	$page2=$servicioImpresion->getPage($word, 'Legal');
+	    	$page2=$servicioImpresion->writeHTMLToPage($textoProyecto, $page2);
+    	}
+    	
+    	
+//     	$html.=($content[0]["textoProyecto"]);
+//     	$page=$servicioImpresion->writeHTMLToPage($html, $page);
+//     	$autor=$content[0]["autor"];
+//     	$bloque=$content[0]["bloque"];
+//     	$page=$servicioImpresion->addsignatureProyecto($page, $autor,$bloque);
+    	
+    	$expediente=$numero.'_'.$letra.'_'.$periodo;
+    	
+    	return  $servicioImpresion->getArchivoExpediente($word, $fecha, $expediente);
     	
     }
     

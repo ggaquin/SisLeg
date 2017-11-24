@@ -89,8 +89,9 @@ class ExpedienteComision
      * @var boolean
      *
      * @Column(name="ultimoMomento", type="boolean", nullable=false)
-     */
+     *
     private $ultimoMomento;
+    */
         
     /**
      * @var boolean
@@ -145,7 +146,7 @@ class ExpedienteComision
     {
     	$this->fechaCreacion=new \DateTime("now");
     	$this->anulado=false;
-    	$this->ultimoMomento=false;
+    	//$this->ultimoMomento=false;
     }
 
     //--------------------------------------setters y getters----------------------------------------
@@ -345,10 +346,11 @@ class ExpedienteComision
 	 * Get ultimoMomento
 	 *
 	 * @return boolean
-	 */
+	 *
 	public function getUltimoMomento() {
 		return $this->ultimoMomento;
 	}
+	*/
 	
 	/**
 	 * Set ultimoMomento
@@ -356,11 +358,12 @@ class ExpedienteComision
 	 * @param boolean $ultimoMomento
 	 *
 	 * @return ExpedienteComision
-	 */
+	 *
 	public function setUltimoMomento($ultimoMomento) {
 		$this->ultimoMomento = $ultimoMomento;
 		return $this;
 	}
+	*/
 	        
     /**
      * Set anulado

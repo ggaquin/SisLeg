@@ -405,4 +405,40 @@ class ExpedienteRepository extends EntityRepository{
 				
 		return $qb->getQuery()->getResult();
 	}
+		
+	public function traerExpedienteParaImpresion($idExpediente)
+	{
+		$rsm = new ResultSetMapping();
+		$rsm->addScalarResult('caratula', 'caratula');
+		$rsm->addScalarResult('numeroExpediente', 'numeroExpediente');
+		$rsm->addScalarResult('letra', 'letra');
+		$rsm->addScalarResult('periodo', 'periodo');
+		$rsm->addScalarResult('fechaIngreso', 'fechaIngreso');
+		$rsm->addScalarResult('origen', 'origen');
+		$rsm->addScalarResult('textoProyecto', 'textoProyecto');
+		
+		$query = $this -> getEntityManager()
+					   -> createNativeQuery('call conformarExpediente(:idExpediente)',$rsm)
+					   -> setParameter('idExpediente',$idExpediente);
+		
+		return $query->getResult();
+	}
+	/*
+	public function traerExpedienteParaImpresion($idExpediente)
+	{
+		$rsm = new ResultSetMapping();
+		$rsm->addScalarResult('caratula', 'caratula');
+		$rsm->addScalarResult('numeroExpediente', 'numeroExpediente');
+		$rsm->addScalarResult('letra', 'letra');
+		$rsm->addScalarResult('periodo', 'periodo');
+		$rsm->addScalarResult('fechaIngreso', 'fechaIngreso');
+		$rsm->addScalarResult('origen', 'origen');
+		$rsm->addScalarResult('textoProyecto', 'textoProyecto');		
+		
+		$query = $this -> getEntityManager()
+					   -> createNativeQuery('call conformarExpediente(:idExpediente)',$rsm)
+					   -> setParameter('idExpediente',$idExpediente);
+		
+		return $query->getResult();
+	}*/
 }

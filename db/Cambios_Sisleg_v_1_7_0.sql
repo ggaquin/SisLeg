@@ -1,0 +1,35 @@
+ALTER TABLE `sancion` 
+CHANGE COLUMN `numeroSancion` `numeroSancion` VARCHAR(9) NULL DEFAULT NULL ;
+
+ALTER TABLE `dictamen` 
+ADD COLUMN `ultimoMomento` TINYINT(1) NULL AFTER `textoArticulado`,
+ADD COLUMN `usuarioModificacion` VARCHAR(70) NULL AFTER `usuarioCreacion`,
+ADD COLUMN `fechaModificacion` DATETIME NULL AFTER `usuarioModificacion`;
+
+update dictamen
+set ultimoMomento=0;
+
+ALTER TABLE `sistema_legislativo`.`dictamen` 
+CHANGE COLUMN `ultimoMomento` `ultimoMomento` TINYINT(1) NOT NULL ;
+
+
+INSERT INTO `menuItem` (`idMenu`, `menuItem`, `abreviacion`) 
+VALUES ('1', 'Editar Sesion', 'EXP_SES_EDIT');
+INSERT INTO `menuItem` (`idMenu`, `menuItem`, `abreviacion`) 
+VALUES ('1', 'Quitar Ultimo Momento', 'EXP_ULT_MOM');
+INSERT INTO `menuItem` (`idMenu`, `menuItem`, `abreviacion`) 
+VALUES ('6', 'Quitar Ultimo Momento', 'DIC_ULT_MOM');
+
+
+INSERT INTO `rol_menuItem` (`idRol`, `idMenuItem`) VALUES ('4', '61');
+INSERT INTO `rol_menuItem` (`idRol`, `idMenuItem`) VALUES ('4', '62');
+INSERT INTO `rol_menuItem` (`idRol`, `idMenuItem`) VALUES ('6', '61');
+INSERT INTO `rol_menuItem` (`idRol`, `idMenuItem`) VALUES ('6', '62');
+INSERT INTO `rol_menuItem` (`idRol`, `idMenuItem`) VALUES ('5', '63');
+INSERT INTO `rol_menuItem` (`idRol`, `idMenuItem`) VALUES ('5', '39');
+INSERT INTO `rol_menuItem` (`idRol`, `idMenuItem`) VALUES ('6', '41');
+INSERT INTO `rol_menuItem` (`idRol`, `idMenuItem`) VALUES ('6', '63');
+
+
+
+

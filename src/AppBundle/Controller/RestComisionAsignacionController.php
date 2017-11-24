@@ -131,18 +131,28 @@ class RestComisionAsignacionController extends FOSRestController{
     									'dictamen_mayoria_id'=>(!is_null($e->getDictamenMayoria())
     																		?$e->getDictamenMayoria()->getId()
     																		:0),
+    									'dictamen_mayoria_es_u'=>(!is_null($e->getDictamenMayoria())
+    																		?$e->getDictamenMayoria()->getUltimoMomento()
+    																		:false),
     									'dictamen_primera_minoria_id'=>(!is_null($e->getDictamenPrimeraMinoria())
     																				?$e->getDictamenPrimeraMinoria()->getId()
     																				:0),
+    									'dictamen_primera_minoria_es_u'=>(!is_null($e->getDictamenPrimeraMinoria())
+    																				?$e->getDictamenPrimeraMinoria()->getUltimoMomento()
+    																				:false),
     									'dictamen_segunda_minoria_id'=>(!is_null($e->getDictamenSegundaMinoria())
     																				?$e->getDictamenSegundaMinoria()->getId()
     																				:0),
+    									'dictamen_segunda_minoria_es_u'=>(!is_null($e->getDictamenSegundaMinoria())
+    																				?$e->getDictamenSegundaMinoria()->getUltimoMomento()
+    																				:false),
     									'recibido'=>!is_null($e->getPaseOriginario()->getRemito()->getFechaRecepcion()),
     									'anulado'=>$e->getAnulado(),
     									'edicion_habilitada'=>$e->getPermiteEdicion(),
-    									'sesion'=>$e->getSesionMuestra(),
+    									'sesion_muestra'=>$e->getSesionMuestra(),
     									'sesion_id'=>(is_null($e->getSesion())?0:$e->getSesion()->getId()),
-    									'ultimo_momento'=>$e->getUltimoMomento()
+    									'sesion'=>$e->getSesion()
+    									//'ultimo_momento'=>$e->getUltimoMomento()
 				    				);
     			$respuesta[]=$datosAsignacion;
     		}
@@ -154,33 +164,80 @@ class RestComisionAsignacionController extends FOSRestController{
     }
     
     /**
+     * @Rest\Patch("/editUltimoMomento/{id}")
+     */
+    public function editarUltimoMomento(Request $request)
+    {
+    	
+    	$idDictamen=$request->get('id');
+    	$usuario=$this->getUser();
+    	
+    	$dictamenRepository=$this->getDoctrine()->getRepository('AppBundle:Dictamen');
+    	$dictamen=$dictamenRepository->find($idDictamen);
+    	$fechaActual=new \DateTime('now');
+    	
+    	$dictamen->setUltimoMomento(false);
+    	$dictamen->setUsuarioModificacion($usuario->getUsuario());
+    	$dictamen->setFechaModificacion($fechaActual);
+    	
+    	$em = $this->getDoctrine()->getManager();
+    	$em->persist($dictamen);
+    	$em->flush();
+    	
+    	return $this->view("El dictamen se quitó del listado de último momento con éxito",200);
+    	
+    	
+    }
+    
+    /**
      * @Rest\Post("/updateSesion")
      */
     public function actualizarSesionAction(Request $request) 
     {
     	$idAsignacion=$request->request->get('idAsignacion');
     	$idSesion=$request->request->get('idSesion');
-    	$ultimoMomento=$request->request->get('ultimoMomento');
     	$usuario=$this->getUser();
     	
     	$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
     	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
     	$expedienteComision=$expedienteComisionRepository->find($idAsignacion);
-    	$sesion=$sesionRepository->find($idSesion);
-    	   	
-    	if($expedienteComision->getUltimoMomento()=="true" && $ultimoMomento=="false")
-    			$expedienteComision->setUltimoMomento(false);
-    	else 
-    		if (is_null($expedienteComision->getSesion()) || 
-    			$expedienteComision->getSesion()->getId()!=$sesion->getId())
-    			$expedienteComision->setUltimoMomento($sesion->getTieneOrdenDelDia());	
-    	
-    	$expedienteComision->setSesion($sesion);
-    	$expedienteComision->setFechaModificacion(new \DateTime());
-    	$expedienteComision->setUsuarioModificacion($usuario->getUsuario());
-    	
+    	$expedientesAsignados=$expedienteComisionRepository->findByExpediente_Id($expedienteComision
+    																			 ->getExpediente()
+    																			 ->getId()
+    																			);
+    								
+    	$sesion=$sesionRepository->find($idSesion);	
     	$em = $this->getDoctrine()->getManager();
-    	$em->persist($expedienteComision);
+    	
+    	foreach ($expedientesAsignados as $expedienteAsignacion){
+    		//$expedienteAsignacion->setUltimoMomento($sesion->getTieneOrdenDelDia());
+    		$dictamenMayoria=$expedienteAsignacion->getDictamenMayoria();
+    		if (!is_null($dictamenMayoria)){
+    			$dictamenMayoria->setUltimoMomento($sesion->getTieneOrdenDelDia());
+    			$dictamenMayoria->setFechaModificacion(new \DateTime());
+    			$dictamenMayoria->setUsuarioModificacion($usuario->getUsuario());
+    			$em->persist($dictamenMayoria);
+    		}
+    		$dictamenPrimeraMinoria=$expedienteAsignacion->getDictamenPrimeraMinoria();
+    		if (!is_null($dictamenPrimeraMinoria)){
+    			$dictamenPrimeraMinoria->setUltimoMomento($sesion->getTieneOrdenDelDia());
+    			$dictamenPrimeraMinoria->setFechaModificacion(new \DateTime());
+    			$dictamenPrimeraMinoria->setUsuarioModificacion($usuario->getUsuario());
+    			$em->persist($dictamenPrimeraMinoria);
+    		}
+    		$dictamenSegundaMinoria=$expedienteAsignacion->getDictamenSegundaMinoria();
+    		if (!is_null($dictamenSegundaMinoria)){
+    			$dictamenSegundaMinoria->setUltimoMomento($sesion->getTieneOrdenDelDia());
+    			$dictamenSegundaMinoria->setFechaModificacion(new \DateTime());
+    			$dictamenSegundaMinoria->setUsuarioModificacion($usuario->getUsuario());
+    			$em->persist($dictamenSegundaMinoria);
+    		}
+    		$expedienteAsignacion->setSesion($sesion);
+    		$expedienteAsignacion->setFechaModificacion(new \DateTime());
+    		$expedienteAsignacion->setUsuarioModificacion($usuario->getUsuario());
+    		$em->persist($expedienteAsignacion);
+    	}
+    	
     	$em->flush();
     	
     	return $this->view("La sesion se asignó e forma exitosa",200);
@@ -268,32 +325,7 @@ class RestComisionAsignacionController extends FOSRestController{
     	
     	return $this->view("La comision se cambió en forma exitosa en forma exitosa",200);
     }
-    
-    /*
-     * @Rest\Get("/validarAltaDictamen/{numeroDictaminantes}/{idAsignacion}")
-     *
-    public function  validarAltaDictamen(Request $request)
-    {
-    	$numeroDictaminantes=$request->get('numeroDictaminantes');
-    	$idAsignacion=$request->get('idAsignacion');
-    	
-    	$mensaje="";
-    	$response_state=200;
-    	
-    	$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
-    	$dictamenes=$expedienteComisionRepository
-    				 ->findDictamenByAsignacionAndSesionPendiente
-    				  ($idAsignacion,$numeroDictaminantes);
-    	
-    	if(count($dictamenes)>0){
-    		$mensaje='El dictamen '.$dictamenes[0]->getSesionMuestra().' aún no tiene paso por el cuerpo';
-    		$response_state=500;
-    	}	
-    		
-    	return $this->view($mensaje,$response_state);
-    	
-    }*/
-    
+        
     /**
      * @Rest\Get("/getDictamen/{id}")
      */
@@ -372,7 +404,7 @@ class RestComisionAsignacionController extends FOSRestController{
     		
 	    $dictamen->setFechaCreacion(new \DateTime('now'));
 	    $dictamen->setUsuarioCreacion($usuario->getUsuario());
-    	
+	        	
     	//campo común a todos los tipos
     	$dictamen->setTextoLibre($texto);
     	//$sesion=$sesionRepository->find($idSesion);
@@ -433,8 +465,21 @@ class RestComisionAsignacionController extends FOSRestController{
     	foreach ($comisionesArray as $idComision){
        		
        		$expedienteComision=$expedienteComisionRepository->findByExpediente_IdAndComision_Id($idExpediente, $idComision);
-       		if($expedienteComision->getPermiteEdicion()){
+       		$sesion=$expedienteComision->getSesion();  
        		
+       		if((!is_null($dictamenOriginal) && !$expedienteComision->getPermiteEdicion()) ||
+       			is_null($dictamenOriginal) && $sesion->getTieneUltimoMomento()){
+       		
+       			return $this->view("El dictamen no está habilitado para edición",500);
+       		}	
+       		else{
+       			
+       			//analiza si es ultimo momento       			
+       			if(is_null($dictamenOriginal))
+       				$dictamen->setUltimoMomento($sesion->getTieneOrdenDelDia());
+       			else 
+       				$dictamen->setUltimoMomento($dictamenOriginal->getUltimoMomento());
+       			
 	       		if($numeroDictaminantes==1)
 		       	{	//dictamen mayoria
 		       		if (!is_null($dictamenOriginal))
@@ -458,8 +503,7 @@ class RestComisionAsignacionController extends FOSRestController{
 	       		if (!is_null($dictamenOriginal) && !$dictamenOriginal->getTieneAsignaciones()) 
 	       			$em->remove($dictamenOriginal);
        		}
-       		else 
-       			return $this->view("El dictamen no está habilitado para edición",500);
+       		
        	}
        	
       	$expediente=$expedienteRepository->find($idExpediente);

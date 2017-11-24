@@ -388,8 +388,7 @@
 			$("#registroProyectos > tbody").on('click','.btn-descargar',function(){
 				var data = tabla.row( $(this).parents('tr') ).data();
 				window.location.href='{{ app.request.getBaseURL() }}'+
-		        					 '/imprimir?tipoDocumento=proyecto&id='+
-		        					  data[ "id" ];
+		        					 '/imprimirProyecto?idProyecto='+data[ "id" ];
 			});
 
 			//------------------------------------EDITAR ARTICULO----------------------------------------------

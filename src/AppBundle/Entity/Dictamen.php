@@ -74,6 +74,13 @@ class Dictamen
      * 				  cascade={"persist","merge","refresh"}, mappedBy="dictamenSegundaMinoria")
      */
     private $asignacionesPorSegundaMinoria;
+    
+    /**
+     * @var boolean
+     * 
+     * @ORM\Column(name="ultimoMomento", type="boolean", nullable=false)
+     */
+    private $ultimoMomento;
     	
     /**
      * @var string
@@ -89,6 +96,21 @@ class Dictamen
      */
     private $fechaCreacion;
     
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="usuarioModificacion", length=70, type="string", nullable=true)
+     */
+    private $usuarioModificacion;
+    
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="fechaModificacion", type="datetime", nullable=true)
+     */
+    private $fechaModificacion;
+    
+    
     //------------------------------------constructor---------------------------------------------
     
     /**
@@ -100,6 +122,7 @@ class Dictamen
     	$this->asignacionesPorMayoria = new \Doctrine\Common\Collections\ArrayCollection();
     	$this->asignacionesPorPrimeraMinoria = new \Doctrine\Common\Collections\ArrayCollection();
     	$this->asignacionesPorSegundaMinoria = new \Doctrine\Common\Collections\ArrayCollection();
+    	$this->ultimoMomento=false;
      	
     }
 
@@ -360,7 +383,27 @@ class Dictamen
     {
     	return $this->asignacionesPorSegundaMinoria;
     }
-	    
+    
+    /**
+     * Get ultimoMomento
+     * @return boolean
+     */
+	public function getUltimoMomento() {
+		return $this->ultimoMomento;
+	}
+	
+	/**
+	 * Set UltimoMomento
+	 * 
+	 * @param boolean $ultimoMomento
+	 * 
+	 * @return \AppBundle\Entity\Dictamen
+	 */
+	public function setUltimoMomento($ultimoMomento) {
+		$this->ultimoMomento = $ultimoMomento;
+		return $this;
+	}
+		    
     /**
      * Set usuarioCreacion
      *
@@ -409,6 +452,47 @@ class Dictamen
         return $this->fechaCreacion;
     }
     
+    /**
+     * Get usuarioModificacion
+     * @return string
+     */
+	public function getUsuarioModificacion() {
+		return $this->usuarioModificacion;
+	}
+	
+	/**
+	 * Set usuarioModificacion
+	 * 
+	 * @param string $usuarioModificacion
+	 * 
+	 * @return Dictamen
+	 */
+	public function setUsuarioModificacion($usuarioModificacion) {
+		$this->usuarioModificacion = $usuarioModificacion;
+		return $this;
+	}
+	
+	/**
+	 * Get fechaModificacion
+	 * 
+	 * @return \DateTime
+	 */
+	public function getFechaModificacion() {
+		return $this->fechaModificacion;
+	}
+	
+	/**
+	 * Set fechaModifiicacion
+	 * 
+	 * @param \DateTime $fechaModificacion
+	 * 
+	 * @return Dictamen
+	 */
+	public function setFechaModificacion(\DateTime $fechaModificacion) {
+		$this->fechaModificacion = $fechaModificacion;
+		return $this;
+	}
+	    
     
     /**
      * Get tieneAsignaciones

@@ -138,7 +138,7 @@ class ExpedienteComisionRepository extends EntityRepository{
 										$qb->expr()->like('c.comision', '?2'),
 										$qb->expr()->orX(
 															$qb->expr()->isNull('s.id'),
-															$qb->expr()->eq('s.tieneOrdenDelDia','?3')
+															$qb->expr()->eq('s.tieneUltimoMomento','?3')
 														),
 										$qb->expr()->neq('c.id', '?4')
 									  )
@@ -259,5 +259,47 @@ class ExpedienteComisionRepository extends EntityRepository{
 		return $query->getResult();
 	}
 	
+	
+	 public  function findByExpediente_Id($idExpediente){
+	 
+	 $qb = $this->createQueryBuilder('ec');
+	 $qb ->innerJoin('ec.expediente', 'e')
+	 	 ->where($qb->expr()->eq('e.id', '?1'))
+	   	 ->setParameter(1, $idExpediente);
+	 
+	 return $qb->getQuery()->getResult();
+	 }
+	
+	/*
+	public  function findByDictamenMayoria($idDictamen){
+		
+		$qb = $this->createQueryBuilder('ec');
+		$qb ->innerJoin('ec.dictamenMayoria', 'd')
+			->where($qb->expr()->eq('d.id', '?1'))
+			->setParameter(1, $idDictamen);
+			
+		return $qb->getQuery()->getResult();
+	}
+	
+	public  function findByDictamenPrimeraMinoria($idDictamen){
+		
+		$qb = $this->createQueryBuilder('ec');
+		$qb ->innerJoin('ec.dictamenPrimeraMinoria', 'd')
+			->where($qb->expr()->eq('d.id', '?1'))
+			->setParameter(1, $idDictamen);
+		
+		return $qb->getQuery()->getResult();
+	}
+	
+	public  function findByDictamenSegundaMinoria($idDictamen){
+		
+		$qb = $this->createQueryBuilder('ec');
+		$qb ->innerJoin('ec.dictamenSegundaMinoria', 'd')
+			->where($qb->expr()->eq('d.id', '?1'))
+			->setParameter(1, $idDictamen);
+		
+		return $qb->getQuery()->getResult();
+	}
+	*/
 	
 }

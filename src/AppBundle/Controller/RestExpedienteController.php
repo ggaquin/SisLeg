@@ -134,7 +134,10 @@ class RestExpedienteController extends FOSRestController{
             					'numero_sancion'=>$expediente->getNumeroSancion(),
             					'permite_edicion'=>$expediente->getPermiteEdicion(),
             					'fecha_archivo_formateada'=>$expediente->getfechaArchivoFormateada(),
-            					'comision_reserva'=>$expediente->getComisionReserva()
+            					'comision_reserva'=>$expediente->getComisionReserva(),
+            					'ultimo_momento'=>$expediente->getUltimoMomento(),
+            					'sesion'=>(!is_null($expediente->getSesion())
+            								?$expediente->getSesion():'')
             					);
             	$resutado[]=$registro;
             	
@@ -207,6 +210,77 @@ class RestExpedienteController extends FOSRestController{
 		}
 	}
 	
+	/**
+	 * @Rest\Post("/modificarSesion")
+	 */
+	public function modificarSesionAction(Request $request)
+	{
+		$idExpediente=$request->request->get('idExpediente');
+		$idSesion=$request->request->get('idSesion');
+		$usuario=$this->getUser();
+		
+			$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+		$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
+		$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+		$fechaActual=new \DateTime('now');
+		
+		$sesion=$sesionRepository->find($idSesion);
+		$expediente=$expedienteRepository->find($idExpediente);
+		$expedientesGirados=$expedienteComisionRepository->findBy(array('expediente'=>$expediente,
+																		'sesion'=>$sesion));
+		
+		$em = $this->getDoctrine()->getManager();
+		
+		$expediente->setSesion($sesion);
+		$expediente->setUltimoMomento($sesion->getTieneOrdenDelDia());
+		$expediente->setUsuarioModificacion($usuario->getUsuario());
+		if($idSesion!=$expediente->getSesion()->getId())
+			$expediente->setUltimoMomento(false);
+		$expediente->setFechaModificacion($fechaActual);
+		$cuentaExpedientesGirados=count($expedientesGirados);
+		foreach ($expedientesGirados as $expedienteGirado){
+			$expedienteGirado->setSesion($sesion);
+			$expedienteGirado->setUsuarioModificacion($usuario->getUsuario());
+			$expedienteGirado->setFechaModificacion($fechaActual);
+			$em->persist($expedienteGirado);
+		}
+		
+		$cambiosExpedienteGirados=(($cuentaExpedientesGirados>0)
+								   ?"También se cambiaron las fechas de sesión en ".$cuentaExpedientesGirados.
+									" asignaciones en comisión"
+								   :"");
+		
+		$em->persist($expediente);
+		$em->flush();
+		
+		return $this->view("La fecha de sesión se cambió con éxito. ".$cambiosExpedienteGirados,200);
+		
+	}
+	
+	/**
+	 * @Rest\Patch("/editUltimoMomento/{id}")
+	 */
+	public function editarUltimoMomento(Request $request)
+	{
+		$idExpediente=$request->get('id');
+		$usuario=$this->getUser();
+		
+		$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+		$expediente=$expedienteRepository->find($idExpediente);
+		$fechaActual=new \DateTime('now');
+		
+		$expediente->setUltimoMomento(false);
+		$expediente->setUsuarioModificacion($usuario->getUsuario());
+		$expediente->setFechaModificacion($fechaActual);
+		
+		$em = $this->getDoctrine()->getManager();
+		$em->persist($expediente);
+		$em->flush();
+		
+		return $this->view("El expediente se quitó del listado de último momento con éxito",200);
+		
+		
+	}
 	
     /**
      * @Rest\Get("/getOne/{id}")
@@ -696,13 +770,13 @@ class RestExpedienteController extends FOSRestController{
             $idOrigen=$request->request->get('idOrigen');
             $numeros=json_decode($request->request->get('numeros'));
             $caratula=$request->request->get('caratula');
-            $idSesion=$request->request->get('idSesion');
+//             $idSesion=$request->request->get('idSesion');
             $archivos=$request->files->all();
             $usuario=$this->getUser();
             
             //repositorios y parámetros de configuración
             $tipoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
-            $sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+//             $sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
             $estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
             $oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
             $idMesaEntradas=$this->getParameter('id_mesa_entradas');
@@ -716,9 +790,9 @@ class RestExpedienteController extends FOSRestController{
             $expediente->setNumeroExpediente($numeroExpediente);
             $expediente->setPeriodo($año);
             $expediente->setCaratula($caratula);
-            $sesion=$sesionRepository->find($idSesion);
-            $expediente->setSesion($sesion);
-            $expediente->setUltimoMomento($sesion->getTieneOrdenDelDia());
+//             $sesion=$sesionRepository->find($idSesion);
+//             $expediente->setSesion($sesion);
+//             $expediente->setUltimoMomento($sesion->getTieneOrdenDelDia());
             
             
             //establece la oficina actual (todos ingresan por mesa de entradas)
@@ -812,13 +886,13 @@ class RestExpedienteController extends FOSRestController{
             $numeros=json_decode($request->request->get('numeros'));           
             $caratula=$request->request->get('caratula');
             $año=$request->request->get('año');
-            $idSesion=$request->request->get('idSesion');
-            $ultimoMomento=$request->request->get('ultimoMomento');
+//             $idSesion=$request->request->get('idSesion');
+//             $ultimoMomento=$request->request->get('ultimoMomento');
             $archivos=$request->files->all();
             $usuario=$this->getUser();
 
             $tipoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
-            $sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+//             $sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
             $oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
             $expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
             $expediente=$expedienteRepository->find($idExpediente); 
@@ -831,15 +905,15 @@ class RestExpedienteController extends FOSRestController{
             $expediente->setPeriodo($año);
             $expediente->setFolios($folios);
             $expediente->setCaratula($caratula);
-            $sesion=$sesionRepository->find($idSesion);
+//             $sesion=$sesionRepository->find($idSesion);
                   
-            if($expediente->getUltimoMomento()=="true" && $ultimoMomento=="false")
-            	$expediente->setUltimoMomento(false);
-            else
-            	if (is_null($expediente->getSesion()) || $expediente->getSesion()->getId()!=$sesion->getId())
-            		$expediente->setUltimoMomento($sesion->getTieneOrdenDelDia());	
+//             if($expediente->getUltimoMomento()=="true" && $ultimoMomento=="false")
+//             	$expediente->setUltimoMomento(false);
+//             else
+//             	if (is_null($expediente->getSesion()) || $expediente->getSesion()->getId()!=$sesion->getId())
+//             		$expediente->setUltimoMomento($sesion->getTieneOrdenDelDia());	
             
-            $expediente->setSesion($sesion);
+//             $expediente->setSesion($sesion);
             $expediente->setArchivos($archivos);
             $proyecto=$expediente->getProyecto();
             

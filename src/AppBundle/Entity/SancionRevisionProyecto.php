@@ -43,7 +43,7 @@ class SancionRevisionProyecto extends Sancion
     
     /**
      * @var string
-     * @Column(name="numeroSancion", type="string", length=6)
+     * @Column(name="numeroSancion", type="string", length=9)
      */
     private $numeroSancion='';
     

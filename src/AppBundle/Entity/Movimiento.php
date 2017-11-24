@@ -59,7 +59,7 @@ abstract class Movimiento {
 	/**
 	 * @var integer
 	 *
-	 * @ORM\Column(name="remitoRetorno", type="string", nullable=true)
+	 * @ORM\Column(name="remitoRetorno", type="string", length=8,  nullable=true)
 	 */
 	private $remitoRetorno;
 		

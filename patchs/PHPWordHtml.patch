@@ -1,0 +1,13 @@
+--- ../vendor/phpoffice/phpword/src/PhpWord/Shared/Html.php	2017-11-23 22:44:00.007952864 -0300
++++ Html.php	2017-11-23 22:43:30.000000000 -0300
+@@ -117,6 +117,10 @@
+             'h4'        => array('Heading',     null,   $element,   $styles,    null,   'Heading4',     null),
+             'h5'        => array('Heading',     null,   $element,   $styles,    null,   'Heading5',     null),
+             'h6'        => array('Heading',     null,   $element,   $styles,    null,   'Heading6',     null),
++        	'h7'        => array('Heading',     null,   $element,   $styles,    null,   'Heading7',     null),
++        	'h8'        => array('Heading',     null,   $element,   $styles,    null,   'Heading8',     null),
++        	'h9'        => array('Heading',     null,   $element,   $styles,    null,   'Heading9',     null),
++        	'h10'       => array('Heading',     null,   $element,   $styles,    null,   'Heading10',     null),
+             '#text'     => array('Text',        $node,  $element,   $styles,    null,   null,           null),
+             'strong'    => array('Property',    null,   null,       $styles,    null,   'bold',         true),
+             'em'        => array('Property',    null,   null,       $styles,    null,   'italic',       true),

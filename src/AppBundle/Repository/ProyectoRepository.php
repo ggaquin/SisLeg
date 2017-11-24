@@ -3,6 +3,7 @@
 
 namespace AppBundle\Repository;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Query\ResultSetMapping;
 
 class ProyectoRepository extends EntityRepository{
 	
@@ -123,5 +124,21 @@ class ProyectoRepository extends EntityRepository{
 			-> where($qb->expr()->eq('p.id', '?1'))
 			-> setParameter(1, $proyecto->getId());
 		return $qb->getQuery()->getResult();
+	}
+	
+	public function traerProyectoParaImpresion($idProyecto)
+	{
+		$rsm = new ResultSetMapping();
+		$rsm->addScalarResult('textoProyecto', 'textoProyecto');
+		$rsm->addScalarResult('autor', 'autor');
+		$rsm->addScalarResult('bloque', 'bloque');
+		
+		
+		
+		$query = $this -> getEntityManager()
+					   -> createNativeQuery('call conformarProyecto(:idProyecto)',$rsm)
+					   -> setParameter('idProyecto',$idProyecto);
+		
+		return $query->getResult();
 	}
 }

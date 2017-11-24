@@ -48,10 +48,10 @@ class RestSesionController extends FOSRestController{
     	if ($criterio=="actuales"){
     		$fecha=new \DateTime('now');
     		$año = substr($fecha->format("Y"),2,2);    		
-    		$sesiones=$sesionReposiory->findBy(array('periodo' => $año));
+    		$sesiones=$sesionReposiory->findBy(array('periodo' => $año),array('fecha'=>'DESC'));
     	}
     	else
-    		$sesiones=$sesionReposiory->findAll();
+    		$sesiones=$sesionReposiory->findBy(array(),array('fecha'=>'DESC'));
     	
     	$resutado=[];
     	foreach ($sesiones as $sesion){
@@ -455,10 +455,10 @@ class RestSesionController extends FOSRestController{
 	    	if($aplicaNotificacion=="true" && $tipoRedaccion!="basico"){
 	    		
 	    		$idOficinaComisiones=$this->getParameter('id_comisiones');
-	    		$idMesaEntradas=$this->getParameter('id_mesa_entradas');
+	    		//$idMesaEntradas=$this->getParameter('id_mesa_entradas');
 	    		$oficinaNotificacion=$oficinaRepository->find($destinoNotificacion);
 	    		$oficinaComisiones=$oficinaRepository->find($idOficinaComisiones);
-	    		$oficinaMesaEntradas=$oficinaRepository->find($idMesaEntradas);
+	    		//$oficinaMesaEntradas=$oficinaRepository->find($idMesaEntradas);
 	    		$comision=$comisionRepository->find($comisionReserva);
 	    		
 	    		//cambio de oficina actual
@@ -468,7 +468,7 @@ class RestSesionController extends FOSRestController{
 	    		$remitoExterno=new Remito();
 	    		$remitoExterno->setAnulado(false);
 	    		$remitoExterno->setDestino($oficinaNotificacion);
-	    		$remitoExterno->setOrigen($oficinaMesaEntradas);
+	    		$remitoExterno->setOrigen($usuario->getUsuario()->getRol()->getOficina());
 	    		$remitoExterno->setFechaCreacion(new \DateTime('now'));
 	    		$remitoExterno->setUsuarioCreacion($usuario->getUsuario());
 	    		
