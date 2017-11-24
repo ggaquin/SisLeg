@@ -14,9 +14,11 @@ class ImpresionServicio
 {
    
    private $em;
+   private $tempDir="";
 
-    public function __construct(EntityManager $em) {
+    public function __construct(EntityManager $em,$rootDir) {
             $this->em=$em;
+            $this->tempDir=$rootDir.'/../web/tmp';
     }
     
     public function traerParametrosCaratula($idExpediente)
@@ -434,7 +436,7 @@ class ImpresionServicio
     {
     	$objWriter = IOFactory::createWriter($word, 'Word2007');
     	$fileName = 'Orden del Dia '.$fecha.'.docx';
-    	$directorioTemporal=sys_get_temp_dir();
+    	$directorioTemporal=$this->tempDir;//sys_get_temp_dir();
     	$uniqid=uniqid();
     	mkdir($directorioTemporal.'/OD-'.$uniqid);
     	$temp_file = tempnam($directorioTemporal.'/OD-'.$uniqid, $fileName);
@@ -453,7 +455,7 @@ class ImpresionServicio
     {
     	$objWriter = IOFactory::createWriter($word, 'Word2007');
     	$fileName = 'Dictamen_Expediente_'.$expediente.'_'.$comisiones.'_'.$fecha.'.docx';
-    	$directorioTemporal=sys_get_temp_dir();
+    	$directorioTemporal=$this->tempDir;//sys_get_temp_dir();
     	$uniqid=uniqid();
     	mkdir($directorioTemporal.'/DICTAMEN-'.$uniqid);
     	$temp_file = tempnam($directorioTemporal.'/DICTAMEN-'.$uniqid, $fileName);
@@ -472,7 +474,7 @@ class ImpresionServicio
     {
     	$objWriter = IOFactory::createWriter($word, 'Word2007');
     	$fileName = 'Sancion_'.$numeroSancion.'_Expediente_'.$expediente.'_'.$fecha.'.docx';
-    	$directorioTemporal=sys_get_temp_dir();
+    	$directorioTemporal=$this->tempDir;//sys_get_temp_dir();
     	$uniqid=uniqid();
     	mkdir($directorioTemporal.'/SANCION-'.$uniqid);
     	$temp_file = tempnam($directorioTemporal.'/SANCION-'.$uniqid, $fileName);
@@ -492,7 +494,7 @@ class ImpresionServicio
     {
     	$objWriter = IOFactory::createWriter($word, 'Word2007');
     	$fileName = 'Proyecto'.'_'.$autor.'_'.$fecha.'.docx';
-    	$directorioTemporal=sys_get_temp_dir();
+    	$directorioTemporal=$this->tempDir;//sys_get_temp_dir();
     	$uniqid=uniqid();
     	mkdir($directorioTemporal.'/PROYECTO-'.$uniqid);
     	$temp_file = tempnam($directorioTemporal.'/PROYECTO-'.$uniqid, $fileName);
@@ -512,7 +514,7 @@ class ImpresionServicio
     {
     	$objWriter = IOFactory::createWriter($word, 'Word2007');
     	$fileName = 'Expediente'.'_'.$expediente.'_'.$fecha.'.docx';
-    	$directorioTemporal=sys_get_temp_dir();
+    	$directorioTemporal=$this->tempDir;//sys_get_temp_dir();
     	$uniqid=uniqid();
     	mkdir($directorioTemporal.'/EXPEDIENTE-'.$uniqid);
     	$temp_file = tempnam($directorioTemporal.'/EXPEDIENTE-'.$uniqid, $fileName);

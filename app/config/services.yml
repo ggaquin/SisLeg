@@ -15,7 +15,7 @@ services:
         arguments: ["@security.password_encoder"]
     impresion_servicio:
         class: AppBundle\Services\ImpresionServicio
-        arguments: ["@doctrine.orm.entity_manager"]
+        arguments: ["@doctrine.orm.entity_manager","%kernel.root_dir%" ]
     utilidades_servicio:
         class: AppBundle\Services\UtilServicio
         #arguments: ["@doctrine.orm.entity_manager"]
