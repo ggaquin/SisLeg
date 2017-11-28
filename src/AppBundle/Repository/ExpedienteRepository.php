@@ -423,6 +423,38 @@ class ExpedienteRepository extends EntityRepository{
 		
 		return $query->getResult();
 	}
+	
+	public function traerESinCuerpo($fechaDesde, $fechaHasta){
+		$rsm = new ResultSetMapping();
+		$rsm->addScalarResult('texto', 'texto', 'text');
+		
+		$query = $this-> getEntityManager()
+		-> createNativeQuery(
+				'call listadoESinCuerpo(:fechaDesde,:fechaHasta)',
+				$rsm)
+				-> setParameter('fechaDesde',$fechaDesde)
+				-> setParameter('fechaHasta',$fechaHasta);
+				
+				return $query->getResult();
+				
+	}
+	
+	public function traerDatosRemito($idRemito)
+	{
+		$rsm = new ResultSetMapping();
+		$rsm->addScalarResult('Destino', 'destino');
+		$rsm->addScalarResult('Numero', 'numero');
+		$rsm->addScalarResult('Pases', 'pases');
+		$rsm->addScalarResult('Informes', 'informes');
+		$rsm->addScalarResult('Notificaciones', 'notificaciones');
+		
+		$query = $this -> getEntityManager()
+					   -> createNativeQuery('call conformarRemito(:idRemito)',$rsm)
+					   -> setParameter('idRemito',$idRemito);
+		
+		return $query->getResult();
+	}
+	
 	/*
 	public function traerExpedienteParaImpresion($idExpediente)
 	{

@@ -261,14 +261,13 @@
 				});
 
 		    //-----------------------------------DESCARGA DEL REMITO----------------------------------------
-			/*
+			//BOTON IMPRESION REMITO
 			$("#registroRemitos > tbody").on('click','.btn-descargar',function(){
 				var data = tabla.row( $(this).parents('tr') ).data();
 				window.location.href='{{ app.request.getBaseURL() }}'+
-		        					 '/imprimir?tipoDocumento=proyecto&id='+
-		        					  data[ "id" ];
+		        					 '/imprimirRemito?&idRemito='+data[ "id" ];
 			});
-			*/
+			
 		   //-----------------------------------ANULACION REMITO--------------------------------------------
 			
 			//BOTON ANULACION DEL LISTADO DE REMITOS

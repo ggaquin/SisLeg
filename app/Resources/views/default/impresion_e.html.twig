@@ -1,0 +1,106 @@
+{% extends 'layout.html.twig' %}
+
+
+
+{% block stylesheets %}
+	{# parent() #}
+  	{% stylesheets '@css_datatables' %}
+      	<link rel="stylesheet" href="{{ asset_url }}" /></link>
+  	{% endstylesheets %}
+{% endblock %}
+
+{% block javascripts %}
+	{# parent() #}
+    {% javascripts '@js_datatables'%}
+        <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+{% endblock %}
+
+{% block body %}
+	
+	<style type="text/css">
+	
+  
+	</style>
+
+	<script type="text/javascript">
+
+		$(document).ready(function () {
+			
+			$('.campo-fecha').datetimepicker({
+    	    	locale: 'es',
+    	    	format:'DD/MM/YYYY',
+    	    	maxDate : 'now'
+    	    });
+
+    	    $("#btn-aceptar-Descargar").click(function(){
+
+        	    var fechaDesde=$("#fechaDesde").val();
+        	    var fechaHasta=$("#fechaHasta").val();
+
+        	    var validacion='';
+
+	            validacion+=((fechaDesde=='')?'<li>Debe indicar la fecha mínima fecha de ingreso a imprimir</li>':'');
+	            validacion+=((fechaHasta=='')?'<li>Debe indicar la fecha máxima fecha de ingreso a imprimir</li>':'');
+	            
+		        if (validacion.length>0) 
+				{
+					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+								validacion+'</ul>':'');
+					toastr.error(validacion);
+					return false;
+				}
+		        else{
+                	    window.location.href='{{ app.request.getBaseURL() }}'+
+        				 					 '/imprimirE?fechaDesde='+fechaDesde+'&fechaHasta='+fechaHasta;
+		        }
+        	});
+		});
+
+	</script>
+	
+	<section class="content">
+	  	<form role="form">
+	  		<div class="row">
+	  			<div class="col-md-6 col-md-offset-3">
+            		<h2>Listado E</h2>
+            		<br>
+                    <div class="panel panel-primary">
+                        <div class="panel-heading text-center"><strong>Período de impresión</strong></div>
+                        <div class="panel-body">
+        					<div class="row">
+                    			<div class="col-md-4 col-md-offset-2">
+                	    			<div class="form-group">
+						        		<label for="fechaDesde">Fecha Desde</label>
+						        		<input type= "text" class="form-control input-sm campo-fecha"   
+						        			   id="fechaDesde" name="fechaDesde"  placeholder="Desde">
+						        	</div>
+                				</div>
+                    			<div class="col-md-4">
+                	    			<div class="form-group">
+						        		<label for="fechaHasta">Fecha Hasta</label>
+						        		<input type= "text" class="form-control input-sm campo-fecha" 
+						        			   id="fechaHasta" name="fechaHasta"  placeholder="Hasta">
+						        	</div>
+                				</div>
+                			</div>
+        				</div>
+                        <div class="panel-footer">
+                            <div class="row">
+                	    		<div class="col-md-12">
+                	        		<div class="text-center">
+                		    			<div class="btn-group">
+                       			 			<button type="button" class="btn btn-primary" id="btn-aceptar-Descargar">Aceptar</button>
+                				        </div>
+                			        </div>
+                			    </div>
+                	    	</div>
+                        </div>
+                    </div>
+				</div>
+			</div>
+    	</form>
+	   	
+	</section>
+	
+{% endblock %}

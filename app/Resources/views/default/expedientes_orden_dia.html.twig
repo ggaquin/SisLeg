@@ -1329,9 +1329,9 @@
 				var plantilla = $("#modalPlantilla").find('textarea[name="texto-plantilla"]').val();
 				var validacion="";
 
-				validacion+=((plantilla.replace(/ /g,'').length==0)?'<li>La nueva plantilla no posee texto</li>':0);
+				validacion+=((plantilla.replace(/ /g,'').length==0)?'<li>La nueva plantilla no posee texto</li>':'');
 
-				validacion+=((caratula.length>1000)
+				validacion+=((plantilla.length>1000)
 						 	 ?'<li>El texto de la plantilla puede tener como máximo 1000 símbolos incluidos espacios y retornos de línea y formatos</li>':'');
 					
 					

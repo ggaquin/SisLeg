@@ -206,5 +206,5 @@ class SesionRepository extends EntityRepository{
 		
 		return $query->getResult();
 	}
-			
+				
 }

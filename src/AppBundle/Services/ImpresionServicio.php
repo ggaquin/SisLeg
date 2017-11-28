@@ -14,11 +14,11 @@ class ImpresionServicio
 {
    
    private $em;
-   private $tempDir="";
+  // private $tempDir="";
 
     public function __construct(EntityManager $em,$rootDir) {
             $this->em=$em;
-            $this->tempDir=$rootDir.'/../web/tmp';
+           // $this->tempDir=$rootDir.'/../web/tmp';
     }
     
     public function traerParametrosCaratula($idExpediente)
@@ -325,6 +325,237 @@ class ImpresionServicio
 		    		
     }
     
+    public function setHeaderRemito(\PhpOffice\PhpWord\Element\Section $page,$urlImagen,$tipo,$numero)
+    {
+    	$header=$page->addHeader();
+    	
+    	$fechaActual=new \DateTime('now');
+    	$fechaImpresion=$fechaActual->format('d/m/Y');
+    	$cellRowSpan = array('vMerge' => 'restart', 'indentation' => $this->getIdentation('none'));
+    	$cellRowContinue = array('vMerge' => 'continue', 'indentation' => $this->getIdentation('none'));
+      	
+    	$tablaEncabezado=$header->addTable();
+    	$filaEncabezado=$tablaEncabezado->addRow();
+    	$filaEncabezado->addCell(2000,$cellRowSpan)
+				       ->addImage($urlImagen,array('width' => 57, 'height' => 75,
+							    					'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER
+							    					)
+				    			  );
+    	$filaEncabezado->addCell(2200)->addText('H.C.D',array('name'=>'Times New Roman', 'size'=>16,
+    														  'color'=>'000000', 'bold'=>true),
+    													array('indentation' => $this->getIdentation('none'))
+    											);
+    	$filaEncabezado->addCell(3000)->addText('REMITO INTERNO',
+    											array('name'=>'Times New Roman', 'size'=>14,
+    												  'color'=>'000000', 'bold'=>true, 'underline'=>'single'),
+    											array('indentation' => $this->getIdentation('none'),
+    												  'alignment'=>Jc::CENTER)
+    			);
+    	$filaEncabezado->addCell(2000)->addText('FECHA: '.$fechaImpresion,
+    											array('name'=>'Times New Roman', 'size'=>10, 'bold'=>true,
+    												  'color'=>'000000'),
+    											array('indentation' => $this->getIdentation('none')));
+    	
+    	$filaEncabezado2=$tablaEncabezado->addRow();
+    	
+    	$filaEncabezado2->addCell(2000,$cellRowContinue);
+    	$filaEncabezado2->addCell(2200)->addText('Lomas de Zamora',
+    											 array('name'=>'Times New Roman', 'size'=>12,
+    												   'color'=>'000000', 'bold'=>true),
+    											  array('indentation' => $this->getIdentation('none'))
+    											);
+    	$filaEncabezado2->addCell(3000)->addText($tipo,
+    											 array('name'=>'Times New Roman', 'size'=>14,
+    												   'color'=>'000000'),
+								    			 array('indentation' => $this->getIdentation('none'),
+								    				'alignment'=>Jc::CENTER)
+    											 );
+    	$filaEncabezado2->addCell(2000)->addText('REMITO: '.$numero,
+    											  array('name'=>'Times New Roman', 'size'=>10, 'bold'=>true,
+    												    'color'=>'000000'),
+    											  array('indentation' => $this->getIdentation('none')));	
+    }
+    
+    public function setDatosRemito(\PhpOffice\PhpWord\PhpWord $phpWord,$pases, $informes, $notificaciones,
+    		$urlImagen, $destino,$usuario,$numero=1)
+    {
+    	
+//     	$fechaActual=new \DateTime('now');
+//     	$fechaImpresion=$fechaActual->format('d/m/Y');
+    	$tableStyle = array('cellMargin' => 0, 'cellMarginRight' => 0,
+    					    'cellMarginBottom' => 0, 'cellMarginLeft' => 30,
+    						'borderSize' => 6
+    						);
+    	
+    	$cellTextHeaderStyle= array('name'=>'Times New Roman', 'size'=>11, 'color'=>'000000', 'bold'=>true);
+    	$cellTextStyle = array('name'=>'Times New Roman', 'size'=>11, 'color'=>'000000', 'bold'=>false);
+    	
+    	$cellSettingsInitial = array('alignment'=>Jc::START, 'indentation' => $this->getIdentation('none'));
+    	$cellSettings = array('alignment'=>Jc::CENTER, 'indentation' => $this->getIdentation('none'));
+    	
+    	$page= $this->getPage($phpWord, 'A4');
+    	
+//     	$tablaEncabezado=$page->addTable();
+//     	$filaEncabezado=$tablaEncabezado->addRow();
+//     	$filaEncabezado->addCell(2000,$cellRowSpan)
+//     				   ->addImage($urlImagen,
+// 								  array('width' => 57, 'height' => 75,
+// 								        'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER
+// 								    	)
+//     							  );
+//     	$filaEncabezado->addCell(2200)->addText('H.C.D',array('name'=>'Times New Roman', 'size'=>16, 
+//     														  'color'=>'000000', 'bold'=>true),
+//     													array('indentation' => $this->getIdentation('none'))
+//     										   );
+//     	$filaEncabezado->addCell(3000)->addText('REMITO INTERNO',array('name'=>'Times New Roman', 'size'=>14,
+// 								    			'color'=>'000000', 'bold'=>true, 'underline'=>'single'),
+//     											array('indentation' => $this->getIdentation('none'))
+// 								    			);
+//     	$filaEncabezado->addCell(2000)->addText('FECHA: '.$fechaImpresion,array('name'=>'Times New Roman', 'size'=>10, 'bold'=>true,
+//     											'color'=>'000000'),
+//     											array('indentation' => $this->getIdentation('none')));	
+    	
+//     	$filaEncabezado2=$tablaEncabezado->addRow();
+//     	$filaEncabezado2->addCell(2000,$cellRowContinue);
+//     	$filaEncabezado2->addCell(2200)->addText('Lomas de Zamora',array('name'=>'Times New Roman', 'size'=>12,
+// 												    		            'color'=>'000000', 'bold'=>true),
+// 												    			         array('indentation' => $this->getIdentation('none'))
+// 												    			);
+//     	$filaEncabezado2->addCell(3000)->addText('',array('name'=>'Times New Roman', 'size'=>16,
+//     													  'color'=>'000000'));
+//     	$filaEncabezado2->addCell(2000)->addText('REMITO: '.$numero,array('name'=>'Times New Roman', 'size'=>10, 'bold'=>true,
+//     													  'color'=>'000000'),
+//     														array('indentation' => $this->getIdentation('none')));	
+    	
+    	$html='<p></p><h8><strong>DE HONORABLE CONSEJO DELIBERANTE A: </strong>'.strtoupper($destino).'</h8>';
+    	\PhpOffice\PhpWord\Shared\Html::addHtml($page, $html);
+    	$html='<h8>Remite lo Siguiente:</h8>';
+    	\PhpOffice\PhpWord\Shared\Html::addHtml($page, $html);
+    	
+    	$tablaPrincipal=$page->addTable();
+    	$rowPrincipal=$tablaPrincipal->addRow();
+    	$celda1=$rowPrincipal->addCell(5500);
+    	    	
+    	//pases
+    	$filasPase=explode(',', substr($pases, 0,-1));
+    	
+    	if(strlen($filasPase[0])>0){
+    		    	
+    		$html='<h7>Expedientes</h7>';
+    		\PhpOffice\PhpWord\Shared\Html::addHtml($celda1, $html);
+    		
+    		$tablaPases=$celda1->addTable($tableStyle);
+    		    		
+	    	$headerPase=$tablaPases->addRow();
+	    	$headerPase->addCell(2000)->addText('Expte. N°',$cellTextHeaderStyle,$cellSettingsInitial);
+	    	$headerPase->addCell(1000)->addText('Año',$cellTextHeaderStyle,$cellSettings);
+	    	$headerPase->addCell(1000)->addText('Letra',$cellTextHeaderStyle,$cellSettings);
+	    	$headerPase->addCell(1000)->addText('Folios',$cellTextHeaderStyle,$cellSettings);
+	    	$filasPase=explode(',', substr($pases, 0,-1));
+	    	
+	    	foreach ($filasPase as $fila){
+	    		$row=$tablaPases->addRow();
+	    		$camposFila=explode('|', $fila);
+	    		$esPrimerCampo=true;
+	    		foreach ($camposFila as $campo){
+	    			$cell=$row->addCell(1000);
+	    			if ($esPrimerCampo==true)
+	    				$cell->addText($campo,$cellTextStyle,$cellSettingsInitial);
+	    			else
+	    				$cell->addText($campo,$cellTextStyle,$cellSettings);
+	    			
+	    			$esPrimerCampo=false;
+	    		}
+	    	
+	    	}
+	    	
+	    	$html='<p></p>';
+	    	\PhpOffice\PhpWord\Shared\Html::addHtml($celda1, $html);
+    	}
+    	
+    	//informes
+    	$filasInforme=explode(',', substr($informes, 0,-1));
+    	
+    	if(strlen($filasInforme[0])>0){
+    		
+	    	$html='<h7>Pedidos de Informe</h7>';
+	    	\PhpOffice\PhpWord\Shared\Html::addHtml($celda1, $html);
+	    	
+	    	$tablaInformes=$celda1->addTable($tableStyle);
+	    	
+	    	$headerInformes=$tablaInformes->addRow();
+	    	$headerInformes->addCell(2000)->addText('Expte. N°',$cellTextHeaderStyle,$cellSettingsInitial);
+	    	$headerInformes->addCell(3000)->addText('Observacion',$cellTextHeaderStyle,$cellSettingsInitial);
+	    	
+	    	$filasInforme=explode(',', substr($informes, 0,-1));
+	    	foreach ($filasInforme as $fila){
+	    		$row=$tablaInformes->addRow();
+	    		$camposFila=explode('|', $fila);
+	    		foreach ($camposFila as $campo){
+	    			$cell=$row->addCell(1000);
+	    			$cell->addText($campo,$cellTextStyle,$cellSettingsInitial);
+	    		}
+	    		
+	    	}
+	    	
+	    	$html='<p></p>';
+	    	\PhpOffice\PhpWord\Shared\Html::addHtml($celda1, $html);
+    	}
+    	
+    	//notificaciones
+    	$filasNotificacion=explode(',', substr($notificaciones, 0,-1));
+    	
+    	if (strlen($filasNotificacion[0])>0){
+	    	$html='<h7>Notificaciones</h7>';
+	    	\PhpOffice\PhpWord\Shared\Html::addHtml($celda1, $html);
+	    	
+	    	$tablaNotificaciones=$celda1->addTable($tableStyle);
+	    	
+	    	$headerNotificaciones=$tablaNotificaciones->addRow();
+	    	$headerNotificaciones->addCell(2000)->addText('N° Sanción',$cellTextHeaderStyle,$cellSettingsInitial);
+	    	$headerNotificaciones->addCell(3000)->addText('Tipo',$cellTextHeaderStyle,$cellSettings);
+	    
+	    	foreach ($filasNotificacion as $fila){
+	    		$row=$tablaNotificaciones->addRow();
+	    		$camposFila=explode('|', $fila);
+	    		$esPrimerCampo=true;
+	    		foreach ($camposFila as $campo){
+	    			$cell=$row->addCell(1000);
+	    			if($esPrimerCampo==true)
+	    				$cell->addText($campo,$cellTextStyle,$cellSettingsInitial);
+	    			else
+	    				$cell->addText($campo,$cellTextStyle,$cellSettings);
+	    			
+	    			$esPrimerCampo=false;
+	    		}
+	    		
+	    	}
+    	}
+    	
+    	$celda2=$tablaPrincipal->addCell(3800);
+    	$html='<h7>Oficina Receptora</h7>';
+    	\PhpOffice\PhpWord\Shared\Html::addHtml($celda2, $html);
+    	$tablaFirmante=$celda2->addTable(20);
+    	$row1=$tablaFirmante->addRow();
+    	$row1->addCell(1200)->addText("FIRMA: ",$cellTextHeaderStyle,$cellSettingsInitial);
+    	$row1->addCell(2400)->addText(" _________________",$cellTextStyle,$cellSettingsInitial);
+    	$row2=$tablaFirmante->addRow();
+    	$row2->addCell(1200)->addText("LEG.: ",$cellTextHeaderStyle,$cellSettingsInitial);
+    	$row2->addCell(2400)->addText(" _________________",$cellTextStyle,$cellSettingsInitial);
+    	$row3=$tablaFirmante->addRow(); 
+    	$row3->addCell(1200)->addText("FECHA: ",$cellTextHeaderStyle,$cellSettingsInitial);
+    	$row3->addCell(2400)->addText(" ____/____/_______",$cellTextStyle,$cellSettingsInitial);
+    	
+    	$html='<p></p><h8><strong>MESA DE ENTRADAS, INTERVINO: </strong>'.strtoupper($usuario).'</h8>';
+    	\PhpOffice\PhpWord\Shared\Html::addHtml($page, $html);
+    	
+    	$page2=$phpWord->duplicateSection($page);
+    	$page=$this->setHeaderRemito($page, $urlImagen, 'ORIGINAL', $numero);
+    	$page2=$this->setHeaderRemito($page2, $urlImagen, 'COPIA', $numero);
+    	
+    	return $phpWord;
+    }
+    
     public function crearCaratulaExpediente(\PhpOffice\PhpWord\Element\Section $page,
     										$numero,$letra,$periodo,$caratula,$fecha,$origen)
     {
@@ -432,14 +663,14 @@ class ImpresionServicio
     	
     }
     
-    public function getArchivoOD(\PhpOffice\PhpWord\PhpWord $word,$fecha)
+    public function getArchivoOD(\PhpOffice\PhpWord\PhpWord $word,$fecha,$tipo,$nombreDocumento)
     {
     	$objWriter = IOFactory::createWriter($word, 'Word2007');
-    	$fileName = 'Orden del Dia '.$fecha.'.docx';
-    	$directorioTemporal=$this->tempDir;//sys_get_temp_dir();
+    	$fileName = $nombreDocumento.$fecha.'.docx';
+    	$directorioTemporal=sys_get_temp_dir();
     	$uniqid=uniqid();
-    	mkdir($directorioTemporal.'/OD-'.$uniqid);
-    	$temp_file = tempnam($directorioTemporal.'/OD-'.$uniqid, $fileName);
+    	mkdir($directorioTemporal.'/'.$tipo.'-'.$uniqid);
+    	$temp_file = tempnam($directorioTemporal.'/'.$tipo.'-'.$uniqid, $fileName);
     	
     	$objWriter->save($temp_file);
     	
@@ -455,7 +686,7 @@ class ImpresionServicio
     {
     	$objWriter = IOFactory::createWriter($word, 'Word2007');
     	$fileName = 'Dictamen_Expediente_'.$expediente.'_'.$comisiones.'_'.$fecha.'.docx';
-    	$directorioTemporal=$this->tempDir;//sys_get_temp_dir();
+    	$directorioTemporal=sys_get_temp_dir();
     	$uniqid=uniqid();
     	mkdir($directorioTemporal.'/DICTAMEN-'.$uniqid);
     	$temp_file = tempnam($directorioTemporal.'/DICTAMEN-'.$uniqid, $fileName);
@@ -474,7 +705,7 @@ class ImpresionServicio
     {
     	$objWriter = IOFactory::createWriter($word, 'Word2007');
     	$fileName = 'Sancion_'.$numeroSancion.'_Expediente_'.$expediente.'_'.$fecha.'.docx';
-    	$directorioTemporal=$this->tempDir;//sys_get_temp_dir();
+    	$directorioTemporal=sys_get_temp_dir();
     	$uniqid=uniqid();
     	mkdir($directorioTemporal.'/SANCION-'.$uniqid);
     	$temp_file = tempnam($directorioTemporal.'/SANCION-'.$uniqid, $fileName);
@@ -494,7 +725,7 @@ class ImpresionServicio
     {
     	$objWriter = IOFactory::createWriter($word, 'Word2007');
     	$fileName = 'Proyecto'.'_'.$autor.'_'.$fecha.'.docx';
-    	$directorioTemporal=$this->tempDir;//sys_get_temp_dir();
+    	$directorioTemporal=sys_get_temp_dir();
     	$uniqid=uniqid();
     	mkdir($directorioTemporal.'/PROYECTO-'.$uniqid);
     	$temp_file = tempnam($directorioTemporal.'/PROYECTO-'.$uniqid, $fileName);
@@ -514,10 +745,50 @@ class ImpresionServicio
     {
     	$objWriter = IOFactory::createWriter($word, 'Word2007');
     	$fileName = 'Expediente'.'_'.$expediente.'_'.$fecha.'.docx';
-    	$directorioTemporal=$this->tempDir;//sys_get_temp_dir();
+    	$directorioTemporal=sys_get_temp_dir();
     	$uniqid=uniqid();
     	mkdir($directorioTemporal.'/EXPEDIENTE-'.$uniqid);
     	$temp_file = tempnam($directorioTemporal.'/EXPEDIENTE-'.$uniqid, $fileName);
+    	
+    	$objWriter->save($temp_file);
+    	
+    	$response = new BinaryFileResponse($temp_file);
+    	$response->setContentDisposition(
+    			ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+    			$fileName
+    			);
+    	return $response;
+    	
+    }
+    
+    public  function getArchivoListadoE(\PhpOffice\PhpWord\PhpWord $word, $fecha)
+    {
+    	$objWriter = IOFactory::createWriter($word, 'Word2007');
+    	$fileName = 'Listado_E_'.$fecha.'.docx';
+    	$directorioTemporal=sys_get_temp_dir();
+    	$uniqid=uniqid();
+    	mkdir($directorioTemporal.'/E-'.$uniqid);
+    	$temp_file = tempnam($directorioTemporal.'/E-'.$uniqid, $fileName);
+    	
+    	$objWriter->save($temp_file);
+    	
+    	$response = new BinaryFileResponse($temp_file);
+    	$response->setContentDisposition(
+    			ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+    			$fileName
+    			);
+    	return $response;
+    	
+    }
+    
+    public  function getArchivoRemito(\PhpOffice\PhpWord\PhpWord $word, $fecha, $numeroRemito)
+    {
+    	$objWriter = IOFactory::createWriter($word, 'Word2007');
+    	$fileName = 'Remito_'.$numeroRemito.'_'.$fecha.'.docx';
+    	$directorioTemporal=sys_get_temp_dir();
+    	$uniqid=uniqid();
+    	mkdir($directorioTemporal.'/Remito-'.$uniqid);
+    	$temp_file = tempnam($directorioTemporal.'/Remito'.$uniqid, $fileName);
     	
     	$objWriter->save($temp_file);
     	

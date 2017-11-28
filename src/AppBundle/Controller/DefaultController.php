@@ -18,6 +18,7 @@ use AppBundle\Entity\Sesion;
 use AppBundle\Entity\TipoExpedienteSesion;
 use AppBundle\Entity\TipoSesion;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use AppBundle\Services\ImpresionServicio;
 
 
 class DefaultController extends Controller
@@ -135,19 +136,6 @@ class DefaultController extends Controller
     		
     }
     
-    /**
-     * @Route("/cambioClave", name="cambioClave")
-     * @Method("POST")
-     *
-    public function cambioClaveAction(Request $request)
-    {  
-    	$mail=$request->request->get("mail");
-    	
-       
-    	return $this->render('security/change_password.html.twig');
-
-    }*/
-
     /**
      * @Route("/", name="homepage")
      */
@@ -307,6 +295,15 @@ class DefaultController extends Controller
     			'tiposProyecto'=>$tiposProyecto, 'comisiones'=>$comisiones,
     			'oficinas'=>$oficinas, 
     	));
+    }
+    
+    /**
+     * @Route("/impresionE", name="impresionE")
+     */
+    public function impresionEAction(Request $request)
+    {
+    	return $this->render('default/impresion_e.html.twig',array(
+    						 'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR));
     }
     
     /**
@@ -831,12 +828,19 @@ class DefaultController extends Controller
     public function imprimirOrdenDelDiaAction(Request $request){
     	
     	$idSesion = $request->query->get('idSesion');
+    	$tipo = $request->query->get('tipo');
+    	
     	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
     	$sesion=$sesionRepository->find($idSesion);
     	$tipoSesion=$sesion->getTipoSesion()->getTipoSesion();
     	$tipoExpedienteSesionRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpedienteSesion');
-    	$tiposExpedientesSesion=$tipoExpedienteSesionRepository->findAll();
     	$servicioImpresion=$this->get('impresion_servicio');
+    	$tiposExpedientesSesion=[];
+    	
+    	if ($tipo=='OD')
+    		$tiposExpedientesSesion=$tipoExpedienteSesionRepository->findAll();
+    	else 
+    		$tiposExpedientesSesion=$tipoExpedienteSesionRepository->findBy(array('letra'=>'U'));
     	
     	//fecha de la sesion
     	$meses = array("Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre");
@@ -852,10 +856,11 @@ class DefaultController extends Controller
      	$page=$servicioImpresion->getPage($word,'Legal');
      	$page=$servicioImpresion->writeHTMLToPage('<p></p><p></p><p></p>', $page);
      	$page=$servicioImpresion->addImageToPage($base.'/document_bootstrap/portada_orden_dia.png', $page);
+     	$nombreDocumento=(($tipo=='OD')?'Orden del Día':'Último Momento');
      	$html='<p></p><p></p><p></p><h1><strong>SESIÓN '.(($tipoSesion=='Mayores Contribuyentes')?'DE ':'').
      		  strtoupper($tipoSesion	).' A CELEBRARSE EL DÍA '.
      		  strtoupper($fecha).'</strong></h1><p></p><p></p><p></p><p></p><h2><strong>'.
-     		  'ORDEN DEL DÍA</strong></h2>';
+     		  strtoupper($nombreDocumento).'</strong></h2>';
      	$page=$servicioImpresion->writeHTMLToPage($html, $page,1);
      
      	
@@ -863,23 +868,29 @@ class DefaultController extends Controller
      	$page = $servicioImpresion->getPage($word,'Legal');
      	//encabezado de primer página
      	$page=$servicioImpresion->setHeader($page, $base.'/document_bootstrap/escudopng2_mini.png', 
-     										  'HCD Lomas de Zamora - Orden del Día', 
+     										  'HCD Lomas de Zamora - '.$nombreDocumento, 
      										  'Sesión: '.$fecha);
           	 
-     	//encabezado de comunicaciones de la presidencia
-     	$html='<h3><strong>I) COMUNICACIONES DE PRESIDENCIA</strong></h3><p></p><p></p><p></p>';
-     	//encabezado de versiones taquigráficas
-     	$html.='<h3><strong>II) VERSIONES TAQUIGRÁFICAS</strong></h3>';
-     	//contenido de versiones taquigráficas
-     	$content=$sesionRepository->findVersionesTaquigraficasBySesion($idSesion);
-     	$html.=$content[0]["versiones"];
-     	$page=$servicioImpresion->writeHTMLToPage($html, $page,1);
-          	
+     	if ($tipo=='OD'){
+     		
+	     	//encabezado de comunicaciones de la presidencia
+	     	$html='<h3><strong>I) COMUNICACIONES DE PRESIDENCIA</strong></h3><p></p><p></p><p></p>';
+	     	//encabezado de versiones taquigráficas
+	     	$html.='<h3><strong>II) VERSIONES TAQUIGRÁFICAS</strong></h3>';
+	     	//contenido de versiones taquigráficas
+	     	$content=$sesionRepository->findVersionesTaquigraficasBySesion($idSesion);
+	     	$html.=$content[0]["versiones"];
+	     	$page=$servicioImpresion->writeHTMLToPage($html, $page,1);
+     	}
+	     	
      	$apartadoInicial=true;
      				
-     	//repote para cada apetado de la orden del día
+     	//reporte para cada apetado de la orden del día
      	foreach ($tiposExpedientesSesion as $tipoExpedienteSesion){
-     							   	
+     				
+     		if ($tipo=='OD' && $tipoExpedienteSesion->getLetra()=='U')
+     			continue;
+     		
      		$content=$sesionRepository->findOrdenDiaBySesionYApartado($idSesion, $tipoExpedienteSesion->getId());
      		$html="";
      		
@@ -896,7 +907,7 @@ class DefaultController extends Controller
      			$page=$servicioImpresion->setFooter($page, $textoFooter);
      			
      			//texto del apartado
-     			if ($apartadoInicial==true){
+     			if ($apartadoInicial==true && $tipo=='OD'){
      				$html='<h3><strong>IV) ASUNTOS ENTRADOS</strong></h3>';
      				$apartadoInicial=false;
      			}
@@ -908,7 +919,7 @@ class DefaultController extends Controller
      		}			   	
      	}
          	     	
-    	return $servicioImpresion->getArchivoOD($word, $fecha);
+     	return $servicioImpresion->getArchivoOD($word, $fecha, $tipo, $nombreDocumento);
     }
     
     /**
@@ -1170,18 +1181,92 @@ class DefaultController extends Controller
 	    	$page2=$servicioImpresion->writeHTMLToPage($textoProyecto, $page2);
     	}
     	
-    	
-//     	$html.=($content[0]["textoProyecto"]);
-//     	$page=$servicioImpresion->writeHTMLToPage($html, $page);
-//     	$autor=$content[0]["autor"];
-//     	$bloque=$content[0]["bloque"];
-//     	$page=$servicioImpresion->addsignatureProyecto($page, $autor,$bloque);
-    	
     	$expediente=$numero.'_'.$letra.'_'.$periodo;
     	
     	return  $servicioImpresion->getArchivoExpediente($word, $fecha, $expediente);
     	
     }
+    
+    /**
+     * @Route("/imprimirE")
+     */
+    public function immprimirEAction(Request $request)
+    {	
+    	$fechaDesde= $request->query->get('fechaDesde');
+    	$fechaHasta= $request->query->get('fechaHasta');
+    	
+    	$format = 'd/m/Y H:i:s';
+    	$fechaDesdeAsDate= \DateTime::createFromFormat($format, $fechaDesde.' 00:00:00');
+    	$fechaHastaAsDate= \DateTime::createFromFormat($format, $fechaHasta.' 23:59:59');
+    	
+	    $expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+	    $servicioImpresion=$this->get('impresion_servicio');
+	    
+	    $meses = array("Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre");
+	    $fechaActual=new \DateTime('now');
+	    $fecha=$fechaActual->format('d')." de ".$meses[$fechaActual->format('n')-1].
+	    " de ".$fechaActual->format('Y') ;
+	    
+	    //url base
+	    $base=$request->getSchemeAndHttpHost().$request->getBasePath();
+	    
+	    //crea el word
+	    $word = $servicioImpresion->getTemplateOD();
+	    $page= $servicioImpresion->getPage($word, 'Legal');
+	    $page= $servicioImpresion->setHeader($page,  $base.'/document_bootstrap/escudopng2_mini.png',
+	    													'HCD Lomas de Zamora - Listado E',
+	    												    'Fecha Impresión: '.$fecha);
+	    
+	    $content=$expedienteRepository->traerESinCuerpo($fechaDesdeAsDate,$fechaHastaAsDate);
+	    $texto=$content[0]["texto"];
+	    $html='<h3><strong>Listado E</strong></h3><p></p>';
+	    $html.='<h5>Ingresos del '.$fechaDesde.' al '.$fechaHasta.'</h5>';
+	    $page=$servicioImpresion->writeHTMLToPage($html, $page);
+	    $page=$servicioImpresion->writeHTMLToPage($texto, $page);
+	   	    
+	    return  $servicioImpresion->getArchivoListadoE($word, $fecha);
+	    	
+	}
+	
+	/**
+	 * @Route("/imprimirRemito")
+	 */
+	public function immprimirRemitoAction(Request $request)
+	{
+		$idRemito= $request->query->get('idRemito');
+		$usuario=$this->getUser();
+		
+		$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+		$servicioImpresion=$this->get('impresion_servicio');
+		
+		$meses = array("Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre");
+		$fechaActual=new \DateTime('now');
+		$fecha=$fechaActual->format('d')." de ".$meses[$fechaActual->format('n')-1].
+		" de ".$fechaActual->format('Y') ;
+		
+		//url base
+		$base=$request->getSchemeAndHttpHost().$request->getBasePath();
+		$urlImagen=$base. '/document_bootstrap/escudo2_LZ.png';
+		
+		//crea el word
+		$word = $servicioImpresion->getTemplateOD();
+		//$page= $servicioImpresion->getPage($word, 'A4');
+		
+		$content=$expedienteRepository->traerDatosRemito($idRemito);//($idRemito);
+		$destino=$content[0]["destino"];
+		$numero=$content[0]["numero"];
+		$pases=$content[0]["pases"];
+		$informes=$content[0]["informes"];
+		$notificaciones=$content[0]["notificaciones"];
+		
+		$word=$servicioImpresion->setDatosRemito($word, $pases, $informes, $notificaciones,
+												 $urlImagen, $destino, $usuario->getNombreCompleto(),
+												 $numero);
+		
+// 		$word->duplicateSection($page);
+		return  $servicioImpresion->getArchivoRemito($word, $fecha, 1);
+		
+	}
     
 }
 

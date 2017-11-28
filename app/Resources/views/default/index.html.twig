@@ -21,7 +21,7 @@
         function cargarMenuConParametro(url,parametroNombre, parametroValor){
         	$("#contenidoUsuario").load('{{ app.request.getBaseURL() }}'+ url +'?'+parametroNombre+'='+parametroValor);
 		} 
-
+        
         function obtenerRecurso(url) {
         	  var win = window.open(url, '_blank');
         	  win.focus();
@@ -317,11 +317,13 @@
                       <li class="divider"></li>
                      
                       	<li><a href="#" onclick="cargarMenu('/expedientes')"><i class="fa fa-minus"></i>Gestión de Expedientes</a></li>
+                      	
+                      	<li><a href="#" onclick="cargarMenu('/impresionE')"><i class="fa fa-minus"></i>Listado E</a></li>
           
                       	<li><a href="#" onclick="cargarMenu('/movimientos')"><i class="fa fa-minus"></i>Movimientos</a></li>
            
-                      	<li><a href="#" onclick="cargarMenu('/proyectos')"><i class="fa fa-file-text"></i><span>Proyectos</span></a></li>
-                  
+                      	<li><a href="#" onclick="cargarMenu('/proyectos')"><i class="fa fa-minus"></i><span>Proyectos</span></a></li>
+                                        
                     </ul>
                   </li>
               {% endif %}

@@ -19,7 +19,10 @@ INSERT INTO `menuItem` (`idMenu`, `menuItem`, `abreviacion`)
 VALUES ('1', 'Quitar Ultimo Momento', 'EXP_ULT_MOM');
 INSERT INTO `menuItem` (`idMenu`, `menuItem`, `abreviacion`) 
 VALUES ('6', 'Quitar Ultimo Momento', 'DIC_ULT_MOM');
+INSERT INTO `menuItem` (`idMenu`, `menuItem`, `abreviacion`) 
+VALUES ('9', 'Descargar Ultimo Momento', 'SES_UM_DOWNLOAD');
 
+UPDATE `menuItem` SET `menuItem`='Imprimir Remito' WHERE `idMenuItem`='24';
 
 INSERT INTO `rol_menuItem` (`idRol`, `idMenuItem`) VALUES ('4', '61');
 INSERT INTO `rol_menuItem` (`idRol`, `idMenuItem`) VALUES ('4', '62');
@@ -29,6 +32,10 @@ INSERT INTO `rol_menuItem` (`idRol`, `idMenuItem`) VALUES ('5', '63');
 INSERT INTO `rol_menuItem` (`idRol`, `idMenuItem`) VALUES ('5', '39');
 INSERT INTO `rol_menuItem` (`idRol`, `idMenuItem`) VALUES ('6', '41');
 INSERT INTO `rol_menuItem` (`idRol`, `idMenuItem`) VALUES ('6', '63');
+INSERT INTO `rol_menuItem` (`idRol`, `idMenuItem`) VALUES ('2', '64');
+INSERT INTO `rol_menuItem` (`idRol`, `idMenuItem`) VALUES ('4', '64');
+INSERT INTO `rol_menuItem` (`idRol`, `idMenuItem`) VALUES ('6', '64');
+
 
 
 

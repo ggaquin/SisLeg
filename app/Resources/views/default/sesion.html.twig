@@ -27,6 +27,35 @@
 
 	</style>
 	<script type="text/javascript">
+
+		function descargarArchivo(idSesion,tipo){
+
+			waitingDialog.show('Por favor espere, generando orden del día ...');
+	        var urlToSend='{{ app.request.getBaseURL() }}/imprimirOrdenDelDia?idSesion='
+		        										  +idSesion+'&tipo='+tipo;
+
+	        var req = new XMLHttpRequest();
+	        req.open("GET", urlToSend, true);
+	        req.responseType = "blob";
+	        req.onload = function (event) { 
+		        
+		        if (event.currentTarget.status==200){
+		        	var blob = req.response;
+		            var	content=req.getResponseHeader("Content-Disposition").replace(/"/g,'').split(";");
+		           	var content= content[1].split("=");
+		            var fileName = content[1].trim();
+		            var link=document.createElement('a');
+		            link.href=window.URL.createObjectURL(blob);
+		            link.download=fileName;
+		            link.click();
+	        	}
+	        	else
+	        		toastr.error('No se pudo descargar el archivo');
+
+		        waitingDialog.hide();
+		    };
+	        req.send();
+		}
 	
 		$(document).ready(function () {
 			
@@ -71,7 +100,7 @@
 									            "render": function(data, type, row){
 
 										            var html="<div class='btn-group'>";
-        									            debugger;	 
+        									           	 
         									        if (row.tiene_orden_del_dia==false){
 														
         									        	if ('{{ 'SES_EDIT' in app.user.listaPermisos }}' && 
@@ -102,16 +131,27 @@
 
 															if ('{{ 'SES_OD_DOWNLOAD' in app.user.listaPermisos }}')	
             							            	 		html+="<button type='button'  title='Descargar Orden del Día' "+
-            					            	 		 		  		  "class='btn btn-info btn-xs btn-descargar'>"+
+            					            	 		 		  		  "class='btn btn-info btn-xs btn-descargar-OD'>OD "+
             					            	 		 		  		  "<span class='glyphicon glyphicon-save-file'></span>"+
             					            	 		 		  	  "</button>";
 
-															if(row.tiene_ultimo_momento==false && 
-															   '{{ 'SES_UM_NEW' in app.user.listaPermisos }}')
-           									            		html+="<button type='button'  title='Generar Último Momento' "+
-        						            	 		 		  "class='btn btn-primary btn-xs btn-generar-UM'>U  "+
-        						            	 		 		  "<span class='fa fa-cogs'></span>"+
-        						            	 		  		  "</button>";
+            					            	 		 	debugger;
+															if(row.tiene_ultimo_momento==false) {
+																
+																if ('{{ 'SES_UM_NEW' in app.user.listaPermisos }}')
+               									            		html+="<button type='button'  title='Generar Último Momento' "+
+            						            	 		 		  "class='btn btn-primary btn-xs btn-generar-UM'>U  "+
+            						            	 		 		  "<span class='fa fa-cogs'></span>"+
+            						            	 		  		  "</button>";
+															}
+            						            	 		else{
+
+            						            	 			if ('{{ 'SES_UM_DOWNLOAD' in app.user.listaPermisos }}')
+               									            		html+="<button type='button'  title='Descargar Último Momento' "+
+            						            	 		 		  "class='btn btn-info btn-xs btn-descargar-UM'>U "+
+            						            	 		 		  "<span class='glyphicon glyphicon-save-file'></span>"+
+            						            	 		  		  "</button>";
+            						            	 		}
    									            	}
 
 										            return html+"</div>";
@@ -189,12 +229,13 @@
 				$('#modalSesion').modal('show');
 			});
 
-		    $('#registroSesiones tbody').on( 'click', '.btn-descargar', function () {
+		    $('#registroSesiones tbody').on( 'click', '.btn-descargar-OD', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
-		        //window.location.href='/imprimirOrdenDelDia?idSesion='+data[ "id" ];
-	
+		        descargarArchivo(data[ "id" ],'OD');
+		    	/*
 				waitingDialog.show('Por favor espere, generando orden del día ...');
-		        var urlToSend='{{ app.request.getBaseURL() }}/imprimirOrdenDelDia?idSesion='+data[ "id" ];
+		        var urlToSend=' app.request.getBaseURL() /imprimirOrdenDelDia?idSesion='
+			        										  +data[ "id" ]+'&tipo=OD';
 
 		        var req = new XMLHttpRequest();
 		        req.open("GET", urlToSend, true);
@@ -217,7 +258,40 @@
     		        waitingDialog.hide();
 			    };
 		        req.send();
-				
+				*/
+		    } );
+
+		    $('#registroSesiones tbody').on( 'click', '.btn-descargar-UM', function () {
+		        var data = tabla.row( $(this).parents('tr') ).data();
+		        descargarArchivo(data[ "id" ],'UM');
+
+		        /*
+				waitingDialog.show('Por favor espere, generando orden del día ...');
+		        var urlToSend=' app.request.getBaseURL() /imprimirOrdenDelDia?idSesion='
+			        										  +data[ "id" ]+'&tipo=UM';
+
+		        var req = new XMLHttpRequest();
+		        req.open("GET", urlToSend, true);
+		        req.responseType = "blob";
+		        req.onload = function (event) { 
+    		        
+    		        if (event.currentTarget.status==200){
+    		        	var blob = req.response;
+    		            var	content=req.getResponseHeader("Content-Disposition").replace(/"/g,'').split(";");
+    		           	var content= content[1].split("=");
+    		            var fileName = content[1].trim();
+    		            var link=document.createElement('a');
+    		            link.href=window.URL.createObjectURL(blob);
+    		            link.download=fileName;
+    		            link.click();
+		        	}
+		        	else
+		        		toastr.error('No se pudo descargar el archivo');
+
+    		        waitingDialog.hide();
+			    };
+		        req.send();
+				*/
 		    } );
 
 		    $('#registroSesiones tbody').on( 'click', '.btn-bloquear', function () {
