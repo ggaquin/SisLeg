@@ -522,7 +522,8 @@ class RestController extends FOSRestController{
 			    							:""),
 			    				'sesion_id'=>(!is_null($versionTaquigrafica->getSesion())
 					    						?$versionTaquigrafica->getSesion()->getId()
-					    						:0)		
+					    						:0),
+    							'permite_edicion'=>$versionTaquigrafica->getPermiteEdicion()
 			    			);
     		$resultados[]=$resultado;
     		

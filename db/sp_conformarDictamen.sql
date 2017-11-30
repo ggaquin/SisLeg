@@ -25,43 +25,43 @@ BEGIN
 			dpm.idDictamen=_idDictamen or 
             dsm.idDictamen=_idDictamen;
 
-	select 	concat('<div style="text-align:center"><h1>Expediente: ',
-			_numeroExpediente,'</h1></div>'
-			'<div style="text-align:left"><strong>',
-			traerComisionesDictamen(_idDictamen),'</strong></div><i>',
-			formatParrafo(d.textoLibre),'</i>',
+	select 	concat('<h3><strong>Expediente: ',_numeroExpediente,'<\/strong><\/h3>',
+			traerComisionesDictamen(_idDictamen),'<em><p><\/p>',
+			formatParrafo(d.textoLibre),'<\/em><p><\/p>',
 			if(d.discriminador='revision' and incluyeVistosYConsiderandos=1,
-				concat('<div style="text-align:center"><h3><u>PROYECTO DE ',
-					   upper(tpp.tipoProyecto),'<\/u></h3></div>'),''),
+				concat('<h5><u>PROYECTO DE ', upper(tpp.tipoProyecto),'<\/u><\/h5>'),
+                ''),
 			case when d.discriminador='revision' and
 					  pr.incluyeVistosYConsiderandos=1
-                      then concat('<h4><u>Vistos<\/u></h4>',formatParrafo(pr.visto))
+                      then concat('<h7><u>VISTOS<\/u><\/h7>',formatParrafo(pr.visto))
 				 else ''
 			end,
             case when d.discriminador='revision' and
 					  pr.incluyeVistosYConsiderandos=1
-                      then concat('<h4><u>Considerandos<\/u></h4>',formatParrafo(pr.considerandos))
+                      then concat('<h7><u>CONSIDERANDOS<\/u><\/h7>',formatParrafo(pr.considerandos))
 				 else ''
 			end,
             if (d.discriminador='revision' and  pr.incluyeVistosYConsiderandos=1,
-				concat('<h4><u>Por todo ello:<\/u><\/h4>',
-						formatParrafo(concat('<p>SE SUGIERE LA SANCIÓN DE ',
-                               IF (tpd.idTipoProyecto=4,'EL','LA'),' SIGUIENTE:</p>'))),
+				concat('<h7><u>POR TODO ELLO:<\/u><\/h7>',
+						formatParrafo(concat('<p><strong>SE SUGIERE LA SANCIÓN DE ',
+                               IF (tpd.idTipoProyecto=4,'EL','LA'),' SIGUIENTE:<\/strong></p>'))),
 				''),
-            if (d.discriminador<>'basico','<div style="text-align:center"><h3><u>',''),
+            if (d.discriminador<>'basico','<h5><u>',''),
             case when d.discriminador='articulado' 
                       then upper(tpd.tipoProyecto)
 				 when d.discriminador='revision' 
                       then upper(tpp.tipoProyecto)
 				 else ''
 			end,
-			if (d.discriminador<>'basico','<\/u></h3></div>',''),
+			if (d.discriminador<>'basico','<\/u><\/h5>',''),
             case when d.discriminador='articulado'
 					  then formatArticulos(d.textoArticulado)
 				 when d.discriminador='revision'
 					  then formatArticulos(pr.articulos)
 				 else ''
-			end) as texto     
+			end) as texto,
+            _numeroExpediente as expediente,
+            traerComisionesExpedienteParaTitulo(_idDictamen) as comisiones
     from 	dictamen d
     left
     join	tipoProyecto tpd

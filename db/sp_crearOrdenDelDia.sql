@@ -4,6 +4,7 @@ BEGIN
 	declare _cantidadExpedientes int default 0;
 	declare _idEstado int default 6;
     set @idTipo:=0;
+    set @ultimoMomento:=0;
     
     start transaction;
     
@@ -21,6 +22,11 @@ BEGIN
        INDEX `expediente` (`añoExpediente` ASC, `numeroExpediente` ASC)
 	);
        
+    #Tipo último momento
+    
+    select idTipoExpedienteSesion into @ultimoMomento 
+    from tipoExpedienteSesion where letra='U';
+       
     #Mensajes del ejecutivo sin giro a comisiones
     
     select idTipoExpedienteSesion into @idTipo 
@@ -29,12 +35,10 @@ BEGIN
     INSERT INTO expedienteSesionTemporal
 		(`idTipoExpedienteSesion`,`idExpediente`,`texto`,`letra`,`añoExpediente`,`numeroExpediente`)
 	select 
-			@idTipo,e.idExpediente,
+			if(_tipo=0,@idTipo,@ultimoMomento),e.idExpediente,
             concat(upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
 				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',(e.periodo-2000),
-                   ')</strong></p>',e.caratula,
-                   '<div style="text-align:center">-----------------------------------------------------------------------<\/div>'
-				  ),
+                   ')<\/strong></h8>',e.caratula,'<p>',repeat('-',107),'<\/p>'),
 			'A',(e.periodo-2000), e.numeroExpediente
 	from  	expediente e
 	inner
@@ -52,14 +56,11 @@ BEGIN
     INSERT INTO expedienteSesionTemporal
 		(`idTipoExpedienteSesion`,`idExpediente`,`texto`,`letra`,`añoExpediente`,`numeroExpediente`)
 	select 
-			@idTipo,e.idExpediente,
+			if(_tipo=0,@idTipo,@ultimoMomento),e.idExpediente,
             concat(upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
 				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',(e.periodo-2000),
-                   ')</strong></p>',e.caratula,
-                   traerComisionesExpediente(e.idExpediente),
-				   '<div style="text-align:center">-----------------------------------------------------------------------<\/div>'
-				 ),
-            'B',(e.periodo-2000), e.numeroExpediente
+                   ')<\/strong><\/h8>',e.caratula,traerComisionesExpediente(e.idExpediente),
+				   '<p>',repeat('-',107),'<\/p>'),'B',(e.periodo-2000), e.numeroExpediente
 	from  	expediente e
 	inner
     join 	tipoExpediente te
@@ -76,14 +77,12 @@ BEGIN
      INSERT INTO expedienteSesionTemporal
 		(`idTipoExpedienteSesion`,`idExpediente`,`texto`,`letra`,`añoExpediente`,`numeroExpediente`)
     select 
-			@idTipo,e.idExpediente,
+			if(_tipo=0,@idTipo,@ultimoMomento),e.idExpediente,
             concat(upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
 				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',(e.periodo-2000),
-                   ' / ',b.bloque ,')</strong></p>',
-                   conformarProyecto(p.visto,p.considerandos,p.articulos,te.tipoExpediente,1,0),
-				   '<div style="text-align:center">-----------------------------------------------------------------------<\/div>'
-				 ),
-			'C',(e.periodo-2000), e.numeroExpediente
+                   ' / ',b.bloque ,')<\/strong><\/h8>',
+                   conformarProyecto(p.visto,p.considerandos,p.articulos,te.tipoExpediente,1,0,1),
+				   '<p>',repeat('-',107),'<\/p>'),'C',(e.periodo-2000), e.numeroExpediente
 	from  	expediente e
 	inner
     join 	tipoExpediente te
@@ -109,15 +108,13 @@ BEGIN
     INSERT INTO expedienteSesionTemporal
 		(`idTipoExpedienteSesion`,`idExpediente`,`texto`,`letra`,`añoExpediente`,`numeroExpediente`)
     select 
-			@idTipo,e.idExpediente,
+			if(_tipo=0,@idTipo,@ultimoMomento),e.idExpediente,
             concat(upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
 				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',(e.periodo-2000),
-                   ' / ',b.bloque ,')</strong></p>',
+                   ' / ',b.bloque ,')<\/strong><\/h8>',
                    traerComisionesExpediente(e.idExpediente),
-                   conformarProyecto(p.visto,p.considerandos,p.articulos,te.tipoExpediente,1,0),
-				   '<div style="text-align:center">-----------------------------------------------------------------------<\/div>'
-				  ),
-			'D',(e.periodo-2000), e.numeroExpediente
+                   conformarProyecto(p.visto,p.considerandos,p.articulos,te.tipoExpediente,1,0,1),
+				   '<p>',repeat('-',107),'<\/p>'),'D',(e.periodo-2000), e.numeroExpediente
 	from  	expediente e
 	inner
     join 	tipoExpediente te
@@ -131,7 +128,7 @@ BEGIN
     inner
     join	bloque b
     on		b.idBloque=pf.idBloque
-    where	e.idTipoExpediente=2 and 
+    where	e.idTipoExpediente in (2,7) and 
 			e.idSesion=_idSesion and
             e.ultimoMomento=_tipo;
 
@@ -144,21 +141,18 @@ BEGIN
 		(`idTipoExpedienteSesion`,`idExpediente`,`texto`,`letra`,`añoExpediente`,`numeroExpediente`)
     select 
 			@idTipo, e.idExpediente,
-            concat('<strong>',upper(replace(e.caratula,'<p>','<p style="text-align: justify;margin-top: 0;text-indent: 15em">')),
-				   '<p>CH</p><p>Δ<\/p>',
-				   '<p style="margin-top: 0;text-indent: 5em">Expediente N ° ',
-                   e.numeroExpediente,
-                   '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
-                   te.letra,'&nbsp;&nbsp;&nbsp;&nbsp;',
+            concat(upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
+				  '<\/strong><\/h10><h7>CH<\/h7><h7>Δ<\/h7>',
+				   '<h10><strong>Expediente N ° ', e.numeroExpediente,
+                   '            ',te.letra,'            ',
                    DATE_FORMAT(m.fechaRespuesta, "%d/%m/%Y"),
-                   '<\/p>',
+                   '<\/strong><\/h10>',
                    case when m.discriminador = 'notificacion' 
-							then concat('<p style="margin-top: 0;text-indent: 5em">',te.tipoExpediente,' ',e.numeroSancion,
-										' - ',c.comision,'.-<\/p>')
+							then concat('<h10><strong>',te.tipoExpediente,' ',e.numeroSancion,
+										' - ',c.comision,'.-<\/strong><\/h10>')
 							else ''
 					end,
-				   '</strong><div style="text-align:center">-----------------------------------------------------------------------<\/div>'),
-				   'CH',(e.periodo-2000), e.numeroExpediente
+				   '<p>',repeat('-',107),'<\/p>'),'CH',(e.periodo-2000), e.numeroExpediente
 	from  	expediente e
 	inner
     join 	tipoExpediente te
@@ -183,12 +177,10 @@ BEGIN
 	INSERT INTO expedienteSesionTemporal
 		(`idTipoExpedienteSesion`,`idExpediente`,`texto`,`letra`,`añoExpediente`,`numeroExpediente`)
 	select 
-			@idTipo, e.idExpediente,
+			if(_tipo=0,@idTipo,@ultimoMomento), e.idExpediente,
             concat(upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
 				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',(e.periodo-2000),
-                   ')</strong></p>',e.caratula,
-				   '<div style="text-align:center">-----------------------------------------------------------------------<\/div>'
-				  ),
+                   ')<\/strong><\/h8>',e.caratula,'<p>',repeat('-',107),'<\/p>'),
 			'E',(e.periodo-2000), e.numeroExpediente
 	from  	expediente e
 	inner
@@ -209,7 +201,7 @@ BEGIN
     join	expedienteComision ec
     on		d.idDictamen=ec.idDictamenMayoria
     where	ec.idSesion=_idSesion and
-            ec.ultimoMomento=_tipo	
+            d.ultimoMomento=_tipo	
     group
     by		d.idDictamen
     having	count(ec.idExpedienteComision)>1;
@@ -221,7 +213,7 @@ BEGIN
     join	expedienteComision ec
     on		d.idDictamen=ec.idDictamenPrimeraMinoria
     where	ec.idSesion=_idSesion and
-            ec.ultimoMomento=_tipo
+            d.ultimoMomento=_tipo
     group
     by		d.idDictamen
     having	count(ec.idExpedienteComision)>1;
@@ -233,7 +225,7 @@ BEGIN
     join	expedienteComision ec
     on		d.idDictamen=ec.idDictamenSegundaMinoria
     where	ec.idSesion=_idSesion and
-            ec.ultimoMomento=_tipo
+            d.ultimoMomento=_tipo
     group
     by		d.idDictamen
     having	count(ec.idExpedienteComision)>1;
@@ -245,23 +237,21 @@ BEGIN
     INSERT INTO expedienteSesionTemporal
 		(`idTipoExpedienteSesion`,`idExpediente`,`texto`,`letra`,`añoExpediente`,`numeroExpediente`)
     select 
-			tes.idTipoExpedienteSesion, e.idExpediente, 
+			if(_tipo=0,tes.idTipoExpedienteSesion,@ultimoMomento), e.idExpediente, 
             concat(upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
 				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',(e.periodo-2000),
 				   case when b.bloque is null then ''
 						else concat(' / ',b.bloque)
-				   end ,')</strong></p>',
+				   end ,')<\/strong><\/h8>',
 				   case when d.discriminador='basico' then
 							formatParrafo(d.textoLibre)
 					    when d.discriminador='articulado' then
 							conformarDictamenArticulado(d.textoLibre,d.textoArticulado,tpd.tipoProyecto)
 					    else
 							conformarProyecto(pr.visto,pr.considerandos,pr.articulos,
-											  tp.tipoProyecto,pr.incluyeVistosYConsiderandos,1)
+											  tp.tipoProyecto,pr.incluyeVistosYConsiderandos,1,1)
 				   end,
-                   '<div style="text-align:center">-----------------------------------------------------------------------<\/div>'
-				 ),
-			c.letraOrdenDelDia, (e.periodo-2000), e.numeroExpediente
+                   '<p>',repeat('-',107),'<\/p>'),c.letraOrdenDelDia, (e.periodo-2000), e.numeroExpediente
 	from  	expediente e
     inner
     join	tipoExpediente te
@@ -301,30 +291,28 @@ BEGIN
     on		d.idDictamen=dc.idDictamen
     where	ec.idSesion=_idSesion and 
 			dc.idDictamen is null and
-            ec.ultimoMomento=_tipo;
+            d.ultimoMomento=_tipo;
     
     #dictamenes por primera minoria
     
     INSERT INTO expedienteSesionTemporal
 		(`idTipoExpedienteSesion`,`idExpediente`,`texto`,`letra`,`añoExpediente`,`numeroExpediente`)
     select 
-			tes.idTipoExpedienteSesion, e.idExpediente, 
+			if(_tipo=0,tes.idTipoExpedienteSesion,@ultimoMomento), e.idExpediente, 
             concat(upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
 				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',(e.periodo-2000),
 				   case when b.bloque is null then ''
 						else concat(' / ',b.bloque)
-				   end ,')</strong></p>',
+				   end ,')<\/strong><\/h8>',
 				   case when d.discriminador='basico' then
 							formatParrafo(d.textoLibre)
 					    when d.discriminador='articulado' then
 							conformarDictamenArticulado(d.textoLibre,d.textoArticulado,tpd.tipoProyecto)
 					    else
 							conformarProyecto(pr.visto,pr.considerandos,pr.articulos,
-											  tp.tipoProyecto,pr.incluyeVistosYConsiderandos,1)
+											  tp.tipoProyecto,pr.incluyeVistosYConsiderandos,1,1)
 				   end,
-				   '<div style="text-align:center">-----------------------------------------------------------------------<\/div>'
-				 ),
-			c.letraOrdenDelDia, (e.periodo-2000), e.numeroExpediente
+				   '<p>',repeat('-',107),'<\/p>'),c.letraOrdenDelDia, (e.periodo-2000), e.numeroExpediente
 	from  	expediente e
     inner
     join	tipoExpediente te
@@ -364,30 +352,28 @@ BEGIN
     on		d.idDictamen=dc.idDictamen
     where	ec.idSesion=_idSesion and 
 			dc.idDictamen is null and
-            ec.ultimoMomento=_tipo;
+            d.ultimoMomento=_tipo;
     
      #dictamenes por segunda minoria
     
     INSERT INTO expedienteSesionTemporal
 		(`idTipoExpedienteSesion`,`idExpediente`,`texto`,`letra`,`añoExpediente`,`numeroExpediente`)
     select 
-			tes.idTipoExpedienteSesion, e.idExpediente, 
+			if(_tipo=0,tes.idTipoExpedienteSesion,@ultimoMomento), e.idExpediente, 
             concat(upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
 				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',(e.periodo-2000),
 				   case when b.bloque is null then ''
 						else concat(' / ',b.bloque)
-				   end ,')</strong></p>',
+				   end ,')<\/strong><\/h8>',
 				   case when d.discriminador='basico' then
 							formatParrafo(d.textoLibre)
 					    when d.discriminador='articulado' then
 							conformarDictamenArticulado(d.textoLibre,d.textoArticulado,tpd.tipoProyecto)
 					    else
 							conformarProyecto(pr.visto,pr.considerandos,pr.articulos,
-											  tp.tipoProyecto,pr.incluyeVistosYConsiderandos,1)
+											  tp.tipoProyecto,pr.incluyeVistosYConsiderandos,1,1)
 				   end,
-                   '<div style="text-align:center">-----------------------------------------------------------------------<\/div>'
-				 ),
-			c.letraOrdenDelDia, (e.periodo-2000), e.numeroExpediente
+                   '<p>',repeat('-',107),'<\/p>'),c.letraOrdenDelDia, (e.periodo-2000), e.numeroExpediente
 	from  	expediente e
     inner
     join	tipoExpediente te
@@ -427,7 +413,7 @@ BEGIN
     on		d.idDictamen=dc.idDictamen
     where	ec.idSesion=_idSesion and 
 			dc.idDictamen is null and
-            ec.ultimoMomento=_tipo;
+            d.ultimoMomento=_tipo;
     
 	#dictamenes conjuntos
     
@@ -439,12 +425,12 @@ BEGIN
 	INSERT INTO expedienteSesionTemporal
 		(`idTipoExpedienteSesion`,`idExpediente`,`texto`,`letra`,`añoExpediente`,`numeroExpediente`)
     select 
-			@idTipo, e.idExpediente, 
+			if(_tipo=0,@idTipo,@ultimoMomento), e.idExpediente, 
             concat(upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
 				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',(e.periodo-2000),
 				   case when b.bloque is null then ''
 						else concat(' / ',b.bloque)
-				   end ,')</strong></p>',
+				   end ,')<\/strong><\/h8>',
                    traerComisionesDictamen(d.idDictamen),
 				   case when d.discriminador='basico' then
 							formatParrafo(d.textoLibre)
@@ -452,10 +438,9 @@ BEGIN
 							conformarDictamenArticulado(d.textoLibre,d.textoArticulado,tpd.tipoProyecto)
 					    else
 							conformarProyecto(pr.visto,pr.considerandos,pr.articulos,
-											  tp.tipoProyecto,pr.incluyeVistosYConsiderandos,1)
+											  tp.tipoProyecto,pr.incluyeVistosYConsiderandos,1,1)
 				   end,
-                   '<div style="text-align:center">-----------------------------------------------------------------------<\/div>'
-				 ),'Z', (e.periodo-2000), e.numeroExpediente
+                   '<p>',repeat('-',107),'<\/p>'),'Z', (e.periodo-2000), e.numeroExpediente
 	from  	expediente e
     inner
     join	tipoExpediente te
@@ -488,7 +473,7 @@ BEGIN
     join	dictamenesConjuntos dc
     on		d.idDictamen=dc.idDictamen
     where	ec.idSesion=_idSesion and 
-            ec.ultimoMomento=_tipo
+            d.ultimoMomento=_tipo
     order   
     by		e.periodo, e.numeroExpediente;
     
@@ -497,12 +482,12 @@ BEGIN
 	INSERT INTO expedienteSesionTemporal
 		(`idTipoExpedienteSesion`,`idExpediente`,`texto`,`letra`,`añoExpediente`,`numeroExpediente`)
     select 
-			@idTipo, e.idExpediente, 
+			if(_tipo=0,@idTipo,@ultimoMomento), e.idExpediente, 
             concat(upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
 				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',(e.periodo-2000),
 				   case when b.bloque is null then ''
 						else concat(' / ',b.bloque)
-				   end ,')</strong></p>',
+				   end ,')<\/strong><\/h8>',
                    traerComisionesDictamen(d.idDictamen),
 				   case when d.discriminador='basico' then
 							formatParrafo(d.textoLibre)
@@ -510,10 +495,9 @@ BEGIN
 							conformarDictamenArticulado(d.textoLibre,d.textoArticulado,tpd.tipoProyecto)
 					    else
 							conformarProyecto(pr.visto,pr.considerandos,pr.articulos,
-											  tp.tipoProyecto,pr.incluyeVistosYConsiderandos,1)
+											  tp.tipoProyecto,pr.incluyeVistosYConsiderandos,1,1)
 				   end,
-				   '<div style="text-align:center">-----------------------------------------------------------------------<\/div>'
-				 ),'Z', (e.periodo-2000), e.numeroExpediente
+				   '<p>',repeat('-',107),'<\/p>'),'Z', (e.periodo-2000), e.numeroExpediente
 	from  	expediente e
     inner
     join	tipoExpediente te
@@ -546,7 +530,7 @@ BEGIN
     join	dictamenesConjuntos dc
     on		d.idDictamen=dc.idDictamen
     where	ec.idSesion=_idSesion and
-            ec.ultimoMomento=_tipo
+            d.ultimoMomento=_tipo
     order   
     by		e.periodo, e.numeroExpediente;
     
@@ -555,12 +539,12 @@ BEGIN
 	INSERT INTO expedienteSesionTemporal
 		(`idTipoExpedienteSesion`,`idExpediente`,`texto`,`letra`,`añoExpediente`,`numeroExpediente`)
     select 
-			@idTipo, e.idExpediente, 
+			if(_tipo=0,@idTipo,@ultimoMomento), e.idExpediente, 
             concat(upper(replace(replace(e.caratula,'<p>',''),'<\/p>','')),
 				   '(EXPTE. ',e.numeroExpediente,'-',te.letra,'-',(e.periodo-2000),
 				   case when b.bloque is null then ''
 						else concat(' / ',b.bloque)
-				   end ,')</strong></p>',
+				   end ,')<\/strong><\/h8>',
                    traerComisionesDictamen(d.idDictamen),
 				   case when d.discriminador='basico' then
 							formatParrafo(d.textoLibre)
@@ -568,10 +552,9 @@ BEGIN
 							conformarDictamenArticulado(d.textoLibre,d.textoArticulado,tpd.tipoProyecto)
 					    else
 							conformarProyecto(pr.visto,pr.considerandos,pr.articulos,
-											  tp.tipoProyecto,pr.incluyeVistosYConsiderandos,1)
+											  tp.tipoProyecto,pr.incluyeVistosYConsiderandos,1,1)
 				   end,
-                   '<div style="text-align:center">-----------------------------------------------------------------------<\/div>'
-				 ),'Z', (e.periodo-2000), e.numeroExpediente
+                   '<p>',repeat('-',107),'<\/p>'),'Z', (e.periodo-2000), e.numeroExpediente
 	from  	expediente e
     inner
     join	tipoExpediente te
@@ -604,7 +587,7 @@ BEGIN
     join	dictamenesConjuntos dc
     on		d.idDictamen=dc.idDictamen
     where	ec.idSesion=_idSesion and
-            ec.ultimoMomento=_tipo
+            d.ultimoMomento=_tipo
     order   
     by		e.periodo, e.numeroExpediente;
 
@@ -617,8 +600,8 @@ BEGIN
 			t.idTipoExpedienteSesion, 0,
             t.idExpediente, _idSesion, _idEstado,
             case when idTipoExpedienteSesion<>25 then
-						concat('<p><strong>',if(_tipo=1,'U',t.letra),') Δ.- ',t.texto)
-				 else texto
+						concat('<h8><strong>',if(_tipo=1,'U',t.letra),') Δ.- ',t.texto)
+				 else concat('<h10><strong>',t.texto)
 			end,0,0,0
 	from	(select distinct idTipoExpedienteSesion,idExpediente,
 							 letra,texto,añoExpediente,numeroExpediente
@@ -642,6 +625,7 @@ BEGIN
     
     update 	sesion
     set		tieneOrdenDelDia=1,
+			tieneUltimoMomento=_tipo,
 			cantidadExpedientes=_cantidadExpedientes
 	where 	idSesion=_idSesion;
     

@@ -232,6 +232,18 @@ class VersionTaquigrafica
 	//------------------------------Propiedades virtuales-----------------------------------------
 	
 	/**
+	 * Get permiteEdición
+	 *
+	 * @return boolean
+	 *
+	 * @VirtualProperty()
+	 */
+	public function getPermiteEdicion(){
+		
+		return (!is_null($this->sesion) && !$this->sesion->getTieneOrdenDelDia());
+	}
+	
+	/**
 	 * Get fechaCreacionFormateada
 	 * 
 	 * @return string

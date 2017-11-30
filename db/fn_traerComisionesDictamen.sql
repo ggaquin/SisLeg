@@ -3,15 +3,13 @@ BEGIN
 
 	declare comisiones text default '';
     
-    SELECT 	concat('<p>Comisiones:</p><ul><li>',group_concat(c.comision separator '</li><li>'),'</li></ul>')
+    SELECT 	concat('<h9><strong>',if(count(*)>1,'Comisiones','Comision'),'</strong></h9><ul><li>',
+				   group_concat(c.comision separator '</li><li>'),'</li></ul>')
     INTO	comisiones
     FROM 	dictamen as d
     LEFT
-    JOIN	expedienteComision_dictamenesMayoria dm
-    ON		d.idDictamen=dm.idDictamen
-    INNER
     JOIN	expedienteComision as ec
-    ON		dm.idExpedienteComision=ec.idExpedienteComision
+    ON		d.idDictamen=ec.idDictamenMayoria
     INNER
     JOIN	comision as c
     ON		c.idComision=ec.idComision
@@ -21,36 +19,34 @@ BEGIN
     
     if (comisiones='') then
 
-		SELECT 	concat('<p>Comisiones:</p><ul><li>',group_concat(c.comision separator '</li><li>'),'</li></ul>')
+		SELECT 	concat('<p>',if(count(*)>1,'Comisiones','Comision'),'</p><ul><li>',
+				group_concat(c.comision separator '</li><li>'),'</li></ul>')
 		INTO	comisiones
 		FROM 	dictamen as d
 		LEFT
-		JOIN	expedienteComision_dictamenesPrimeraMinoria dpm
-		ON		d.idDictamen=dpm.idDictamen
-		INNER
 		JOIN	expedienteComision as ec
-		ON		dpm.idExpedienteComision=ec.idExpedienteComision
+		ON		d.idDictamen=ec.idDictamenPrimeraMinoria
 		INNER
 		JOIN	comision as c
 		ON		c.idComision=ec.idComision
+        WHERE	d.idDictamen=_idDictamen
 		GROUP
 		BY		d.idDictamen;
 	end if;
     
     if (comisiones='') then
 
-		SELECT 	concat('<p>Comisiones:</p><ul><li>',group_concat(c.comision separator '</li><li>'),'</li></ul>')
+		SELECT 	concat('<p>',if(count(*)>1,'Comisiones','Comision'),'</p><ul><li>',
+				group_concat(c.comision separator '</li><li>'),'</li></ul>')
 		INTO	comisiones
 		FROM 	dictamen as d
 		LEFT
-		JOIN	expedienteComision_dictamenesSegundaMinoria dsm
-		ON		d.idDictamen=dsm.idDictamen
-		INNER
 		JOIN	expedienteComision as ec
-		ON		dsm.idExpedienteComision=ec.idExpedienteComision
+		ON		d.idDictamen=ec.idDictamenSegundaMinoria
 		INNER
 		JOIN	comision as c
 		ON		c.idComision=ec.idComision
+        WHERE	d.idDictamen=_idDictamen
 		GROUP
 		BY		d.idDictamen;
 	end if;

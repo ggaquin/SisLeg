@@ -103,14 +103,16 @@
 										            var html="<div class='btn-group'>";
 										           
     										            html+="<button type='button' title='Editar Versión Taquigráfica' "+
-    										            	  "class='btn btn-primary btn-xs btn-editar'><span class='glyphicon "+
-    										            	  "glyphicon-pencil'></span>"+
+    										            	  "class='btn btn-primary btn-xs btn-editar' "+
+    										            	  ((row.permite_edicion==false)?'disabled':'')+
+    										            	  " ><span class='glyphicon glyphicon-pencil'></span>"+
     									            		  "</button>";
     									            		  
     									            
     									            	html+="<button type='button'  class='btn btn-danger btn-xs btn-eliminar' "+
-    									            		  "title='Eliminar Version Taquigráfica'><span class='glyphicon "+
-    									            		  "glyphicon-erase'></span>"+
+    									            		  "title='Eliminar Version Taquigráfica' "+
+    									            		  ((row.permite_edicion==false)?'disabled':'')+
+    									            		  " ><span class='glyphicon glyphicon-erase'></span>"+
     									            		  "</button>";
     									            		  
 									            	return html+"</div>";

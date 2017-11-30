@@ -15,8 +15,7 @@ BEGIN
     INNER
     JOIN	estadoExpediente as ee
     ON		ee.idEstadoExpediente=e.idEstadoExpediente
-    WHERE	e.idExpediente=_idExpediente and
-			ee.idEstadoExpediente in (2,3)
+    WHERE	e.idExpediente=_idExpediente
 	GROUP
     BY		e.idExpediente;
 			
