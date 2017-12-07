@@ -10,22 +10,27 @@ use Doctrine\ORM\Mapping\JoinTable;
 /**
  * Sancion
  * 
- * @ORM\Table(name="sancion",  indexes={@ORM\Index(name="sancion_proyectoRevision_idx",columns={"idProyectoRevision"}),
- * 										   @ORM\Index(name="sancion_notificacion_idx", columns={"idNotificacion"}),
- * 										   @ORM\Index(name="sancion_tipoSancion_idx",columns={"idTiposancion"}),
- * 										   @ORM\Index(name="sancion_dictamen_idx",columns={"idDictamen"}),
- * 										   @ORM\Index(name="sancion_pase_idx",columns={"idPase"}),
- * 										   @ORM\Index(name="sancion_encabezadoRedaccion_idx",columns={"idEncabezadoRedaccion"}),
- * 										   @ORM\Index(name="sancion_pieRedaccion_idx",columns={"idPieRedaccion"})
+ * @ORM\Table(name="sancion",  indexes={@ORM\Index(name="sancion_encabezadoRedaccion_idx",columns={"idEncabezadoRedaccion"}),
+ * 										@ORM\Index(name="sancion_pieRedaccion_idx",columns={"idPieRedaccion"}),
+ * 										@ORM\Index(name="sancion_proyectoRevision_idx",columns={"idProyectoRevision"}),
+ * 									    @ORM\Index(name="sancion_tipoSancion_idx",columns={"idTiposancion"}),
+ * 									    @ORM\Index(name="sancion_dictamen_idx",columns={"idDictamen"}),
+ * 										@ORM\Index(name="sancion_pase_idx",columns={"idPase"})
  * 										})
- * @ORM\Entity
+ * 
+ * @ORM\Entity()
  * @ORM\InheritanceType("SINGLE_TABLE")
  * @ORM\DiscriminatorColumn(name="discriminador", type="string", length=17)
- * @ORM\DiscriminatorMap({"basica" = "AppBundle\Entity\Sancion", 
- *                        "articulado" = "AppBundle\Entity\SancionArticulada",
- *                        "revision" = "AppBundle\Entity\SancionRevisionProyecto"})
+ * @ORM\DiscriminatorMap({"basica" = "AppBundle\Entity\SancionBasica",
+ * 						  "articulado" = "AppBundle\Entity\SancionArticulada",
+ * 						  "revision" = "AppBundle\Entity\SancionRevisionProyecto"})
  */
-class Sancion
+
+// @ORM\Index(name="sancion_proyectoRevision_idx",columns={"idProyectoRevision"}),
+//  										   @ORM\Index(name="sancion_tipoSancion_idx",columns={"idTiposancion"}),
+//  										   @ORM\Index(name="sancion_dictamen_idx",columns={"idDictamen"}),
+// 										   @ORM\Index(name="sancion_pase_idx",columns={"idPase"}),
+abstract class Sancion
 {
     //------------------------------atributos de la clase-----------------------------------------
 
@@ -232,8 +237,6 @@ class Sancion
      * @return string
      * @VirtualProperty()
      */
-    public function getClaseSancion(){
-    	return "basico";
-    }
+    public abstract function getClaseSancion();
       
 }

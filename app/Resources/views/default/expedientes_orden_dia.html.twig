@@ -24,6 +24,9 @@
 		    max-width:1600px;
 		  }
 		}
+		
+		.select2-selection--multiple { max-height: 10rem; overflow-y: auto }
+		
 		.custom-modal{
 			height: 2000%!important;
 		}
@@ -101,20 +104,16 @@
            padding: 0 !important;
            margin: 0 !important;
         }
-           
-        .selConcejales{
-			height: 182px!important;
-		    max-height: 183px!important;
-		    overflow-y: auto!important;
+        #selOficinasDestino .select2.select2-container.select2-container--bootstrap.select2-container--below.select2-container--focus, .select2-selection.select2-selection--multiple{
+			height: 95px;
+		    max-height: 95px;
+		    overflow-y: auto;
 		}
-		.selComisiones{
-		    min-height: 120px!important;
-		    max-height: 121px!important;
-		    overflow-y: auto!important;
-		} 
+		
 		.bootstrap-primary-background{
 			background: #3c8dbc!important;
-		}    
+		} 
+		    
 	</style>
 	<script type="text/javascript">
 	
@@ -404,7 +403,7 @@
     				    articulos=data.texto_articulado; 
 					} 
 
-					//caso particular dictamen por revision
+					//caso particular sancion por revision
 					if (data[traduccionCampo[0]]=="revision"){
 						
 					    $("#vistos").html(data.vistos);
@@ -432,12 +431,19 @@
         					$("#poseeSancion").bootstrapToggle('off');
     					
 						$("#numeroSancion").val(data.numero_sancion);
-						$("#selDestinoNotificacion").val(data.destino_notificacion);
+						//$("#selDestinoNotificacion").val(data.destino_notificacion);
 					    $("#selComisionReserva").val(data.comision_reserva);
-					    if (data.destino_notificacion!=0 && data.comision_reserva!=0)
+					    
+					    if (data.notificaciones.length>0 && data.comision_reserva!=0)
 					    	$("#aplicaNotificacion").bootstrapToggle('on');
 					    else
 					    	$("#aplicaNotificacion").bootstrapToggle('off');
+
+						$.each(data.notificaciones,function(i,notificacion){
+							 var newOption = new Option(notificacion.nombre, notificacion.id, true, true);
+							 $("#selOficinasDestino").append(newOption).trigger('change');
+						});
+
     				}
     				
 
@@ -772,7 +778,7 @@
 				var poseeSancion=$("#poseeSancion").is(":checked");
 				var numeroSancion=$("#numeroSancion").val();
 				var aplicaNotificacion=$("#aplicaNotificacion").is(":checked");
-				var destinoNotificacion=$("#selDestinoNotificacion").val();
+				var destinosNotificacion=$("#selOficinasDestino").val();
 				var comisionReserva=$("#selComisionReserva").val();
 			       
 		        var texto=$("#texto").val();
@@ -818,7 +824,7 @@
 
 				validacion+=((numeroSancion=="" && poseeSancion==true)
 								?'<li>Debe poveer el número de sanción</li>':'');
-				validacion+=((aplicaNotificacion==true && (destinoNotificacion==0 || comisionReserva==0))
+				validacion+=((aplicaNotificacion==true && (destinosNotificacion==0 || comisionReserva==0))
 						 		?'<li>Debe poveer tanto un destino como una comisión de reserva para la notificación</li>':'');
 				
 				if (validacion.length>0) 
@@ -842,7 +848,7 @@
 					formData.append('numeroPie',numeroPie);
 					formData.append('numeroSancion',numeroSancion);
 					formData.append('aplicaNotificacion',aplicaNotificacion);
-					formData.append('destinoNotificacion',destinoNotificacion);
+					formData.append('destinosNotificacion',destinosNotificacion);
 					formData.append('comisionReserva',comisionReserva);
 					formData.append('texto',texto);
 					formData.append('idRevision',idRevision);
@@ -1386,6 +1392,33 @@
 			//---------------------------------INICIALIZACIÓN DE CONTROLES------------------------------------------------
 			//------------------------------------------------------------------------------------------------------------
 			
+			$(".oficinaDestino").select2({
+				ajax: {
+			    url: '{{ app.request.getBaseURL() }}'+"/api/oficina/getAllByTipo",
+			    dataType: 'json',
+			    delay: 250,
+			    cache: false,
+			    data: function (params) {
+			      return {
+			        q: params.term, // search term
+			        r: true,
+			        page: params.page
+			      };
+			    },
+			    processResults: function (data) {
+			       var dato=data;
+		           return {
+				        results: $.map(dato, function(item) {
+				            	return { id: item.id, text: item.oficina };
+				        })
+				    };
+		        },
+			  },
+			  language: "es",
+			  minimumInputLength: 3,
+			  theme: "bootstrap",
+			});
+			
 						
 			$(".text-area").wysihtml5({
 				toolbar: {
@@ -1457,13 +1490,16 @@
 			 $("#aplicaNotificacion").change(function(){
 				 
 				 if ($(this).is(":checked")){
+					 debugger;
 					 $("#selComisionReserva").attr("disabled",false);
-				 	 $("#selDestinoNotificacion").attr("disabled",false);
+					 $("#selOficinasDestino").prop("disabled", false);
+					 $(".select2-selection__choice").removeClass("bootstrap-primary-background");
 				 }
 				 else{
 					 $("#selComisionReserva").attr("disabled",true);
-				 	 $("#selDestinoNotificacion").attr("disabled",true);
-				 	 $("#selDestinoNotificacion").val(0);
+					 $("#selOficinasDestino").empty().change();
+					 $("#selOficinasDestino").prop("disabled", true);
+					 $(".select2-selection__choice").addClass("bootstrap-primary-background");
 				     $("#selComisionReserva").val(0);
 				 }
 			 });
@@ -1742,11 +1778,15 @@
                                     <div class="panel-heading text-center"><strong>Numero Sancion</strong></div>
                                 	<div class="panel-body">
         					        	<div class="row">
-            					        	<div class="col-md-6 col-md-offset-3">
+            					        	<div class="col-md-6">
                     					        <div class="text-center">
                     					        	<div class="form-group">
                     					        		<input type="checkbox" id="poseeSancion" name="poseeSancion" data-size="small"/>
                     					        	</div>
+                    					        </div>
+                    					    </div>
+                    					    <div class="col-md-6">
+                    					        <div class="text-center">
                     					        	<div class="form-group">
                     					        		<input type="text" class="form-control text-center" placeholder="Número Sancion" 
                     					        			    id="numeroSancion" name="numeroSancion" onblur="validarNumeroSancion(this);">
@@ -1766,6 +1806,11 @@
                     					        		<input type="checkbox" id="aplicaNotificacion" name="aplicaNotificacion" data-size="small"/>
                     					        	</div>
                     					        	<div class="form-group">
+                							        	<select class="form-control oficinaDestino" 
+                							        			data-width="100%" multiple="multiple"
+                							        			id="selOficinasDestino" name="selOficinasDestino"></select>
+                							        </div>
+                    					        	{#<div class="form-group">
                     					        		<select class="form-control" id="selDestinoNotificacion" name="selDestinoNotificacion">
                     					        			<option value="0">Seleccione Destino Notificación</option>
                     					        			{% for oficina in oficinas %}
@@ -1773,6 +1818,7 @@
                     							            {% endfor %}
                     					        		</select>
                     					        	</div>
+                    					        	#}
                     					        	<div class="form-group">
                     					        		<select class="form-control" id="selComisionReserva" name="selComisionReserva">
                     					        			<option value="0">Seleccione Comisión Reserva</option>

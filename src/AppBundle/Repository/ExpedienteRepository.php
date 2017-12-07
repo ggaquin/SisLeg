@@ -455,6 +455,23 @@ class ExpedienteRepository extends EntityRepository{
 		return $query->getResult();
 	}
 	
+	public function traerOficinasPorNombreYTipo($patronNombre,$externas)
+	{
+		$idTipoOficina=(($externas=='true')?2:1);
+		$rep = $this->getEntityManager()->getRepository('AppBundle:Oficina');
+		$qb	= $rep->createQueryBuilder('o')
+			-> innerJoin('o.tipoOficina', 't');
+		$qb -> where($qb->expr()->andX(
+									  $qb->expr()->like('o.oficina', '?1'),
+									  $qb->expr()->eq('t.id', '?2')
+				
+									  )
+					)
+			->  setParameter(1, '%'.$patronNombre.'%')
+			->setParameter(2, $idTipoOficina);
+		return $qb->getQuery()->getResult();
+	}
+	
 	/*
 	public function traerExpedienteParaImpresion($idExpediente)
 	{

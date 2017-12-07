@@ -8,13 +8,15 @@ use JMS\Serializer\Annotation\Exclude;
 use Doctrine\ORM\Mapping\JoinTable;
 use AppBundle\AppBundle;
 use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\JoinColumns;
 
 /**
  * SancionArticulada
  * 
  * @ORM\Entity
  */
-class SancionArticulada extends Sancion
+class SancionArticulada extends SancionTipada
 {
 	// ------------------------------atributos de la clase-----------------------------------------
 	
@@ -34,13 +36,6 @@ class SancionArticulada extends Sancion
     private $textoArticulado;
     
     /**
-     * @var \AppBundle\Entity\Notificacion
-     * @ORM\OneToOne(targetEntity="AppBundle\Entity\Notificacion")
-     * @ORM\JoinColumn(name="idNotificacion", referencedColumnName="idMovimiento")
-     */
-    private $notificacion;
-    
-    /**
      * @var \AppBundle\Entity\Pase
      * @ORM\OneToOne(targetEntity="AppBundle\Entity\Pase")
      * @ORM\JoinColumn(name="idPase", referencedColumnName="idMovimiento")
@@ -52,7 +47,7 @@ class SancionArticulada extends Sancion
      * @Column(name="numeroSancion", type="string", length=9)
      */
     private $numeroSancion='';
-    
+        
     //------------------------------------constructor---------------------------------------------
     
     /**
@@ -60,6 +55,7 @@ class SancionArticulada extends Sancion
      */
     public function __construct()
     {
+    	parent::__construct();
     	$this->numeroSancion= "";
     }
     
@@ -108,50 +104,29 @@ class SancionArticulada extends Sancion
     }
     
     /**
-     * Get notificacion
-     * 
-     * @return \AppBundle\Entity\Notificacion
+     * Get Pase
+     *
+     * @return \AppBundle\Entity\Pase
      */
-    public function getNotificacion() {
-    	return $this->notificacion;
+    public function getPase() {
+    	return $this->pase;
     }
     
     /**
-     * Set notificacion
-     * 
-     * @param \AppBundle\Entity\Notificacion $notificacion
-     * 
+     * Set Pase
+     *
+     * @param \AppBundle\Entity\Pase $pase
+     *
      * @return SancionArticulada
      */
-    public function setNotificacion($notificacion) {
-    	$this->notificacion = $notificacion;
+    public function setPase($pase) {
+    	$this->pase = $pase;
     	return $this;
     }
     
     /**
-     * Get Pase
-     * 
-     * @return \AppBundle\Entity\Pase
-     */
-	public function getPase() {
-		return $this->pase;
-	}
-	
-	/**
-	 * Set Pase
-	 * 
-	 * @param \AppBundle\Entity\Pase $pase
-	 * 
-	 * @return \AppBundle\Entity\SancionArticulada
-	 */
-	public function setPase($pase) {
-		$this->pase = $pase;
-		return $this;
-	}
-	    
-    /**
      * Get numeroSancion
-     * 
+     *
      * @return string
      */
     public function getNumeroSancion() {
@@ -160,16 +135,16 @@ class SancionArticulada extends Sancion
     
     /**
      * Set numeroSancion
-     * 
+     *
      * @param string $numeroSancion
-     * 
+     *
      * @return SancionArticulada
      */
     public function setNumeroSancion($numeroSancion) {
     	$this->numeroSancion = $numeroSancion;
     	return $this;
     }
-    
+        
     //------------------------------Propiedades virtuales-----------------------------------------
     
     /**

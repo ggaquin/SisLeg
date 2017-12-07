@@ -196,6 +196,29 @@ class RestController extends FOSRestController{
     }
     
     /**
+     * @Rest\Get("/api/oficina/getAllByTipo")
+     */
+    public function traerTodosLasOficinasPorTipoAction(Request $request)
+    {
+    	$patron=$request->query->get('q');
+    	$externas=$request->query->get('r');
+    	
+    	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+    	$oficinas=$expedienteRepository->traerOficinasPorNombreYTipo($patron, $externas);
+    	
+    	$resultado=[];
+    	foreach ($oficinas as $oficina){
+    		$resultado[]=array(
+    				'id'=>$oficina->getId(),
+    				'oficina'=>$oficina->getOficina(),
+    				'codigo'=>$oficina->getCodigo()
+    		);
+    	}
+    	
+    	return $this->view($resultado,200);
+    }
+    
+    /**
      * @Rest\Post("/api/oficina/save")
      */
     public function guardarOficinaAction(Request $request)

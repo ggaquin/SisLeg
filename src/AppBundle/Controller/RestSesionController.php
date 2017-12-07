@@ -28,6 +28,7 @@ use AppBundle\Entity\Remito;
 use AppBundle\Entity\Comision;
 use AppBundle\Entity\Pase;
 use AppBundle\Entity\PlantillaTexto;
+use AppBundle\Entity\SancionBasica;
 
 /**
  * @Route("/api/sesion")
@@ -315,7 +316,7 @@ class RestSesionController extends FOSRestController{
     	$numeroPie=$request->request->get('numeroPie');
     	$numeroSancion=$request->request->get('numeroSancion');
     	$aplicaNotificacion=$request->request->get('aplicaNotificacion');
-    	$destinoNotificacion=$request->request->get('destinoNotificacion');
+    	$destinosNotificacion=$request->request->get('destinosNotificacion');
     	$comisionReserva=$request->request->get('comisionReserva');
     	$texto_libre=$request->request->get('texto');
     	$idRevision=$request->request->get('idRevision');
@@ -362,7 +363,7 @@ class RestSesionController extends FOSRestController{
 	    	/*-------------------------------crear resolución----------------------------------------*/
 	    		
 	    	if ($tipoRedaccion=="basico")
-	    		$sancion=new Sancion();
+	    		$sancion=new SancionBasica();
 	    	if ($tipoRedaccion=="articulado")
 	    		$sancion=new SancionArticulada();
 	    	if ($tipoRedaccion=="revision")
@@ -455,32 +456,40 @@ class RestSesionController extends FOSRestController{
 	    	if($aplicaNotificacion=="true" && $tipoRedaccion!="basico"){
 	    		
 	    		$idOficinaComisiones=$this->getParameter('id_comisiones');
-	    		//$idMesaEntradas=$this->getParameter('id_mesa_entradas');
-	    		$oficinaNotificacion=$oficinaRepository->find($destinoNotificacion);
 	    		$oficinaComisiones=$oficinaRepository->find($idOficinaComisiones);
-	    		//$oficinaMesaEntradas=$oficinaRepository->find($idMesaEntradas);
 	    		$comision=$comisionRepository->find($comisionReserva);
 	    		
 	    		//cambio de oficina actual
 	    		$expediente->setOficinaActual($oficinaComisiones);
-	    		    		    		
-	    		//notificacion
-	    		$remitoExterno=new Remito();
-	    		$remitoExterno->setAnulado(false);
-	    		$remitoExterno->setDestino($oficinaNotificacion);
-	    		$remitoExterno->setOrigen($usuario->getUsuario()->getRol()->getOficina());
-	    		$remitoExterno->setFechaCreacion(new \DateTime('now'));
-	    		$remitoExterno->setUsuarioCreacion($usuario->getUsuario());
 	    		
-	    		$notificacion=new Notificacion();
-	    		$notificacion->setAnulado(false);
-	    		$notificacion->setExpediente($expediente);
-	    		$notificacion->setComision($comision);
-	    		$notificacion->setFechaCreacion(new \DateTime('now'));
-	    		$notificacion->setUsuarioCreacion($usuario->getUsuario());
+	    		//destinos de notificacion
+	    		$destinos=explode(',',$destinosNotificacion);
 	    		
-	    		$remitoExterno->addMovimiento($notificacion);
-	    		$em->persist($remitoExterno);
+	    		foreach ($destinos as $destino)
+	    		{		    		
+	    			
+	    			$oficinaNotificacion=$oficinaRepository->find($destino);
+		    		
+		    		//notificacion
+		    		$remitoExterno=new Remito();
+		    		$remitoExterno->setAnulado(false);
+		    		$remitoExterno->setDestino($oficinaNotificacion);
+		    		$remitoExterno->setOrigen($usuario->getRol()->getOficina());
+		    		$remitoExterno->setFechaCreacion(new \DateTime('now'));
+		    		$remitoExterno->setUsuarioCreacion($usuario->getUsuario());
+		    		
+		    		$notificacion=new Notificacion();
+		    		$notificacion->setAnulado(false);
+		    		$notificacion->setExpediente($expediente);
+		    		$notificacion->setComision($comision);
+		    		$notificacion->setFechaCreacion(new \DateTime('now'));
+		    		$notificacion->setUsuarioCreacion($usuario->getUsuario());
+		    		
+		    		$remitoExterno->addMovimiento($notificacion);
+		    		$em->persist($remitoExterno);
+		    		$sancion->addNotificacion($notificacion);
+		    		
+	    		}
 	    		
 	    		//movimiento a comisiones
 	    		$remitoInterno=new Remito();
@@ -500,7 +509,7 @@ class RestSesionController extends FOSRestController{
 	    		$remitoInterno->addMovimiento($pase);
 	    		$em->persist($remitoInterno);
 	    		
-	    		$sancion->setNotificacion($notificacion);
+	    		//$sancion->setNotificacion($notificacion);
 	    		$sancion->setPase($pase);
 	    		    		
 	    	}
@@ -522,12 +531,14 @@ class RestSesionController extends FOSRestController{
 	    		if (($sancionOriginal instanceof SancionArticulada) || 
 	    			($sancionOriginal instanceof  SancionRevisionProyecto)) {
 	    		
-		    		$notificacionOriginal=$sancionOriginal->getNotificacion();
+		    		$notificacionesOriginales=$sancionOriginal->getNotificaciones();
 		    		$paseOriginal=$sancionOriginal->getPase();
 		    		
-		    		if (!is_null($notificacionOriginal)){
-		    			
-		    			$remitoOriginal=$notificacionOriginal->getRemito();
+		    		foreach ($notificacionesOriginales as $notificacionPersistida){
+		    				    			
+		    			$remitoOriginal=$notificacionPersistida->getRemito();
+		    			$sancionOriginal->removeNotificacion($notificacionPersistida);
+		    			$em->persist($sancionOriginal);
 		    			$em->remove($remitoOriginal);
 		    		}
 		    		
@@ -562,7 +573,7 @@ class RestSesionController extends FOSRestController{
     	$resultado=array(
 		    			'clase_sancion'=>$sancion->getClaseSancion(),
 		    			'id_tipo_sancion'=>(($sancion instanceof SancionArticulada)
-		    									?$sancion->getTipoSancion()->getId():0),
+		    									?$sancion->getTiposancion()->getId():0),
 		    			'texto_libre'=>$sancion->getTextoLibre(),
 		    			'texto_articulado'=>(($sancion instanceof SancionArticulada)
 		    									?$sancion->getTextoArticulado():[]),
@@ -578,20 +589,22 @@ class RestSesionController extends FOSRestController{
 		    							?$sancion->getRevisionProyecto()->getId():0),
 		    			'numero_sancion'=>(($sancion->getClaseSancion()!="basico")
 		    								?$sancion->getNumeroSancion():''),
-		    			'destino_notificacion'=>(($sancion->getClaseSancion()!="basico" &&
-		    									  !is_null($sancion->getNotificacion()))
-		    										?$sancion->getNotificacion()->getRemito()
-		    													->getDestino()->getId():0),
-		    			'comision_reserva'=>(($sancion->getClaseSancion()!="basico" &&
-		    								  !is_null($sancion->getNotificacion()))
-						    					?$sancion->getNotificacion()
+// 		    			'destino_notificacion'=>(($sancion->getClaseSancion()!="basico" &&
+// 		    									  !is_null($sancion->getNotificacion()))
+// 		    										?$sancion->getNotificacion()->getRemito()
+// 		    													->getDestino()->getId():0),
+    					'comision_reserva'=>((!($sancion instanceof SancionBasica) &&
+		    								  count($sancion->getNotificaciones())>0)
+						    					?($sancion->getNotificaciones()[0])
 						    								->getComision()->getId():0),
     					'id_encabezado'=>(!is_null($sancion->getEncabezadoRedaccion())
     										?$sancion->getEncabezadoRedaccion()->getId()
     										:0),
     					'id_pie'=>(!is_null($sancion->getPieRedaccion())
     										?$sancion->getPieRedaccion()->getId()
-    										:0)
+    										:0),
+    					'notificaciones'=>(!($sancion instanceof SancionBasica)
+    										?$sancion->getListaNotificaciones():[])
 				    	);
     	
     	return $this->view($resultado,200);
