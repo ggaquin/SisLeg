@@ -39,7 +39,6 @@
 			min-height: 39px;
 			max-height: 40px;
 			overflow-y: auto;
-			/*background: #fff;*/
 			border: 1px solid #ccc;
 		}
 
@@ -88,7 +87,6 @@
 		}
 		
 		.tab-active{
-			/* font-style: oblique;*/
 			font-weight: bold;
 			color: #0000ff;
 			padding-left: 10px;
@@ -175,13 +173,11 @@
 						$("#apellidosParticular").val('');
 						$("#nombresParticular").val('');
 						$("#documentoParticular").val('');
-						/* $(".divChkSesion").removeClass("hidden"); */
 						break;
 				case 4:
 				case 9:
 						$(".proyecto-concejales").addClass('hidden');
 						$(".expediente-particular").addClass('hidden');
-						/* $(".divChkSesion").addClass("hidden"); */
 						$(".ente-externo").removeClass('hidden');
 						$("#tabla-numeros > tbody").html("");
 						$("#selOrigen").val(0);
@@ -190,13 +186,11 @@
 				case 5:
 				case 8:
 						$(".expediente-particular").addClass('hidden');
-						/* $(".divChkSesion").addClass("hidden"); */
 						$(".ente-externo").addClass('hidden');
 						$(".proyecto-concejales").addClass('hidden');
 						break;
 				default:
 						$(".expediente-particular").addClass('hidden');
-						/* $(".divChkSesion").addClass("hidden"); */
 						$(".ente-externo").addClass('hidden');
 						$(".proyecto-concejales").removeClass('hidden');
 						break;
@@ -213,7 +207,6 @@
 						$(".ente-externo").addClass('hidden');
 						$(".proyecto-concejales").addClass('hidden');
 						$(".expediente-particular").removeClass('hidden');
-						/* $(".divChkSesion").removeClass("hidden"); */
 						$("#apellidosParticularMod").val('');
 						$("#nombresParticularMod").val('');
 						$("#documentoParticularMod").val('');
@@ -222,7 +215,6 @@
 				case 9:
 						$(".proyecto-concejales").addClass('hidden');
 						$(".expediente-particular").addClass('hidden');
-						/* $(".divChkSesion").addClass("hidden"); */
 						$(".ente-externo").removeClass('hidden');
 						$("#tabla-numeros-mod > tbody").html("");
 						$("#selOrigenMod").val(0);
@@ -231,13 +223,11 @@
 				case 5:
 				case 8:
 						$(".expediente-particular").addClass('hidden');
-						/* $(".divChkSesion").addClass("hidden"); */
 						$(".ente-externo").addClass('hidden');
 						$(".proyecto-concejales").addClass('hidden');
 						break;
 				default:
 						$(".expediente-particular").addClass('hidden');
-						/* $(".divChkSesion").addClass("hidden"); */
 						$(".ente-externo").addClass('hidden');
 						$(".proyecto-concejales").removeClass('hidden');
 						break;
@@ -316,7 +306,7 @@
 				dataType: 'json	',
 				url:'{{ app.request.getBaseURL() }}'+'/api/sesion/getLastByType',
 				success: function(data){
-					debugger;
+					
 					var html='<option value="0">Seleccione Sesion</option>';
 					var pertenece=false
 					
@@ -331,8 +321,6 @@
 					
 						html+='<option value="'+sesionPersistida.id+'" selected >'+
 								 sesionPersistida.fecha_muestra+'</option>';
-						//$(control).prop("disabled",true);
-						//$(".divChkUltimoMomento").addClass("hidden");
 						 					
 					$.each(data, function(index,sesion){
 						html+='<option value="'+sesion.id+'" '+
@@ -344,7 +332,7 @@
     							
 				},
 				error: function(jqXHR,textStatus,errorThrown ){
-					toastr.error(jqXHR.responseText);
+					toastr.error(JSON.parse(jqXHR.responseText));
 				}
 	      	});
 		}
@@ -425,7 +413,7 @@
 							        "url": "api/expediente/getByCriteria/"+tipoCriterio()+"/"+criterio(),
 			            			"dataSrc": '',
 			            			"error": function (xhr, error, thrown) {
-				            			debugger;
+				            			
 			            			    toastr.error(JSON.parse(xhr.responseText));
 			            			}
 							    },
@@ -440,7 +428,7 @@
 									            "data": null,
 									            "orderable":false,
 									            "render": function(data, type, row){
-										            debugger;
+										            
 										            var html="<div class='btn-group'>";
 											        html+="<button type='button' title='Giros' class='btn btn-info btn-xs btn-giros' data-toggle='modal' data-target='#giros'><span class='glyphicon glyphicon-refresh'></span></button>";
 											        html+="<button type='button' title='Informes' class='btn btn-info btn-xs btn-informes' data-toggle='modal' data-target='#informes'><span class='glyphicon glyphicon-list-alt'></span></button>";
@@ -510,7 +498,7 @@
 									            "data": 'oficina_actual',
 									            "orderable":true,
 									            "render": function(data, type, row){
-										            debugger;
+										            
 									            	var html="<div>";
 									            	if(data=="COMISIONES"){
 										            	if(row.lista_comisiones_asignadas.length>0)
@@ -525,7 +513,7 @@
 
 									            	}
 													else{   
-															debugger;          
+															         
         									            	if (("{{ app.user.rol.oficina is null}}" || "{{ app.user.rol.oficina.id }}"== "9" ) 
                 									            	&& row.oficina_actual_externa && '{{ 'EXP_RETURN' in app.user.listaPermisos }}'){
         	    												html+="<button type='button' title='Retornar a HCD' class='btn btn-primary btn-xs btn-retorno'"+
@@ -747,7 +735,7 @@
                         	$("#btn-retorno-hcd").prop("disabled", false);
                         },
                         error: function(jqXHR,textStatus,errorThrown ){
-        					toastr.error(jqXHR.responseText);
+        					toastr.error(JSON.parse(jqXHR.responseText));
         					}
                     	});
 					}
@@ -843,10 +831,8 @@
 						$("#numeroExpedienteMod").val(data.numero_expediente);
 						$("#caratulaMod").data("wysihtml5").editor.setValue(data.caratula);
 						$("#foliosMod").val(data.folios);
-						//$("#numerosancionMod").val(data.numero_sancion);
 						$("#añoIngresoMod").val(data.año);
-						/* actualizarSesiones($("#selSesionMod"),((data.sesion!=null)?data.sesion.id:0),data.sesion); */
-
+						
 						if(data.proyecto!=0){
 							$("#selTipoExpedienteMod").prop( "disabled", true );
 							$("#concejalesMod").html(data.concejal);
@@ -896,15 +882,6 @@
 			                initialCaption: "Archivos Expediente " + data.numero_expediente
 			                
 			            });	
-						
-			            /* if (data.ultimo_momento==true){
-							$(".divChkUltimoMomento").removeClass("hidden");
-							$(".chkUltimoMomento").bootstrapToggle("on");
-				        }
-			            else{
-    			            	$(".divChkUltimoMomento").addClass("hidden");
-    							$(".chkUltimoMomento").bootstrapToggle("off");
-				            }			 */
 					},
 					error: function(jqXHR,textStatus,errorThrown ){
 						toastr.error(jqXHR.responseText);
@@ -934,8 +911,6 @@
               	var apellidosParticular=$("#apellidosParticularMod").val();
               	var nombresParticular=$("#nombresParticularMod").val();
               	var idOrigen=$("#selOrigenMod").val();
-              	/* var idSesion=$("#selSesionMod").val();
-				var ultimoMomento=$("#chkUltimoMomento").is(":checked"); */
 				var año=$("#añoIngresoMod").val();
 				var numeros=[];
               	$("#tabla-numeros-mod > tbody > tr").each(function(){ 
@@ -955,7 +930,6 @@
 
                 var validacion='';
 
-               /*  formData.append('ultimoMomento',ultimoMomento);*/
                 formData.append('idExpediente',idExpediente); 
             	
               	formData.append('idTipoExpediente',idTipoExpediente);
@@ -999,13 +973,6 @@
 						  	 ?'<li>Debe especificar un año para el expediente</li>':'');
 				validacion+=((parseInt(año)>(new Date()).getFullYear())
 					  	 	  ?'<li>El año del expediente no puede ser mayor que el actual</li>':'');
-
-				//formData.append('numeroSancion',numeroSancion);
-
-				/* formData.append('idSesion',idSesion);
-				validacion+=(((idSesion==0 && idTipoExpediente!=3) || 
-							  (idSesion==0 && idTipoExpediente==3 && $("#chkSesionMod").is(":checked")) )
-				  		 	  ?'<li>Debe especificar una sesion para el expediente</li>':''); */
 				  
 				$.each(archivos, function(i, archivo) {
                 	formData.append('uploadedFiles-' + i, archivo);
@@ -1038,7 +1005,7 @@
 	                	$('#btn-Modificacion-expediente').prop("disabled", false);
 	                },
 	                error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(jqXHR.responseText);
+						toastr.error(JSON.parse(jqXHR.responseText));
 						}
 	            	});
 	            }
@@ -1069,7 +1036,6 @@
 			  		mostrarTiposPara("proyectos");
 				}
 
-			  	/* actualizarSesiones($("#selSesion"),0,null); */
 				mostrarOrigenParaNuevo($("#selTipoExpediente").val());
 				$("#numeroExpediente").val('');
 				$("#folios").val('');
@@ -1103,7 +1069,6 @@
               	var apellidosParticular=$("#apellidosParticular").val();
               	var nombresParticular=$("#nombresParticular").val();
               	var idOrigen=$("#selOrigen").val();
-              /* 	var idSesion=$("#selSesion").val(); */
               	var año=$("#añoIngreso").val();
 				var numeros=[];
               	$("#tabla-numeros > tbody > tr").each(function(){ 
@@ -1166,11 +1131,6 @@
 				validacion+=((parseInt(año)>(new Date()).getFullYear())
 					  	 	  ?'<li>El año del expediente no puede ser mayor que el actual</li>':'');
 
-				/* formData.append('idSesion',idSesion); 
-				validacion+=(((idSesion==0 && idTipoExpediente!=3) || 
-						  	  (idSesion==0 && idTipoExpediente==3 && $("#chkSesionMod").is(":checked")) )
-					  		 ?'<li>Debe especificar una sesion para el expediente</li>':''); */
-								  
 				$.each(archivos, function(i, archivo) {
                 	formData.append('uploadedFiles-' + i, archivo);
             	});
@@ -1202,7 +1162,7 @@
 	                	$('#btn-nuevo-expediente').prop("disabled", false);
 	                },
 	                error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(jqXHR.responseText);
+						toastr.error(JSON.parse(jqXHR.responseText));
 						}
 	            	});
 	            }
@@ -1464,7 +1424,7 @@
             							                "orderable":true,
             							                "render": function(data, type, row){
 
-                    							            	debugger;
+                    							            	
                 							                	if (("{{ app.user.rol.oficina is null }}" || "{{ app.user.rol.oficina.id }}"== "9" ) 
                     									            	 && data=="" && '{{ "EXP_REPORT_RETURN" in app.user.listaPermisos}}'){
             	    												return "<button type='button' title='Ingresar Fecha Respuesta' "+
@@ -1563,7 +1523,7 @@
                     	$("#btn-respuesta-informe").prop("disabled", false);
                     },
                     error: function(jqXHR,textStatus,errorThrown ){
-        				toastr.error(jqXHR.responseText);
+        				toastr.error(JSON.parse(jqXHR.responseText));
         				}
                 	});
                 }
@@ -1630,7 +1590,7 @@
 	                	$("#btn-guardar-alta-sesion").prop("disabled", false);
 	                },
 	                error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(jqXHR.responseText);
+						toastr.error(JSON.parse(jqXHR.responseText));
 						}
 	            	});
 	            }
@@ -1682,7 +1642,7 @@
 	                	$("#btn-guardar-sesion").prop("disabled", false);
 	                },
 	                error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(jqXHR.responseText);
+						toastr.error(JSON.parse(jqXHR.responseText));
 						}
 	            	});
 	            }
@@ -1739,7 +1699,7 @@
 	                	$("#btn-guardar-fecha").prop("disabled", false);
 	                },
 	                error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(jqXHR.responseText);
+						toastr.error(JSON.parse(jqXHR.responseText));
 						}
 	            	});
 	            }
@@ -1749,16 +1709,6 @@
 			//---------------------------------INICIALIZACIÓN DE CONTROLES------------------------------------------------
 			//------------------------------------------------------------------------------------------------------------
 
-			/* $("#btn-nueva-sesion-alta").click(function(){
-				$("#modalAltaSesion").find('input[name="control"]').val("selSesion");
-				$("#modalAltaSesion").modal('show');
-			}); */
-			/*
-			$("#btn-nueva-sesion-modificacion").click(function(){
-				$("#modalAltaSesion").find('input[name="control"]').val("selSesionMod");
-				$("#modalAltaSesion").modal('show');
-			}); 
-			*/
 			$("#btn-nueva-sesion-asignacion").click(function(){
 				$("#modalAltaSesion").find('input[name="control"]').val("selSesionAsignacion");
 				$("#modalAltaSesion").modal('show');
@@ -1790,26 +1740,6 @@
 		      width: "80px",
 		      height: "35px"
 		    });
-
-			/* $('.chkUltimoMomento').bootstrapToggle({
-			      on:  'SI',
-			      off: 'NO',
-			      offstyle: 'danger',
-			      onstyle: 'success',
-			      width: "136.66px",
-			      height: "34px"
-			}); */
-
-			/* 
-			$('.chkSesion').bootstrapToggle({
-			      on:  'SI',
-			      off: 'NO',
-			      offstyle: 'danger',
-			      onstyle: 'success',
-			      width: "136.66px",
-			      height: "34px"
-			    });
- 			*/
  			
 			$(".busqueda").addClass('hidden');
 			$("#selBusqueda").val("todo");
@@ -1830,7 +1760,7 @@
 			});
 
 			$("#btn-busqueda").click(function(){
-				debugger;
+				
 				if(($("#selBusqueda").val()=="todo" || $("#selBusqueda").val()=="busqueda-7") || (criterio()!="" && criterio()!="0"))
 				{
 					tabla.ajax.url("api/expediente/getByCriteria/"+tipoCriterio()+"/"+criterio()).load();
@@ -1900,29 +1830,6 @@
 		    		return false;
 		    	 }
 			});
-
-			/* $("#chkSesionAlta").change(function(){
-				if ($(this).is(":checked")==false){
-					$("#btn-nueva-sesion-alta").attr("disabled",true);
-					$("#selSesion").attr("disabled",true);
-				}
-				else{
-					$("#btn-nueva-sesion-alta").attr("disabled",false);
-					$("#selSesion").attr("disabled",false);
-				}
-			});
-
-			$("#chkSesionMod").change(function(){
-				if ($(this).is(":checked")==false){
-					$("#btn-nueva-sesion-modificacion").attr("disabled",true);
-					$("#selSesionMod").attr("disabled",true);
-				}
-				else{
-					$("#btn-nueva-sesion-modificacion").attr("disabled",false);
-					$("#selSesionMod").attr("disabled",false);
-				}
-			}); */
-
 			
 	});
 	</script>

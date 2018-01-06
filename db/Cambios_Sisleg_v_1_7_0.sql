@@ -37,6 +37,11 @@ INSERT INTO `rol_menuItem` (`idRol`, `idMenuItem`) VALUES ('4', '64');
 INSERT INTO `rol_menuItem` (`idRol`, `idMenuItem`) VALUES ('6', '64');
 
 
+ALTER TABLE `sistema_legislativo`.`sancion` 
+ADD COLUMN `firmaPresidente` VARCHAR(150) NOT NULL AFTER `numeroSancion`,
+ADD COLUMN `firmaSecretario` VARCHAR(150) NOT NULL AFTER `firmaPresidente`;
+
+
 
 
 

@@ -270,36 +270,18 @@ class ExpedienteComisionRepository extends EntityRepository{
 	 return $qb->getQuery()->getResult();
 	 }
 	
-	/*
-	public  function findByDictamenMayoria($idDictamen){
-		
-		$qb = $this->createQueryBuilder('ec');
-		$qb ->innerJoin('ec.dictamenMayoria', 'd')
-			->where($qb->expr()->eq('d.id', '?1'))
-			->setParameter(1, $idDictamen);
-			
-		return $qb->getQuery()->getResult();
-	}
-	
-	public  function findByDictamenPrimeraMinoria($idDictamen){
-		
-		$qb = $this->createQueryBuilder('ec');
-		$qb ->innerJoin('ec.dictamenPrimeraMinoria', 'd')
-			->where($qb->expr()->eq('d.id', '?1'))
-			->setParameter(1, $idDictamen);
-		
-		return $qb->getQuery()->getResult();
-	}
-	
-	public  function findByDictamenSegundaMinoria($idDictamen){
-		
-		$qb = $this->createQueryBuilder('ec');
-		$qb ->innerJoin('ec.dictamenSegundaMinoria', 'd')
-			->where($qb->expr()->eq('d.id', '?1'))
-			->setParameter(1, $idDictamen);
-		
-		return $qb->getQuery()->getResult();
-	}
-	*/
+	 public function findIntegrantesComisionesByDictamen($patron, $idDictamen){
+	 	
+	 	$rsm = new ResultSetMapping();
+	 	$rsm->addScalarResult('idPerfil', 'id', 'integer');
+	 	$rsm->addScalarResult('nombreCompleto', 'nombre_completo', 'string');
+	 		 	
+	 	$query = $this -> getEntityManager()
+	 				   -> createNativeQuery('call traerIntegrantesComisionesPorDictamen(:patron,:idDictamen)',$rsm)
+	 				   -> setParameter('patron',$patron)
+	 				   -> setParameter('idDictamen',$idDictamen);
+	 	
+	 	return $query->getResult();
+	 }
 	
 }

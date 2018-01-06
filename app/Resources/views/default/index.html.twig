@@ -10,6 +10,26 @@
 
 {% block body %}
 
+	  <style type="text/css">
+	
+		/* li.menu-fired { text-decoration: none }
+		li.menu-fired:focus:after  { content:"persione [espacio] 	 abrir";
+                 position: relative; top: 0em; left: 1.5em;
+                 display: block;
+                 padding: .1em .2em;
+                 background: #99ff66; color: #000;
+                 border: 1px solid #99ff66;
+                 font-size: 100% }
+                 
+        li.treeview { text-decoration: none }
+		li.treeview:focus:after  { content:"persione [enter] para mostrar/ocultar";
+                 position: relative; top: 0.3em; left: 1.5em;
+                 padding: .1em .2em;
+                 background: #ff8080; color: #000;
+                 border: 1px solid #ff8080;
+                 font-size: 100% }		 */
+	  </style>
+
       <script type="text/javascript">
         function noImplementado(){
           toastr.warning("NO IMPLEMENTADO EN ESTA VERSIÓN");
@@ -21,11 +41,44 @@
         function cargarMenuConParametro(url,parametroNombre, parametroValor){
         	$("#contenidoUsuario").load('{{ app.request.getBaseURL() }}'+ url +'?'+parametroNombre+'='+parametroValor);
 		} 
-        
         function obtenerRecurso(url) {
         	  var win = window.open(url, '_blank');
         	  win.focus();
         }
+        Mousetrap.bind('ctrl+m', function(e) {
+    	   $("#bloques-menu").focus();
+            return false;
+        });
+       
+        Mousetrap.bind('ctrl+shift+s', function(e) {
+    	   $("#sidebar-collapse").click();
+            return false;
+        });
+       
+        $(document).on('keyup','.menu-fired',function(e){
+            if (event.which==32){
+    			var control=e.currentTarget;
+    			$(control).find('a:first').click();
+        	}
+        });
+        
+        $(document).on('keyup','.treeview',function(e){
+            if (event.which==13){
+    			var control=e.currentTarget;
+    			var estaActivo=$(control).hasClass('active');
+    			$(".treeview").removeClass('active')
+    			if(!estaActivo)
+    				$(control).addClass('active');
+            }
+        });
+        
+        $(document).on('shown.bs.modal', function (e) {
+	        $('[autofocus]', e.target).focus();
+	     });
+
+       /*  $(document).on('ready', function (e) {	
+	        $('[autofocus]', e.target).focus();
+	     }); */
       </script>
       <div class="wrapper">
         <header class="main-header">
@@ -39,7 +92,7 @@
 
           <nav class="navbar navbar-inverse navbar-fixed-top">
             <!-- Sidebar toggle button-->
-            <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+            <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button" id="sidebar-collapse">
               <span class="sr-only">Toggle navigation</span>
             </a>
             <div class="navbar-custom-menu">
@@ -161,7 +214,7 @@
                 </ul>
               </li> #}
               <!-- User Account: style can be found in dropdown.less -->
-              <li class="dropdown user user-menu">
+              <li class="dropdown user user-menu menu-fired" tabindex="30">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                   {# <img src="dist/img/user2-160x160.jpg" class="user-image" alt="User Image"> #}
                   <span class="hidden-xs">{{ app.user.username|capitalize  }}</span>
@@ -242,13 +295,13 @@
             <!-- /.search form -->
             <!-- sidebar menu: : style can be found in sidebar.less -->
             <ul class="sidebar-menu">
-              <li class="header text-center"><h5>Principal</h5></li>
+              <li class="header text-center" tabindex="-1"><h5>Principal</h5></li>
               
-              <li><a href="#" onclick="cargarMenu('/bloques')"><i class="fa fa-sitemap"></i><span>Bloques</span></a></li>
+              <li class="menu-fired" tabindex="1" id="bloques-menu"><a href="#" onclick="cargarMenu('/bloques')" ><i class="fa fa-sitemap"></i><span>Bloques</span></a></li>
               
               {# ------------------------------------------SECTOR DE COMISIONES----------------------------------- #}
                 {% if app.user.rol.rol=="ROLE_ADMINISTRADOR" or app.user.rol.rol=="ROLE_COMISIONES" %}	
-                  <li class="treeview">
+                  <li class="treeview" tabindex="2">
                     <a href="#">
                       <i class="fa fa-users"></i>
                       <span>Comisiones</span>
@@ -259,25 +312,40 @@
                     <ul class="treeview-menu">
                       <li class="divider"></li>
                  
-                      	<li><a href="#" onclick="cargarMenu('/comisiones');"><i class="fa fa-minus"></i>Alta y Modificación</a></li>
+                      	<li class="menu-fired" tabindex="3">
+                      		<a href="#" onclick="cargarMenu('/comisiones');"><i class="fa fa-minus">
+                      		</i>Conformación Comisiones</a>
+                      	</li>
              
-                      	<li><a href="#" onclick="cargarMenu('/expedientesComisiones');"><i class="fa fa-minus"></i>Expedientes Girados</a></li>
+                      	<li class="menu-fired" tabindex="4" 
+                      		><a href="#" onclick="cargarMenu('/expedientesComisiones');">
+                      		<i class="fa fa-minus"></i>Expedientes Girados</a>
+                      	</li>
  
-                      	<li><a href="#" onclick="cargarMenu('/movimientos')"><i class="fa fa-minus"></i>Movimientos</a></li>
+                      	<li class="menu-fired" tabindex="5" >
+                      		<a href="#" onclick="cargarMenu('/movimientos')">
+                      		<i class="fa fa-minus"></i>Movimientos</a>
+						</li>
                     </ul>
                   </li>
               {% endif %}
               {# --------------------------------------FIN SECTOR DE COMISIONES----------------------------------- #}
               
                {% if app.user.rol.rol=="ROLE_DESPACHO" or app.user.rol.rol=="ROLE_MESA_ENTRADA" or app.user.rol.rol=="ROLE_LEGISLADOR"%}
-              		<li><a href="#" onclick="cargarMenu('/comisiones');"><i class="fa fa-users"></i>Comisiones</a></li>
+              		<li class="menu-fired" tabindex="6" title="persione -> para abrir">
+              			<a href="#" onclick="cargarMenu('/comisiones');">
+              			<i class="fa fa-users"></i>Comisiones</a>
+              		</li>
                {% endif %}
                
-              	<li><a href="#" onclick="cargarMenu('/legisladores')"><i class="fa fa-address-card-o"></i><span>Concejales</span></a></li>
+              	<li class="menu-fired" tabindex="7" >
+              		<a href="#" onclick="cargarMenu('/legisladores')">
+              		<i class="fa fa-address-card-o"></i><span>Concejales</span></a>
+              	</li>
               
               {# -------------------- -------------------SECTOR DE DESPACHO----------------- --------------------- #}
               {% if app.user.rol.rol=="ROLE_ADMINISTRADOR" or app.user.rol.rol=="ROLE_DESPACHO" %}
-                  <li class="treeview">
+                  <li class="treeview" tabindex="8">
                     <a href="#">
                       <i class="fa fa-book"></i>
                       <span>Despacho</span>
@@ -288,15 +356,30 @@
                     <ul class="treeview-menu">
                       <li class="divider"></li>
                       
-                      	<li><a href="#"  onclick="cargarMenu('/seleccionSesion')"><i class="fa fa-minus"></i>Expedientes Orden del Día</a></li>
+                      	<li class="menu-fired" tabindex="9" >
+                      		<a href="#"  onclick="cargarMenu('/seleccionSesion')">
+                      		<i class="fa fa-minus"></i>Expedientes Orden del Día</a>
+                      	</li>
                       	
-                      	<li><a href="#" onclick="cargarMenu('/expedientesComisiones');"><i class="fa fa-minus"></i>Expedientes En Comisiones</a></li>
+                      	<li class="menu-fired" tabindex="10" >
+                      		<a href="#" onclick="cargarMenu('/expedientesComisiones');">
+                      		<i class="fa fa-minus"></i>Expedientes En Comisiones</a>
+                      	</li>
                  
-                      	<li><a href="#" onclick="cargarMenu('/expedientes')"><i class="fa fa-minus"></i>Listado Expedientes</a></li>
+                      	<li class="menu-fired" tabindex="11" >
+                      		<a href="#" onclick="cargarMenu('/expedientes')">
+                      		<i class="fa fa-minus"></i>Listado Expedientes</a>
+                      	</li>
                       	                      
-                      	<li><a href="#" onclick="cargarMenu('/movimientos')"><i class="fa fa-minus"></i>Movimientos</a></li>
+                      	<li class="menu-fired" tabindex="12" >
+                      		<a href="#" onclick="cargarMenu('/movimientos')">
+                      		<i class="fa fa-minus"></i>Movimientos</a>
+                      	</li>
                       	
-                      	<li><a href="#" onclick="cargarMenu('/versionesTaquigraficas');"><i class="fa fa-minus"></i>Versiones Taquigráficas</a></li>
+                      	<li class="menu-fired" tabindex="13" >
+                      		<a href="#" onclick="cargarMenu('/versionesTaquigraficas');">
+                      		<i class="fa fa-minus"></i>Versiones Taquigráficas</a>
+                      	</li>
                       
                     </ul>
                   </li>
@@ -305,7 +388,7 @@
               
               {# ---------------------------------------SECTOR DE EXPEDIENTES------------------------------------- #}
               {% if app.user.rol.rol=="ROLE_ADMINISTRADOR" or app.user.rol.rol=="ROLE_MESA_ENTRADA" %}
-                  <li class="treeview">
+                  <li class="treeview" tabindex="14">
                     <a href="#">
                       <i class="fa fa-inbox"></i>
                       <span>Mesa de Entradas</span>
@@ -316,13 +399,25 @@
                     <ul class="treeview-menu">
                       <li class="divider"></li>
                      
-                      	<li><a href="#" onclick="cargarMenu('/expedientes')"><i class="fa fa-minus"></i>Gestión de Expedientes</a></li>
+                      	<li class="menu-fired" tabindex="15" >
+                      		<a href="#" onclick="cargarMenu('/expedientes')">
+                      		<i class="fa fa-minus"></i>Gestión de Expedientes</a>
+                      	</li>
                       	
-                      	<li><a href="#" onclick="cargarMenu('/impresionE')"><i class="fa fa-minus"></i>Listado E</a></li>
+                      	<li class="menu-fired" tabindex="16" >
+                      		<a href="#" onclick="cargarMenu('/impresionE')">
+                      		<i class="fa fa-minus"></i>Listado E</a>
+                      	</li>
           
-                      	<li><a href="#" onclick="cargarMenu('/movimientos')"><i class="fa fa-minus"></i>Movimientos</a></li>
+                      	<li class="menu-fired" tabindex="17" >
+                      		<a href="#" onclick="cargarMenu('/movimientos')">
+                      		<i class="fa fa-minus"></i>Movimientos</a>
+                      	</li>
            
-                      	<li><a href="#" onclick="cargarMenu('/proyectos')"><i class="fa fa-minus"></i><span>Proyectos</span></a></li>
+                      	<li class="menu-fired" tabindex="18" >
+                      		<a href="#" onclick="cargarMenu('/proyectos')">
+                      		<i class="fa fa-minus"></i><span>Proyectos</span></a>
+                      	</li>
                                         
                     </ul>
                   </li>
@@ -331,7 +426,7 @@
                 
               {# ---------------------------------------SECTOR DE LEGISLADORES------------------------------------- #}  			
   			  {% if app.user.rol.rol=="ROLE_LEGISLADOR" %}
-                  <li class="treeview">
+                  <li class="treeview" tabindex="19">
                     <a href="#">
                       <i class="fa fa-graduation-cap" aria-hidden="true"></i>
                       <span>Legisladores</span>
@@ -342,9 +437,15 @@
                     <ul class="treeview-menu">
                       <li class="divider"></li>
                       
-                      	<li><a href="#" onclick="cargarMenu('/proyectos')"><i class="fa fa-file-text"></i><span>Proyectos</span></a></li>
+                      	<li class="menu-fired" tabindex="20" >
+                      		<a href="#" onclick="cargarMenu('/proyectos')">
+                      		<i class="fa fa-file-text"></i><span>Proyectos</span></a>
+                      	</li>
                  
-                      	<li><a href="#" onclick="cargarMenu('/listadoCh')"><i class="fa fa-bullhorn" aria-hidden="true"></i><span>CH</span></a></li>
+                      	<li class="menu-fired" tabindex="21" >
+                      		<a href="#" onclick="cargarMenu('/listadoCh')">
+                      		<i class="fa fa-bullhorn" aria-hidden="true"></i><span>CH</span></a>
+                      	 </li>
                  
                		</ul>
                   </li>
@@ -356,16 +457,25 @@
                      app.user.rol.rol=="ROLE_DESPACHO" or 
                      app.user.rol.rol=="ROLE_MESA_ENTRADA" 
               %}	
-              	<li><a href="#" onclick="cargarMenu('/oficinas')"><i class="fa fa-address-book-o"></i><span>Oficinas</span></a></li>
+              	<li class="menu-fired" tabindex="22">
+              		<a href="#" onclick="cargarMenu('/oficinas')">
+              		<i class="fa fa-address-book-o"></i><span>Oficinas</span></a>
+              	 </li>
               {% endif %}
               
-              <li><a href="#" onclick="cargarMenu('/sesion')"><i class="fa fa-calendar"></i><span>Sesiones</span></a></li>
+              <li class="menu-fired" tabindex="23" >
+              	<a href="#" onclick="cargarMenu('/sesion')">
+              	<i class="fa fa-calendar"></i><span>Sesiones</span></a>
+              </li>
               
               {% if app.user.rol.rol=="ROLE_ADMINISTRADOR" %}
-              	<li><a href='#' onclick="cargarMenu('/usuarios')"><i class="fa fa-user-circle"></i><span>Usuarios</span></a></li>
+              	<li class="menu-fired" tabindex="24" >
+              		<a href='#' onclick="cargarMenu('/usuarios')">
+              		<i class="fa fa-user-circle"></i><span>Usuarios</span></a>
+              	</li>
               {% endif %}
               
-              <li class="treeview">
+              <li class="treeview" tabindex="25">
                 <a href="#">
                   <i class="fa fa-graduation-cap" aria-hidden="true"></i>
                   <span>Manuales</span>
@@ -376,16 +486,28 @@
                 <ul class="treeview-menu">
                   <li class="divider"></li>
                   	{% if app.user.rol.rol=="ROLE_ADMINISTRADOR" or app.user.rol.rol=="ROLE_COMISIONES" %}
-                  	    <li><a href="#" onclick="obtenerRecurso('{{ app.request.getBaseURL() }}/recursos/manuales/MANUAL_DE_USUARIO_DE_COMISIONES_3.2_FINAL.pdf');" ><i class="fa fa-users"></i><span>Comisiones</span></a></li>
+                  	    <li class="menu-fired" tabindex="26" >
+                  	    	<a href="#" onclick="obtenerRecurso('{{ app.request.getBaseURL() }}/recursos/manuales/MANUAL_DE_USUARIO_DE_COMISIONES_3.2_FINAL.pdf');" >
+                  	    	<i class="fa fa-users"></i><span>Comisiones</span></a>
+                  	    </li>
                   	{% endif %}
                   	{% if app.user.rol.rol=="ROLE_ADMINISTRADOR" or app.user.rol.rol=="ROLE_DESPACHO" %}
-             			<li><a href="#" onclick="obtenerRecurso('{{ app.request.getBaseURL() }}/recursos/manuales/MANUAL_DE_USUARIO_DE_DESPACHO_3.3_FINAL.pdf');" ><i class="fa fa-book"></i><span>Despacho</span></a></li>
+             			<li class="menu-fired" tabindex="27" >
+             				<a href="#" onclick="obtenerRecurso('{{ app.request.getBaseURL() }}/recursos/manuales/MANUAL_DE_USUARIO_DE_DESPACHO_3.3_FINAL.pdf');" >
+             				<i class="fa fa-book"></i><span>Despacho</span></a>
+             			</li>
              		{% endif %}
              		{% if app.user.rol.rol=="ROLE_ADMINISTRADOR" or app.user.rol.rol=="ROLE_MESA_ENTRADA" %}
-             			<li><a href="#" onclick="obtenerRecurso('{{ app.request.getBaseURL() }}/recursos/manuales/MANUAL_DE_USUARIO_DE_MESA_DE_ENTRADAS_2.6_FINAL.pdf');" ><i class="fa fa-inbox"></i><span>Mesa de Entradas</span></a></li>
+             			<li class="menu-fired" tabindex="28" >
+             				<a href="#" onclick="obtenerRecurso('{{ app.request.getBaseURL() }}/recursos/manuales/MANUAL_DE_USUARIO_DE_MESA_DE_ENTRADAS_2.6_FINAL.pdf');" >
+             				<i class="fa fa-inbox"></i><span>Mesa de Entradas</span></a>
+             			</li>
              		{% endif %}    
              		{% if app.user.rol.rol=="ROLE_ADMINISTRADOR" or app.user.rol.rol=="ROLE_LEGISLADOR" %}
-             			<li><a href="#" onclick="obtenerRecurso('{{ app.request.getBaseURL() }}/recursos/manuales/MANUAL_DE_USUARIO_DE_LEGISLADORES_2.1_FINAL.pdf');" ><i class="fa fa-graduation-cap"></i><span>Legisladores</span></a></li>
+             			<li class="menu-fired" tabindex="29" >
+             				<a href="#" onclick="obtenerRecurso('{{ app.request.getBaseURL() }}/recursos/manuales/MANUAL_DE_USUARIO_DE_LEGISLADORES_2.1_FINAL.pdf');" >
+             				<i class="fa fa-graduation-cap"></i><span>Legisladores</span></a>
+             			</li>
              		{% endif %}             
            		</ul>
               </li>

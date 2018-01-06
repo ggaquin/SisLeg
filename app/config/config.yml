@@ -152,6 +152,10 @@ assetic:
             inputs:
                 - '@AppBundle/Resources/Public/css/font-awesome-4.7.0/fonts/fontawesome-webfont.woff' 
             output: 'fonts/fontawesome-webfont.woff'
+        font_awesome_woff2:
+            inputs:
+                - '@AppBundle/Resources/Public/css/font-awesome-4.7.0/fonts/fontawesome-webfont.woff2' 
+            output: 'fonts/fontawesome-webfont2.woff'
         font_awesome_ttf:
             inputs:
                 - '@AppBundle/Resources/Public/css/font-awesome-4.7.0/fonts/fontawesome-webfont.ttf' 
@@ -208,7 +212,7 @@ assetic:
                 - '@AppBundle/Resources/Public/js/plugins/momentjs-2.11.2/moment-2.11.2.min.js'
                 - '@AppBundle/Resources/Public/js/plugins/momentjs-2.11.2/moment-with-locales.js'
                 - '@AppBundle/Resources/Public/js/plugins/bootstrap3-datepicker/bootstrap-datetimepicker.min.js'
-                #- '@AppBundle/Resources/Public/js/plugins/daterangepicker-2.1.19/daterangepicker-2.1.19.js'
+                - '@AppBundle/Resources/Public/js/plugins/mousetrap-1.6.1/mousetrap.js'
                 #- '@AppBundle/Resources/Public/js/plugins/datepicker/bootstrap-datepicker.js'
                 - '@AppBundle/Resources/Public/js/plugins/wysihtml5-0.3.0/wysihtml5-0.3.0.min.js'
                 - '@AppBundle/Resources/Public/js/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.js'

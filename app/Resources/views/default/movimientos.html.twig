@@ -34,7 +34,6 @@
 		.file-preview {
 			max-height: 470px;
 			height: 470px;
-			/*calc(100vh - 350px);*/
 			background-color: #fff;
 			display: inline-block;
 			overflow-y: scroll;
@@ -178,7 +177,7 @@
 							        "url": "api/expediente/getRemitosByCriteria/"+tipoCriterio()+"/"+criterio(),
 			            			"dataSrc": '',
 			            			"error": function (xhr, error, thrown) {
-				            			debugger;
+				            			
 			            			    toastr.error(JSON.parse(xhr.responseText));
 			            			}
 							    },
@@ -196,7 +195,7 @@
 									            "data": null,
 									            "orderable":false,
 									            "render": function(data, type, row){
-										            debugger;
+										            
 									            	var html="<div class='text-center'>";
 									            	if (row.anulado==false && row.fecha_recepcion_formateada==""){
 										            	if (("{{ app.user.rol.rol}}"=="ROLE_ADMINISTRADOR" || "{{ app.user.rol.oficina.oficina }}"== row.oficina_origen)
@@ -221,7 +220,7 @@
 								                "render": function(data, type, row){
 									                var html="";
 									                if (row.numero_remito>0 && '{{ 'MOV_DOWNLOAD' in app.user.listaPermisos }}'){
-    									             	html+="<div class='text-center'><button type='button' title='Descargar Remito' class='btn btn-info btn-xs btn-descargar' onclick='noImplementado();'>"+
+    									             	html+="<div class='text-center'><button type='button' title='Descargar Remito' class='btn btn-info btn-xs btn-descargar'>"+
 									             		   +row.numero_remito+"</span></button></div>";
 								            		}							            	
 									            	return html;
@@ -302,7 +301,7 @@
     					$("#anulacion").modal('hide');
                     	},
                     error: function(jqXHR,textStatus,errorThrown ){
-    					toastr.error(jqXHR.responseText);
+    					toastr.error(JSON.parse(jqXHR.responseText));
 					}
             	});
 			});
@@ -330,7 +329,7 @@
 					tabla.ajax.reload();
                 	},
                 error: function(jqXHR,textStatus,errorThrown ){
-					toastr.error(jqXHR.responseText);
+					toastr.error(JSON.parse(jqXHR.responseText));
 					}
             	});
 			});
@@ -366,7 +365,7 @@
 				var muestra_comisiones="{{ muestra_comisiones|raw }}";
 				$('#detalleRemito >tbody >tr').each(function(){
 					var celdas=$(this).find('td');
-					debugger;
+					
 					detalle={
 							id:$(celdas[0]).text(),
 							folios:$(celdas[2]).find('input').val(),
@@ -407,7 +406,7 @@
 	                	$('#btn-guardar-remito').prop("disabled",false);
 	                	},
 	                error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(jqXHR.responseText);
+						toastr.error(JSON.parse(jqXHR.responseText));
 						}
 	            	});
 	            }
@@ -537,7 +536,7 @@
 				if (filas==0){
     
     				var html="";
-    				debugger;
+    				
     				$("#selExpedientes > option").each(function(){
     					var texto=$(this).text();
     					var numero=texto.substring(0,texto.indexOf('('));

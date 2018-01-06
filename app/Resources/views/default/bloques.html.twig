@@ -29,7 +29,7 @@
 	</style>
 
 	<script type="text/javascript">
-
+	
 		$(document).ready(function () {
 			
 		    var tabla=$('#registroBloques').DataTable({
@@ -104,6 +104,7 @@
 		    $('.btn-alta').click( function () {
 		       $("#modalBloque").find('input[name="idBloque"]').val(0);
 		       $("#modalBloque").find('input[name="nombreBloque"]').val('');
+		       $("#modalBloque").find('input[name="abreviacionBloque"]').val('');
 		       $("#modalBloque").modal("show");
 		    } );
 
@@ -111,6 +112,7 @@
 		        var data = tabla.row( $(this).parents('tr') ).data();
 			    $("#modalBloque").find('input[name="idBloque"]').val(data[ "id" ]);
 			    $("#modalBloque").find('input[name="nombreBloque"]').val(data[ "bloque" ]);
+			    $("#modalBloque").find('input[name="abreviacionBloque"]').val(data[ "abreviacion" ]);
 			    $("#modalBloque").modal("show");
 		    });
 
@@ -131,7 +133,7 @@
   						tabla.ajax.reload();
     				},
     				error: function(jqXHR,textStatus,errorThrown ){
-    					toastr.error(jqXHR.responseText);
+    					toastr.error(JSON.parse(jqXHR.responseText));
     				}
     	      	});
 		    });
@@ -143,7 +145,12 @@
 				    $("#titulo-modal-bloque").html("Editar Bloque");
 			    else $("#titulo-modal-bloque").html("Nuevo Bloque");
 
-			 });
+			    window.setTimeout(function ()
+			    	    {
+			    				document.getElementById("nombreBloque").focus();
+			    	    }, 0);
+			    
+			});
 			 
 			$("#btn-alta-bloque").click(function(){
 
@@ -151,12 +158,16 @@
 				
 				var idBloque = $("#idBloque").val();
 				var nombreBloque = $("#nombreBloque").val();
+				var abreviacionBloque=$("#abreviacionBloque").val();
 			
 				var formData=new FormData();
                 var validacion='';
 
                 validacion+=((nombreBloque.replace(/ /g,'')==0)
                         		?'<li>Debe especificar un nombre para el bloque</li>':'');
+                validacion+=((abreviacionBloque.replace(/ /g,'')==0)
+                				?'<li>Debe especificar una abreviación para el bloque</li>':'');
+        		
                               	
               	if (validacion.length>0) 
  				{
@@ -170,6 +181,7 @@
 
  					formData.append('idBloque',idBloque);
  	              	formData.append('nombreBloque',nombreBloque);
+ 	              	formData.append('abreviacionBloque',abreviacionBloque);
 
  	            	$.ajax({
  		                async: true,
@@ -188,7 +200,7 @@
  	                	$("#btn-alta-bloque").prop("disabled", false);
  	                },
  	                error: function(jqXHR,textStatus,errorThrown ){
- 						toastr.error(jqXHR.responseText);
+ 						toastr.error(JSON.parse(jqXHR.responseText));
  						}
  	            	});
  	            }
@@ -259,15 +271,27 @@
         				        	<div class="form-group">
         				        		<label for="nombreBloque">Nombre</label>
         				        		<input id="nombreBloque" class="form-control" name="nombreBloque" 
-        				        			   placeholder="Nombre del Bloque">
+        				        			   placeholder="Nombre del Bloque (obligatorio max. 100 letras )"
+        				        			   maxlength="100" autofocus="autofocus">
         				        	</div>
+        				        </div>
+        				    </div>
+        				    <div class="row">
+				        		<div class="col-md-4 col-md-offset-4">
+				        			
+            				        	<div class="text-center">
+            				        		<input id="abreviacionBloque" class="form-control text-center" name="abreviacionBloque" 
+            				        			   placeholder="Iniciales (obligatotio max. 10 letras)" maxlength="10">
+            				        	</div>
         				        </div>
     				        </div>
 					        <hr>
-					        <div class="btn-group">
-					        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
-				       			 <button type="button" class="btn btn-primary" id="btn-alta-bloque">Guardar</button>
-					        </div>
+					        <div class="text-center">
+    					        <div class="btn-group">
+    					        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+    				       			 <button type="button" class="btn btn-primary" id="btn-alta-bloque">Guardar</button>
+    					        </div>
+    					   </div>
 				        </form>
 				     </div>
 			    </div>

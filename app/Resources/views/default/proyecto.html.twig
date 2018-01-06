@@ -37,7 +37,6 @@
 		.file-preview {
 			max-height: 470px;
 			height: 470px;
-			/*calc(100vh - 350px);*/
 			background-color: #fff;
 			display: inline-block;
 			overflow-y: scroll;
@@ -56,7 +55,6 @@
 		}
 
 		.div-articulos{
-			/* height: 470px; */
 			max-height: 375px;
 			overflow-y:auto;
 			overflow-x: hidden; 
@@ -116,7 +114,6 @@
 			font-style: italic;
 			font-weight: bold;
 			color: #337ab7;
-			/* background: #337ab7!important; */
 		}
 		
 	</style>
@@ -158,10 +155,6 @@
 			   this.length = 0;
 			   this.push.apply(this, array);
 		};
-
-		/*function noImplementado(){
-			toastr.warning("NO IMPLEMENTADO");
-		}*/
 
 		function criterio(){
 			var tipo=$("#selBusqueda").val();
@@ -340,7 +333,6 @@
 						  "columnDefs": [
 								            {
 								                "targets": [ 0 ],
-								                // "visible": false,
 								                "searchable": false,
 								                "orderable":false
 								            },
@@ -351,7 +343,7 @@
 									            "render": function(data, type, row){
 									            	
 									            	var html="";
-													debugger;
+													
 									            	if((row.numero_expediente=="---" && '{{ 'PROJ_EDIT' in  app.user.listaPermisos }}'))
 									            		html="<button type='button'title='Editar Proyecto' class='btn btn-primary btn-xs btn-editar-proyecto' data-toggle='modal' data-target='#editarProyecto'><span class='glyphicon glyphicon-pencil'></span></button>";
 									            	else
@@ -524,8 +516,7 @@
 					    
 					},
 					error: function(jqXHR,textStatus,errorThrown ){
-						//var response=JSON.parse(jqXHR.responseText)
-						toastr.error(jqXHR.responseText);
+						toastr.error(JSON.parse(jqXHR.responseText));
 					}
 		      	});
 			});
@@ -548,11 +539,6 @@
 				var visto=$("#vistoMod").val();
 				var considerando=$("#considerandoMod").val();
 
-				/* descomentar si se acuerda notificacion */
-				/*
-				var notificar=$('#notificarProyecto').is(':checked');
-				*/
-
 				validacion+=((idtipoProyecto==0)?'<li>Debe seleccionar un tipo de proyecto</li>':'');
 				validacion+=((idConcejal=="")
 								?'<li>Debe especificar un concejal</li>':'');
@@ -570,11 +556,6 @@
 				formData.append("visto",visto);
 				formData.append("considerando",considerando);
 				formData.append("articulos",JSON.stringify(articulosIngresados));
-
-				/* descomentar si se acuerda notificacion */
-				/*
-				formData.append("notificar",notificar);
-				*/
 
 	            if (validacion.length>0) 
 				{
@@ -603,8 +584,7 @@
 	                	$(this).prop("disabled",false);
 	                	},
 	                error: function(jqXHR,textStatus,errorThrown ){
-						//var response=JSON.parse(jqXHR.responseText)
-						toastr.error(jqXHR.responseText);
+						toastr.error(JSON.parse(jqXHR.responseText));
 						}
 	            	});
 	            }
@@ -645,11 +625,6 @@
 					$("#selConcejal").prop("disabled", false);
 					$(".select2-selection__choice").removeClass("bootstrap-primary-background")
 					}
-
-				/* descomentar si se acuerda notificacion */
-				/*
-				$("#notificarProyecto").bootstrapToggle('on');
-				*/
 			});
 			
 			//EVENTO CERRAR MODAL NUEVO PROYECTO
@@ -669,11 +644,6 @@
 				var visto=$("#visto").val();
 				var considerando=$("#considerando").val();
 
-				/* descomentar si se acuerda notificacion */
-				/*
-				var notificar=$('#notificarProyecto').is(':checked');
-				*/
-
 				validacion+=((idtipoProyecto==0)?'<li>Debe seleccionar un tipo de proyecto</li>':'');
 				validacion+=((idConcejal=="")
 							 ?'<li>Debe especificar un concejal</li>':'');
@@ -690,11 +660,6 @@
 				formData.append("visto",visto);
 				formData.append("considerando",considerando);
 				formData.append("articulos",JSON.stringify(articulosIngresados));
-
-				/* descomentar si se acuerda notificacion */
-				/*
-				formData.append("notificar",notificar);
-				*/
 
 	            if (validacion.length>0) 
 				{
@@ -723,8 +688,7 @@
 	                	$('#btn-guardar-proyecto').prop("disabled",false);
 	                	},
 	                error: function(jqXHR,textStatus,errorThrown ){
-						//var response=JSON.parse(jqXHR.responseText)
-						toastr.error(jqXHR.responseText);
+						toastr.error(JSON.parse(jqXHR.responseText));
 						}
 	            	});
 	            }
@@ -891,15 +855,6 @@
 				}
 			});
 
-			/* Descomentar si se acuerda notificacion */
-			/*
-			$('#notificarProyecto').bootstrapToggle({
-		      on:  'Activado',
-		      off: 'Desactivado',
-		      width: "100px"
-		    });
-			*/
-
 			$(".text-area").wysihtml5({
 				toolbar: {
 				    "image": false,
@@ -907,73 +862,6 @@
 				},
 			});
 
-			/*
-			$("#selConcejalesMod").select2({
-				ajax: {
-			    url: '{{ app.request.getBaseURL() }}'+"/api/legislador/nombre/getByCriteria",
-			    dataType: 'json',
-			    delay: 250,
-			    cache: false,
-			    data: function (params) {
-			      return {
-			        q: params.term, 
-			        page: params.page
-			      };
-			    },
-			    processResults: function (data) {
-			       var dato=data;
-		           return {
-				        results: $.map(dato, function(item) {
-
-				        	var bloqueSeleccionado=false;
-				        	$.each($("#selBloquesMod").val(),function(index,idBloque){
-				        		if (item.bloque.id==idBloque) bloqueSeleccionado=true;
-				        	});
-				        	if (!bloqueSeleccionado)
-				            	return { id: item.id, text: item.descripcion };
-				        })
-				    };
-		        },
-			  },
-			  language: "es",
-			  minimumInputLength: 3,
-			  theme: "bootstrap",
-			});
-
-			$("#selBloquesMod").select2({
-				ajax: {
-			    url: '{{ app.request.getBaseURL() }}'+"/api/bloques/getByCriteria",
-			    dataType: 'json',
-			    delay: 250,
-			    cache: false,
-			    data: function (params) {
-			      return {
-			        q: params.term, // search term
-			        page: params.page
-			      };
-			    },
-			    processResults: function (data) {
-			       var dato=data;
-		           return {
-				        results: $.map(dato, function(item) {
-				            return { id: item.id, text: item.bloque };
-				        })
-				    };
-		        },
-			  },
-			  language: "es",
-			  minimumInputLength: 3,
-			  theme: "bootstrap",
-			}).on('select2:select',function(evt){
-				var seleccion="("+evt.params.data.text+")";
-				var elementos=$("#selConcejalesMod")[0].children.length;
-				for (var i = elementos-1; i > -1; i--) {
-					if ($("#selConcejalesMod")[0].children[i].text.indexOf(seleccion)!=-1)
-						$("#selConcejalesMod")[0].children[i].remove();
-				}
-			});
-			*/
-			
 			$(".selConcejal").select2({
 				ajax: {
 			    url: '{{ app.request.getBaseURL() }}'+"/api/legislador/nombre/getByCriteria",
@@ -1000,72 +888,6 @@
 			  theme: "bootstrap",
 			});
 
-			/*
-			$("#selConcejales").select2({
-				ajax: {
-			    url: '{{ app.request.getBaseURL() }}'+"/api/legislador/nombre/getByCriteria",
-			    dataType: 'json',
-			    delay: 250,
-			    cache: false,
-			    data: function (params) {
-			      return {
-			        q: params.term, 
-			        page: params.page
-			      };
-			    },
-			    processResults: function (data) {
-			       var dato=data;
-		           return {
-				        results: $.map(dato, function(item) {
-
-				        	var bloqueSeleccionado=false;
-				        	$.each($("#selBloques").val(),function(index,idBloque){
-				        		if (item.bloque.id==idBloque) bloqueSeleccionado=true;
-				        	});
-				        	if (!bloqueSeleccionado)
-				            	return { id: item.id, text: item.descripcion };
-				        })
-				    };
-		        },
-			  },
-			  language: "es",
-			  minimumInputLength: 3,
-			  theme: "bootstrap",
-			});
-
-			$("#selBloques").select2({
-				ajax: {
-			    url: '{{ app.request.getBaseURL() }}'+"/api/bloques/getByCriteria",
-			    dataType: 'json',
-			    delay: 250,
-			    cache: false,
-			    data: function (params) {
-			      return {
-			        q: params.term, // search term
-			        page: params.page
-			      };
-			    },
-			    processResults: function (data) {
-			       var dato=data;
-		           return {
-				        results: $.map(dato, function(item) {
-				            return { id: item.id, text: item.bloque };
-				        })
-				    };
-		        },
-			  },
-			  language: "es",
-			  minimumInputLength: 3,
-			  theme: "bootstrap",
-			}).on('select2:select',function(evt){
-				var seleccion="("+evt.params.data.text+")";
-				var elementos=$("#selConcejales")[0].children.length;
-				for (var i = elementos-1; i > -1; i--) {
-					if ($("#selConcejales")[0].children[i].text.indexOf(seleccion)!=-1)
-						$("#selConcejales")[0].children[i].remove();
-				}
-			});
-			*/
 	});
 	</script>
 	<section class="content-header">

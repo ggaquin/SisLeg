@@ -97,12 +97,12 @@
 									            "data": null,
 									            "orderable":false,
 									            "render": function(data, type, row){
-										            debugger;
+										            
 										            var html="<div class='btn-group'>";
 
 									            	if ('{{ 'COM_ADD' in app.user.listaPermisos }}')
-    										            html+="<button type='button'  title='Editar Comision' class='btn btn-primary btn-xs btn-editar'><span class='glyphicon glyphicon-pencil'></span>"+
-    									            		  "</button>";
+    										            html+="<button type='button'  title='Editar Comision' class='btn btn-primary btn-xs btn-editar'>"+
+    										            	  "<span class='glyphicon glyphicon-pencil'></span></button>";
 									            	if ('{{ 'COM_DEL' in app.user.listaPermisos }}')
 										            	html+="<button type='button'  class='btn btn-danger btn-xs btn-eliminar' title='Eliminar Comisión'><span class='glyphicon glyphicon-erase'></span>"+
 										            		  "</button>";
@@ -127,6 +127,8 @@
 					      "info": true,
 					      "autoWidth": false,
 			});
+
+		    $("button.btn-editar:first").focus();
 
 		    $('.btn-alta').click( function () {
 		       $("#modalComision").find('input[name="idComision"]').val(0);
@@ -156,7 +158,7 @@
   						tabla.ajax.reload();
     				},
     				error: function(jqXHR,textStatus,errorThrown ){
-    					toastr.error(jqXHR.responseText);
+    					toastr.error(JSON.parse(jqXHR.responseText));
     				}
     	      	});
 		    });
@@ -164,6 +166,7 @@
 		    $("#modalComision").on('show.bs.modal', function () {
 			    
 		    	$("#modalComision").find('input[name="descripcion"]').val("");
+		    	$("#modalComision").find('input[name="letraOD"]').val("");
 			    $("#modalComision").find('select[name="selPresidente"]').empty().change();
 			    $("#modalComision").find('select[name="selVicePresidente"]').empty().change();
 			    $("#modalComision").find('select[name="selTitulares"]').empty().change();
@@ -207,7 +210,7 @@
         				    $("#selTipoComision").val(data.tipo_comision);	
         				},
         				error: function(jqXHR,textStatus,errorThrown ){
-        					toastr.error(jqXHR.responseText);
+        					toastr.error(JSON.parse(jqXHR.responseText));
         				}
         	      	});
 				}
@@ -243,25 +246,25 @@
 
 			
 			$("#selPresidente").on('select2:selecting',function(evt){
-				debugger;
+				
 				var idItem=evt.params.args.data.id;
 				verificarConcejales("selPresidente",idItem);				
 			});
 
 			$("#selVicePresidente").on('select2:selecting',function(evt){
-				debugger;
+				
 				var idItem=evt.params.args.data.id;
 				verificarConcejales("selVicePresidente",idItem);				
 			});
 
 			$("#selTitulares").on('select2:selecting',function(evt){
-				debugger;
+				
 				var idItem=evt.params.args.data.id;
 				verificarConcejales("selTitulares",idItem);				
 			});
 
 			$("#selTitulares").on('select2:selecting',function(evt){
-				debugger;
+				
 				var idItem=evt.params.args.data.id;
 				verificarConcejales("selSuplentes",idItem);				
 			});
@@ -411,14 +414,15 @@
         				        	<div class="form-group">
         				        		<label for="descripcion">Nombre de la comision</label>
         				        		<input id="descripcion" class="form-control" name="descripcion" 
-        				        			   placeholder="Nombre de la comision">
+        				        			   placeholder="Nombre de la comision (obligatorio max. 100 letras)"
+        				        			   maxlength="100" autofocus="autofocus" >
         				        	</div>
         				        </div>
         				        <div class="col-md-2">
         				        	<div class="form-group">
         				        		<label for="letraOD">Letra O.D</label>
-        				        		<input type="text" class="form-control input-sm" id="letraOD"
-        				        		       name="letraOD" maxlength="2"/>
+        				        		<input type="text" class="form-control text-center" id="letraOD"
+        				        		       name="letraOD" maxlength="2" placeholder="max. 2 letras"/>
         				        	</div>
         				        
         				        </div>

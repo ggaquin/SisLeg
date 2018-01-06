@@ -65,7 +65,6 @@
 		.tab{
 			height: 502px;
 			max-height:503px;
-			/* overflow-y: auto;  */
 		}
 		
 		.div-revision{
@@ -360,7 +359,7 @@
 				dataType: 'json	',
 				url:'{{ app.request.getBaseURL() }}'+'/api/sesion/getLastByType',
 				success: function(data){
-					debugger;
+					
 					var html='<option value="0">Seleccione Sesion</option>';
 					var pertenece=false
 					
@@ -375,9 +374,7 @@
 					
 						html+='<option value="'+sesionPersistida.id+'" selected >'+
 								 sesionPersistida.fecha_muestra+'</option>';
-						//$(control).prop("disabled",true);
-						//$(".divChkUltimoMomento").addClass("hidden");
-						 					
+								 
 					$.each(data, function(index,sesion){
 						html+='<option value="'+sesion.id+'" '+
 							  ((valorSeleccionado==sesion.id)?'selected':'') +'>'+sesion.fecha_formateada+'</option>';
@@ -388,12 +385,14 @@
     							
 				},
 				error: function(jqXHR,textStatus,errorThrown ){
-					toastr.error(jqXHR.responseText);
+					toastr.error(JSON.parse(jqXHR.responseText));
 				}
 	      	});
 		}
 		
 		$(document).ready(function () {
+
+			$('[autofocus]', this).focus();
 
 			var articulosDictamen=[];
 			var articulosRevision=[];
@@ -527,7 +526,7 @@
         													html+="<span class='label label-danger'>Sin Dictamen</span>";
     												}
     												else{
-															debugger;
+															
     														if (row.dictamen_mayoria_es_u==true && '{{ 'DIC_ULT_MOM' in  app.user.listaPermisos }}')
        														 html+="<button type='button'title='Quitar de Ultimo Momento' "+
        														       "class='btn btn-danger btn-xs btn-quitar-u' id='"+row.dictamen_mayoria_id+"' "+
@@ -541,6 +540,11 @@
         															  " data-toggle='modal' data-target='#modalDictamen' id='"+row.dictamen_mayoria_id+"'>"+
         															  "Editar Dictamen</button>";
 
+        													html+="<button type='button' title='Firmas' "+
+          														  "class='btn btn-primary btn-xs btn-firmar' " +
+          														  "id='"+row.dictamen_mayoria_id+"'>"+
+          														  "<span class='fa fa-thumbs-o-up'></span></button>";
+        															  
     														html+="<button type='button' title='Descargar Dictamen' "+
       															  "class='btn btn-info btn-xs btn-descargar-dictamen' " +
       															  "id='"+row.dictamen_mayoria_id+"'>"+
@@ -584,6 +588,11 @@
             														  ((row.edicion_habilitada==false)?"disabled":"")+
             														  " data-toggle='modal' data-target='#modalDictamen' id='"+row.dictamen_primera_minoria_id+"'>"+
             														  "Editar Dictamen</button>";
+
+														  	html+="<button type='button' title='Firmas' "+
+  														  		  "class='btn btn-primary btn-xs btn-firmar' " +
+  														  		  "id='"+row.dictamen_primera_minoria_id+"'>"+
+  														  		  "<span class='fa fa-thumbs-o-up'></span></button>";
             														  
         													html+="<button type='button' title='Descargar Dictamen' "+
 															  	  "class='btn btn-info btn-xs btn-descargar-dictamen' " +
@@ -628,7 +637,12 @@
             														  ((row.edicion_habilitada==false)?"disabled":"")+
             														  " data-toggle='modal' data-target='#modalDictamen' id='"+row.dictamen_segunda_minoria_id+"'>"+
             														  "Editar Dictamen</button>";
-
+            														  
+    														html+="<button type='button' title='Firmas' "+
+													  		  	  "class='btn btn-primary btn-xs btn-firmar' " +
+													  		  	  "id='"+row.dictamen_segunda_minoria_id+"'>"+
+													  		  	  "<span class='fa fa-thumbs-o-up'></span></button>";
+            														  
     														html+="<button type='button' title='Descargar Dictamen' "+
 														  	  	  "class='btn btn-info btn-xs btn-descargar-dictamen' " +
 														  	  	  "id='"+row.dictamen_segunda_minoria_id+"'>"+
@@ -666,11 +680,11 @@
 		        					 e.currentTarget.id;
 		    } );
 
-		    //EVENTO QUITAR ULTIMO MOMENTO
+		    //EVENTO BOTON QUITAR ULTIMO MOMENTO
 		    $('#registroAsignaciones tbody').on( 'click', '.btn-quitar-u', function (e) {
 			    
-		        var id=e.currentTarget.id
-		        
+		        var id=e.currentTarget.id;
+		        		        
 		        $.ajax({
 
 					type:'PATCH',
@@ -687,13 +701,92 @@
 		        
 		    });
 
+			//EVENTO BOTON FIRMAS
+			$('#registroAsignaciones tbody').on( 'click', '.btn-firmar', function (e) {
+		        var id=e.currentTarget.id;
+		        $("#modalFirmas").find('input[name="idDictamen"]').val(id);
+		        $("#modalFirmas").modal('show');
+		      
+		    });
+
+			//MODAL FIRMA AL ABRIR
+			$('#modalFirmas').on('show.bs.modal', function () {
+
+				var idDictamen= $("#modalFirmas").find('input[name="idDictamen"]').val();
+				
+				$.ajax({
+    				type:'Get',
+    				dataType: 'json	',
+    				url:'{{ app.request.getBaseURL() }}'+'/api/comisionAsignacion/getFirmasDictamen/'+idDictamen,
+    				success: function(data){
+    					$("#selFirmantes").empty().change();
+    					$.each(data,function(i,firma){
+    						var newOption = new Option(firma.nombre_completo, firma.id, true, true);
+        				   	$("#selFirmantes").append(newOption).trigger('change');
+        				});
+    				},
+    				error: function(jqXHR,textStatus,errorThrown ){
+    					toastr.error(JSON.parse(jqXHR.responseText));
+    				}
+    	      	});
+			});
+
+			//EVENTO BOTÓN GUARDAR FIRMAS
+			$("#btn-guardar-firmantes").click(function(){
+
+				$(this).prop("disabled", true);
+
+				var idDictamen=$("#modalFirmas").find('input[name="idDictamen"]').val();
+				var firmantes=$("#selFirmantes").val();
+				var formData=new FormData();
+				var validacion='';
+
+				validacion+=((firmantes==null || firmantes.length==0)
+								?'<li>Debe indicar al menos un firmante</li>':'');
+
+				if (validacion.length>0) 
+ 				{
+ 					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+ 								validacion+'</ul>':'');
+ 					toastr.error(validacion);
+ 					$(this).prop("disabled", false);
+ 					return false;
+ 				}
+ 				else{
+
+ 					formData.append('idDictamen',idDictamen);
+ 					formData.append('firmantes',firmantes);
+
+ 	            	$.ajax({
+ 		                async: true,
+ 		                url: '{{ app.request.getBaseURL() }}'+'/api/comisionAsignacion/saveFirmasDictamen',
+ 		                data: formData,
+ 		                cache: false,
+ 		                contentType: false,
+ 		                processData: false,
+ 		                type: 'POST',
+ 	                success: function(data) {
+ 	                    toastr.success(data);
+ 						$('#modalFirmas').modal('hide');
+ 	                	},
+ 	                complete:function(){
+ 	                	$("#btn-guardar-firmantes").prop("disabled", false);
+ 	                },
+ 	                error: function(jqXHR,textStatus,errorThrown ){
+ 						toastr.error(JSON.parse(jqXHR.responseText));
+ 						}
+ 	            	});
+ 	            }
+				
+			});
+
 		  //-----------------------------------------------------------------------------------------------------------------
 		  //----------------------------------------------ASIGNACION DE SESIÓN-----------------------------------------------
 		  //-----------------------------------------------------------------------------------------------------------------
 
 		  //EVENTO ASIGNAR SESION DE LA GRILLA DE ASIGNACIONES	
 		  $('#registroAsignaciones tbody').on( 'click', '.btn-asignar-sesion', function (event) {
-				debugger;
+				
 		    	var data = tabla.row( $(this).parents('tr') ).data();
 		        $("#modalSesionAsignacion").find("input[name='idAsignacion']").val(data[ "id" ]);
 		        actualizarSesiones($("#selSesion"),0,null);
@@ -706,15 +799,6 @@
 		        $("#modalSesionAsignacion").find("input[name='idAsignacion']").val(data[ "id" ]);
 		        var idSesion=data[ "sesion_id" ];
 		        var sesionPersistida=data[ "sesion" ];
-		        /* var ultimoMomento=data[ "ultimo_momento" ];
-		        if (ultimoMomento==true){
-					$(".chkUltimoMomento").bootstrapToggle("on");
-					$(".divChkUltimoMomento").removeClass("hidden");
-			    }
-		        else{
-    		        	$(".chkUltimoMomento").bootstrapToggle("off");
-    					$(".divChkUltimoMomento").addClass("hidden");
-			        } */
 		        actualizarSesiones($("#selSesion"),idSesion,sesionPersistida);
 		    });
 
@@ -725,8 +809,6 @@
 			  
 				var idSesion=$("#modalSesionAsignacion").find("select[name='selSesion']").val();
 				var idAsignacion=$("#modalSesionAsignacion").find("input[name='idAsignacion']").val();
-				/* var ultimoMomento=$("#modalSesion").find("input[name='chkUltimoMomento']").is(":checked"); */
-
 				var validacion='';
 				var formData=new FormData();
 
@@ -735,7 +817,6 @@
 			 	
 				formData.append('idSesion',idSesion);
 				formData.append('idAsignacion',idAsignacion);
-				/* formData.append('ultimoMomento',ultimoMomento); */
 				
 				if (validacion.length>0) 
 				{
@@ -764,7 +845,7 @@
 	                	$("#btn-guardar-sesion").prop("disabled",false);
 	                	},
 	                error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(jqXHR.responseText);
+						toastr.error(JSON.parse(jqXHR.responseText));
 						}
 	            	});
 	            }  
@@ -831,7 +912,7 @@
 	                	$("#btn-guardar-alta-sesion").prop("disabled", false);
 	                },
 	                error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(jqXHR.responseText);
+						toastr.error(JSON.parse(jqXHR.responseText));
 						}
 	            	});
 	            }
@@ -897,17 +978,16 @@
 		        articulosDictamen.length=0;
 		    	articulosRevision.length=0;
 		    	$(".dependiente-proyecto").addClass("hidden");
-				debugger;
+				
 				if (idDictamen!=0){
             		    $.ajax({
             				type:'Get',
             				dataType: 'json	',
             				url:'{{ app.request.getBaseURL() }}'+'/api/comisionAsignacion/getDictamen/'+idDictamen,
             				success: function(data){
-								debugger;
+								
             					//controles comunes a todos los dictamenes
             					$("#selTipoRedaccion").val(data.clase_dictamen);
-            					/* $("#selTipoRedaccion").change(); */
 
             					if (data.clase_dictamen=="articulado")
             						$("#selTipoDictamen").val(data.id_tipo_dictamen);
@@ -926,7 +1006,7 @@
 
 								//caso particular dictamen por revision
             					if (data.clase_dictamen=="revision"){
-                					//var revision=data.revision_proyecto;
+                					
             					    $("#vistos").html(data.vistos);
             				        $("#considerandos").html(data.considerandos);
             				        
@@ -944,12 +1024,7 @@
             				    	$("#modalDictamen").find('input[id="idRevision"]').val(data.revision_id);
             				    	$("#selTipoRedaccion").change();
             					   	
-                				} 
-
-            					 //$("#selComisiones").prop("disabled", true); 
-            					 //$(".select2-selection__choice").addClass("bootstrap-primary-background"); 	
-
-            					 //actualizarSesiones($("#selSesion"),data.sesion_id);		
+                				}	
             				},
             				error: function(jqXHR,textStatus,errorThrown ){
             					toastr.error(jqXHR.responseText);
@@ -974,13 +1049,12 @@
 				var tipoDictamen=$("#selTipoDictamen").val();
 		        var comisiones=$("#selComisiones").val();
 		        var texto=$("#texto").val();
-		        //var	idSesion=$("#selSesion").val();
 		        var articulos=null;
 		        if (tipoRedaccion!="basico")
 		        	articulos=((tipoRedaccion=="articulado")?articulosDictamen:articulosRevision);
 	        	var vistosYConsiderandos= $("#vistosYConsiderandos").is(":checked");
 	        	var editaRevision=$("#editaRevision").is(":checked");
-	        	debugger;
+	        	
 	        	var idRevision=$("#idRevision").val();
 		        var vistos=$("#vistos").html();
 		        var considerandos=$("#considerandos").html();
@@ -990,8 +1064,6 @@
 
 				validacion+=((texto.replace(/ /g, '').length==0)
 						 	 ?'<li>Debe poveer un texto para el dictamen</li>':'');
-
-			 	//validacion+=((idSesion==0)?'<li>Debe seleccionar una sesion</li>':'')
 			 	 
 				validacion+=((tipoDictamen==0 && tipoRedaccion=="articulado")
 							 ?'<li>Debe especificar el tipo de dictamen</li>':'');
@@ -1017,7 +1089,7 @@
 					}
 				
 		    	}	
-				debugger;
+				
 				formData.append('idAsignacion',idAsignacion);
 				formData.append('idDictamen',idDictamen);
 				formData.append('idExpediente',idExpediente);
@@ -1027,7 +1099,6 @@
 				formData.append('tipoDictamen',tipoDictamen);
 				formData.append('comisiones',comisiones);
 				formData.append('texto',texto);
-				//formData.append('idSesion',idSesion);
 				formData.append('idRevision',idRevision);
 				formData.append('editaRevision',editaRevision);
 				formData.append('vistosYConsiderandos',vistosYConsiderandos);
@@ -1098,7 +1169,7 @@
         	    				tabla.ajax.reload();
         	               	},
         	               error: function(jqXHR,textStatus,errorThrown ){
-        	    				toastr.error(jqXHR.responseText);
+        	    				toastr.error(JSON.parse(jqXHR.responseText));
         	    			}
         	           	});
 				 }
@@ -1161,7 +1232,7 @@
  	                	$(this).prop("disabled", false);
  	                },
  	                error: function(jqXHR,textStatus,errorThrown ){
- 						toastr.error(jqXHR.responseText);
+ 						toastr.error(JSON.parse(jqXHR.responseText));
  						}
  	            	});
  	            }
@@ -1439,7 +1510,7 @@
 			});
 			
 			$('#revisiones tbody').on( 'click', '.btn-usar', function () {
-				debugger;
+				
 		        var data = tablaRevisiones.row( $(this).parents('tr') ).data();
 		        $("#modalDictamen").find('div[id="vistos"]').html(data[ "visto" ]);
 		        $("#modalDictamen").find('input[id="idRevision"]').val(data[ "id" ]);
@@ -1506,7 +1577,7 @@
  	                	$("#btn-guardar-asignacion").prop("disabled", false);
  	                },
  	                error: function(jqXHR,textStatus,errorThrown ){
- 						toastr.error(jqXHR.responseText);
+ 						toastr.error(JSON.parse(jqXHR.responseText));
  						}
  	            	});
  	            }
@@ -1523,7 +1594,6 @@
 		    	var htmlEdicion=$("#modalDictamen").find('div[id="vistos"]').html();
 		    	$("#edicion-texto").data("wysihtml5").editor.setValue(htmlEdicion);
 		    	setTimeout(function() { $("#edicion-texto").data("wysihtml5").editor.focus(); }, 10);
-		    	//$("#edicion-texto").data("wysihtml5").editor.focus();
 		   		$("#modalTexto").modal("show");
 			});
 
@@ -1533,7 +1603,6 @@
 		    	var htmlEdicion=$("#modalDictamen").find('div[id="considerandos"]').html();
 		    	$("#edicion-texto").data("wysihtml5").editor.setValue(htmlEdicion);
 		    	setTimeout(function() { $("#edicion-texto").data("wysihtml5").editor.focus(); }, 10);
-		    	//$("#edicion-texto").data("wysihtml5").editor.focus();
 		   		$("#modalTexto").modal("show");
 		    	
 			});
@@ -1560,7 +1629,7 @@
 			}); 				
 	
 			$("#btn-nueva-sesion-asignacion").click(function(){
-				debugger;
+				
 				$("#modalAltaSesion").find('input[name="control"]').val("selSesion");
 				$("#modalAltaSesion").modal('show');
 			});
@@ -1664,6 +1733,33 @@
 			  minimumInputLength: 1,
 			  theme: "bootstrap",
 			});
+
+			$("#selFirmantes").select2({
+				ajax: {
+				    url: '{{ app.request.getBaseURL() }}'+"/api/comisionAsignacion/getIntegrantesComisionesByDictamen",
+				    dataType: 'json',
+				    delay: 250,
+				    cache: false,
+				    data: function (params) {
+				      return {
+								q: params.term, // search term
+								r: $("#modalFirmas").find('input[name="idDictamen"]').val(),
+	        			        page: params.page
+	        			      };
+				    },
+				    processResults: function (data) {
+				       var dato=data;
+			           return {
+					        results: $.map(dato, function(item) {
+					            return { id: item.id, text: item.nombre_completo };
+					        })
+					    };
+			        },
+				  },
+				  language: "es",
+				  minimumInputLength: 3,
+				  theme: "bootstrap",
+				});
 			
 			addClasssToSelect2("group-selComisiones","selComisiones");
 			addClasssToSelect2("group-selConcejales","selConcejales");
@@ -1678,15 +1774,6 @@
 		      height: "35px"
 		    });
 
-			/* $('.chkUltimoMomento').bootstrapToggle({
-			      on:  'SI',
-			      off: 'NO',
-			      offstyle: 'danger',
-			      onstyle: 'success',
-			      width: "136.66px",
-			      height: "34px"
-			});
- 			*/
 			$('#vistosYConsiderandos').bootstrapToggle({
 			      on:  'Incluye Vistos y Considerandos',
 			      off: 'No Incluye Vistos y Considerandos',
@@ -1747,7 +1834,7 @@
         						$("#selSesionFiltro").html(html);    			
         					},
         					error: function(jqXHR,textStatus,errorThrown ){
-        						toastr.error(jqXHR.responseText);
+        						toastr.error(JSON.parse(jqXHR.responseText));
         					}
         		      	});
 				}
@@ -1758,7 +1845,7 @@
 
 				var control=$(this).val();
 				$(".busqueda").addClass('hidden');
-				debugger;
+				
 				if(control!="busqueda-0"){
 					if (control=="busqueda-4")
 						$(".sesion").removeClass('hidden');
@@ -1861,7 +1948,7 @@
 											<input type="checkbox" id="estadoFiltro" data-size="normal"/>
 							        	</div> 
 										<button type="button" class="btn btn-primary filtro" id="btn-busqueda">Aplicar</button>
-										<select class="form-control filtro" id="selBusqueda">
+										<select class="form-control filtro" id="selBusqueda" autofocus="autofocus">
 											<option value="busqueda-0">Vigentes</option>
 											<option value="busqueda-1">Número Expediente</option>
 											<option value="busqueda-2">Comision</option>
@@ -1906,8 +1993,9 @@
 	                		<th>id</th>
 	                		<th>
 	                			<div class="btn-group">
-	                				{% if 'COM_EXP_COM_EDIT' in app.user.listaPermisos %}
-    		                			<button type="button" title="Agregar Asignación"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modalNuevaAsignacion">
+	                				{% if 'COM_EXP_ADD' in app.user.listaPermisos %}
+    		                			<button type="button" title="Agregar Asignación"class="btn btn-primary btn-xs" data-toggle="modal" 
+    		                					data-target="#modalNuevaAsignacion">
     							    			<span class="glyphicon glyphicon-plus"></span>
     							    	</button>
 							    	{% endif %}
@@ -1984,10 +2072,10 @@
 				    	<input type="hidden" id="nombreComision" name="nombreComision">
 					    <div class="row">
 					    	<div class="col-md-3">
-					    		<div class="form-group">
+					    		<div class="form-group">	
 					        		<label for="selTipoRedaccion">Tipo Redacción</label>
 					        		<select class="form-control" id="selTipoRedaccion" 
-					        				name="selTipoRedaccion">
+					        				name="selTipoRedaccion" autofocus="autofocus">
 						        		<option value="basico" selected="selected">Básico</option>
 						        		<option value="articulado">Articulado</option>	
 						        		<option value="revision">Revisión</option>	
@@ -2425,6 +2513,42 @@
 						       			 <button type="button" class="btn btn-primary" id="btn-guardar-alta-sesion">Guardar</button>
 						        	</div>
 						        </div>
+					        </div>	
+				        </form>
+				     </div>
+			    </div>
+		  	</div>
+		</div>
+		<div id="modalFirmas" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
+		 	<div class="modal-dialog">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666;color:#FFF">
+				        <button type="button" class="close" data-dismiss="modal" >&times;</button>
+				        <h4 class="modal-title" id="tituloModal"><strong>Firmas Dictamen</strong></h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				        <form role="form">
+				        	<input type="hidden" name="idDictamen" id="idDictamen">
+				        	<div class="row">
+				        		<div class="col-md-12">
+    				        		<div class="form-group" id="group-selConcejales">
+    					        		<label for="selFirmantes">Firmantes</label>
+    					        		<select class="form-control" multiple="multiple" data-width="100%" 
+    					        			id="selFirmantes" name="selFirmantes">
+    					        		</select>	
+    					        	</div>
+    					        </div> 
+					        <hr>
+					        <div class="row">
+					        	<div class="col-md-12">
+    					        	<div class="text-center">
+    							        <div class="btn-group">
+    							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+    						       			 <button type="button" class="btn btn-primary" id="btn-guardar-firmantes">Guardar</button>
+    						        	</div>
+    						        </div>
+    						    </div>
 					        </div>	
 				        </form>
 				     </div>

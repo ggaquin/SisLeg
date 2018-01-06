@@ -506,322 +506,7 @@ class DefaultController extends Controller
     			'tiposSesion' => $tiposSesion
     	));
     }
-    
-    
-    /**
-     * @Route("/imprimir/remito")
-     /
-    public function impresionRemitoAction(Request $request)
-    {
-    	
- 
-    }*/
-
-    /**
-     * @Route("/imprimir")
-     */
-    public function impresionAction(Request $request)
-    {
-        $tipoDocumento = $request->query->get('tipoDocumento');
-        $id = $request->query->get('id');
         
-        $idExpediente=(($tipoDocumento=='expediente')?$id:null);
-        $idProyecto=(($tipoDocumento=='proyecto')?$id:null);
-        $parametrosCaratula=null;
-        $parametrosProyecto=null;
-
-        $parametrosCaratula=$this->get('impresion_servicio')->traerParametrosCaratula($idExpediente);
-
-        $idProyecto=((!is_null($parametrosCaratula))?$parametrosCaratula["idProyecto"]: $idProyecto);
-
-        $parametrosProyecto=$this->get('impresion_servicio')->traerParametrosProyecto($idProyecto);
-        
-        $tipo = (!is_null($parametrosCaratula)?$parametrosCaratula["tipo"]:$parametrosProyecto["tipo"]);
-
-        $nombre = (!is_null($parametrosCaratula)?$parametrosCaratula["nombreArchivo"]:$parametrosProyecto["nombreArchivo"]);
-
-        $titulo = (!is_null($parametrosCaratula)?$parametrosCaratula["titulo"]:$parametrosProyecto["titulo"]);
-
-        $pdf = $this->get('white_october.tcpdf')->create();
-        
-        // activa o desactiva encabezado de página
-        $pdf ->SetPrintHeader(true);
-        // activa o desactiva el pie de página
-        if ($tipoDocumento=='proyecto') $pdf ->SetPrintFooter(true); else $pdf ->SetPrintFooter(false);
-        //$base=$request->getSchemeAndHttpHost().$request->getBasePath();
-        //$pdf->setBaseImagePath($base);
-        $urlImage='/web/document_bootstrap/escudopng2_mini.png';
-        // set default header data
-        $pdf ->SetAuthor('SisLeg');
-        $pdf ->SetTitle($titulo);
-        $pdf ->SetSubject($nombre);
-        $pdf ->SetHeaderData($urlImage, 8, $titulo, $tipo, array(0,0,0), array(0,0,0));
-        // set default monospaced font
-        $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
-        // set margins
-        $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
-        $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
-        $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
-        // set auto page breaks
-        $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
-        $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
-
-        /*---------------------------------------------------------------------------------------
-          --------------------------------------Caratula-----------------------------------------
-          ---------------------------------------------------------------------------------------*/
-
-        if (!is_null($parametrosCaratula))
-        {
-            $documento=$parametrosCaratula["documento"];
-            $pdf->AddPage('P','LEGAL');
-            $pdf->Ln(10);
-            $html='<h1>CONSEJO DELIBERANTE</h1><h3>DE</h3><h3>LOMAS DE ZAMORA</h3>';
-            $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'C', true);
-            $html='<table style="margin-top:15px;background-color:white">
-                      <tr style="height:20px">
-                        <td style="width:30%;vertical-align: bottom;">
-                          Expediente N°:
-                        </td>
-                        <td style="width:15%;font-size:x-large;vertical-align: bottom;">
-                          <strong><i>'.$documento["numeroExp"].'</i></strong>
-                        </td>
-                        <td style="width:20%;vertical-align: bottom;">
-                          Letra:
-                        </td>
-                        <td style="width:8%;vertical-align: bottom;font-size:x-large;">
-                          <strong><i>'.$documento["letra"].'</i></strong>
-                        </td>
-                        <td style="width:15%;vertical-align: bottom;">
-                          Año:
-                        </td>
-                        <td style="width:8%;vertical-align: bottom;font-size:x-large;">
-                          <strong><i>'.$documento["ejercicio"].'</i></strong>
-                        </td>
-                      </tr>
-                    </table>';
-            $pdf->Ln(15);
-            $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'C', true);
-            $pdf->Ln(15);
-            $pdf->writeHTMLCell(10, 80, '', '', '', 0, 0, 0, true, 'C', true);
-            $pdf->SetDrawColor(0, 0, 0, 3);
-            $pdf->SetFillColor(0, 0, 0, 3);
-            $html=$documento["caratula"];
-            $pdf->writeHTMLCell(165, 100, '', '', $html, 1, 1, 1, true, 'L', true);
-            $pdf->Ln(10);
-            $pdf->SetDrawColor(0, 0, 0, 100);
-            $pdf->SetFillColor(0, 0, 0, 0);
-            $html='<table style="background-color:white">
-                      <tr>
-                        <td style="width:140px;text-align: left;">Fecha Entrada:</td>
-                        <td style="text-align: left"><strong><i>'.$documento["entrada"].'</i></strong></td>
-                        </tr>
-                    </table>';
-            $pdf->writeHTMLCell(165, '', '', '', $html, 0, 1, 1, true, 'L', true);
-            $pdf->Ln(10);
-            $referencia=(($documento["tieneProyecto"]==false)?'Origen':'Autores');
-            $html='<table style="background-color:white">
-                      <tr>
-                        <td style="width:140px;text-align: left;">'.$referencia.':</td>
-                        <td style="width:500px;text-align: justify"><strong><i>'.$documento["origen"].'</i></strong>
-                        </td>
-                        </tr>
-                    </table>';
-            $pdf->writeHTMLCell(165, '', '', '', $html, 0, 1, 1, true, 'L', true);
-            $pdf->Ln(10);
-            $html='<table style="background-color:white">
-                      <tr>
-                        <td style="width:140px;">Observaciones:</td>
-                        </tr>
-                    </table>';
-            $pdf->writeHTMLCell(40, '', '', '', $html, 0, 0, 1, true, 'L', true);
-            $html='<hr><hr>';
-            $pdf->SetFillColor(0, 0, 0, 3);
-            $pdf->writeHTMLCell(135, 10, '' , '', '', 0, 1, 1, true, 'L', true);
-            $pdf->SetFillColor(0, 0, 0, 0);
-            $pdf->writeHTMLCell(40, '', '', '', '', 0, 0, 1, true, 'L', true);
-            $pdf->SetFillColor(0, 0, 0, 3);
-            $pdf->writeHTMLCell(135, '', '' , '', $html, 0, 1, 1, true, 'L', true);
-            $pdf->SetFillColor(0, 0, 0, 0);
-            $pdf->writeHTMLCell(40, '', '', '', '', 0, 0, 1, true, 'L', true);
-            $pdf->SetFillColor(0, 0, 0, 3);
-            $pdf->writeHTMLCell(135, '', '' , '', $html, 0, 1, 1, true, 'L', true);
-            $pdf->SetFillColor(0, 0, 0, 0);
-            $pdf->writeHTMLCell(40, '', '', '', '', 0, 0, 1, true, 'L', true);
-            $pdf->SetFillColor(0, 0, 0, 3);
-            $pdf->writeHTMLCell(135, '', '' , '', $html, 0, 1, 1, true, 'L', true);
-            $pdf->SetFillColor(0, 0, 0, 0);
-            $pdf->writeHTMLCell(40, '', '', '', '', 0, 0, 1, true, 'L', true);
-            $pdf->SetFillColor(0, 0, 0, 3);
-            $pdf->writeHTMLCell(135, '', '' , '', $html, 0, 1, 1, true, 'L', true);
-        }
-
-        /*---------------------------------------------------------------------------------------
-          --------------------------------------Proyecto-----------------------------------------
-          ---------------------------------------------------------------------------------------*/
-
-        if (!is_null($parametrosProyecto))
-        {
-            $documento=$parametrosProyecto["documento"];
-            $max_pint_area=356-25;
-            $pdf->AddPage('P','LEGAL');
-            $pdf->Ln(5);
-            $html='<h3><strong><u>PROYECTO DE '. strtoupper($tipo).'</u></strong></h3>';
-            $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'C', true);
-            $pdf->Ln(15);           
-            $html='<h4><u>VISTO:</u></h4>';
-            $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'L', true);
-            if($pdf->getY()+5>$max_pint_area || $pdf->getY()>28)
-                $pdf->Ln(5);
-            $html=$documento["visto"]; 
-            $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'J', true);
-            if($pdf->getY()+15<$max_pint_area || $pdf->getY()>28)
-                $pdf->Ln(15);
-            $html='<h4><u>CONSIDERANDO:</u></h4>';
-            $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'L', true);
-            if($pdf->getY()+5<$max_pint_area || $pdf->getY()>28)
-                $pdf->Ln(5);
-            $html=$documento["considerando"];
-            $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'J', true);
-            if($pdf->getY()+15<$max_pint_area || $pdf->getY()>28)
-                $pdf->Ln(15);
-            $html='<h4><u>POR TODO ELLO:</u></h4>';
-            $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'L', true);
-            if($pdf->getY()+15<$max_pint_area || $pdf->getY()>28)
-            	$pdf->Ln(5);
-            $html=$documento["quienSanciona"];
-            $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'C', true);
-            if($pdf->getY()+15<$max_pint_area || $pdf->getY()>28)  
-                $pdf->Ln(15);
-            $html='<h4><u>'.strtoupper($tipo).'</u></h4>';
-            $pdf->writeHTMLCell(185, '', '', '',$html, 0, 1, 0, true, 'C', true);
-            if($pdf->getY()+15<$max_pint_area || $pdf->getY()>28)
-                $pdf->Ln(15);
-            $html=$documento["articulos"];
-            $pdf->writeHTMLCell(185, '', '', '', $html, 0, 1, 0, true, 'J', true);
-                  
-        } 
-
-        return new Response(
-           $pdf->Output($nombre, 'D'),
-            200,
-            [
-                'Content-Type'        => 'application/pdf',
-                'Content-Disposition' => sprintf('attachment; filename="%s"', $nombre)
-            ]
-        );
-        
-          
-    }
-
-     /**
-     * @Route("/imprimirOrdenDelDia")
-     *
-    public function imprimirOrdenDelDiaAction(Request $request){
-       
-    	$idSesion = $request->query->get('idSesion');
-    	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
-    	$sesion=$sesionRepository->find($idSesion);
-    	$tipoExpedienteSesionRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpedienteSesion');
-    	$tiposExpedientesSesion=$tipoExpedienteSesionRepository->findAll();
-    	 
-    	$meses = array("Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre");
-    	
-    	$fecha=$sesion->getFecha()->format('d')." de ".$meses[$sesion->getFecha()->format('n')-1].
-    		   " de ".$sesion->getFecha()->format('Y') ;
-    	
-    	$basepath=realpath($this->getParameter('kernel.root_dir').'/..');
-    	$pdf = $this->get('white_october.tcpdf')->create();
-    	
-    	// activa o desactiva encabezado de página
-    	$pdf ->SetPrintHeader(false);
-    	// activa o desactiva el pie de página
-    	
-    	$pdf ->SetPrintFooter(false);
-    	$urlImage='/web/document_bootstrap/escudopng2_mini.png';
-    	// set default header data
-    	$pdf ->SetAuthor('SisLeg');
-    	$pdf ->SetTitle('HCD Lomas de Zamora');
-    	$pdf ->SetSubject('Orden del Dia '.$fecha);
-    	$pdf ->SetHeaderData($urlImage, 8, 'HCD Lomas de Zamora - Orden del Día','Sesión: '.$fecha, array(0,0,0), array(0,0,0));
-    	// set default monospaced font
-    	$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
-    	// set margins
-    	$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
-    	$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
-    	$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
-    	// set auto page breaks
-    	$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
-    	$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
-    	
-    	$pdf->AddPage('P','LEGAL');
-    	
-    	$pdf->ln(15);
-    	
-    	
-    	$imagenpath=$basepath.'/web/document_bootstrap/portada_orden_dia.png';
-    	    	
-    	$pdf->Image($imagenpath, 25, '', 170, '', '', '', 'M', 
-    				true, 700, '', false, false, 1, false, false, false);
-    	   	
-    	$pdf->ln(80);
-    	$pdf->SetFont('times', 'I', 18);
-    	$html_caratula='<H1>SESION '.strtoupper($sesion->getTipoSesion()->getTipoSesion()). ' A CELEBRARSE</H1>'.
-    				   '<H1>EL DÍA '.strtoupper($fecha).'</H1>';
-    	
-    	$pdf->writeHTMLCell(170, '', 25, '', $html_caratula, 0, 1, 0, true, 'C', true);
-    	
-    	$pdf->ln(50);
-    	$pdf->SetFont('times', '', 20);
-    	$pdf->writeHTMLCell(170, '', 25, '', '<H1><u>ORDEN DEL DÍA</u></H1>', 0, 1, 0, true, 'C', true);
-    	     	
-    	$pdf ->SetPrintHeader(true);
-    	$pdf->AddPage('P','LEGAL');
-    	$pdf->SetFont('times', '', 12);
-    	
-    	$html='<div style="text-align:left"><h1>I) <u>COMUNICACIONES DE PRESIDENCIA</u></h1></div>';
-      	$pdf->writeHTMLCell(170, '', 25, '', $html, 0, 1, 0, true, 'J', true);
-           	
-      	$pdf->AddPage('P','LEGAL');
-      	$pdf->SetFont('times', '', 12);
-      	$html='<div style="text-align:left"><h1>II) <u>VERSIONES TAQUIGRAFICAS</u></h1></div>';
-      	$content=$sesionRepository->findVersionesTaquigraficasBySesion($idSesion);
-      	$html.=$content[0]["versiones"];
-      	$pdf->writeHTMLCell(170, '', 25, '', $html, 0, 1, 0, true, 'J', true);
-      	
-      	$apartadoInicial=true;
-    	
-    	foreach ($tiposExpedientesSesion as $tipoExpedienteSesion){
-    		    		
-    		$content=$sesionRepository->findOrdenDiaBySesionYApartado($idSesion, $tipoExpedienteSesion->getId());
-    		
-    		if (count($content)>0){
-    			
-    			$pdf->AddPage('P','LEGAL');
-    			$pdf->SetFont('times', '', 12);
-    			if ($apartadoInicial==true){
-    				$html='<div style="text-align:left"><h1>IV) <u>ASUNTOS ENTRADOS</u></h1></div>';
-    				$pdf->writeHTMLCell(170, '', 25, '', $html, 0, 1, 0, true, 'J', true);
-    				$apartadoInicial=false;
-    			}
-    			$html='<div style="text-align:center"><h1>'.$tipoExpedienteSesion->getLetra().') '.
-      				   $tipoExpedienteSesion->getTipoExpedienteSesion().'</h1></div>';
-	    		$html.=($content[0]["textoApartado"]);
-		    	$pdf->writeHTMLCell(170, '', 25, '', $html, 0, 1, 0, true, 'J', true);
-
-    		}
-    		
-    	}
-    	
-    	return new Response(
-    			$pdf->Output('Orden del Dia '.$fecha, 'D'),
-    			200,
-    			[
-    					'Content-Type'        => 'application/pdf',
-    					'Content-Disposition' => sprintf('attachment; filename="%s"', 'SisLeg'),
-    			]
-    			);
-    }*/
-    
     /**
      * @Route("/imprimirOrdenDelDia")
      */
@@ -867,9 +552,7 @@ class DefaultController extends Controller
      	//primer página
      	$page = $servicioImpresion->getPage($word,'Legal');
      	//encabezado de primer página
-     	$page=$servicioImpresion->setHeader($page, $base.'/document_bootstrap/escudopng2_mini.png', 
-     										  'HCD Lomas de Zamora - '.$nombreDocumento, 
-     										  'Sesión: '.$fecha);
+     	$page=$servicioImpresion->setHeader($page, $base.'/document_bootstrap/header_concejo.png');
           	 
      	if ($tipo=='OD'){
      		
@@ -899,9 +582,7 @@ class DefaultController extends Controller
      			//nueva pagina del apartado
      			$page=$servicioImpresion->getPage($word, 'Legal',1);
      			//header de la nueva página del apartado
-     			$page=$servicioImpresion->setHeader($page, $base.'/document_bootstrap/escudopng2_mini.png', 
-     												  'HCD Lomas de Zamora - Orden del Día',
-     												  'Sesión: '.$fecha);
+     			$page=$servicioImpresion->setHeader($page, $base.'/document_bootstrap/header_concejo.png');
      			//footer de la nueva página del apartado
      			$textoFooter=$tipoExpedienteSesion->getLetra(). ').- {PAGE}';
      			$page=$servicioImpresion->setFooter($page, $textoFooter);
@@ -921,62 +602,7 @@ class DefaultController extends Controller
          	     	
      	return $servicioImpresion->getArchivoOD($word, $fecha, $tipo, $nombreDocumento);
     }
-    
-    /**
-     * @Route("/imprimirDictamen")
-     *
-    public function imprimirDictamenAction(Request $request){
-    	
-    	$idDictamen = $request->query->get('idDictamen');
-    	$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
-    	    	
-    	$meses = array("Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre");
-    	
-    	$fechaActual=new \DateTime('now');
-    	
-    	$fecha=$fechaActual->format('d')." de ".$meses[$fechaActual->format('n')-1].
-    	" de ".$fechaActual->format('Y') ;
-
-    	$pdf = $this->get('white_october.tcpdf')->create();
-    	
-    	// activa o desactiva encabezado de página
-    	$pdf ->SetPrintHeader(true);
-    	// activa o desactiva el pie de página
-    	$pdf ->SetPrintFooter(false);
-    	$urlImage='/web/document_bootstrap/escudopng2_mini.png';
-    	// set default header data
-    	$pdf ->SetAuthor('SisLeg');
-    	$pdf ->SetTitle('HCD Lomas de Zamora');
-    	$pdf ->SetSubject('Dictamen');
-    	$pdf ->SetHeaderData($urlImage, 8, 'HCD Lomas de Zamora - Dictamen Comisiones','Fecha Impresion: '.$fecha, array(0,0,0), array(0,0,0));
-    	// set default monospaced font
-    	$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
-    	// set margins
-    	$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
-    	$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
-    	$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
-    	// set auto page breaks
-    	$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
-    	$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
-    	
-    	$pdf->AddPage('P','LEGAL');
-    	$pdf->SetFont('times', '', 12);
-    	$content=$expedienteComisionRepository->traerTextoDictamen($idDictamen);
-    	$html.=($content[0]["textoDictamen"]);
-    	$pdf->writeHTMLCell(170, '', 25, '', $html, 0, 1, 0, true, 'J', true);
-    	$expediente=$content[0]["expediente"];
-    	$comisiones=$content[0]["comisiones"];
-    	return new Response(
-				    			$pdf->Output('Dictamen_Expediente_'.$expediente.'_'.$comisiones.'_'.$fecha, 'D'),
-				    			200,
-				    			[
-				    					'Content-Type'        => 'application/pdf',
-				    					'Content-Disposition' => sprintf('attachment; filename="%s"', 'Dictamen'),
-				    			]
-			    			);
-    	
-    }*/
-    
+        
     /**
      * @Route("/imprimirDictamen")
      */
@@ -999,9 +625,7 @@ class DefaultController extends Controller
     	//crea el word
     	$word = $servicioImpresion->getTemplateOD();
     	$page=$servicioImpresion->getPage($word, 'Legal');
-    	$page=$servicioImpresion->setHeader($page,  $base.'/document_bootstrap/escudopng2_mini.png', 
-    									   'HCD Lomas de Zamora - Dictamen Comisiones', 
-    									   'Fecha Impresión: '.$fecha);
+    	$page=$servicioImpresion->setHeader($page,  $base.'/document_bootstrap/header_concejo.png');
     	
     	$content=$expedienteComisionRepository->traerTextoDictamen($idDictamen);
     	$html.=($content[0]["textoDictamen"]);
@@ -1011,62 +635,6 @@ class DefaultController extends Controller
     	
     	return  $servicioImpresion->getArchivoDictamen($word, $fecha, $expediente, $comisiones);	
     }
-    
-    /**
-     * @Route("/imprimirSancion")
-     *
-    public function imprimirSancionAction(Request $request){
-    	
-    	$idSancion = $request->query->get('idSancion');
-    	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
-      	
-    	$meses = array("Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre");
-    	
-    	$fechaActual=new \DateTime('now');
-    	
-    	$fecha=$fechaActual->format('d')." de ".$meses[$fechaActual->format('n')-1].
-    	" de ".$fechaActual->format('Y') ;
-    	
-    	$pdf = $this->get('white_october.tcpdf')->create();
-    	
-    	// activa o desactiva encabezado de página
-    	$pdf ->SetPrintHeader(true);
-    	// activa o desactiva el pie de página
-    	$pdf ->SetPrintFooter(false);
-    	$urlImage='/web/document_bootstrap/escudopng2_mini.png';
-    	// set default header data
-    	$pdf ->SetAuthor('SisLeg');
-    	$pdf ->SetTitle('HCD Lomas de Zamora');
-    	$pdf ->SetSubject('Sancion');
-    	$pdf ->SetHeaderData($urlImage, 8, 'HCD Lomas de Zamora - Sancion','Fecha Impresion: '.$fecha, array(0,0,0), array(0,0,0));
-    	// set default monospaced font
-    	$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
-    	// set margins
-    	$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
-    	$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
-    	$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
-    	// set auto page breaks
-    	$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
-    	$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
-    	
-    	$pdf->AddPage('P','LEGAL');
-    	$pdf->SetFont('times', '', 12);
-    	$content=$sesionRepository->traerTextoSancion($idSancion);
-    	$html.=($content[0]["textoSancion"]);
-    	$pdf->writeHTMLCell(170, '', 25, '', $html, 0, 1, 0, true, 'J', true);
-    	$numeroSancion=$content[0]["numeroSancion"];
-    	$expediente=$content[0]["expediente"];
-    	
-    	return new Response(
-    			$pdf->Output('Sancion_'.$numeroSancion.'_Expediente_'.$expediente.'_'.$fecha, 'D'),
-    			200,
-    			[
-    					'Content-Type'        => 'application/pdf',
-    					'Content-Disposition' => sprintf('attachment; filename="%s"', 'Dictamen'),
-    			]
-    			);
-    	
-    }*/
     
     /**
      * @Route("/imprimirSancion")
@@ -1090,13 +658,15 @@ class DefaultController extends Controller
     	//crea el word
     	$word = $servicioImpresion->getTemplateOD();
     	$page=$servicioImpresion->getPage($word, 'Legal');
-    	$page=$servicioImpresion->setHeader($page,  $base.'/document_bootstrap/escudopng2_mini.png',
-    									    'HCD Lomas de Zamora - Sanción',
-    			                            'Fecha Impresión: '.$fecha);
+    	$page=$servicioImpresion->setHeader($page,  $base.'/document_bootstrap/header_concejo.png');
     	
     	$content=$sesionRepository->traerTextoSancion($idSancion);
     	$html.=($content[0]["textoSancion"]);
     	$page=$servicioImpresion->writeHTMLToPage($html, $page);
+    	$firmaSecretario=$content[0]["firmaSecretario"];
+    	$firmaPresidente=$content[0]["firmaPresidente"];
+    	$page=$servicioImpresion->addsignatureSancion($page, $base.'/document_bootstrap/escudo.png',
+    												  $firmaSecretario, $firmaPresidente);
     	$expediente=$content[0]["expediente"];
     	$numeroSancion=$content[0]["numeroSancion"];
     	
@@ -1124,9 +694,7 @@ class DefaultController extends Controller
     	//crea el word
     	$word = $servicioImpresion->getTemplateOD();
     	$page=$servicioImpresion->getPage($word, 'Legal');
-    	$page=$servicioImpresion->setHeader($page,  $base.'/document_bootstrap/escudopng2_mini.png',
-							    		    'HCD Lomas de Zamora - Proyecto',
-							    			'Fecha Impresión: '.$fecha);
+    	$page=$servicioImpresion->setHeader($page,  $base.'/document_bootstrap/header_concejo.png');
     	
     	$content=$proyectoRepository->traerProyectoParaImpresion($idProyecto);
     	$html.=($content[0]["textoProyecto"]);
@@ -1160,9 +728,7 @@ class DefaultController extends Controller
     	//crea el word
     	$word = $servicioImpresion->getTemplateOD();
     	$page= $servicioImpresion->getPage($word, 'Legal');
-    	$page= $servicioImpresion->setHeader($page,  $base.'/document_bootstrap/escudopng2_mini.png',
-    			'HCD Lomas de Zamora - Expediente',
-    			'Fecha Impresión: '.$fecha);
+    	$page= $servicioImpresion->setHeader($page,  $base.'/document_bootstrap/header_concejo.png');
     	
     	$content=$expedienteRepository->traerExpedienteParaImpresion($idExpediente);
     	
@@ -1213,9 +779,7 @@ class DefaultController extends Controller
 	    //crea el word
 	    $word = $servicioImpresion->getTemplateOD();
 	    $page= $servicioImpresion->getPage($word, 'Legal');
-	    $page= $servicioImpresion->setHeader($page,  $base.'/document_bootstrap/escudopng2_mini.png',
-	    													'HCD Lomas de Zamora - Listado E',
-	    												    'Fecha Impresión: '.$fecha);
+	    $page= $servicioImpresion->setHeader($page,  $base.'/document_bootstrap/header_concejo.png');
 	    
 	    $content=$expedienteRepository->traerESinCuerpo($fechaDesdeAsDate,$fechaHastaAsDate);
 	    $texto=$content[0]["texto"];

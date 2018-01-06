@@ -140,7 +140,7 @@
 				});
 
 				$("#btn-busqueda").click(function(){
-					debugger;		
+							
 					if($("#selBusqueda").val()!="todo" && criterio()!="" && criterio()!="0")
 					{
 						tabla.ajax.url("api/expediente/getInformesByCriteria/"+tipoCriterio()+"/"+criterio()).load();

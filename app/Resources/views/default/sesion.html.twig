@@ -135,7 +135,7 @@
             					            	 		 		  		  "<span class='glyphicon glyphicon-save-file'></span>"+
             					            	 		 		  	  "</button>";
 
-            					            	 		 	debugger;
+            					            	 		 	
 															if(row.tiene_ultimo_momento==false) {
 																
 																if ('{{ 'SES_UM_NEW' in app.user.listaPermisos }}')
@@ -232,66 +232,11 @@
 		    $('#registroSesiones tbody').on( 'click', '.btn-descargar-OD', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        descargarArchivo(data[ "id" ],'OD');
-		    	/*
-				waitingDialog.show('Por favor espere, generando orden del día ...');
-		        var urlToSend=' app.request.getBaseURL() /imprimirOrdenDelDia?idSesion='
-			        										  +data[ "id" ]+'&tipo=OD';
-
-		        var req = new XMLHttpRequest();
-		        req.open("GET", urlToSend, true);
-		        req.responseType = "blob";
-		        req.onload = function (event) { 
-    		        
-    		        if (event.currentTarget.status==200){
-    		        	var blob = req.response;
-    		            var	content=req.getResponseHeader("Content-Disposition").replace(/"/g,'').split(";");
-    		           	var content= content[1].split("=");
-    		            var fileName = content[1].trim();
-    		            var link=document.createElement('a');
-    		            link.href=window.URL.createObjectURL(blob);
-    		            link.download=fileName;
-    		            link.click();
-		        	}
-		        	else
-		        		toastr.error('No se pudo descargar el archivo');
-
-    		        waitingDialog.hide();
-			    };
-		        req.send();
-				*/
 		    } );
 
 		    $('#registroSesiones tbody').on( 'click', '.btn-descargar-UM', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        descargarArchivo(data[ "id" ],'UM');
-
-		        /*
-				waitingDialog.show('Por favor espere, generando orden del día ...');
-		        var urlToSend=' app.request.getBaseURL() /imprimirOrdenDelDia?idSesion='
-			        										  +data[ "id" ]+'&tipo=UM';
-
-		        var req = new XMLHttpRequest();
-		        req.open("GET", urlToSend, true);
-		        req.responseType = "blob";
-		        req.onload = function (event) { 
-    		        
-    		        if (event.currentTarget.status==200){
-    		        	var blob = req.response;
-    		            var	content=req.getResponseHeader("Content-Disposition").replace(/"/g,'').split(";");
-    		           	var content= content[1].split("=");
-    		            var fileName = content[1].trim();
-    		            var link=document.createElement('a');
-    		            link.href=window.URL.createObjectURL(blob);
-    		            link.download=fileName;
-    		            link.click();
-		        	}
-		        	else
-		        		toastr.error('No se pudo descargar el archivo');
-
-    		        waitingDialog.hide();
-			    };
-		        req.send();
-				*/
 		    } );
 
 		    $('#registroSesiones tbody').on( 'click', '.btn-bloquear', function () {
@@ -314,7 +259,7 @@
 						tabla.ajax.reload();
 	                },
 	                error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(jqXHR.responseText);
+						toastr.error(JSON.parse(jqXHR.responseText));
 						}
 	            	});
 			} )
@@ -359,18 +304,12 @@
 		                contentType: false,
 		                processData: false,
 		                type:  'POST',
-		            beforeSend: function() {
-		            	//waitingDialog.show('Generando Orden del Día espere por favor');
-		            },
 	                success: function(data) {
 	                    toastr.success(data);
 						tabla.ajax.reload();
-						//waitingDialog.hide();
 	                },
 	                error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(jqXHR.responseText);
-						//waitingDialog.hide();
-						}
+						toastr.error(JSON.parse(jqXHR.responseText));
 	            	});
 			});
 			
@@ -389,17 +328,12 @@
 		                contentType: false,
 		                processData: false,
 		                type:  'POST',
-		            beforeSend: function() {
-		            	//waitingDialog.show('Generando Orden del Día espere por favor');
-		            },
 	                success: function(data) {
 	                    toastr.success(data);
 						tabla.ajax.reload();
-						//waitingDialog.hide();
 	                },
 	                error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(jqXHR.responseText);
-						//waitingDialog.hide();
+						toastr.error(JSON.parse(jqXHR.responseText));
 						}
 	            	});
 			});
@@ -432,7 +366,7 @@
     							$("#descripcion").val(data.descripcion);	    			
     						},
     						error: function(jqXHR,textStatus,errorThrown ){
-    							toastr.error(jqXHR.responseText);
+    							toastr.error(JSON.parse(jqXHR.responseText));
     						}
     			      	});
 					}
@@ -489,7 +423,7 @@
 	                	$("#btn-guardar-sesion").prop("disabled", false);
 	                },
 	                error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(jqXHR.responseText);
+						toastr.error(JSON.parse(jqXHR.responseText));
 						}
 	            	});
 	            }
@@ -605,7 +539,8 @@
 				        		<div class="col-md-8">	
 						        	<div class="form-group">
 						        		<label for="selTipoSesion">TipoSesion</label>
-						        		<select class="form-control" id="selTipoSesion" name="selTipoSesion">
+						        		<select class="form-control" id="selTipoSesion" name="selTipoSesion"
+						        				autofocus="autofocus">
 						        			<option value="0">Seleccione Tipo</option>
 						        			{% for tipoSesion in tiposSesion %}
 						        				<option value="{{ tipoSesion.id }}">{{ tipoSesion.tipoSesion }} - ({{ tipoSesion.abreviacion }})</option>
@@ -616,8 +551,8 @@
 					        	<div class="col-md-4">	
 						        	<div class="form-group">
 						        		<label for="fecha">Fecha</label>
-						        		<input type= "text" class="form-control input-sm campo-fecha" id="fecha" name="fecha" 
-						        			   placeholder="Fecha Sesion">
+						        		<input type= "text" class="form-control campo-fecha" id="fecha" name="fecha" 
+						        			   placeholder="dd/mm/AAAA">
 						        	</div>
 						        </div>
 							</div>
@@ -625,7 +560,8 @@
 								<div class="col-md-12">
     								<div class="form-group">
     									<label for="descripcion">Descripción</label>
-    									<input type="text" class="form-control" id="descripcion" name="descripcion">
+    									<input type="text" class="form-control" id="descripcion" name="descripcion"
+    										   placeholder="obligatorio max. 50 letras" maxlength="50">
     								</div>
     							</div>
 							</div>

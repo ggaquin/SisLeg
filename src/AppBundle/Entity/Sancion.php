@@ -4,18 +4,17 @@ namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\VirtualProperty;
-use JMS\Serializer\Annotation\Exclude;
-use Doctrine\ORM\Mapping\JoinTable;
 
 /**
  * Sancion
  * 
- * @ORM\Table(name="sancion",  indexes={@ORM\Index(name="sancion_encabezadoRedaccion_idx",columns={"idEncabezadoRedaccion"}),
- * 										@ORM\Index(name="sancion_pieRedaccion_idx",columns={"idPieRedaccion"}),
+ * @ORM\Table(name="sancion",  indexes={@ORM\Index(name="sancion_speech_idx",columns={"idSpeech"}),
  * 										@ORM\Index(name="sancion_proyectoRevision_idx",columns={"idProyectoRevision"}),
  * 									    @ORM\Index(name="sancion_tipoSancion_idx",columns={"idTiposancion"}),
  * 									    @ORM\Index(name="sancion_dictamen_idx",columns={"idDictamen"}),
- * 										@ORM\Index(name="sancion_pase_idx",columns={"idPase"})
+ * 										@ORM\Index(name="sancion_pase_idx",columns={"idPase"}),
+ * 										@ORM\Index(name="sancion_firmaSecretario_idx",columns={"firmaSecretario"}),
+ * 										@ORM\Index(name="sancion_firmaPresidente_idx", columns={"firmaPresidente"})
  * 										})
  * 
  * @ORM\Entity()
@@ -26,10 +25,6 @@ use Doctrine\ORM\Mapping\JoinTable;
  * 						  "revision" = "AppBundle\Entity\SancionRevisionProyecto"})
  */
 
-// @ORM\Index(name="sancion_proyectoRevision_idx",columns={"idProyectoRevision"}),
-//  										   @ORM\Index(name="sancion_tipoSancion_idx",columns={"idTiposancion"}),
-//  										   @ORM\Index(name="sancion_dictamen_idx",columns={"idDictamen"}),
-// 										   @ORM\Index(name="sancion_pase_idx",columns={"idPase"}),
 abstract class Sancion
 {
     //------------------------------atributos de la clase-----------------------------------------
@@ -51,28 +46,30 @@ abstract class Sancion
      * })
      */
     private $dictamen;
-        
+            
     /**
-     * @var string
-     * @ORM\Column(name="textoLibre",type="text",nullable=true)
+     * @var \AppBundle\Entity\Speech
+     * 
+     * @ORM\ManyToOne(targetEntity="\AppBundle\Entity\Speech")
+     * @ORM\JoinColumn(name="idSpeech", referencedColumnName="idSpeech")
      */
-    private $textoLibre;
+    private $speech;
     
     /**
-     * @var \AppBundle\Entity\PlantillaTexto
+     * @var \AppBundle\Entity\Autoridad
      * 
-     * @ORM\ManyToOne(targetEntity="\AppBundle\Entity\PlantillaTexto")
-     * @ORM\JoinColumn(name="idEncabezadoRedaccion", referencedColumnName="idPlantillaTexto")
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Autoridad")
+     * @ORM\JoinColumns({@ORM\JoinColumn(name="firmaPresidente", referencedColumnName="idAutoridad")})
      */
-    private $encabezadoRedaccion;
+    private $firmaPresidente;
     
     /**
-     * @var \AppBundle\Entity\PlantillaTexto
+     * @var \AppBundle\Entity\Autoridad
      * 
-     * @ORM\ManyToOne(targetEntity="\AppBundle\Entity\PlantillaTexto")
-     * @ORM\JoinColumn(name="idPieRedaccion", referencedColumnName="idPlantillaTexto")
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Autoridad")
+     * @ORM\JoinColumns({@ORM\JoinColumn(name="firmaSecretario", referencedColumnName="idAutoridad")})
      */
-    private $pieRedaccion;
+    private $firmaSecretario;
 	
     /**
      * @var string
@@ -87,6 +84,18 @@ abstract class Sancion
      * @ORM\Column(name="fechaCreacion", type="datetime", nullable=false)
      */
     private $fechaCreacion;
+    
+    //------------------------------------constructor---------------------------------------------
+    
+    /**
+     * Constructor
+     *
+    public function __construct()
+    {
+    	$this->firmaPresidente = "";
+    	$this->firmaSecretario = "";
+    }*/
+    
     
     //-------------------------------------setters y getters------------------------------------
 
@@ -119,65 +128,64 @@ abstract class Sancion
 		$this->dictamen = $dictamen;
 		return $this;
 	}
-	
+		
 	/**
-	 * Get textoLibre
-	 *
-	 * @return string
+	 * Get speech
+	 * 
+	 * @return Speech
 	 */
-	public function getTextoLibre() {
-		return $this->textoLibre;
+	public function getSpeech() {
+		return $this->speech;
 	}
 	
 	/**
-	 * Set textoLibre
-	 *
-	 * @param string $textoLibre
-	 *
+	 * Set speech
+	 * 
+	 * @param \AppBundle\Entity\Speech $speech
 	 * @return Sancion
 	 */
-	public function setTextoLibre($textoLibre) {
-		$this->textoLibre = $textoLibre;
+	public function setSpeech($speech) {
+		$this->speech = $speech;
 		return $this;
 	}
-	
+		
 	/**
-	 * Get encabezadoRedaccion
+	 * Get firmaPresidente
 	 * 
-	 * @return PlantillaTexto
+	 * @return \AppBundle\Entity\Autoridad
 	 */
-	public function getEncabezadoRedaccion() {
-		return $this->encabezadoRedaccion;
+	public function getFirmaPresidente() {
+		return $this->firmaPresidente;
 	}
 	
 	/**
-	 * Set encabezadoRedaccion
+	 * Set firmaPresidente
 	 * 
-	 * @param \AppBundle\Entity\PlantillaTexto $encabezadoRedaccion
-	 * @return Sancion
-	 */
-	public function setEncabezadoRedaccion($encabezadoRedaccion) {
-		$this->encabezadoRedaccion = $encabezadoRedaccion;
-		return $this;
-	}
-	
-	/**
-	 * Get pieRedaccion
-	 * 
-	 * @return PlantillaTexto
-	 */
-	public function getPieRedaccion() {
-		return $this->pieRedaccion;
-	}
-	
-	/**
-	 * Set pieRedaccion
-	 * 
-	 * @param \AppBundle\Entity\PlantillaTexto $pieRedaccion
+	 * @param \AppBundle\Entity\Autoridad $firmaPresidente
 	 * @return \AppBundle\Entity\Sancion
 	 */
-	public function setPieRedaccion($pieRedaccion) {
-		$this->pieRedaccion = $pieRedaccion;
+	public function setFirmaPresidente($firmaPresidente) {
+		$this->firmaPresidente = $firmaPresidente;
+		return $this;
+	}
+	
+	/**
+	 * Get firmaSecretario
+	 * 
+	 * @return \AppBundle\Entity\Autoridad
+	 */
+	public function getFirmaSecretario() {
+		return $this->firmaSecretario;
+	}
+	
+	/**
+	 * Set firmaSecretario
+	 * 
+	 * @param \AppBundle\Entity\Autoridad $firmaSecretario
+	 * @return \AppBundle\Entity\Sancion
+	 */
+	public function setFirmaSecretario($firmaSecretario) {
+		$this->firmaSecretario = $firmaSecretario;
 		return $this;
 	}
 		       
@@ -238,5 +246,5 @@ abstract class Sancion
      * @VirtualProperty()
      */
     public abstract function getClaseSancion();
-      
+	      
 }

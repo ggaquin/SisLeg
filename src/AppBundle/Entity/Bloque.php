@@ -32,6 +32,13 @@ class Bloque
     private $bloque;
     
     /**
+     * @var string
+     * 
+     * @ORM\Column(name="abreviacion", type="string", length=10, nullable=false)
+     */
+    private $abreviacion;
+    
+    /**
      * @var \Doctrine\Common\Collections\Collection
      *
      * @ORM\OneToMany(targetEntity="AppBundle\Entity\PerfilLegislador", mappedBy="bloque")
@@ -121,6 +128,26 @@ class Bloque
         return $this->bloque;
     }
     
+    /**
+     * Get abreviacion
+     * 
+     * @return string
+     */
+	public function getAbreviacion() {
+		return $this->abreviacion;
+	}
+	
+	/**
+	 * Set abreviacion
+	 * 
+	 * @param string $abreviacion
+	 * @return Bloque
+	 */
+	public function setAbreviacion($abreviacion) {
+		$this->abreviacion = $abreviacion;
+		return $this;
+	}
+	    
     /**
      * Add concejal
      *

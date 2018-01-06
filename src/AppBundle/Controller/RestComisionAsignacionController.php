@@ -572,5 +572,72 @@ class RestComisionAsignacionController extends FOSRestController{
       	}
       	return $this->view($expedientes,200);
       }
+      
+      /**
+       * @Rest\Get("/getIntegrantesComisionesByDictamen")
+       */
+      public function  traerIntegrantesComisionesPorDictamen(Request $request){
+      	
+      	$patron=$request->query->get('q');
+      	$idDictamen=$request->query->get('r');
+      	$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
+      	$integrantes=$expedienteComisionRepository->findIntegrantesComisionesByDictamen($patron, $idDictamen);
+      	$listaIntegrantes=[];
+      	foreach ($integrantes as $integrante){
+      		$listaIntegrantes[]=array('id'=>$integrante['id'],
+      								  'nombre_completo'=>$integrante['nombre_completo']
+      								  );
+      	}
+      		
+      	return $this->view($listaIntegrantes,200);
+      	
+      }
+      
+      /**
+       * @Rest\Get("/getFirmasDictamen/{id}")
+       */
+      public function traerFirmasDictamen(Request $request){
+      	
+      	$idDictamen=$request->get('id');
+      	$dictamenRepository=$this->getDoctrine()->getRepository('AppBundle:Dictamen');
+      	$dictamen=$dictamenRepository->find($idDictamen);
+      	$firmantes=$dictamen->getConcejales();
+      	$listaFirmantes=[];
+      	foreach ($firmantes as $firma){
+      		$listaFirmantes[]=array('id'=>$firma->getId(),
+      								'nombre_completo'=>$firma->getNombreCompleto()
+      							   );
+      	}
+      	
+      	return  $this->view($listaFirmantes,200);
+      	
+      }
+      
+      /**
+       * @Rest\Post("/saveFirmasDictamen")
+       */
+      public function gusradarFirmasDictamen(Request $request){
+      	
+      	$idDictamen=$request->request->get("idDictamen");
+      	$firmantes=$request->request->get("firmantes");
+      	$dictamenRepository=$this->getDoctrine()->getRepository('AppBundle:Dictamen');
+      	$perfilRepository=$this->getDoctrine()->getRepository('AppBundle:PerfilLegislador');
+      	$dictamen=$dictamenRepository->find($idDictamen);
+      	
+      	$concejalesFirmantes=explode(',',$firmantes);
+      	$nuevosFirmantes=[];
+      	foreach ($concejalesFirmantes as $firmante){
+      		$perfilConcejal=$perfilRepository->find($firmante);
+      		$nuevosFirmantes[]=$perfilConcejal;
+      	}
+      	
+      	$dictamen->setConcejales($nuevosFirmantes);
+      	
+      	$em = $this->getDoctrine()->getManager();
+      	$em->persist($dictamen);
+      	$em->flush();
+      	
+      	return  $this->view('Las firmas se guardaron exitosamente',200);
+      }
           
 }

@@ -136,7 +136,7 @@
   						tabla.ajax.reload();
     				},
     				error: function(jqXHR,textStatus,errorThrown ){
-    					toastr.error(jqXHR.responseText);
+    					toastr.error(JSON.parse(jqXHR.responseText));
     				}
     	      	});
 		    });
@@ -192,7 +192,7 @@
  	                	$("#btn-alta-oficina").prop("disabled", false);
  	                },
  	                error: function(jqXHR,textStatus,errorThrown ){
- 						toastr.error(jqXHR.responseText);
+ 						toastr.error(JSON.parse(jqXHR.responseText));
  						}
  	            	});
  	            }
@@ -265,7 +265,7 @@
                 				        	<div class="form-group">
                 					    		<label for="selTipoOficina">Tipo Oficina:</label>
                 					    		<select class="form-control" id="selTipoOficina" 
-                					    				name="selTipoOficina">
+                					    				name="selTipoOficina" autofocus="autofocus">
                 					    			<option value="0">Seleccione un tipo</option>
                 					    			{% for tipoOficina in tiposOficina %}
                 						                <option value="{{ tipoOficina.id }}">{{ tipoOficina.tipoOficina }}</option>
@@ -275,9 +275,9 @@
                 					    </div>
                 					    <div class="col-md-6">
                 					    	<div class="form-group">
-                				        		<label for="codigoOficina">Código:</label>
+                				        		<label for="codigoOficina">Código HCD:</label>
                 				        		<input id="codigoOficina" class="form-control" name="codigoOficina" 
-                				        			   placeholder="Codigo HCD">
+                				        			   placeholder="opcional max. 15 letras" maxlength="15">
                 				        	</div>
                 					    </div>
                 					</div>
@@ -286,7 +286,7 @@
                 				        	<div class="form-group">
                 				        		<label for="nombreOficina">Nombre:</label>
                 				        		<input id="nombreOficina" class="form-control" name="nombreOficina" 
-                				        			   placeholder="Nombre de la Oficina">
+                				        			   placeholder="obligatorio max. 100 letras" maxlength="100">
                 				        	</div>
                 				    	</div>
                 					</div>

@@ -45,7 +45,6 @@
 			max-height: 310px;
 			max-width: 210px;
 			height: 310	px;
-			/*calc(100vh - 350px);*/
 			background-color: #fff;
 		}
 
@@ -91,8 +90,6 @@
 					toastr.succes(data);
 				},
 				error: function(jqXHR,textStatus,errorThrown ){
-					// var response=JSON.parse(jqXHR.responseText)
-					// toastr.error(response.throwCause);
 					toastr.error(jqXHR.responseText)
 				}
 		     });
@@ -112,7 +109,7 @@
 				},
 				error: function(jqXHR,textStatus,errorThrown ){
 					usuario=false;
-					toastr.error(jqXHR.responseText);
+					toastr.error(JSON.parse(jqXHR.responseText));
 				}
 	      	});
 			
@@ -136,7 +133,7 @@
 					$("#"+control).html(html);						
 				},
 				error: function(jqXHR,textStatus,errorThrown ){
-					toastr.error(jqXHR.responseText);
+					toastr.error(JSON.parse(jqXHR.responseText));
 				}
 	      	});
 		}
@@ -199,7 +196,6 @@
 
 			$("#"+div).html('');
 
-			debugger;
 			if(controlValor==0){
 				html="<div class='alert alert-info text-center' style='color:#00acd6!important;'>No hay ningún rol seleccionado</div>";
 				$("#"+div).html("<br>"+html);
@@ -214,7 +210,7 @@
         				 +controlValor,
     				success: function(data){
     					var menus=data;
-    					debugger;
+    					
 						$.each(menus,function(index,menu){
 								html+="<h4>"+menu.menu+"</h4>";
 								html+="<ul style='list-style: none;'>";
@@ -388,8 +384,7 @@
 						tabla.ajax.reload();
 					},
 					error: function(jqXHR,textStatus,errorThrown ){
-						//var response=JSON.parse(jqXHR.responseText)
-						toastr.error(jqXHR.responseText);
+						toastr.error(JSON.parse(jqXHR.responseText));
 					}
 		     	});
 			})
@@ -410,8 +405,7 @@
 						tabla.ajax.reload();;
 					},
 					error: function(jqXHR,textStatus,errorThrown ){
-						//var response=JSON.parse(jqXHR.responseText)
-						toastr.error(jqXHR.responseText);
+						toastr.error(JSON.parse(jqXHR.responseText));
 					}
 		     	});
 			})
@@ -476,7 +470,6 @@
 			    $("#telefonoMod").val(perfil.telefono);
 
 			    $("#selRolMod").val(usuario.rol.id);
-			    //$("#selRolMod").change();
 
 			    $("#conservaContraseña").bootstrapToggle('on');
 			    $("#mensajeMod").html('');
@@ -497,17 +490,13 @@
 	                maxFileSize: 10240,                
         		});
 
-			    debugger;
         		permisosOriginales={
 									idRol:usuario.rol.id,
 									permisos:usuario.permisos
                 					};
 
 			    permisosModificacion=usuario.permisos;
-			    rolChange("selRolMod",usuario.rol.id,usuario.permisos);
-			    //cargarPermisosAlmacenados(usuario.permisos);
-			    
-				
+			    rolChange("selRolMod",usuario.rol.id,usuario.permisos);				
 			});
 
 		    //GUARDAR
@@ -516,7 +505,6 @@
 				e.preventDefault();
              	var form=$(e.target);
               	var formData=new FormData();
-              	//var controles=$(form).serializeArray();
               	var archivos=$(form).find('[name="input-file-mod"]')[0].files;
 
               	$.each(archivos, function(i, archivo) {
@@ -615,7 +603,7 @@
 						$('#editarUsuario').modal('hide');
 	                	},
 	                error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(jqXHR.responseText);
+						toastr.error(JSON.parse(jqXHR.responseText));
 						}
 	            	});
 	            }
@@ -736,9 +724,7 @@
 						$('#nuevoUsuario').modal('hide');
 		                	},
 	                error: function(jqXHR,textStatus,errorThrown ){
-						// var response=JSON.parse(jqXHR.responseText)
-						// toastr.error(response.throwCause);
-						toastr.error(jqXHR.responseText);
+						toastr.error(JSON.parse(jqXHR.responseText));
 						}
 	            	});
 	            }
@@ -953,7 +939,7 @@
 			        		});
 						},
 						error: function(jqXHR,textStatus,errorThrown ){
-							toastr.error(jqXHR.responseText);
+							toastr.error(JSON.parse(jqXHR.responseText));
 						}
 		      		});
 				}		
@@ -1013,8 +999,6 @@
 			                <th>Rol</th>
 			                <th class="for-mobile">Perfil</th>
 			                <th class="for-mobile">Bloque</th>
-			                
-			                {# <th>Eliminar</th> #}
 	                	</tr>
 	                </thead>
                	</table>
@@ -1061,10 +1045,6 @@
                 						        	<div class="form-group">
                 						        		<label for="selRol">Rol</label>
                 						        		<select class="form-control" id="selRol" name="selRol">
-                						        			{# <option value="0">Seleccione Rol</option>
-                						        			{% for rol in roles %}
-                								                <option value="{{ rol.id }}">{{ rol.rolComoString }}</option>
-                								            {% endfor %} #}
                 						        		</select>
                 						        	</div>
                 						        	<div class="form-group">
@@ -1119,8 +1099,6 @@
                 				        			<div class="row"> 	
                 					        			<div class="image-container" id="file-container">
                 								        	<div class="form-group">
-                								        		{# <h3>Imagen Perfil</h3> #}
-                								        		{# <label for="input-file">Imagen Perfil</label> #}
                 									        	<input id="input-file" accept="image/*" name="input-file" type="file" class="file-loading">
                 								        	</div>
                 							        	</div>
@@ -1184,9 +1162,6 @@
                 						        		<label for="selRolMod">Rol</label>
                 						        		<select class="form-control" id="selRolMod" name="selRolMod">
                 						        			<option value="0">Seleccione Rol</option>
-                								        		{# {% for rol in roles %}
-                								                <option value="{{ rol.id }}">{{ rol.rolComoString }}</option>
-                								            {% endfor %} #}
                 						        		</select>
                 						        	</div>
                 						        	<div class="form-group text-center" style="padding-top:15px">

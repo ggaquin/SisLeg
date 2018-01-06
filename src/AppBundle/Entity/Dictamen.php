@@ -43,7 +43,7 @@ class Dictamen
     /**
      * @var \Doctrine\Common\Collections\Collection
      * 
-     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\PerfilLegislador")
+     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\PerfilLegislador", orphanRemoval=true)
      * @JoinTable(name="dictamen_legislador",
      * 			 joinColumns={@ORM\JoinColumn(name="idDictamen", referencedColumnName="idDictamen")},
      * 			 inverseJoinColumns={@ORM\JoinColumn(name="idPerfil", referencedColumnName="idPerfil")}

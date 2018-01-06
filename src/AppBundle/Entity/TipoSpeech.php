@@ -4,19 +4,19 @@ namespace AppBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * TipoPlantillaTexto
+ * TipoSpeech
  * 
- * @ORM\Table(name="tipoPlantillaTexto")
+ * @ORM\Table(name="tipoSpeech")
  * @ORM\Entity()
  */
-class TipoPlantillaTexto {
+class TipoSpeech {
 
 	//-----------------------------------------atributos de la clase-------------------------------
 	
 	/**
      * @var integer
      *
-     * @ORM\Column(name="idTipoPlantillaTexto", type="smallint")
+     * @ORM\Column(name="idTipoSpeech", type="smallint")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -25,9 +25,9 @@ class TipoPlantillaTexto {
 	/**
 	 * @var string
 	 * 
-	 * @ORM\Column(name="tipoPlantillaTexto", type="string", length=15)
+	 * @ORM\Column(name="tipoSpeech", type="string", length=15)
 	 */
-	private $tipoPlantillaTexto;
+	private $tipoSpeech;
 		
 	//-------------------------------------setters y getters--------------------------------------
 	
@@ -41,23 +41,23 @@ class TipoPlantillaTexto {
 	}
 	
 	/***
-	 * Get tipoPlantillaTexto
+	 * Get tipoSpeech
 	 * 
 	 * @return string
 	 */
-	public function getTipoPlantillaTexto() {
-		return $this->tipoPlantillaTexto;
+	public function getTipoSpeech() {
+		return $this->tipoSpeech;
 	}
 	
 	/**
-	 * Set tipoPlantillaTexto
+	 * Set tipoSpeech
 	 * 
-	 * @param string $tipoPlantillaTexto
+	 * @param string $tipoSpeech
 	 * 
-	 * @return \AppBundle\Entity\TipoPlantillaTexto
+	 * @return \AppBundle\Entity\TipoSpeech
 	 */
-	public function setTipoPlantillaTexto($tipoPlantillaTexto) {
-		$this->tipoPlantillaTexto = $tipoPlantillaTexto;
+	public function setTipoSpeech($tipoSpeech) {
+		$this->tipoSpeech = $tipoSpeech;
 		return $this;
 	}
 }

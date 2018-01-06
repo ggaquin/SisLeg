@@ -35,7 +35,6 @@
 
 					$("#selSesion").html('');
 					var html='';
-					//var html='<option value="0">Seleccione Sesión</option>';
 					$.each(data, function(index,sesion){
 						html+='<option value="'+sesion.id +'">'+sesion.fecha_formateada+'</option>';
 					});
@@ -43,7 +42,7 @@
 					$("#selSesion").html(html);
 				},
 				error: function(jqXHR,textStatus,errorThrown ){
-					toastr.error(jqXHR.responseText);
+					toastr.error(JSON.parse(jqXHR.responseText));
 				}
 	      	});
 

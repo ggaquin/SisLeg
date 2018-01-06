@@ -15,6 +15,7 @@ use Doctrine\ORM\Mapping\JoinColumns;
  * SancionTipada
  * 
  * @ORM\Entity()
+ * 
  */
 abstract class SancionTipada extends Sancion
 {

@@ -312,8 +312,10 @@ class RestSesionController extends FOSRestController{
     	$idProyecto=$request->request->get('idProyecto');
     	$tipoRedaccion=$request->request->get('tipoRedaccion');
     	$idTipoSancion=$request->request->get('tipoSancion');
-    	$numeroEncabezado=$request->request->get('numeroEncabezado');
-    	$numeroPie=$request->request->get('numeroPie');
+    	$idSpeech=$request->request->get('idSpeech');
+//     	$idSpeechPie=$request->request->get('idSpeechPie');
+    	$firmaPresidente=$request->request->get('firmaPresidente');
+    	$firmaSecretario=$request->request->get('firmaSecretario');
     	$numeroSancion=$request->request->get('numeroSancion');
     	$aplicaNotificacion=$request->request->get('aplicaNotificacion');
     	$destinosNotificacion=$request->request->get('destinosNotificacion');
@@ -345,7 +347,8 @@ class RestSesionController extends FOSRestController{
 	    	$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
 	    	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
 	    	$expedienteSesionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteSesion');
-	    	$plantillaTextoRepository=$this->getDoctrine()->getRepository('AppBundle:PlantillaTexto');
+	    	$speechRepository=$this->getDoctrine()->getRepository('AppBundle:Speech');
+	    	$autoridadRepository=$this->getDoctrine()->getRepository('AppBundle:Autoridad');
 	    		    	
 	    	$em = $this->getDoctrine()->getManager();
 	
@@ -375,11 +378,21 @@ class RestSesionController extends FOSRestController{
 	    	//campos comunes a todos los tipos
 	    	$dictamen=(($idDictamen==0)?null:$dictamenRepository->find($idDictamen));
 		    $sancion->setDictamen($dictamen);
-		    $encabezadoRedaccion=$plantillaTextoRepository->find($numeroEncabezado);
-		    $sancion->setEncabezadoRedaccion($encabezadoRedaccion);
-		    $pieRedaccion=$plantillaTextoRepository->find($numeroPie);
-		    $sancion->setPieRedaccion($pieRedaccion);
-	    		
+		    
+		    if ($idSpeech!=null){
+		    	$speech=$speechRepository->find($idSpeech);
+		    	$sancion->setSpeech($speech);
+		    }
+		    	
+		    if($firmaPresidente=='true'){
+		    	$persidente=$autoridadRepository->findAutoridadByTipo('presidente');
+		    	$sancion->setFirmaPresidente($persidente);
+		    }
+		    if($firmaSecretario=='true'){
+		    	$secretario=$autoridadRepository->findAutoridadByTipo('secretario');
+		    	$sancion->setFirmaSecretario($secretario);
+		    }
+		   	    		
 		    //para texto rápido
 		    if ($tipoRedaccion=="basico")
 		    	$sancion->setTextoLibre($texto_libre);
@@ -574,7 +587,8 @@ class RestSesionController extends FOSRestController{
 		    			'clase_sancion'=>$sancion->getClaseSancion(),
 		    			'id_tipo_sancion'=>(($sancion instanceof SancionArticulada)
 		    									?$sancion->getTiposancion()->getId():0),
-		    			'texto_libre'=>$sancion->getTextoLibre(),
+		    			'texto_libre'=>(($sancion instanceof SancionBasica)
+		    								?$sancion->getTextoLibre():''),
 		    			'texto_articulado'=>(($sancion instanceof SancionArticulada)
 		    									?$sancion->getTextoArticulado():[]),
 		    			'vistos'=>(($sancion instanceof SancionRevisionProyecto)
@@ -589,20 +603,13 @@ class RestSesionController extends FOSRestController{
 		    							?$sancion->getRevisionProyecto()->getId():0),
 		    			'numero_sancion'=>(($sancion->getClaseSancion()!="basico")
 		    								?$sancion->getNumeroSancion():''),
-// 		    			'destino_notificacion'=>(($sancion->getClaseSancion()!="basico" &&
-// 		    									  !is_null($sancion->getNotificacion()))
-// 		    										?$sancion->getNotificacion()->getRemito()
-// 		    													->getDestino()->getId():0),
+						'firma_presidente'=>($sancion->getFirmaPresidente!=null),
+    					'firma_secretario'=>($sancion->getFirmaSecretario!=null),
     					'comision_reserva'=>((!($sancion instanceof SancionBasica) &&
 		    								  count($sancion->getNotificaciones())>0)
 						    					?($sancion->getNotificaciones()[0])
 						    								->getComision()->getId():0),
-    					'id_encabezado'=>(!is_null($sancion->getEncabezadoRedaccion())
-    										?$sancion->getEncabezadoRedaccion()->getId()
-    										:0),
-    					'id_pie'=>(!is_null($sancion->getPieRedaccion())
-    										?$sancion->getPieRedaccion()->getId()
-    										:0),
+    					'speech'=>$sancion->getSpeech(),
     					'notificaciones'=>(!($sancion instanceof SancionBasica)
     										?$sancion->getListaNotificaciones():[])
 				    	);

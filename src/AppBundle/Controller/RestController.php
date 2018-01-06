@@ -26,6 +26,8 @@ use AssistBundle\Entity\AdministracionSesion;
 use FOS\RestBundle\Controller\Annotations\Get;
 use AppBundle\Entity\PlantillaTexto;
 use AppBundle\Entity\VersionTaquigrafica;
+use AppBundle\Entity\TipoSpeech;
+use AppBundle\Entity\Speech;
 
 
 class RestController extends FOSRestController{
@@ -109,6 +111,7 @@ class RestController extends FOSRestController{
     							'id'=>$bloque->getId(),
     							'bloque'=>$bloque->getBloque(),
     							'lista_concejales'=>$bloque->getListaConcejales(),
+    							'abreviacion'=>$bloque->getAbreviacion(),
     							'fecha_creacion_formateada'=>$bloque->getFechaCreacionFormateada()
     						  );
     	}
@@ -123,6 +126,7 @@ class RestController extends FOSRestController{
     {
     	$idBloque=$request->request->get('idBloque');
     	$nombreBloque=$request->request->get('nombreBloque');
+    	$abreviacionBloque=$request->request->get('abreviacionBloque');
     	$usuarioSesion=$this->getUser();
     	
     	$bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
@@ -143,6 +147,7 @@ class RestController extends FOSRestController{
     	}
     	
     	$bloque->setBloque($nombreBloque);
+    	$bloque->setAbreviacion(strtoupper($abreviacionBloque));
     	$em = $this->getDoctrine()->getManager();
     	$em->persist($bloque);
     	$em->flush();
@@ -462,66 +467,55 @@ class RestController extends FOSRestController{
     }
     
     /**
-     * @Rest\Get("/api/plantilla/getOne/{id}")
+     * @Rest\Get("/api/speech/getOne/{id}")
      */
     public function traerPlanillaPorId(Request $request){
     
     	$id=$request->get('id');
     	
-    	$plantillaRepository=$this->getDoctrine()->getRepository('AppBundle:PlantillaTexto');
-    	$plantilla=$plantillaRepository->find($id);
+    	$speechRepository=$this->getDoctrine()->getRepository('AppBundle:Speech');
+    	$speech=$speechRepository->find($id);
     	
-    	return $this->view($plantilla,200);
+    	return $this->view($speech,200);
     }
     
     /**
-     * @Rest\Get("/api/plantilla/getByType/{tipo}")
+     * @Rest\Get("/api/speech/getByTitulo")
      */
-    public function traerPlanillaPorTipo(Request $request){
+    public function traerSpeechPorTitulo(Request $request){
     	
-    	$tipo=$request->get('tipo');
+    	$q=$request->query->get('q');
     	
-    	$tipoPlantillaRepository=$this->getDoctrine()->getRepository('AppBundle:TipoPlantillaTexto');
-    	$plantillaRepository=$this->getDoctrine()->getRepository('AppBundle:PlantillaTexto');
+    	$listaSpeechs=[];
     	
-    	$tipoPlantilla=null;
-    	
-    	if ($tipo=="encabezado")
-    		$tipoPlantilla=$tipoPlantillaRepository->find(1);
-    	else
-    		$tipoPlantilla=$tipoPlantillaRepository->find(2);
-    	
-    	$plantillas=$plantillaRepository->findBy(array('tipoPlantillaTexto'=>$tipoPlantilla));
-    	
-    	return $this->view($plantillas,200);
+    	$speechRepository=$this->getDoctrine()->getRepository('AppBundle:Speech'); 	    	
+    	$listaSpeechs=$speechRepository->findByTitulo($q);
+ 
+    	return $this->view($listaSpeechs,200);
     }
     
     /**
-     * @Rest\Post("/api/plantilla/save")
+     * @Rest\Post("/api/speech/save")
      */
-    public function guardarPlantilla(Request $request){
+    public function guardarSpeech(Request $request){
     	
-    	$formatoPlantilla=$request->request->get("formatoPlantilla");
-    	$textoPlantilla=$request->request->get("plantilla");
-    	
-    	$tipoPlantillaRepository=$this->getDoctrine()->getRepository('AppBundle:TipoPlantillaTexto');
-    	$tipoPlantilla=null;
-    	
-    	if ($formatoPlantilla=="encabezado")
-    		$tipoPlantilla=$tipoPlantillaRepository->find(1);
-    	else 
-    		$tipoPlantilla=$tipoPlantillaRepository->find(2);
-    	
-    	$plantillaTexto=new PlantillaTexto();
-    	$plantillaTexto->setPlantillaTexto($textoPlantilla);
-    	$plantillaTexto->setTipoPlantillaTexto($tipoPlantilla);
-    	
-    	$em = $this->getDoctrine()->getManager();
-    	$em->persist($plantillaTexto);
+    	$textoSuperior=$request->request->get("textoSuperior");
+    	$textoInferior=$request->request->get("textoInferior");
+    	$tituloSpeech=$request->request->get("tituloSpeech");
+    	$incluirSancion=$request->request->get("incluirSancion");
+    	    	
+    	$speech=new Speech();
+    	$speech->setTextoSuperior($textoSuperior);
+    	$speech->setTextoInferior($textoInferior);
+    	$speech->setTituloSpeech($tituloSpeech);
+    	$speech->setIncluirSancion($incluirSancion=='true');
+    	$em=$this->getDoctrine()->getManager();
+    	$em->persist($speech);
     	$em->flush();
     	
-    	$respuesta=array('mensaje'=>'La plantilla de '.$formatoPlantilla.' se guardó en forma exitosa',
-    					 'id'=>$plantillaTexto->getId()
+    	$respuesta=array('mensaje'=>'El speech de titulo '.chr(39).$tituloSpeech.chr(39).' se guardó en forma exitosa',
+    					 'id'=>$speech->getId(),
+    					 'titulo'=>$speech->getTituloSpeech()
     					);
     	
     	return $this->view($respuesta,200);

@@ -9,6 +9,7 @@ use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use PhpOffice\PhpWord\SimpleType\JcTable;
 
 class ImpresionServicio
 {
@@ -177,40 +178,66 @@ class ImpresionServicio
     		$identation->setLeft(0);
     		$identation->setRight(0);
     	}
+    	if($identationType=='LEGEND'){
+    		$identation->setFirstLine(1600);
+    		$identation->setLeft(0);
+    		$identation->setRight(0);
+    	}
     	
     	return $identation;
     }
     
-    public function setHeader(\PhpOffice\PhpWord\Element\Section $section,$urlImage,$textUp,$textDown)
+    public function setHeader(\PhpOffice\PhpWord\Element\Section $section,$urlImage)
     {
     	$header = $section->addHeader();
-    	$fontTextHeader=array('name'=>'Times New Roman', 'size'=>10, 'color'=>'000000', 'bold'=>true);
-    	$table = $header->addTable();
-    	$table->addRow();
-    	$cellRowSpan = array('vMerge' => 'restart', 'indentation' => $this->getIdentation('none'));
-    	$table->addCell(1400,$cellRowSpan)
-			  ->addImage($urlImage,
-			    		 array('width' => 38, 'height' => 50,
-			    			   'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER
-			    			   )
-			    		);
-    	$table->addCell(8200)->addText($textUp,$fontTextHeader);
-    	$table->addRow();
-    	$cellRowContinue = array('vMerge' => 'continue', 'indentation' => $this->getIdentation('none'));
-    	$table->addCell(1400,$cellRowContinue);
-    	$table->addCell(8200)->addText($textDown,$fontTextHeader);
-    	$header->addShape( 'line',
-			    			array(
-			    					'points'  => '1,1 570,1',
-			    					'outline' => array(
-			    							'color'      => '#000000',
-			    							'line'       => 'thickThin',
-			    							'weight'     => 2,
-			    							'startArrow' => 'none',
-			    							'endArrow'   => 'none',
-			    					),
-			    			)
-    					);
+    	$header->addImage($urlImage,
+		    			  array('width' => \PhpOffice\PhpWord\Shared\Converter::cmToPixel(15.48), 
+		    				    'height' =>  \PhpOffice\PhpWord\Shared\Converter::cmToPixel(1.5),
+		    				    'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::START,
+		    				    'wrappingStyle'=>'tight',
+		    				    'marginLeft'=>\PhpOffice\PhpWord\Shared\Converter::cmToInch(-0.5)
+		    				   )
+    				   	  );
+//     	$fontTextHeader=array('name'=>'Times New Roman', 'size'=>14, 'color'=>'000000', 'bold'=>true);
+//     	$paragraphTextHeader=array('indentation' => $this->getIdentation('none'),
+//     							   'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::START,
+//     							   'valign'=>Jc::CENTER,'spaceAfter' => 0);
+//     	$table = $header->addTable(array('cellMarginTop' => 150, 'cellMarginLeft' => 0, 
+//     									 'cellMarginBottom' => 0, 'cellMarginRight' => 0));
+//     	$table->addRow(10);
+//     	$cellRowSpan = array('vMerge' => 'restart', 'indentation' => $this->getIdentation('none'));
+//     	$cellImage=$table->addCell(1400,$cellRowSpan);
+//     	$cellImage=$table->addCell(1400);
+// 		$cellImage->addImage($urlImage,
+// 			    		 array('width' => 30, 'height' => 39,
+// 			    			   'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER,
+// 			    		 	   'wrappingStyle'=>'square',
+// 			    		 	   'marginTop'=>10
+// 			    			   )
+// 			    		);
+// 		$texto=$textUp.chr(015).$textDown;
+// 		$table->addCell(8200,array('borderTopSize'=>10, 'borderBottomSize'=>10))
+// 			  ->addText($texto,$fontTextHeader,$paragraphTextHeader);
+// 		$cellText=$table->addCell(8200,array('borderTopSize'=>10));
+		
+		
+//     	$table->addRow(5);
+//     	$cellRowContinue = array('vMerge' => 'continue', 'indentation' => $this->getIdentation('none'));
+//     	$table->addCell(1400,$cellRowContinue);
+//     	$table->addCell(8200,array('borderBottomSize'=>10))->addText($textDown,$fontTextHeader);
+    	\PhpOffice\PhpWord\Shared\Html::addHtml($header, '<p></p>');
+//     	$header->addShape( 'line',
+// 			    			array(
+// 			    					'points'  => '1,1 570,1',
+// 			    					'outline' => array(
+// 			    							'color'      => '#000000',
+// 			    							'line'       => 'thickThin',
+// 			    							'weight'     => 2,
+// 			    							'startArrow' => 'none',
+// 			    							'endArrow'   => 'none',
+// 			    					),
+// 			    			)
+//     					);
     	
     	return $section;
     }
@@ -249,22 +276,22 @@ class ImpresionServicio
     							   array('alignment'=>Jc::BOTH, 'indentation' => $this->getIdentation('none')));
     	//encabezado para tipo de proyecto
     	$phpWord->addTitleStyle(5, array('name'=>'Times New Roman', 'size'=>16, 'color'=>'000000',
-    									 'bold'=>true),
+    								     'bold'=>true, 'underline' => 'single'),
     							   array('alignment'=>Jc::CENTER, 'indentation' => $this->getIdentation('none')));
     	//encabezado de lugar y fecha
     	$phpWord->addTitleStyle(6, array('name'=>'Times New Roman', 'size'=>12, 'color'=>'000000'),
     							   array('alignment'=>Jc::END, 'indentation' => $this->getIdentation('none')));
     	////encabezade de secciones del proyecto vistos, considerandos,...,etc
     	$phpWord->addTitleStyle(7, array('name'=>'Times New Roman', 'size'=>13, 'color'=>'000000',
-    									 'bold'=>true),
+    									 'bold'=>true, 'underline' => 'single'),
     							  array('alignment'=>Jc::START, 'indentation' => $this->getIdentation('none')));
-    	//encabezado de caratula del expoediente
+    	//encabezado de caratula del expediente y encabezado para formato de artículo
     	$phpWord->addTitleStyle(8, array('name'=>'Times New Roman', 'size'=>12, 'color'=>'000000'),
     							   array('alignment'=>Jc::BOTH, 'indentation' => $this->getIdentation('none')	,
     									 'spaceAfter' => \PhpOffice\PhpWord\Shared\Converter::pointToTwip(12)));
-    	//encabezado para formato de artículo
-    	$phpWord->addTitleStyle(9, array('name'=>'Times New Roman', 'size'=>12, 'color'=>'000000'),
-    							   array('alignment'=>Jc::BOTH,'indentation' => $this->getIdentation('none'),
+    	//leyendas "el hoonorable ..."  y "sancionada en la sala ..."
+    	$phpWord->addTitleStyle(9, array('name'=>'Times New Roman', 'size'=>12, 'color'=>'000000', 'bold'=>true),
+    							   array('alignment'=>Jc::BOTH,'indentation' => $this->getIdentation('LEGEND'),
     									 'spaceAfter' => \PhpOffice\PhpWord\Shared\Converter::pointToTwip(12)));
     	//encabezado para formato de inciso
     	$phpWord->addTitleStyle(10, array('name'=>'Times New Roman', 'size'=>12, 'color'=>'000000'),
@@ -276,7 +303,10 @@ class ImpresionServicio
     
     public function getPage( \PhpOffice\PhpWord\PhpWord $phpWord,$size,$resetNumbering=0)
     {
-    	return $phpWord->addSection(array('paperSize' => $size,'pageNumberingStart' => $resetNumbering));
+    	return $phpWord->addSection(array('paperSize' => $size,'pageNumberingStart' => $resetNumbering,
+    								'marginLeft'=>\PhpOffice\PhpWord\Shared\Converter::cmToTwip(3),
+    								'marginRight'=>\PhpOffice\PhpWord\Shared\Converter::cmToTwip(3)
+    								));
     }
     
     public function writeHTMLToPage($html,\PhpOffice\PhpWord\Element\Section $page,$withBreak=0)
@@ -325,16 +355,139 @@ class ImpresionServicio
 		    		
     }
     
+    public function addsignatureSancion(\PhpOffice\PhpWord\Element\Section $page ,$urlImage, $firmaSecretario,$firmaPresidente)
+    {
+    	
+    	\PhpOffice\PhpWord\Shared\Html::addHtml($page, '<p></p><p></p><p></p>');
+    	
+    	
+    	$cellRowSpan = array('indentation' => $this->getIdentation('none'),'valign' => Jc::CENTER,
+    						  'alignment'=>Jc::CENTER);	
+    	$cellRowMerge = array('vMerge' => 'restart', 'indentation' => $this->getIdentation('none'));
+    	$cellRowContinue = array('vMerge' => 'continue', 'indentation' => $this->getIdentation('none'));
+    	
+    	
+    	$table = $page->addTable(array('cellMargin' => 0, 'cellMarginRight' => 0,
+				    			 'cellMarginBottom' => 0, 'cellMarginLeft' => 0)
+				    			);
+    	
+    	$row1=$table->addRow(10);
+    	$cell1=$row1->addCell(3200,$cellRowSpan);
+    	if ($firmaPresidente!='')
+    		$cell1->addText('______________________',array(),array('spaceAfter' => 0));
+    	else
+    		$cell1->addText('',array(),array('spaceAfter' => 0));
+    	
+    	$row1->addCell(2500,$cellRowMerge)
+			 ->addImage($urlImage,
+			 			array('width' =>\PhpOffice\PhpWord\Shared\Converter::cmToPixel(3.36	), 
+			 				  'height' => \PhpOffice\PhpWord\Shared\Converter::cmToPixel(4.5),
+				    		  'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER
+				    		 )
+			    		);
+		$cell2=$row1->addCell(3200,$cellRowSpan);
+		$cell2->addText('______________________',array(),array('spaceAfter' => 0));
+		
+		$row2=$table->addRow(10);
+		$cell3=$row2->addCell(3200,$cellRowSpan);
+		if ($firmaPresidente!='')
+			$cell3->addText(strtoupper($firmaSecretario),
+							array('name'=>'Times New Roman', 'size'=>10, 'color'=>'000000', 'bold'=>true),
+							array('alignment'=>Jc::CENTER, 'indentation' => $this->getIdentation('none'),
+								  'spaceAfter' => 0
+								 )
+						   	);	
+		else
+			$cell3->addText('',array(),array('spaceAfter' => 0));
+		
+    	$row2->addCell(2500,$cellRowContinue);
+    	$cell4=$row2->addCell(3200,$cellRowSpan);
+    	if($firmaPresidente=='')
+    		$cell4->addText(strtoupper($firmaSecretario),
+    						array('name'=>'Times New Roman', 'size'=>10, 'color'=>'000000', 'bold'=>true),
+    						array('alignment'=>Jc::CENTER, 'indentation' => $this->getIdentation('none'),
+    							  'spaceAfter' => 0
+    						)
+    					   );
+    	else 
+    		$cell4->addText(strtoupper($firmaPresidente),
+    						array('name'=>'Times New Roman', 'size'=>10, 'color'=>'000000', 'bold'=>true),
+    						array('alignment'=>Jc::CENTER, 'indentation' => $this->getIdentation('none'),
+    							  'spaceAfter' => 0
+    						)
+    					   );
+    	
+    	$row3=$table->addRow(10);
+    	$cell5=$row3->addCell(3200,$cellRowSpan);
+    	if($firmaPresidente!='')
+    		$cell5->addText('SECRETARIO',
+    						array('name'=>'Times New Roman', 'size'=>10, 'color'=>'000000', 'bold'=>true),
+    						array('alignment'=>Jc::CENTER, 'indentation' => $this->getIdentation('none'),
+    							  'spaceAfter' => 0
+    						)
+    					   );
+    	else
+    		$cell5->addText('',array(),array('spaceAfter' => 0));
+    		
+    	$row3->addCell(2500,$cellRowContinue);
+    	$cell6=$row3->addCell(3200,$cellRowSpan);
+    	if($firmaPresidente=='')
+    		$cell6->addText('SECRETARIO',
+    						 array('name'=>'Times New Roman', 'size'=>10, 'color'=>'000000', 'bold'=>true),
+    						 array('alignment'=>Jc::CENTER, 'indentation' => $this->getIdentation('none'),
+    						 	   'spaceAfter' => 0
+    						 )
+    						);
+    	else
+    		$cell6->addText('PRESIDENTE',
+    						array('name'=>'Times New Roman', 'size'=>10, 'color'=>'000000', 'bold'=>true),
+    						array('alignment'=>Jc::CENTER, 'indentation' => $this->getIdentation('none'),
+    							  'spaceAfter' => 0
+    						)
+    					   );	
+    	
+    	$row4=$table->addRow(10);
+    	$cell7=$row4->addCell(3200,$cellRowSpan);
+    	if($firmaPresidente!='')
+    		$cell7->addText('Honorable Concejo Deliberante',
+    						array('name'=>'Times New Roman', 'size'=>10, 'color'=>'000000', 'bold'=>true),
+    				        array('alignment'=>Jc::CENTER, 'indentation' => $this->getIdentation('none'),
+    				        	  'spaceAfter' => 0
+    				        )
+    					   );
+    	else
+    		$cell7->addText('',array(),array('spaceAfter' => 0));
+    
+    	$row4->addCell(2500,$cellRowContinue);
+    	$cell8=$row4->addCell(3200,$cellRowSpan);
+    	$cell8->addText('Honorable Concejo Deliberante',
+    					array('name'=>'Times New Roman', 'size'=>10, 'color'=>'000000', 'bold'=>true),
+    					array('alignment'=>Jc::CENTER, 'indentation' => $this->getIdentation('none'),
+    						  'spaceAfter' => 0
+    					)
+    				   );
+    	
+    	$row5=$table->addRow();
+    	$row5->addCell(3200,$cellRowSpan);
+    	$row5->addCell(2500,$cellRowContinue);
+    	$row5->addCell(3200,$cellRowSpan);
+    	
+    	    
+    	return $page;
+    	
+    	
+    }
+    
     public function setHeaderRemito(\PhpOffice\PhpWord\Element\Section $page,$urlImagen,$tipo,$numero)
     {
-    	$header=$page->addHeader();
+    	//$header=$page->addHeader();
     	
     	$fechaActual=new \DateTime('now');
     	$fechaImpresion=$fechaActual->format('d/m/Y');
     	$cellRowSpan = array('vMerge' => 'restart', 'indentation' => $this->getIdentation('none'));
     	$cellRowContinue = array('vMerge' => 'continue', 'indentation' => $this->getIdentation('none'));
       	
-    	$tablaEncabezado=$header->addTable();
+    	$tablaEncabezado=$page->addTable();
     	$filaEncabezado=$tablaEncabezado->addRow();
     	$filaEncabezado->addCell(2000,$cellRowSpan)
 				       ->addImage($urlImagen,array('width' => 57, 'height' => 75,
@@ -373,15 +526,14 @@ class ImpresionServicio
     	$filaEncabezado2->addCell(2000)->addText('REMITO: '.$numero,
     											  array('name'=>'Times New Roman', 'size'=>10, 'bold'=>true,
     												    'color'=>'000000'),
-    											  array('indentation' => $this->getIdentation('none')));	
+    											  array('indentation' => $this->getIdentation('none')));
+    	return $page;
     }
     
     public function setDatosRemito(\PhpOffice\PhpWord\PhpWord $phpWord,$pases, $informes, $notificaciones,
     		$urlImagen, $destino,$usuario,$numero=1)
     {
     	
-//     	$fechaActual=new \DateTime('now');
-//     	$fechaImpresion=$fechaActual->format('d/m/Y');
     	$tableStyle = array('cellMargin' => 0, 'cellMarginRight' => 0,
     					    'cellMarginBottom' => 0, 'cellMarginLeft' => 30,
     						'borderSize' => 6
@@ -393,165 +545,165 @@ class ImpresionServicio
     	$cellSettingsInitial = array('alignment'=>Jc::START, 'indentation' => $this->getIdentation('none'));
     	$cellSettings = array('alignment'=>Jc::CENTER, 'indentation' => $this->getIdentation('none'));
     	
-    	$page= $this->getPage($phpWord, 'A4');
+    	$page= $this->getPage($phpWord, 'Legal');
     	
-//     	$tablaEncabezado=$page->addTable();
-//     	$filaEncabezado=$tablaEncabezado->addRow();
-//     	$filaEncabezado->addCell(2000,$cellRowSpan)
-//     				   ->addImage($urlImagen,
-// 								  array('width' => 57, 'height' => 75,
-// 								        'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER
-// 								    	)
-//     							  );
-//     	$filaEncabezado->addCell(2200)->addText('H.C.D',array('name'=>'Times New Roman', 'size'=>16, 
-//     														  'color'=>'000000', 'bold'=>true),
-//     													array('indentation' => $this->getIdentation('none'))
-//     										   );
-//     	$filaEncabezado->addCell(3000)->addText('REMITO INTERNO',array('name'=>'Times New Roman', 'size'=>14,
-// 								    			'color'=>'000000', 'bold'=>true, 'underline'=>'single'),
-//     											array('indentation' => $this->getIdentation('none'))
-// 								    			);
-//     	$filaEncabezado->addCell(2000)->addText('FECHA: '.$fechaImpresion,array('name'=>'Times New Roman', 'size'=>10, 'bold'=>true,
-//     											'color'=>'000000'),
-//     											array('indentation' => $this->getIdentation('none')));	
+    	for ($copy=1;$copy<3;$copy++){
+    	    		
+    		if ($copy==1)
+    			$page=$this->setHeaderRemito($page, $urlImagen, 'ORIGINAL', $numero);
+    		else{
+    			
+    			$page->addShape( 'line',
+		    					 array(
+		    							'points'  => '1,1 570,1',
+		    							'outline' => array(
+					    									'color'      => '#000000',
+					    									'line'       => 'thickThin',
+					    									'weight'     => 1,
+					    									'startArrow' => 'none',
+					    									'endArrow'   => 'none',
+					    								   ),
+		    						  )
+    						  );
+    			$page=$this->setHeaderRemito($page, $urlImagen, 'COPIA', $numero);
+    		}
     	
-//     	$filaEncabezado2=$tablaEncabezado->addRow();
-//     	$filaEncabezado2->addCell(2000,$cellRowContinue);
-//     	$filaEncabezado2->addCell(2200)->addText('Lomas de Zamora',array('name'=>'Times New Roman', 'size'=>12,
-// 												    		            'color'=>'000000', 'bold'=>true),
-// 												    			         array('indentation' => $this->getIdentation('none'))
-// 												    			);
-//     	$filaEncabezado2->addCell(3000)->addText('',array('name'=>'Times New Roman', 'size'=>16,
-//     													  'color'=>'000000'));
-//     	$filaEncabezado2->addCell(2000)->addText('REMITO: '.$numero,array('name'=>'Times New Roman', 'size'=>10, 'bold'=>true,
-//     													  'color'=>'000000'),
-//     														array('indentation' => $this->getIdentation('none')));	
-    	
-    	$html='<p></p><h8><strong>DE HONORABLE CONSEJO DELIBERANTE A: </strong>'.strtoupper($destino).'</h8>';
-    	\PhpOffice\PhpWord\Shared\Html::addHtml($page, $html);
-    	$html='<h8>Remite lo Siguiente:</h8>';
-    	\PhpOffice\PhpWord\Shared\Html::addHtml($page, $html);
-    	
-    	$tablaPrincipal=$page->addTable();
-    	$rowPrincipal=$tablaPrincipal->addRow();
-    	$celda1=$rowPrincipal->addCell(5500);
-    	    	
-    	//pases
-    	$filasPase=explode(',', substr($pases, 0,-1));
-    	
-    	if(strlen($filasPase[0])>0){
-    		    	
-    		$html='<h7>Expedientes</h7>';
-    		\PhpOffice\PhpWord\Shared\Html::addHtml($celda1, $html);
-    		
-    		$tablaPases=$celda1->addTable($tableStyle);
-    		    		
-	    	$headerPase=$tablaPases->addRow();
-	    	$headerPase->addCell(2000)->addText('Expte. N°',$cellTextHeaderStyle,$cellSettingsInitial);
-	    	$headerPase->addCell(1000)->addText('Año',$cellTextHeaderStyle,$cellSettings);
-	    	$headerPase->addCell(1000)->addText('Letra',$cellTextHeaderStyle,$cellSettings);
-	    	$headerPase->addCell(1000)->addText('Folios',$cellTextHeaderStyle,$cellSettings);
+	    	$html='<p></p><h8><strong>DE HONORABLE CONCEJO DELIBERANTE A: </strong>'.strtoupper($destino).'</h8>';
+	    	\PhpOffice\PhpWord\Shared\Html::addHtml($page, $html);
+	    	$html='<h8>Remite lo Siguiente:</h8>';
+	    	\PhpOffice\PhpWord\Shared\Html::addHtml($page, $html);
+	    	
+	    	$tablaPrincipal=$page->addTable();
+	    	$rowPrincipal=$tablaPrincipal->addRow();
+	    	$celda1=$rowPrincipal->addCell(5500);
+	    	    	
+	    	//pases
 	    	$filasPase=explode(',', substr($pases, 0,-1));
 	    	
-	    	foreach ($filasPase as $fila){
-	    		$row=$tablaPases->addRow();
-	    		$camposFila=explode('|', $fila);
-	    		$esPrimerCampo=true;
-	    		foreach ($camposFila as $campo){
-	    			$cell=$row->addCell(1000);
-	    			if ($esPrimerCampo==true)
-	    				$cell->addText($campo,$cellTextStyle,$cellSettingsInitial);
-	    			else
-	    				$cell->addText($campo,$cellTextStyle,$cellSettings);
-	    			
-	    			$esPrimerCampo=false;
-	    		}
-	    	
+	    	if(strlen($filasPase[0])>0){
+	    		    	
+	    		$html='<h7>Expedientes</h7>';
+	    		\PhpOffice\PhpWord\Shared\Html::addHtml($celda1, $html);
+	    		
+	    		$tablaPases=$celda1->addTable($tableStyle);
+	    		    		
+		    	$headerPase=$tablaPases->addRow();
+		    	$headerPase->addCell(2000)->addText('Expte. N°',$cellTextHeaderStyle,$cellSettingsInitial);
+		    	$headerPase->addCell(1000)->addText('Año',$cellTextHeaderStyle,$cellSettings);
+		    	$headerPase->addCell(1000)->addText('Letra',$cellTextHeaderStyle,$cellSettings);
+		    	$headerPase->addCell(1000)->addText('Folios',$cellTextHeaderStyle,$cellSettings);
+		    	$filasPase=explode(',', substr($pases, 0,-1));
+		    	
+		    	foreach ($filasPase as $fila){
+		    		$row=$tablaPases->addRow();
+		    		$camposFila=explode('|', $fila);
+		    		$esPrimerCampo=true;
+		    		foreach ($camposFila as $campo){
+		    			$cell=$row->addCell(1000);
+		    			if ($esPrimerCampo==true)
+		    				$cell->addText($campo,$cellTextStyle,$cellSettingsInitial);
+		    			else
+		    				$cell->addText($campo,$cellTextStyle,$cellSettings);
+		    			
+		    			$esPrimerCampo=false;
+		    		}
+		    	
+		    	}
+		    	
+		    	$html='<p></p>';
+		    	\PhpOffice\PhpWord\Shared\Html::addHtml($celda1, $html);
 	    	}
 	    	
-	    	$html='<p></p>';
-	    	\PhpOffice\PhpWord\Shared\Html::addHtml($celda1, $html);
-    	}
-    	
-    	//informes
-    	$filasInforme=explode(',', substr($informes, 0,-1));
-    	
-    	if(strlen($filasInforme[0])>0){
-    		
-	    	$html='<h7>Pedidos de Informe</h7>';
-	    	\PhpOffice\PhpWord\Shared\Html::addHtml($celda1, $html);
-	    	
-	    	$tablaInformes=$celda1->addTable($tableStyle);
-	    	
-	    	$headerInformes=$tablaInformes->addRow();
-	    	$headerInformes->addCell(2000)->addText('Expte. N°',$cellTextHeaderStyle,$cellSettingsInitial);
-	    	$headerInformes->addCell(3000)->addText('Observacion',$cellTextHeaderStyle,$cellSettingsInitial);
-	    	
+	    	//informes
 	    	$filasInforme=explode(',', substr($informes, 0,-1));
-	    	foreach ($filasInforme as $fila){
-	    		$row=$tablaInformes->addRow();
-	    		$camposFila=explode('|', $fila);
-	    		foreach ($camposFila as $campo){
-	    			$cell=$row->addCell(1000);
-	    			$cell->addText($campo,$cellTextStyle,$cellSettingsInitial);
-	    		}
+	    	
+	    	if(strlen($filasInforme[0])>0){
 	    		
+		    	$html='<h7>Pedidos de Informe</h7>';
+		    	\PhpOffice\PhpWord\Shared\Html::addHtml($celda1, $html);
+		    	
+		    	$tablaInformes=$celda1->addTable($tableStyle);
+		    	
+		    	$headerInformes=$tablaInformes->addRow();
+		    	
+		    	$headerInformes->addCell(2000)->addText('Expte. N°',$cellTextHeaderStyle,$cellSettingsInitial);
+		    	$headerInformes->addCell(1000)->addText('Año',$cellTextHeaderStyle,$cellSettings);
+		    	$headerInformes->addCell(1000)->addText('Letra',$cellTextHeaderStyle,$cellSettings);
+		    	$headerInformes->addCell(1000)->addText('Folios',$cellTextHeaderStyle,$cellSettings);
+		    	
+		    	$filasInforme=explode(',', substr($informes, 0,-1));
+		    	foreach ($filasInforme as $fila){
+		    		$row=$tablaInformes->addRow();
+		    		$camposFila=explode('|', $fila);
+		    		$esPrimerCampo=true;
+		    		foreach ($camposFila as $campo){
+		    			$cell=$row->addCell(1000);
+		    			if ($esPrimerCampo==true)
+		    				$cell->addText($campo,$cellTextStyle,$cellSettingsInitial);
+	    				else
+	    					$cell->addText($campo,$cellTextStyle,$cellSettings);
+	    					
+	    				$esPrimerCampo=false;
+		    		}
+		    		
+		    	}
+		    	
+		    	$html='<p></p>';
+		    	\PhpOffice\PhpWord\Shared\Html::addHtml($celda1, $html);
 	    	}
 	    	
-	    	$html='<p></p>';
-	    	\PhpOffice\PhpWord\Shared\Html::addHtml($celda1, $html);
-    	}
-    	
-    	//notificaciones
-    	$filasNotificacion=explode(',', substr($notificaciones, 0,-1));
-    	
-    	if (strlen($filasNotificacion[0])>0){
-	    	$html='<h7>Notificaciones</h7>';
-	    	\PhpOffice\PhpWord\Shared\Html::addHtml($celda1, $html);
+	    	//notificaciones
+	    	$filasNotificacion=explode(',', substr($notificaciones, 0,-1));
 	    	
-	    	$tablaNotificaciones=$celda1->addTable($tableStyle);
-	    	
-	    	$headerNotificaciones=$tablaNotificaciones->addRow();
-	    	$headerNotificaciones->addCell(2000)->addText('N° Sanción',$cellTextHeaderStyle,$cellSettingsInitial);
-	    	$headerNotificaciones->addCell(3000)->addText('Tipo',$cellTextHeaderStyle,$cellSettings);
-	    
-	    	foreach ($filasNotificacion as $fila){
-	    		$row=$tablaNotificaciones->addRow();
-	    		$camposFila=explode('|', $fila);
-	    		$esPrimerCampo=true;
-	    		foreach ($camposFila as $campo){
-	    			$cell=$row->addCell(1000);
-	    			if($esPrimerCampo==true)
-	    				$cell->addText($campo,$cellTextStyle,$cellSettingsInitial);
-	    			else
-	    				$cell->addText($campo,$cellTextStyle,$cellSettings);
-	    			
-	    			$esPrimerCampo=false;
-	    		}
-	    		
+	    	if (strlen($filasNotificacion[0])>0){
+		    	$html='<h7>Notificaciones</h7>';
+		    	\PhpOffice\PhpWord\Shared\Html::addHtml($celda1, $html);
+		    	
+		    	$tablaNotificaciones=$celda1->addTable($tableStyle);
+		    	
+		    	$headerNotificaciones=$tablaNotificaciones->addRow();
+		    	$headerNotificaciones->addCell(2000)->addText('N° Sanción',$cellTextHeaderStyle,$cellSettingsInitial);
+		    	$headerNotificaciones->addCell(3000)->addText('Tipo',$cellTextHeaderStyle,$cellSettings);
+		    
+		    	foreach ($filasNotificacion as $fila){
+		    		$row=$tablaNotificaciones->addRow();
+		    		$camposFila=explode('|', $fila);
+		    		$esPrimerCampo=true;
+		    		foreach ($camposFila as $campo){
+		    			$cell=$row->addCell(1000);
+		    			if($esPrimerCampo==true)
+		    				$cell->addText($campo,$cellTextStyle,$cellSettingsInitial);
+		    			else
+		    				$cell->addText($campo,$cellTextStyle,$cellSettings);
+		    			
+		    			$esPrimerCampo=false;
+		    		}
+		    		
+		    	}
 	    	}
+	    	
+	    	$celda2=$tablaPrincipal->addCell(3800);
+	    	$html='<h7>Oficina Receptora</h7>';
+	    	\PhpOffice\PhpWord\Shared\Html::addHtml($celda2, $html);
+	    	$tablaFirmante=$celda2->addTable(20);
+	    	$row1=$tablaFirmante->addRow();
+	    	$row1->addCell(1200)->addText("FIRMA: ",$cellTextHeaderStyle,$cellSettingsInitial);
+	    	$row1->addCell(2400)->addText(" _________________",$cellTextStyle,$cellSettingsInitial);
+	    	$row2=$tablaFirmante->addRow();
+	    	$row2->addCell(1200)->addText("LEG.: ",$cellTextHeaderStyle,$cellSettingsInitial);
+	    	$row2->addCell(2400)->addText(" _________________",$cellTextStyle,$cellSettingsInitial);
+	    	$row3=$tablaFirmante->addRow(); 
+	    	$row3->addCell(1200)->addText("FECHA: ",$cellTextHeaderStyle,$cellSettingsInitial);
+	    	$row3->addCell(2400)->addText(" ____/____/_______",$cellTextStyle,$cellSettingsInitial);
+	    	
+	    	$html='<p></p><h8><strong>MESA DE ENTRADAS, INTERVINO: </strong>'.strtoupper($usuario).'</h8>';
+	    	\PhpOffice\PhpWord\Shared\Html::addHtml($page, $html);
+	    	
     	}
     	
-    	$celda2=$tablaPrincipal->addCell(3800);
-    	$html='<h7>Oficina Receptora</h7>';
-    	\PhpOffice\PhpWord\Shared\Html::addHtml($celda2, $html);
-    	$tablaFirmante=$celda2->addTable(20);
-    	$row1=$tablaFirmante->addRow();
-    	$row1->addCell(1200)->addText("FIRMA: ",$cellTextHeaderStyle,$cellSettingsInitial);
-    	$row1->addCell(2400)->addText(" _________________",$cellTextStyle,$cellSettingsInitial);
-    	$row2=$tablaFirmante->addRow();
-    	$row2->addCell(1200)->addText("LEG.: ",$cellTextHeaderStyle,$cellSettingsInitial);
-    	$row2->addCell(2400)->addText(" _________________",$cellTextStyle,$cellSettingsInitial);
-    	$row3=$tablaFirmante->addRow(); 
-    	$row3->addCell(1200)->addText("FECHA: ",$cellTextHeaderStyle,$cellSettingsInitial);
-    	$row3->addCell(2400)->addText(" ____/____/_______",$cellTextStyle,$cellSettingsInitial);
-    	
-    	$html='<p></p><h8><strong>MESA DE ENTRADAS, INTERVINO: </strong>'.strtoupper($usuario).'</h8>';
-    	\PhpOffice\PhpWord\Shared\Html::addHtml($page, $html);
-    	
-    	$page2=$phpWord->duplicateSection($page);
-    	$page=$this->setHeaderRemito($page, $urlImagen, 'ORIGINAL', $numero);
-    	$page2=$this->setHeaderRemito($page2, $urlImagen, 'COPIA', $numero);
+//     	$page2=$phpWord->duplicateSection($page);
+//     	$page=$this->setHeaderRemito($page, $urlImagen, 'ORIGINAL', $numero);
+//     	$page2=$this->setHeaderRemito($page2, $urlImagen, 'COPIA', $numero);
     	
     	return $phpWord;
     }

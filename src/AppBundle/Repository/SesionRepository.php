@@ -147,9 +147,11 @@ class SesionRepository extends EntityRepository{
 	public function findByDistinctPeriodos(){
 		
 		$qb = $this->createQueryBuilder('s')
-			-> select('s.periodo')
-			->orderBy('s.periodo','desc')
-			-> distinct();
+				   -> select('s.periodo');
+		$qb -> where($qb->expr()->eq('s.tieneOrdenDelDia', '?1'))
+			-> orderBy('s.periodo','desc')
+			-> distinct()
+			->setParameter(1, true);
 
 		$resultado = $qb->getQuery()->getResult();
 		$periodos=[];
@@ -199,6 +201,8 @@ class SesionRepository extends EntityRepository{
 		$rsm->addScalarResult('texto', 'textoSancion', 'text');
 		$rsm->addScalarResult('expediente', 'expediente', 'string');
 		$rsm->addScalarResult('numeroSancion', 'numeroSancion', 'string');
+		$rsm->addScalarResult('firmaSecretario', 'firmaSecretario','string');
+		$rsm->addScalarResult('firmaPresidente', 'firmaPresidente', 'string');
 		
 		$query = $this -> getEntityManager()
 		-> createNativeQuery('call conformarSancion(:idSancion)',$rsm)

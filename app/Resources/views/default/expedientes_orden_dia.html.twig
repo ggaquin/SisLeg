@@ -31,6 +31,10 @@
 			height: 2000%!important;
 		}
 				
+		.text-area-libre{
+			height: 510px!important;
+		}
+		
 		.text-area-larga{
 			height: 467px!important;
 		}
@@ -43,10 +47,11 @@
 			height: 80px!important;
 		}
 		
-		.text-area-plantilla{
-			height: 200px!important;
-			max-height: 201px;
-			overflow-y: auto; 
+		.text-area-speech{
+			height: 370px!important;
+			max-height: 370px;
+			overflow-y: auto;
+			background-color: #eeeeee!important; 
 		}
 		
 		.numero-fila{
@@ -79,7 +84,6 @@
 		.tab{
 			height: 502px;
 			max-height:503px;
-			/* overflow-y: auto;  */
 		}
 		
 		.div-revision{
@@ -304,25 +308,25 @@
 	        $("#selTipoRedaccion").change();
 	        $("#selTipoSancion").val(0);
 	        $("#numeroSancion").val("");
-	        inicializarSeleccionPlantillas( $("#selEncabezado"),'encabezado',0);
-	        inicializarSeleccionPlantillas( $("#selPie"),'pie',0);
+	        $("#editaRevision").bootstrapToggle('on');
+		   	$("#vistosYConsiderandos").bootstrapToggle('on');
+		   	$("#poseeSancion").bootstrapToggle('off');
+		   	$("#aplicaNotificacion").bootstrapToggle('off');
 	        $("#texto").data("wysihtml5").editor.setValue('');
 	        $("#articulos > tbody").html('');
 	        $("#vistos").html('');
 	        $("#considerandos").html('');
 	        $("#articulos-revision > tbody").html('');
-	        $("#textoEncabezado").data("wysihtml5").editor.setValue('');
-	        $("#textoPie").data("wysihtml5").editor.setValue('');
-			$("#textoEncabezado").data("wysihtml5").editor.composer.element.setAttribute('contenteditable', false);
-			$("#textoPie").data("wysihtml5").editor.composer.element.setAttribute('contenteditable', false);
+			$("#textoSpeech").data("wysihtml5").editor.composer.element.setAttribute('contenteditable', false);
+			$("#agregaSpeech").bootstrapToggle('off');
+			$("#firmaPresidente").bootstrapToggle('off');
+			$("#firmaSecretario").bootstrapToggle('off');
 	        articulosSancion.length=0;
 	    	articulosRevision.length=0;
 		}
 
 		function habilitarControlesModalSancion(idSancion,idDictamen){
 
-			debugger; 
-			
 			if (idSancion==0 && idDictamen!=0){ //Alta por dictamen
 				$("#selTipoRedaccion").attr("disabled",true);
 				$("#btn-modo-redaccion").attr("disabled",true);
@@ -382,13 +386,20 @@
 				dataType: 'json	',
 				url:'{{ app.request.getBaseURL() }}'+urlDatos,
 				success: function(data){
-					debugger;
+					
 					//controles comunes a todos las sanciones
 					$("#selTipoRedaccion").val(data[traduccionCampo[0]]);
-					/* $("#selTipoRedaccion").change(); */
-    				$("#selEncabezado").val((idSancion!=0)?data.id_encabezado:0);
-    				$("#selPie").val((idSancion!=0)?data.id_pie:0);
+					
+					if (idSancion!=0){
+						 var speech=data.speech; 
+						 if (speech!=null){
+							 $("#agregaSpeech").bootstrapToggle('on');
+    						 var newOption = new Option(speech.titulo_speech, speech.id, true, true);
+    						 $("#selSpeech").append(newOption).trigger('change');
+						 }
+					}
 
+    				//caso particular sancion basica
     				if (data[traduccionCampo[0]]=="basico")
 						$("#texto").data("wysihtml5").editor.setValue(data.texto_libre);	
 
@@ -431,7 +442,7 @@
         					$("#poseeSancion").bootstrapToggle('off');
     					
 						$("#numeroSancion").val(data.numero_sancion);
-						//$("#selDestinoNotificacion").val(data.destino_notificacion);
+						
 					    $("#selComisionReserva").val(data.comision_reserva);
 					    
 					    if (data.notificaciones.length>0 && data.comision_reserva!=0)
@@ -445,8 +456,13 @@
 						});
 
     				}
-    				
 
+    				if (data.firma_secretario==true)
+						$("#firmaSecretario").bootstrapToggle('on');
+					
+    				if (data.firma_presidente=true)
+						$("#firmaPresidente").bootstrapToggle('on');
+    				
     				if (restauraDictamen==true)
     					$("#modalSancion").find('input[name="idDictamen"]').val(data.id_dictamen);
 
@@ -454,12 +470,11 @@
 					
 				},
 				error: function(jqXHR,textStatus,errorThrown ){
-					toastr.error(jqXHR.responseText);
+					toastr.error(JSON.parse(jqXHR.responseText));
 				}
 	      	});
 
-			$("#selEncabezado").change();
-			$("#selPie").change();
+			$("#selSpeech").change();
 			return articulos;
 		}
 		
@@ -476,11 +491,6 @@
 	        $("#modalSancion").find('input[name="idProyecto"]').val(idProyecto);
 	        $("#modalSancion").find('input[name="idDictamen"]').val(idDictamen);
 	        $("#modalSancion").find('input[name="idSancion"]').val(idSancion);
-		   	$("#editaRevision").bootstrapToggle('on');
-		   	$("#vistosYConsiderandos").bootstrapToggle('on');
-		   	$("#poseeSancion").bootstrapToggle('off');
-		   	$("#aplicaNotificacion").bootstrapToggle('off');
-		   	//$(".dependiente-revision").addClass("hidden");
 		    $("#modalSancion").modal('show');
 
 		}
@@ -499,8 +509,6 @@
 			
 			var valorControl=$(control).val();
 			var idControl=$(control).attr("id");
-			debugger;
-			//if (!$.isNumeric(valorControl)){
 			if (!(/^[0-9/]+$/g.test(valorControl))){
 				toastr.error("El contenido ingresado no es numérico");
 				setTimeout(function(){
@@ -509,6 +517,7 @@
 			}
 		}
 
+		/*
 		function inicializarSeleccionPlantillas(control,tipo,valorSeleccionado){
 
 			$.ajax({
@@ -529,29 +538,32 @@
 					$(control).change();
 				},
 				error: function(jqXHR,textStatus,errorThrown ){
-					toastr.error(jqXHR.responseText);
+					toastr.error(JSON.parse(jqXHR.responseText));
 				}
 	      	});
-		}
+		}*/
 
-		function actualizarPlantilla(idSeleccion,plantilla){
+		function actualizarSpeech(idSeleccion,control){
 
 			$.ajax({
 				async:false,
 				type:'Get',
 				dataType: 'json	',
-				url:'{{ app.request.getBaseURL() }}'+ '/api/plantilla/getOne/'+idSeleccion,
+				url:'{{ app.request.getBaseURL() }}'+ '/api/speech/getOne/'+idSeleccion,
 				success: function(data){
-					$(plantilla).data("wysihtml5").editor.setValue(data.plantilla_texto);
+					$(control).data("wysihtml5").editor.setValue(data.texto_speech);
 				},
 				error: function(jqXHR,textStatus,errorThrown ){
-					toastr.error(jqXHR.responseText);
+					toastr.error(jJSON.parse(jqXHR.responseText));
 				}
-	      	});
-	      	
+	      	});	      	
 		}
 
 		function cargarDetalle(tipo){
+
+			/*
+			 	TODO actualizar para que tome la plantilla sin tipo
+			 */
 
 			$.ajax({
 				async:false,
@@ -560,7 +572,6 @@
 				url:'{{ app.request.getBaseURL() }}'+ '/api/plantilla/getByType/'+tipo,
 				success: function(data){
 					var html="<table width='100%' class='table table-striped'><tbody>";
-					/* html+="<thead><tr><th width='10%'>COD.</th><th width='90%'>TEXTO</th></tr></thead><tbody>"; */
 					$.each(data,function(index,dato){
 						html+="<tr><td width='10%'><h3>"+dato.id+"</h3></td><td width='90%'>"+dato.plantilla_texto+"</td></tr>";
 					});
@@ -571,7 +582,7 @@
 					$("#titulo-modal-detalle-plantillas").html("DETALLE PLANTILLAS DE "+tipo.toUpperCase());
 				},
 				error: function(jqXHR,textStatus,errorThrown ){
-					toastr.error(jqXHR.responseText);
+					toastr.error(JSON.parse(jqXHR.responseText));
 				}
 	      	});
 			
@@ -715,7 +726,7 @@
 		  //-------------------------------------ALTA Y MODIFICACION DE RESOLUCIONES-------------------------------------------
 		  //-----------------------------------------------------------------------------------------------------------------
 
-		    //EVENTO REDACTAR RESOLUCION DE LA GRILLA DE ORDEN DEL DIA	
+		    //EVENTO REDACTAR Sancion DE LA GRILLA DE ORDEN DEL DIA	
 		    $('#registroOrdenDia tbody').on( 'click', '.btn-redactar-sancion', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        abrirModalSancion(data['id_proyecto'],data['id_expediente'],0,0);
@@ -745,7 +756,7 @@
 				var obtenerDatos=(idSancion!=0 || idDictamen!=0);
 
 				limpiarFormularioSancion(articulosSancion,articulosRevision);
-				debugger;
+				
 				if (obtenerDatos){
 					var articulos=cargarDatosSancion(idSancion,idDictamen,false);
 					
@@ -773,8 +784,7 @@
 				
 				var tipoRedaccion= $("#selTipoRedaccion").val();
 				var tipoSancion=$("#selTipoSancion").val();
-				var numeroEncabezado=$("#selEncabezado").val();
-				var numeroPie=$("#selPie").val();
+				var idSpeech=$("#selSpeech").val();
 				var poseeSancion=$("#poseeSancion").is(":checked");
 				var numeroSancion=$("#numeroSancion").val();
 				var aplicaNotificacion=$("#aplicaNotificacion").is(":checked");
@@ -791,7 +801,9 @@
 		        var vistos=$("#vistos").html();
 		        var considerandos=$("#considerandos").html();
 		        var idSesion=$("#idSesion").val();
-				debugger;
+		        var firmaPresidente=($("#firmaPresidente").is(":checked")?$("#presidente").val():"");
+		        var firmaSecretario=($("#firmaSecretario").is(":checked")?$("#secretario").val():"");
+
 		        var validacion='';
 				var formData=new FormData();
 
@@ -801,6 +813,14 @@
 			 	 
 				validacion+=((tipoSancion==0 && tipoRedaccion=="articulado")
 							 ?'<li>Debe especificar el tipo de resolución</li>':'');
+
+				validacion+=(($("#firmaSecretario").is(":checked") &&
+							  firmaSecretario.replace(/ /g,'').length==0)
+							  ?'<li>Debe indicar el nombre del secretario</li>':'');
+
+				validacion+=(($("#firmaPresidente").is(":checked") &&
+						     firmaPresidente.replace(/ /g,'').length==0)
+							 ?'<li>Debe indicar el nombre del presidente</li>':'');
 				 
 				if (tipoRedaccion=="articulado")					
 					validacion+=((articulos.length==0)
@@ -844,8 +864,9 @@
 					formData.append('idProyecto',idProyecto);
 					formData.append('tipoRedaccion',tipoRedaccion);
 					formData.append('tipoSancion',tipoSancion);
-					formData.append('numeroEncabezado',numeroEncabezado);
-					formData.append('numeroPie',numeroPie);
+					formData.append('idSpeech',idSpeech);
+					formData.append('firmaPresidente',firmaPresidente);
+					formData.append('firmaSecretario',firmaSecretario);
 					formData.append('numeroSancion',numeroSancion);
 					formData.append('aplicaNotificacion',aplicaNotificacion);
 					formData.append('destinosNotificacion',destinosNotificacion);
@@ -1156,7 +1177,7 @@
 			});
 			
 			$('#revisiones tbody').on( 'click', '.btn-usar', function () {
-				debugger;
+				
 		        var data = tablaRevisiones.row( $(this).parents('tr') ).data();
 		        $("#modalSancion").find('div[id="vistos"]').html(data[ "visto" ]);
 		        $("#modalSancion").find('input[id="idRevision"]').val(data[ "id" ]);
@@ -1252,7 +1273,6 @@
 			});
 			
 			$('#dictamenes tbody').on( 'click', '.btn-usar-dictamen', function () {
-				debugger;
 				
 				var modo=$("#modalDictamenes").find('input[name="modo"]').val();
 		        var data = tablaDictamenes.row( $(this).parents('tr') ).data();
@@ -1314,50 +1334,59 @@
 		    });
 
 		  	//------------------------------------------------------------------------------------------------------------
-			//----------------------------------------ALTA DE PLANTILLAS--------------------------------------------------
+			//----------------------------------------ALTA DE SPEECHS--------------------------------------------------
 			//------------------------------------------------------------------------------------------------------------	
 		    
-		    $("#btn-alta-encabezado").click(function(){
-				$("#modalPlantilla").find('input[name="tipoPlantilla"]').val('encabezado');
-				$("#texto-plantilla").data("wysihtml5").editor.setValue('');
+		    $("#btn-agregar-speech").click(function(){
+				$("#modalSpeech").find('input[name="tipoPlantilla"]').val('encabezado');
+				$("#textoSuperior").data("wysihtml5").editor.setValue('');
+				$("#textoInferior").data("wysihtml5").editor.setValue('');
+				$("#tituloSpeech"),val('');
+				$("#incluirSancion").bootstrapToggle('off');
 			});
 
-			$("#btn-alta-pie").click(function(){
-				$("#modalPlantilla").find('input[name="tipoPlantilla"]').val('pie');
-				$("#texto-plantilla").data("wysihtml5").editor.setValue('');
-			});
+			$("#btn-alta-speech").click(function(){
 
-			$("#btn-alta-plantilla").click(function(){
-
-				$("#btn-alta-plantilla").prop("disabled",true);
-				debugger;
-				var formatoPlantilla = $("#modalPlantilla").find('input[name="tipoPlantilla"]').val();
-				var plantilla = $("#modalPlantilla").find('textarea[name="texto-plantilla"]').val();
+				$("#btn-alta-speech").prop("disabled",true);
+				
+				var textoSuperior = $("#modalSpeech").find('textarea[name="textoSuperior"]').val();
+				var textoInferior= $("#modalSpeech").find('textarea[name="textoInferior"]').val();
+				var tituloSpeech= $("#modalSpeech").find('textarea[name="tituloSpeech"]').val();
 				var validacion="";
 
-				validacion+=((plantilla.replace(/ /g,'').length==0)?'<li>La nueva plantilla no posee texto</li>':'');
+				validacion+=((tituloSpeech.replace(/ /g,'').length==0)
+						  ?'<li>Debe indicar un título para el speech</li>':'');
 
-				validacion+=((plantilla.length>1000)
-						 	 ?'<li>El texto de la plantilla puede tener como máximo 1000 símbolos incluidos espacios y retornos de línea y formatos</li>':'');
-					
+				validacion+=(((textoSuperior.replace(/ /g,'').length==0 &&
+							  textoInferior.replace(/ /g,'').length==0))
+							  ?'<li>Debe indicar al menos uno de los textos (superior o inferior) del speech</li>':'');
+
+				validacion+=((textoSuperior.length>1000)
+						 	 ?'<li>El texto superior del speech puede tener como máximo 1000 símbolos incluidos espacios y retornos de línea y formatos</li>':'');
+
+				validacion+=((textoInferior.length>1000)
+					 	 	?'<li>El texto inferior del speech puede tener como máximo 1000 símbolos incluidos espacios y retornos de línea y formatos</li>':'');
+			
 					
 				if (validacion.length>0) 
 				{
 					Validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
 								validacion+'</ul>':'');
 					toastr.error(validacion);
-					$("#btn-alta-plantilla").prop("disabled",false);
+					$("#btn-alta-speech").prop("disabled",false);
 					return false;
 				}
 				else{
 
 					var formData=new FormData();
-    				formData.append('formatoPlantilla',formatoPlantilla);
-    				formData.append('plantilla',plantilla);
+    				formData.append('textoSuperior',textoSuperior);
+    				formData.append('textoInferior',textoInferior);
+    				formData.append('tituloSpeech',tituloSpeech);
+    				formData.append('incluirSancion',$("#incluirSancion").is(":checked"));
     
                 	$.ajax({
     	                async: true,
-    	                url: '{{ app.request.getBaseURL() }}'+ '/api/plantilla/save',
+    	                url: '{{ app.request.getBaseURL() }}'+ '/api/speech/save',
     	                data: formData,
     	                type: 'post',
     	                cache: false,
@@ -1365,24 +1394,16 @@
     	                processData: false,
                         success: function(data) {
 
-                        		var control=null;
-                        		debugger;
-                                if (formatoPlantilla=="encabezado")
-                                	control=$("#modalSancion").find('select[name="selEncabezado"]');
-                                else
-                                	control=$("#modalSancion").find('select[name="selPie"]');
-                                
-                                inicializarSeleccionPlantillas(control,formatoPlantilla,data.id);
-                                  
-            					$('#modalPlantilla').modal('hide');
-    
+                        		var newOption = new Option(date.titulo, data.id, true, true);
+   						 		$("#selSpeech").append(newOption).trigger('change');
+            					$('#modalSpeech').modal('hide');
             					toastr.success(data.mensaje);
                         	},
                         complete: function(){
-                        	$("#btn-alta-plantilla").prop("disabled",false);
+                        	$("#btn-alta-speech").prop("disabled",false);
                         	},
                         error: function(jqXHR,textStatus,errorThrown ){
-        					toastr.error(jqXHR.responseText);
+        					toastr.error(JSON.parse(jqXHR.responseText));
         					}
                     	});
             	}  
@@ -1418,6 +1439,32 @@
 			  minimumInputLength: 3,
 			  theme: "bootstrap",
 			});
+
+			$("#selSpeech").select2({
+				ajax: {
+			    url: '{{ app.request.getBaseURL() }}'+"/api/speech/getByTitulo",
+			    dataType: 'json',
+			    delay: 250,
+			    cache: false,
+			    data: function (params) {
+			      return {
+			        q: params.term, // search term
+			        page: params.page
+			      };
+			    },
+			    processResults: function (data) {
+			       var dato=data;
+		           return {
+				        results: $.map(dato, function(item) {
+				            	return { id: item.id, text: item.titulo_speech };
+				        })
+				    };
+		        },
+			  },
+			  language: "es",
+			  minimumInputLength: 3,
+			  theme: "bootstrap",
+			});
 			
 						
 			$(".text-area").wysihtml5({
@@ -1427,7 +1474,7 @@
 				},
 			});
 
-			$(".text-area-plantilla").wysihtml5({
+			$(".text-area-speech").wysihtml5({
 				 toolbar: {
 				    "font-styles": false, // Font styling, e.g. h1, h2, etc.
 				    "emphasis": false, // Italics, bold, etc.
@@ -1439,6 +1486,15 @@
 				    "blockquote": false, // Blockquote
 				    "size": "xs" // options are xs, sm, lg
 				 },
+			});
+
+			$(".check-si-no").bootstrapToggle({
+			      on:  'SI',
+			      off: 'NO',
+			      offstyle: 'danger',
+			      onstyle: 'success',
+			      width: "80px",
+			      height: "30px"
 			});
 						
 			$('#estadoFiltro').bootstrapToggle({
@@ -1485,12 +1541,11 @@
 			      width: "200px",
 			      height: "25px"
 			 });
-
 			
 			 $("#aplicaNotificacion").change(function(){
 				 
 				 if ($(this).is(":checked")){
-					 debugger;
+					 
 					 $("#selComisionReserva").attr("disabled",false);
 					 $("#selOficinasDestino").prop("disabled", false);
 					 $(".select2-selection__choice").removeClass("bootstrap-primary-background");
@@ -1536,7 +1591,6 @@
 			 $("#btn-modo-redaccion").click(function(){
 				$("#idDictamen").val(0);
 				$("#idRevision").val(0);
-				//$(".dependiente-revision").addClass("hidden");
 				$("#selTipoRedaccion").prop("disabled",false);
 				$("#selTipoRedaccion").val("basico");
 				$("#selTipoRedaccion").change();
@@ -1628,26 +1682,24 @@
 				habilitar("tab-0");	
 			});
 
-			$("#selEncabezado").change(function(){
+			$("#selSpeech").change(function(){
 
-				var id = $("#selEncabezado").val();
-				var plantilla=$("#textoEncabezado");
-
-				if(id!=0) actualizarPlantilla(id,plantilla);
-				else $(plantilla).data("wysihtml5").editor.setValue('');
+				var id = $(this).val();				
+				if(id!=null) actualizarSpeech(id,"#textoSpeech");
+				else $("#textoSpeech").data("wysihtml5").editor.setValue('');
 				
 			});
 
-			$("#selPie").change(function(){
-				
-				var id = $("#selPie").val();
-				var plantilla=$("#textoPie");
+			$("#agregaSpeech").change(function(){
+				if ($(this).is(":checked"))
+					$(".speech").prop("disabled",false);
+				else{
+					$("#selSpeech").empty().change();
+					$("#textoSpeech").data("wysihtml5").editor.setValue('');
+					$(".speech").prop("disabled",true);
+				}
+			})
 
-				if(id!=0) actualizarPlantilla(id,plantilla);
-				else $(plantilla).data("wysihtml5").editor.setValue('');
-				
-			});
-			
 	});
 	</script>
 	<section class="content-header">
@@ -1810,15 +1862,6 @@
                 							        			data-width="100%" multiple="multiple"
                 							        			id="selOficinasDestino" name="selOficinasDestino"></select>
                 							        </div>
-                    					        	{#<div class="form-group">
-                    					        		<select class="form-control" id="selDestinoNotificacion" name="selDestinoNotificacion">
-                    					        			<option value="0">Seleccione Destino Notificación</option>
-                    					        			{% for oficina in oficinas %}
-                    							                <option value="{{ oficina.id }}">{{ oficina.oficina }}</option>
-                    							            {% endfor %}
-                    					        		</select>
-                    					        	</div>
-                    					        	#}
                     					        	<div class="form-group">
                     					        		<select class="form-control" id="selComisionReserva" name="selComisionReserva">
                     					        			<option value="0">Seleccione Comisión Reserva</option>
@@ -1838,7 +1881,7 @@
 					    			<div class="col-md-6">
 					    				<nav>
         								    <ul class="nav nav-pills">
-        								    	<li role="presentation"><a href="#" id="link-tab-0" class="selectable" onclick = "habilitar('tab-0')" ><h4>Plantilla</h4></h4></a></li>
+        								    	<li role="presentation"><a href="#" id="link-tab-0" class="selectable" onclick = "habilitar('tab-0')" ><h4>Speech / Firmas</h4></h4></a></li>
         									    <li role="presentation"><a href="#" id="link-tab-1" class="selectable" onclick = "habilitar('tab-1')" ><h4>Texto</h4></h4></a></li>
         										<li role="presentation"><a href="#" id="link-tab-2" class="selectable hidden" onclick = "habilitar('tab-2')"><h4>Artículos</h4></a></li>
         										<li role="presentation"><a href="#" id="link-tab-3" class="selectable hidden" onclick = "habilitar('tab-3')"><h4>Revision Proyecto</h4></a></li>
@@ -1856,82 +1899,58 @@
 					    		<div class="row tab" id="tab-0">
 							    	<div class="col-md-12">
 									    <div class="row">
-									    	<div class="col-md-3">
+									    	<div class="col-md-12">
+									    		<div class="form-group">
+                					        		<label for="agregaSpeech">Imprimir Speech</label>
+    									    		<input type="checkbox"  class="check-si-no" id="agregaSpeech" name="agregaSpeech" 
+                    					        		data-size="small"/>
+                    					        </div>
+									    	</div>
+									    	<div class="col-md-12">
     									    	<div class="input-group">
     									    		<span class="input-group-addon">
-    									    			<a href="javascript:void(0);" onclick="cargarDetalle('encabezado');" style="cursor:help">Encabezado</a>
+    									    			<a href="javascript:void(0);" class="speech" onclick="cargarDetalle();" style="cursor:help">Titulo Speech</a>
     									    		</span>
-                                                	<select class="form-control" id="selEncabezado" name=selEncabezado>
-    									    			<option value="0">--</option>
-    									    		</select>
+    									    		<select class="form-control speech" data-width="100%" id="selSpeech" name="selSpeech"></select>
                                                   	<span class="input-group-btn">
-                                                    	<button type="button" class="btn btn-primary" id="btn-alta-encabezado" 
-                									    		data-toggle='modal' data-target='#modalPlantilla'>
+                                                    	<button type="button" class="btn btn-primary speech" id="btn-agregar-speech" 
+                									    		data-toggle='modal' data-target='#modalSpeech'>
                 									    			Agregar
         									    		</button>
                                                   	</span>
                                                 </div>
                                             </div>
-									    	<!-- <div class="col-md-4">
-									    		<select class="form-control" id="selEncabezado" name=selEncabezado>
-									    			<option value="0">Seleccione plantilla encabezado</option>
-									    		</select>
-									    	</div>
-									    	<div class="col-md-2">
-									    		<button type="button" class="btn btn-primary" id="btn-alta-encabezado" 
-									    		 data-toggle='modal' data-target='#modalPlantilla'>
-									    			Agregar
-									    		</button>
-									    	</div> -->
 									    </div>
 									    <div class="row" style="padding-top: 5px;">
 									    	<div class="col-md-12">
-								        		<textarea class="form-control text-area-plantilla"
-								        		id="textoEncabezado" name="textoEncabezado"></textarea>
+								        		<textarea class="form-control text-area-speech"
+								        		id="textoSpeech" name="textoSpeech"></textarea>
 									        </div>
 								        </div>
-								        <hr>
+								        <hr>								        
 								        <div class="row">
-								        	<div class="col-md-3">
-    									    	<div class="input-group">
-    									    		<span class="input-group-addon">
-    									    			<a href="javascript:void(0);" style="cursor:help" onclick="cargarDetalle('pie');">Pie</a></span>
-                                                	<select class="form-control" id="selPie" name="selPie">
-    									    			<option value="0">--</option>
-    									    		</select>
-                                                  	<span class="input-group-btn">
-                                                    	<button type="button" class="btn btn-primary" id="btn-alta-pie"
-                									    		data-toggle='modal' data-target='#modalPlantilla'>
-                									    			Agregar
-        									    		</button>
-                                                  	</span>
-                                                </div>
-                                            </div>
-									    	<!-- <div class="col-md-4">
-									    		<select class="form-control" id="selPie" name="selPie">
-									    			<option value="0">--</option>
-									    		</select>
-									    	</div>
-									    	<div class="col-md-2">
-									    		<button type="button" class="btn btn-primary" id="btn-alta-pie"
-									    		 data-toggle='modal' data-target='#modalPlantilla'>
-									    			Agregar
-									    		</button>
-									    	</div> -->
-									    </div>
-									    <div class="row" style="padding-top: 5px;">
-									    	<div class="col-md-12">
-								        		<textarea class="form-control text-area-plantilla"
-								        		id="textoPie" name="textoPie"></textarea>
-									        </div>
-								        </div> 
+            					        	<div class="col-md-4"> 
+                					        	<div class="form-group">
+                					        		<label for="firmaPresidente">Firma Presidente</label>
+                					        		<input type="checkbox" class="check-si-no" id="firmaPresidente" name="firmaPresidente" 
+                					        				data-size="small"/>
+                					        	</div>    
+                    					    </div>
+                    					    <div class="col-md-4 col-md-offset-4"> 
+                					        	<div class="form-group">
+                					        	<label for="firmaSecretario">Firma Secretario</label>
+                					        		<input type="checkbox" class="check-si-no" id="firmaSecretario" name="firmaSecretario" 
+                					        				data-size="small"/>
+                					        	</div>    
+                    					    </div>
+                    					</div> 
 							        </div> 
 					        	</div>
 							    <div class="row tab" id="tab-1">
 							    	<div class="col-md-12">
 									    <div class="row">
 									    	<div class="col-md-12">
-								        		<textarea class="form-control text-area text-area-larga" 
+								        		<textarea class="form-control text-area text-area-libre" 
 								        		id="texto" name="texto" placeholder="Texto Libre"></textarea>
 									        </div>
 								        </div> 
@@ -2170,22 +2189,49 @@
 				</div>
 			</div>
 		</div>
-		<div id="modalPlantilla" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
-			<div class="modal-dialog">
+		<div id="modalSpeech" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
+			<div class="modal-dialog modal-lg">
 			    <!-- Modal content-->
 			    <div class="modal-content">
 				    <div class="modal-header" style="background-color:#666	;color:#FFF">
 		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title">Alta Plantilla</h4>
+		    			<h4 class="modal-title">Alta Speech</h4>
 				    </div>
 				    <div class="modal-body" style="background-color:#ecf0f5">
 				    	<form role="form">
 				    		<input type="hidden" id="tipoPlantilla" name="tipoPlantilla">
 				    		<div class="row">
-				    			<div class="form-group col-md-12">
-    				    			<textarea class="form-control text-area text-area-larga" 
-								       		  id="texto-plantilla" name="texto-plantilla">
-								    </textarea>
+				    			<div class="col-md-10">
+    				    			<div class="form-group">
+    				    				<label for="tituloSpeech">Titulo</label>
+    				    				<input type="text" class="form-control" name="tituloSpeech" id="tituloSpeech" maxlength="30"
+    				    					   placeholder="obligatorio max. 30 letras">
+    				    			</div>
+    							</div>
+    							<div class="col-md-2">
+    								<div class="form-group">
+        								<label for="incluirSancion">Incluye Sanción</label>
+        								<input type="checkbox" class="form-control check-si-no" id="incluirSancion" name="incluirSancion" 
+                    					       data-size="small"/>
+                    				</div>
+    							</div>
+                			</div>
+				    		<div class="row">
+				    			<div class="col-md-6">
+				    				<div class="form-group">
+    				    				<label for="textoSuperior">Texto Superior</label>
+        				    			<textarea class="form-control text-area text-area-larga" 
+    								       		  id="textoSuperior" name="textoSuperior">
+    								    </textarea>
+    								 </div>
+    							</div>
+    							<div class="col-md-6">
+    								<div class="form-group">
+    				    				<label for="textoSuperior">Texto Inferior</label>
+        				    			<textarea class="form-control text-area text-area-larga" 
+    								       		  id="textoInferior" name="textoInferior">
+    								    </textarea>
+    								</div>
     							</div>
                 			</div>
                 			<hr>
@@ -2194,7 +2240,7 @@
 					        		<div class="text-center">
 						    			<div class="btn-group">
 								        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
-				       			 			<button type="button" class="btn btn-primary" id="btn-alta-plantilla">Aceptar</button>
+				       			 			<button type="button" class="btn btn-primary" id="btn-alta-speech">Aceptar</button>
 								        </div>
 							        </div>
 							    </div>

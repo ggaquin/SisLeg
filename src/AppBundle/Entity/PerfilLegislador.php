@@ -189,6 +189,6 @@ class PerfilLegislador extends Perfil
      */
     public function getDescripcion()
     {
-        return parent::getNombreCompleto().' - ('.$this->bloque->getBloque().')';
+        return parent::getNombreCompleto().' - ('.$this->bloque->getAbreviacion().')';
     }
 }

@@ -27,7 +27,6 @@
 			max-height: 310px;
 			max-width: 210px;
 			height: 310	px;
-			/*calc(100vh - 350px);*/
 			background-color: #fff;
 		}
 
@@ -196,7 +195,7 @@
 		            });
 						},
 						error: function(jqXHR,textStatus,errorThrown ){
-							toastr.error(jqXHR.responseText);
+							toastr.error(JSON.parse(jqXHR.responseText));
 						}
 
 
@@ -279,7 +278,7 @@
 						$('#modalLegislador').modal('hide');
 	                	},
 	                error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(jqXHR.responseText);
+						toastr.error(JSON.parse(jqXHR.responseText));
 						}
 	            	});
 	            }
@@ -399,23 +398,30 @@
 					        	<div class="col-md-4">	
 						        	<div class="form-group">
 						        		<label for="apellidos">Apellidos</label>
-						        		<input type= "text" class="form-control input-sm" name="apellidos" id="apellidos" placeholder="apellido del usuario">
+						        		<input type= "text" class="form-control input-sm" name="apellidos" id="apellidos" 
+						        			   placeholder="obligatorio max. 70 letras" maxlength="70">
 						        	</div>
 						        	<div class="form-group">
 						        		<label for="nombres">Nombres</label>
-						        		<input type= "text" class="form-control input-sm" id="nombres" name="nombres" placeholder="nombre del usuario">
+						        		<input type= "text" class="form-control input-sm" id="nombres" name="nombres" 
+						        				placeholder="obligatorio max. 70 letras" maxlength="70">
 						        	</div>
 						        	<div class="form-group">
 						        		<label for="eMail">Correo Electrónico</label>
-						        		<input type= "text" class="form-control input-sm" id="eMail" name="eMail" autocomplete="off" placeholder="dirección de correo electrónico">
+						        		<input type= "text" class="form-control input-sm" id="eMail" 
+						        			   name="eMail" autocomplete="off" 
+						        			   placeholder="opcional max. 70 letras" maxlength="70">
 						        	</div>
 						        	<div class="form-group">
 										<label for="telefono">Telefono</label>
-										<input type= "text" class="form-control input-sm" id="telefono" name="telefono" placeholder="número de teléfono">
+										<input type= "text" class="form-control input-sm" id="telefono" 
+											   name="telefono"  placeholder="opcional max. 70 letras" 
+											   maxlength="70">
 									</div>
 						        	<div class="form-group">
 										<label for="oficina">Oficina</label>
-										<input type= "text" class="form-control input-sm" id="oficina" name="oficina" placeholder="oficina / despacho">
+										<input type= "text" class="form-control input-sm" id="oficina" name="oficina" 
+										        placeholder="opcional max. 50 letras" maxlength="50">
 									</div>
 						        </div>
 						        <div class="col-md-4">
@@ -431,7 +437,8 @@
 						        	<div class="form-group">
 						        		<label for="datepicker1">Desde</label>
 										<div class="input-group date" id="datepicker1">
-							                <input type="text" class="form-control" id="desde" name="desde" data-provide="datepicker">
+							                <input type="text" class="form-control" id="desde" name="desde" 
+							                	   data-provide="datepicker"  placeholder="dd/mm/AAAA">
 							                 <div class="input-group-addon">
 							                    <i class="fa fa-calendar"></i>
 							                </div>
@@ -440,7 +447,8 @@
 									<div class="form-group">
 										<label for="datepicker2">Hasta</label>
 										<div class="input-group date" id="datepicker2">
-										    <input type="text" class="form-control" id="hasta" name="hasta">
+										    <input type="text" class="form-control" id="hasta" name="hasta"
+										    	    data-provide="datepicker"  placeholder="dd/mm/AAAA">
 										    <div class="input-group-addon">
 										        <span class="fa fa-calendar"></span>
 										    </div>
