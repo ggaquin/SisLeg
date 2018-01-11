@@ -633,7 +633,9 @@ class ExpedienteComision
     public function getListaDictamenesMayoriaQueAgrega(){
     	
     	$comisiones=(!is_null($this->dictamenMayoriaQueAgrega)
-		    			?"Agregado a ".$this->getExpediente()->getNumeroCompleto().
+    					?"Agr. a ".($this->dictamenMayoriaQueAgrega
+    										 ->getAsignacionesPorMayoria()->get(0))
+    										 ->getExpediente()->getNumeroCompleto().
 		    			 " (".$this->dictamenMayoriaQueAgrega->getListaLetrasComisionesMayoria().")"
     				    :null);
     	return $comisiones;
@@ -648,7 +650,9 @@ class ExpedienteComision
     public function getListaDictamenesPrimeraMinoriaQueAgrega(){
     	
     	$comisiones=(!is_null($this->dictamenPrimeraMinoriaQueAgrega)
-    					?"Agregado a ".$this->getExpediente()->getNumeroCompleto().
+    					?"Agr. a ".($this->dictamenPrimeraMinoriaQueAgrega
+    										 ->getAsignacionesPorPrimeraMinoria()->get(0))
+    									     ->getExpediente()->getNumeroCompleto().
 		    			 " (".$this->dictamenPrimeraMinoriaQueAgrega->getListaLetrasComisionesPrimeraMinoria().")"
 				    	:null);
     	return $comisiones;
@@ -663,50 +667,13 @@ class ExpedienteComision
     public function getListaDictamenesSegundaMinoriaQueAgrega(){
     	
     	$comisiones=(!is_null($this->dictamenSegundaMinoriaQueAgrega)
-		    			?"Agregado a ".$this->getExpediente()->getNumeroCompleto().
-		    			 " (".$this->dictamenSegundaMinoriaQueAgrega->getListaLetrasComisionesSegundaMinoria().")"
-		    			:null);
+			    			?"Agr. a ".($this->dictamenPrimeraMinoriaQueAgrega
+			    								 ->getAsignacionesPorPrimeraMinoria()->get(0))
+			    								 ->getExpediente()->getNumeroCompleto().
+					    	" (".$this->dictamenSegundaMinoriaQueAgrega->getListaLetrasComisionesSegundaMinoria().")"
+					    	:null);
     	return $comisiones;
     }
     
-    /**
-     * Get listaDictamenesPrimeraMinoria
-     *
-     * @return array
-     * 
-     * @VirtualProperty
-     *
-    public function getListaDictamenesPrimeraMinoria()
-    {
-    	$listaDictamenesPrimeraMinoria=[];
-    	foreach ($this->dictamenesPrimeraMinoria as $dictamen)
-    		$listaDictamenesPrimeraMinoria[]=array('id'=>$dictamen->getId(),
-								    			   'sesion'=>(!is_null($dictamen->getSesion())
-								    						  ?$dictamen->getSesion()->getFechaMuestra()
-								    						  :'Sin Sesión')
-    										);
-    		return $listaDictamenesPrimeraMinoria;
-    }
-    
-    /**
-     * Get listaDictamenesSegundaMinoria
-     *
-     * @return array
-     *	
-     * @VirtualProperty
-     
-    public function getListaDictamenesSegundaMinoria()
-    {
-    	$listaDictamenesSegundaMinoria=[];
-    	foreach ($this->dictamenesSegundaMinoria as $dictamen)
-    		$listaDictamenesSegundaMinoria[]=array('id'=>$dictamen->getId(),
-								    			   'sesion'=>(!is_null($dictamen->getSesion())
-								    						  ?$dictamen->getSesion()->getFechaMuestra()
-								    						  :'Sin Sesión')
-    											  );
-    		return $listaDictamenesSegundaMinoria;
-    }
-    
-    */
-    
+   
 }
