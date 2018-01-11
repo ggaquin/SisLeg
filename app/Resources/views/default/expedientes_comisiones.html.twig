@@ -100,6 +100,12 @@
 		    max-height: 121px!important;
 		    overflow-y: auto!important;
 		} 
+		
+		.selAgregados{
+		    min-height: 120px!important;
+		    max-height: 121px!important;
+		    overflow-y: auto!important;
+		} 
 		.bootstrap-primary-background{
 			background: #3c8dbc!important;
 		}    
@@ -142,6 +148,33 @@
 			   this.length = 0;
 			   this.push.apply(this, array);
 		};
+
+		function select2FormatAjaxErrorCustom(jqXHR, textStatus, errorThrown){
+			return JSON.parse(jqXHR.responseText);
+		}
+		
+		function select2MatchCustom(params, data) {
+		    // If there are no search terms, return all of the data
+		    if ($.trim(params.term) === '') {
+		      return data;
+		    }
+
+		    // Do not display the item if there is no 'text' property
+		    if (typeof data.numeroCompleto === 'undefined') {
+		      return null;
+		    }
+
+		    // `params.term` should be the term that is used for searching
+		    // `data.text` is the text that is displayed for the data object
+		    var numeroBusqueda=term.split('-');
+		    var numeroCompleto=(data.numeroCompleto).split('-');
+		    if (numeroBusqueda[0]==numeroCompleto && numeroBusqueda[1]==numeroCompleto[2]) {
+		     	return data;
+		    }
+
+		    // Return `null` if the term should not be displayed
+		    return null;
+		}
 
 		function criterio(){
 
@@ -392,7 +425,7 @@
 		
 		$(document).ready(function () {
 
-			$('[autofocus]', this).focus();
+	  		$('[autofocus]', this).focus();
 
 			var articulosDictamen=[];
 			var articulosRevision=[];
@@ -429,6 +462,11 @@
 					      "ajax": {
 							        "url": "api/comisionAsignacion/getByCriteria/"+tipoCriterio()+"/"+criterio(),
 			            			"dataSrc": '',
+									"error": function (xhr, error, thrown) {
+			        					$("#estadoFiltro").bootstrapToggle('off');
+			            			    toastr.error(JSON.parse(xhr.responseText));		            			    
+			            			},
+				            		
 							    },
 						  "columnDefs": [
 								            {
@@ -516,11 +554,18 @@
         												if (row.recibido==true)
             												
         													if ('{{ 'COM_EXP_DICT_ADD' in app.user.listaPermisos }}')
-            													html+="<button type='button' title='Agregar Dictamen' "+
-            														  "class='btn btn-primary btn-xs btn-nuevo-dictamen-mayoria' "+
-            														  ((row.sesion==null ||
-                    													row.sesion.tiene_ultimo_momento==false)
-                    													?"":"disabled")+" >Agregar Dictamen</button>";
+
+        														if (row.lista_dictamen_mayoria_que_agrega!=null)
+        															html+="<button type='button' class='btn btn-info btn-xs' >"+
+        																  row.lista_dictamen_mayoria_que_agrega+"</button>";
+
+          														else
+            													
+                													html+="<button type='button' title='Agregar Dictamen' "+
+                														  "class='btn btn-primary btn-xs btn-nuevo-dictamen-mayoria' "+
+                														  ((row.sesion==null ||
+                        													row.sesion.tiene_ultimo_momento==false)
+                        													?"":"disabled")+" >Agregar Dictamen</button>";
         												else
 
         													html+="<span class='label label-danger'>Sin Dictamen</span>";
@@ -568,11 +613,18 @@
     													if (row.recibido==true)
 
     														if ('{{ 'COM_EXP_DICT_ADD' in app.user.listaPermisos }}')
-            													html+="<button type='button' title='Agregar Dictamen' "+
-            														  "class='btn btn-primary btn-xs btn-nuevo-dictamen-primera-minoria'" +
-            														  ((row.sesion==null ||
-                          												row.sesion.tiene_ultimo_momento==false)
-                          													?"":"disabled")+" >Agregar Dictamen</button>";
+
+      															if (row.lista_dictamen_primera_minoria_que_agrega!=null)
+        															html+="<button type='button' class='btn btn-info btn-xs' >"+
+        																  row.lista_dictamen_primera_minoria_que_agrega+"</button>";
+
+          														else	
+                													html+="<button type='button' title='Agregar Dictamen' "+
+                														  "class='btn btn-primary btn-xs btn-nuevo-dictamen-primera-minoria'" +
+                														  ((row.sesion==null ||
+                              												row.sesion.tiene_ultimo_momento==false)
+                              													?"":"disabled")+" >Agregar Dictamen</button>";
+    														
         												else
         													html+="<span class='label label-danger'>Sin Dictamen</span>";
     												}
@@ -616,11 +668,17 @@
         												if (row.recibido==true)
             												
         													if ('{{ 'COM_EXP_DICT_ADD' in app.user.listaPermisos }}')
-            													html+="<button type='button' title='Agregar Dictamen' "+
-            														  "class='btn btn-primary btn-xs btn-nuevo-dictamen-segunda-minoria' "+
-            														  ((row.sesion==null ||
-                          												row.sesion.tiene_ultimo_momento==false)
-                          													?"":"disabled")+" >Agregar Dictamen</button>";
+
+        														if (row.lista_dictamen_segunda_minoria_que_agrega!=null)
+        															html+="<button type='button' class='btn btn-info btn-xs' >"+
+        																  row.lista_dictamen_segunda_minoria_que_agrega+"</button>";
+
+          														else
+                													html+="<button type='button' title='Agregar Dictamen' "+
+                														  "class='btn btn-primary btn-xs btn-nuevo-dictamen-segunda-minoria' "+
+                														  ((row.sesion==null ||
+                              												row.sesion.tiene_ultimo_momento==false)
+                              													?"":"disabled")+" >Agregar Dictamen</button>";
         												else
 
         													html+="<span class='label label-danger'>Sin Dictamen</span>";
@@ -1048,6 +1106,7 @@
 				var tipoRedaccion= $("#selTipoRedaccion").val();
 				var tipoDictamen=$("#selTipoDictamen").val();
 		        var comisiones=$("#selComisiones").val();
+		        var agregados=$("#selAgregados").val();
 		        var texto=$("#texto").val();
 		        var articulos=null;
 		        if (tipoRedaccion!="basico")
@@ -1098,6 +1157,7 @@
 				formData.append('tipoRedaccion',tipoRedaccion);
 				formData.append('tipoDictamen',tipoDictamen);
 				formData.append('comisiones',comisiones);
+				formData.append('agregados',agregados);
 				formData.append('texto',texto);
 				formData.append('idRevision',idRevision);
 				formData.append('editaRevision',editaRevision);
@@ -1120,7 +1180,7 @@
 		                async: true,
 		                url: '{{ app.request.getBaseURL() }}'+ '/api/comisionAsignacion/saveDictamen',
 		                data: formData,
-		                type: 'post',
+		                type: 'POST',
 		                cache: false,
 		                contentType: false,
 		                processData: false,
@@ -1510,16 +1570,19 @@
 			});
 			
 			$('#revisiones tbody').on( 'click', '.btn-usar', function () {
-				
+				debugger;
 		        var data = tablaRevisiones.row( $(this).parents('tr') ).data();
 		        $("#modalDictamen").find('div[id="vistos"]').html(data[ "visto" ]);
 		        $("#modalDictamen").find('input[id="idRevision"]').val(data[ "id" ]);
 		        $("#modalDictamen").find('div[id="considerandos"]').html(data[ "considerandos" ]);
 		        $("#articulos-revision > tbody	").html('');
 		        articulosRevision=data[ "articulos" ];
-		        $.each(articulosRevision,function(index,articulo){
+		        $.each(articulosRevision,function(i,articulo){
 					agregarArticulo(articulo,'articulos-revision');
 				});
+		       /*  $.each(articulosRevision,function(i,articulo){
+					agregarArticulo(articulo,'articulos-revision');
+				}); */
 				$(".dependiente-proyecto").removeClass("hidden");
 				$('#modalRevisiones').modal('hide');
 		       
@@ -1668,6 +1731,43 @@
 			  minimumInputLength: 3,
 			  theme: "bootstrap",
 			});
+
+			$("#selAgregados").select2({
+				ajax: {
+			    url: '{{ app.request.getBaseURL() }}'+"/api/comisionAsignacion/getExpedientefromAsignados",
+			    dataType: 'json',
+			    delay: 250,
+			    cache: false,
+			    data: function (params) {
+			      return {
+							q: params.term, // search term
+        			        page: params.page
+        			      };
+			    },
+			    processResults: function (data) {
+			       var dato=data;
+		           return {
+				        results: $.map(dato, function(item) {
+				            return { id: item.id, text: item.numeroCompleto };
+				        })
+				    };
+		        },
+			  },
+			  language: "es",
+			  minimumInputLength: 3,
+			  theme: "bootstrap",
+			  matcher: select2MatchCustom,
+			}).on('select2:selecting', function (e) {
+				
+			    var data = e.params.args.data;
+			    var idExpediente=$("#modalDictamen").find('input[name="idExpediente"]').val();
+			    if(data.id==idExpediente){
+				    toastr.info("No se puede agregar el expediente actual");
+					return false;
+				}
+				return true;
+			});
+						
 			
 			$("#selComisiones").on('select2:unselecting',function(evt){
 				
@@ -1732,6 +1832,7 @@
 			  language: "es",
 			  minimumInputLength: 1,
 			  theme: "bootstrap",
+			  matcher: select2MatchCustom
 			});
 
 			$("#selFirmantes").select2({
@@ -1763,6 +1864,7 @@
 			
 			addClasssToSelect2("group-selComisiones","selComisiones");
 			addClasssToSelect2("group-selConcejales","selConcejales");
+			addClasssToSelect2("group-selAgregados","selAgregados");
 			addClasssToSelect2("group-selComisionesAdd","selComisiones");
 			
 			$('#estadoFiltro').bootstrapToggle({
@@ -1839,10 +1941,10 @@
         		      	});
 				}
 
-			})
+			});
 			
 			$("#selBusqueda").change(function(){
-
+				
 				var control=$(this).val();
 				$(".busqueda").addClass('hidden');
 				
@@ -1870,7 +1972,7 @@
 					$(".filtro").prop('disabled',true);
 					$('#estadoFiltro').bootstrapToggle('enable');
 					$("#estadoFiltro").bootstrapToggle('on');
-				}
+				} 
 			});
 
 			$('#estadoFiltro').change(function() {
@@ -1956,18 +2058,18 @@
 											<option value="busqueda-4">Sesión</option>
 											<option value="busqueda-5">Todo</option>
 										</select>
-										<input class="form-control busqueda hidden filtro" id="busqueda-1"/>
+										<input class="form-control busqueda hidden filtro" id="busqueda-1"
+											    placeholder="ejemplo 1-17" />
 										<select class="form-control busqueda hidden filtro" id="busqueda-2">
 											<option value="0">Seleccione Comisión</option>
 											{% for comision in comisiones %}
 								                <option value="{{ comision.id }}">{{ comision.comision }}</option>
 								            {% endfor %}
 										</select>
-					
 										<select class="form-control busqueda hidden filtro sesion" id="selAñoFiltro">
 											<option value="0">Seleccione Año</option>
 											{% for año in años %}
-								                <option value="{{ año}}">{{ año }}</option>
+								                <option value="{{ año }}">{{ año }}</option>
 								            {% endfor %}
 										</select>
 										<select class="form-control busqueda hidden filtro sesion" id="selSesionFiltro">
@@ -2092,11 +2194,6 @@
     							            {% endfor %}
     					        		</select>
     					        	</div>
-    					        	<!-- <div class="hidden" style="text-align:center;padding-top:15px" id="div-btn-revision">
-					        			<button type="button" class="btn btn-warning btn-sm" 
-						        				id="btn-revisiones" data-toggle='modal' 
-						        				data-target='#modalRevisiones'>Revisiones</button>
-				        			</div> -->
     					        </div>
 					        	<div class="form-group" id="group-selComisiones">
 						        	<label for="selComisiones">Comisiones:</label>
@@ -2104,11 +2201,12 @@
 						        			id="selComisiones" name="selComisiones">
 						        	</select>
 						        </div>
-						        <!-- <div class="form-group">
-				    				<label for="selSesion">Sesión:</label>
-						        	<select class="form-control" id="selSesion" name="selSesion">
+						        <div class="form-group" id="group-selAgregados">
+						        	<label for="selAgregados">Expedientes Agregados:</label>
+						        	<select class="form-control" multiple="multiple" data-width="100%" 
+						        			id="selAgregados" name="selAgregados">
 						        	</select>
-								</div> -->
+						        </div>
 					    	</div>
 					    	<div class="col-md-9">
 					    		<div class="row">
@@ -2155,8 +2253,7 @@
 										</div>
 								    </div>
 						        </div>
-						        <div class="row tab hidden" id="tab-3">	
-									<!-- <div class="col-md-11 div-revision" id="div-revision" style="margin-left:15px"> -->
+						        <div class="row tab hidden" id="tab-3">
     					        	<div class="col-md-12">
     					        		<input type="hidden" id="idRevision">	
 					        			<div class="row" style="margin-bottom: 5px">
@@ -2209,7 +2306,6 @@
     								        	</div>
     										</div>
     									</div>
-    								 <!--    </div> -->
     								</div>
 						        </div>
 					        </div>

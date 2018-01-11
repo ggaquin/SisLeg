@@ -89,12 +89,12 @@ abstract class Sancion
     
     /**
      * Constructor
-     *
+     */
     public function __construct()
     {
-    	$this->firmaPresidente = "";
-    	$this->firmaSecretario = "";
-    }*/
+    	$this->firmaPresidente = false;
+    	$this->firmaSecretario = false;
+    }
     
     
     //-------------------------------------setters y getters------------------------------------

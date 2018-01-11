@@ -310,7 +310,8 @@
 	                },
 	                error: function(jqXHR,textStatus,errorThrown ){
 						toastr.error(JSON.parse(jqXHR.responseText));
-	            	});
+	            	}
+				})
 			});
 			
 			$('#registroSesiones tbody').on( 'click', '.btn-generar-UM', function () {

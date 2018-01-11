@@ -34,16 +34,26 @@ class ExpedienteComisionRepository extends EntityRepository{
 	
 	public function findByExpediente_Numero($numeroExpediente,$anulados){
 				
+		$numeroExpedienteSeparado=explode('-', $numeroExpediente);
+		
+		if (count($numeroExpediente)!=2)
+			throw new \Exception('El criterio de busqueda debe tener el formato {numero}-{año} (por ejemplo 1-17)');
+			
+			$periodo='20'.$numeroExpedienteSeparado[1];
+			$numerador=$numeroExpedienteSeparado[0];
+			
 		$qb = $this->createQueryBuilder('ec')
 			->innerJoin('ec.expediente','e')
 			->leftJoin('ec.sesion', 's');
 		$qb ->where($qb->expr()->andX(
-									  $qb->expr()->eq('e.numeroExpediente', ':numeroExpediente'),
+									  $qb->expr()->eq('e.numeroExpediente', ':numerador'),
+									  $qb->expr()->eq('e.periodo',':periodo'),
 									  $qb->expr()->eq('ec.anulado', ':anulado')
 				
 									  )
 				    )
-			->setParameter('numeroExpediente', $numeroExpediente)
+			->setParameter('numerador', $numerador)
+			->setParameter('periodo', $periodo)
 			->setParameter('anulado', $anulados);
 		
         return $qb->getQuery()->getResult();
@@ -71,8 +81,7 @@ class ExpedienteComisionRepository extends EntityRepository{
 		
 		$qb = $this->createQueryBuilder('ec');
 		$qb ->innerJoin('ec.expediente', 'e')
-			->innerJoin('e.estadoExpediente', 'ee')
-			->leftJoin('ec.sesion', 's');	
+			->innerJoin('e.estadoExpediente', 'ee');	
 		$qb ->where($qb->expr()->andX(
 										$qb->expr()->orX(
 															 $qb->expr()->eq('ee.id', ':idEstado'),
@@ -88,27 +97,66 @@ class ExpedienteComisionRepository extends EntityRepository{
 		return $qb->getQuery()->getResult();
 		
 	}
+	
+// 	public function findExpedienteComisionByComision_IdAndExediente_IdAndExpedienteEstado_Id($idComision,$idExpediente,$idEstadoExpediente){
+		
+// 		$qb = $this->createQueryBuilder('ec');
+// 		$qb ->innerJoin('ec.comision', 'c')
+// 			->innerJoin('ec.expediente', 'e')
+// 			->innerJoin('e.estadoExpediente', 'ee')
+// 			->leftJoin('ec.sesion', 's');
+// 		$qb ->where($qb->expr()->andX(
+// 										$qb->expr()->eq('c.id', ':idComision'),
+// 										$qb->expr()->eq('ee.id', ':idEstado'),
+// 										$qb->expr()->eq('ee.id', ':idExpediente'),
+// 										$qb->expr()->eq('ec.anulado', ':anulado')
+// 									 )
+// 					)
+// 			->setParameter('idComision', $idComision)
+// 			->setParameter('idEstado', $idEstadoExpediente)
+// 			->setParameter('idExpediente', $idExpediente)
+// 			->setParameter('anulado', false);
+				
+// 		return $qb->getQuery()->getResult();
+				
+// 	}
+		
+	public function findExpedienteVigenteByNumero($numeroExpediente,$estado=null){
+		
+		$numeroSeparado=explode('-', $numeroExpediente);
+		
+		if (count($numeroSeparado)!=2)
+			throw new \Exception('El criterio de busqueda debe tener el formato {numero}-{año} (por ejemplo 1-17)');
 			
-	public function findExpedienteVigenteByNumero($numeroExpediente){
+			$periodo='20'.$numeroSeparado[1];
+			$numerador=$numeroSeparado[0];
 		
 		$qb = $this->createQueryBuilder('ec')
 			->innerJoin('ec.expediente','e')
+			->innerJoin('e.estadoExpediente', 'ee')
 			->leftJoin('ec.sesion', 's');
 		$qb ->where($qb->expr()->andX(
 										$qb->expr()->eq('e.numeroExpediente', '?1'),
+										$qb->expr()->eq('e.periodo', '?2'),
 										$qb->expr()->orX(
 															$qb->expr()->isNull('s.id'),
-															$qb->expr()->eq('s.tieneOrdenDelDia','?2')
+															$qb->expr()->eq('s.tieneOrdenDelDia','?3')
 														 ),
-										$qb->expr()->eq('ec.anulado', '?3'),
+										$qb->expr()->orX(
+												$qb->expr()->isNull('?6'),
+												$qb->expr()->eq('ee.id','?6')
+												),
+										$qb->expr()->eq('ec.anulado', '?4'),
 										$qb->expr()->isNull('e.fechaArchivo'),
-										$qb->expr()->eq('e.numeroSancion', '?4')
+										$qb->expr()->eq('e.numeroSancion', '?5')
 									 )
 				   )
-			->setParameter(1, $numeroExpediente)
-			->setParameter(2, false)
+			->setParameter(1, $numerador)
+			->setParameter(2, $periodo)
 			->setParameter(3, false)
-			->setParameter(4,'');
+			->setParameter(4, false)
+			->setParameter(5,'')
+			->setParameter(6,$estado);
 			
 		return $qb->getQuery()->getResult();
 		
@@ -260,12 +308,21 @@ class ExpedienteComisionRepository extends EntityRepository{
 	}
 	
 	
-	 public  function findByExpediente_Id($idExpediente){
+	 public  function findByExpediente_Id($idExpediente,$sesioTieneOrdenDelDia=null){
 	 
 	 $qb = $this->createQueryBuilder('ec');
 	 $qb ->innerJoin('ec.expediente', 'e')
-	 	 ->where($qb->expr()->eq('e.id', '?1'))
-	   	 ->setParameter(1, $idExpediente);
+	 	 ->leftJoin('ec.sesion', 's')
+	 	 ->where($qb->expr()->andX(
+	 	 							$qb->expr()->eq('e.id', '?1'),
+	 	 							$qb->expr()->orX(
+	 	 												$qb->expr()->isNull('?2'),
+	 	 												$qb->expr()->eq('s.tieneOrdenDelDia', '?2')
+	 	 											)
+	 	 						  )
+	 	 		)
+	   	 ->setParameter(1, $idExpediente)
+	   	 ->setParameter(2, $sesioTieneOrdenDelDia);
 	 
 	 return $qb->getQuery()->getResult();
 	 }

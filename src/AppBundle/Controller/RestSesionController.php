@@ -155,7 +155,7 @@ class RestSesionController extends FOSRestController{
     public function traerSesiones(Request $request){
     	$periodo=$request->get('periodo');
     	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
-    	$sesiones=$sesionRepository->findActivasByPeriodo($periodo);
+    	$sesiones=$sesionRepository->findActivasByPeriodo($periodo,false);
     	return $this->view($sesiones,200);
     }
            
@@ -268,6 +268,8 @@ class RestSesionController extends FOSRestController{
     		$expedientesEnSesion=$expedienteSesionRepository->findDistinctByTipoExpediente_Id($criterio,$idSesion);
     	if ($tipoCriterio=='busqueda-3') //estado expediente sesion
     		$expedientesEnSesion=$expedienteSesionRepository->findDistinctByletraOrdenDia($criterio,$idSesion);
+    	
+    	
     	    		
     	return $this->view($expedientesEnSesion,200);
     }
@@ -384,7 +386,7 @@ class RestSesionController extends FOSRestController{
 		    	$sancion->setSpeech($speech);
 		    }
 		    	
-		    if($firmaPresidente=='true'){
+		    if($firmaPresidente=='true'){	
 		    	$persidente=$autoridadRepository->findAutoridadByTipo('presidente');
 		    	$sancion->setFirmaPresidente($persidente);
 		    }
@@ -603,8 +605,8 @@ class RestSesionController extends FOSRestController{
 		    							?$sancion->getRevisionProyecto()->getId():0),
 		    			'numero_sancion'=>(($sancion->getClaseSancion()!="basico")
 		    								?$sancion->getNumeroSancion():''),
-						'firma_presidente'=>($sancion->getFirmaPresidente!=null),
-    					'firma_secretario'=>($sancion->getFirmaSecretario!=null),
+						'firma_presidente'=>!is_null($sancion->getFirmaPresidente),
+    					'firma_secretario'=>!is_null($sancion->getFirmaSecretario!=null),
     					'comision_reserva'=>((!($sancion instanceof SancionBasica) &&
 		    								  count($sancion->getNotificaciones())>0)
 						    					?($sancion->getNotificaciones()[0])

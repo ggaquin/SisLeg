@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\VirtualProperty;
 use AppBundle\AppBundle;
 use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\JoinTable;
 
 /**
  * ExpedienteComision
@@ -16,7 +17,10 @@ use Doctrine\ORM\Mapping\Column;
  *                                                @ORM\Index(name="expedienteComision_sesion_idx", columns={"idSesion"}),
  *                                                @ORM\Index(name="expedienteComision_dictamenMayoria_idx", columns={"idDictamenMayoria"}),
  *                                                @ORM\Index(name="expedienteComision_dictamenPrimeraMinoria_idx", columns={"idDictamenPrimeraMinoria"}),
- *                                                @ORM\Index(name="expedienteComision_dictamenSegundaMinoria_idx", columns={"idDictamenSegundaMinoria"})
+ *                                                @ORM\Index(name="expedienteComision_dictamenSegundaMinoria_idx", columns={"idDictamenSegundaMinoria"}),
+ *                                                @ORM\Index(name="expedienteComision_dictamenMayoriaQueAgrega_idx", columns={"idDictamenMayoriaQueAgrega"}),
+ *                                                @ORM\Index(name="expedienteComision_dictamenPrimeraMinoriaQueAgrega_idx", columns={"idDictamenPrimeraMinoriaQueAgrega"}),
+ *                                                @ORM\Index(name="expedienteComision_dictamenSegundaMinoriaQueAgrega_idx", columns={"idDictamenSegundaMinoriaQueAgrega"})
  *                                               })
  * @ORM\Entity(repositoryClass="AppBundle\Repository\ExpedienteComisionRepository")
  */
@@ -70,6 +74,13 @@ class ExpedienteComision
     private $dictamenMayoria;
     
     /**
+     * @var \AppBundle\Entity\Dictamen
+     * @ORM\ManyToOne(targetEntity="\AppBundle\Entity\Dictamen", inversedBy="expedientesAgregadosDictamenMayoria")
+     * @ORM\JoinColumn(name="idDictamenMayoriaQueAgrega", referencedColumnName="idDictamen")
+     */
+    private $dictamenMayoriaQueAgrega;
+    
+    /**
      *  @var \AppBundle\Entity\Dictamen
      *
      * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Dictamen", inversedBy="asignacionesPorPrimeraMinoria")
@@ -78,7 +89,14 @@ class ExpedienteComision
     private $dictamenPrimeraMinoria;
     
     /**
-    *  @var \AppBundle\Entity\Dictamen
+     * @var \AppBundle\Entity\Dictamen
+     * @ORM\ManyToOne(targetEntity="\AppBundle\Entity\Dictamen", inversedBy="expedientesAgregadosDictamenPrimeraMinoria")
+     * @ORM\JoinColumn(name="idDictamenPrimeraMinoriaQueAgrega", referencedColumnName="idDictamen")
+     */
+    private $dictamenPrimeraMinoriaQueAgrega;
+    
+    /**
+     *  @var \AppBundle\Entity\Dictamen
      *
      * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Dictamen", inversedBy="asignacionesPorSegundaMinoria")
      * @ORM\JoinColumn(name="idDictamenSegundaMinoria", referencedColumnName="idDictamen")
@@ -86,12 +104,11 @@ class ExpedienteComision
     private $dictamenSegundaMinoria;
     
     /**
-     * @var boolean
-     *
-     * @Column(name="ultimoMomento", type="boolean", nullable=false)
-     *
-    private $ultimoMomento;
-    */
+     * @var \AppBundle\Entity\Dictamen
+     * @ORM\ManyToOne(targetEntity="\AppBundle\Entity\Dictamen", inversedBy="expedientesAgregadosDictamenSegundaMinoria")
+     * @ORM\JoinColumn(name="idDictamenSegundaMinoriaQueAgrega", referencedColumnName="idDictamen")
+     */
+    private $dictamenSegundaMinoriaQueAgrega;
         
     /**
      * @var boolean
@@ -108,7 +125,7 @@ class ExpedienteComision
      * })
      */
     private $paseOriginario;
-    
+        
     /**
      * @var \DateTime
      *
@@ -146,7 +163,6 @@ class ExpedienteComision
     {
     	$this->fechaCreacion=new \DateTime("now");
     	$this->anulado=false;
-    	//$this->ultimoMomento=false;
     }
 
     //--------------------------------------setters y getters----------------------------------------
@@ -272,7 +288,7 @@ class ExpedienteComision
 		$this->paseOriginario = $paseOriginario;
 		return $this;
 	}
-		
+				
 	/**
 	 * set dictamenMayoria
 	 *
@@ -297,6 +313,26 @@ class ExpedienteComision
 	}
 	
 	/**
+	 * Get dictamenMayoriaQueAgrega
+	 * 
+	 * @return \AppBundle\Entity\Dictamen
+	 */
+	public function getDictamenMayoriaQueAgrega() {
+		return $this->dictamenMayoriaQueAgrega;
+	}
+	
+	/**
+	 * Set dictamenMayoriaQueAgrega
+	 * 
+	 * @param \AppBundle\Entity\Dictamen $dictamenMayoriaQueAgrega
+	 * @return \AppBundle\Entity\ExpedienteComision
+	 */
+	public function setDictamenMayoriaQueAgrega(\AppBundle\Entity\Dictamen $dictamenMayoriaQueAgrega) {
+		$this->dictamenMayoriaQueAgrega = $dictamenMayoriaQueAgrega;
+		return $this;
+	}
+				
+	/**
 	 * set dictamenPrimeraMinoria
 	 *
 	 * @param \AppBundle\Entity\Dictamen $dictamenPrimeraMinoria
@@ -319,6 +355,26 @@ class ExpedienteComision
 		return $this->dictamenPrimeraMinoria;
 	}
 	
+	/**
+	 * Get dictamenPrimeraMinoriaQueAgrega
+	 * 
+	 * @return \AppBundle\Entity\Dictamen
+	 */
+	public function getDictamenPrimeraMinoriaQueAgrega() {
+		return $this->dictamenPrimeraMinoriaQueAgrega;
+	}
+	
+	/**
+	 * Set  dictamenPrimeraMinoriaQueAgrega
+	 * 
+	 * @param \AppBundle\Entity\Dictamen $dictamenPrimeraMinoriaQueAgrega
+	 * @return \AppBundle\Entity\ExpedienteComision
+	 */
+	public function setDictamenPrimeraMinoriaQueAgrega(\AppBundle\Entity\Dictamen $dictamenPrimeraMinoriaQueAgrega) {
+		$this->dictamenPrimeraMinoriaQueAgrega = $dictamenPrimeraMinoriaQueAgrega;
+		return $this;
+	}
+				
 	/**
 	 * set dictamenSegundaMinoria
 	 *
@@ -343,28 +399,25 @@ class ExpedienteComision
 	}
 	
 	/**
-	 * Get ultimoMomento
-	 *
-	 * @return boolean
-	 *
-	public function getUltimoMomento() {
-		return $this->ultimoMomento;
+	 * Get dictamenSegundaMinoriaQueAgrega
+	 * 
+	 * @return \AppBundle\Entity\Dictamen
+	 */
+	public function getDictamenSegundaMinoriaQueAgrega() {
+		return $this->dictamenSegundaMinoriaQueAgrega;
 	}
-	*/
 	
 	/**
-	 * Set ultimoMomento
-	 *
-	 * @param boolean $ultimoMomento
-	 *
-	 * @return ExpedienteComision
-	 *
-	public function setUltimoMomento($ultimoMomento) {
-		$this->ultimoMomento = $ultimoMomento;
+	 * Set dictamenSegundaMinoriaQueAgrega
+	 * 
+	 * @param \AppBundle\Entity\Dictamen $dictamenSegundaMinoriaQueAgrega
+	 * @return \AppBundle\Entity\ExpedienteComision
+	 */
+	public function setDictamenSegundaMinoriaQueAgrega(\AppBundle\Entity\Dictamen $dictamenSegundaMinoriaQueAgrega) {
+		$this->dictamenSegundaMinoriaQueAgrega = $dictamenSegundaMinoriaQueAgrega;
 		return $this;
 	}
-	*/
-	        
+			
     /**
      * Set anulado
      *
@@ -569,6 +622,51 @@ class ExpedienteComision
     public function getSesionMuestra()
     {
     	return (is_null($this->getSesion())?"":$this->getSesion()->getFechaMuestra());
+    }
+    
+    /**
+     * get listaDictamenesMayoriaQueAgrega
+     *
+     * @return string
+     * @VirtualProperty()
+     */
+    public function getListaDictamenesMayoriaQueAgrega(){
+    	
+    	$comisiones=(!is_null($this->dictamenMayoriaQueAgrega)
+		    			?"Agregado a ".$this->getExpediente()->getNumeroCompleto().
+		    			 " (".$this->dictamenMayoriaQueAgrega->getListaLetrasComisionesMayoria().")"
+    				    :null);
+    	return $comisiones;
+    }
+    
+    /**
+     * get listaDictamenesPrimeraMinoriaQueAgrega
+     *
+     * @return string
+     * @VirtualProperty()
+     */
+    public function getListaDictamenesPrimeraMinoriaQueAgrega(){
+    	
+    	$comisiones=(!is_null($this->dictamenPrimeraMinoriaQueAgrega)
+    					?"Agregado a ".$this->getExpediente()->getNumeroCompleto().
+		    			 " (".$this->dictamenPrimeraMinoriaQueAgrega->getListaLetrasComisionesPrimeraMinoria().")"
+				    	:null);
+    	return $comisiones;
+    }
+    
+    /**
+     * get listaDictamenesSegundaMinoriaQueAgrega
+     *
+     * @return string
+     * @VirtualProperty()
+     */
+    public function getListaDictamenesSegundaMinoriaQueAgrega(){
+    	
+    	$comisiones=(!is_null($this->dictamenSegundaMinoriaQueAgrega)
+		    			?"Agregado a ".$this->getExpediente()->getNumeroCompleto().
+		    			 " (".$this->dictamenSegundaMinoriaQueAgrega->getListaLetrasComisionesSegundaMinoria().")"
+		    			:null);
+    	return $comisiones;
     }
     
     /**

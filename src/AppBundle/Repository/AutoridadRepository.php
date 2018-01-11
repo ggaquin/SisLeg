@@ -18,7 +18,7 @@ class AutoridadRepository extends EntityRepository{
 			-> setParameter('tipoAutoridad', $tipoAutoridad)
 			-> setParameter('activo', true);
 		
-		return $qb->getQuery()->getResult();
+		return $qb->getQuery()->getOneOrNullResult();
 
 	}
 

@@ -48,6 +48,43 @@ use AppBundle\Entity\Pase;
 class RestComisionAsignacionController extends FOSRestController{
 
     
+	private function crearAsignacion($idExpediente,$listaComisiones,$usuario){
+		
+		$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
+		$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+		$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
+// 		$em = $this->getDoctrine()->getManager();
+		$expediente=$expedienteRepository->find($idExpediente);
+		
+		$primerAsignacion=$expedienteComisionRepository->findPrimerAsignacionByExpediente_Id($idExpediente);
+		
+		if (count($primerAsignacion)==0)
+			throw new \Exception("El expediente ".$expediente->getNumeroCompleto().
+								 "no posee ninguna asignación activa en este momento");
+		$listaAsignaciones=[];
+			
+ 		foreach ($listaComisiones as $idComision){
+ 			
+ 			$expedienteComisionPersistido=$expedienteComisionRepository->findByExpediente_IdAndComision_Id($idExpediente, $idComision);
+ 			if (is_null($expedienteComisionPersistido)){
+					$asignacion=new ExpedienteComision();
+					$comision=$comisionRepository->find($idComision);
+					$asignacion->setComision($comision);
+					$asignacion->setPaseOriginario(($primerAsignacion[0])->getPaseOriginario());
+					$asignacion->setExpediente($expediente);
+					$asignacion->setFechaAsignacion(new \DateTime('now'));
+					$asignacion->setUsuarioCreacion($usuario->getUsuario());
+	// 				$em->persist($asignacion);
+					$listaAsignaciones[]=$asignacion;
+ 			}
+ 			else 
+ 				$listaAsignaciones[]=$expedienteComisionPersistido;
+ 		}
+		
+// 		$em->flush();
+		return $listaAsignaciones;
+	}
+	
 	/**
 	 * @Rest\Post("/create")
 	 */
@@ -56,35 +93,21 @@ class RestComisionAsignacionController extends FOSRestController{
 		$idExpediente=$request->request->get('idExpediente');
 		$comisiones=$request->request->get('comisiones');
 		$usuario=$this->getUser();
-		
-		$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
-		$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
-		$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
-		$em = $this->getDoctrine()->getManager();
-		$expediente=$expedienteRepository->find($idExpediente);
-		
 		$listaComisiones=explode(',', $comisiones);
-		foreach ($listaComisiones as $idComision){
-			$primerAsignacion=$expedienteComisionRepository
-								->findPrimerAsignacionByExpediente_Id($expediente->getId());
-			if (count($primerAsignacion)==0)
-					return $this->view("El expediente ".$expediente->getNumeroCompleto().
-									   "no posee ningina asignación actual",500);
-			$asignacion=new ExpedienteComision();
-			$comision=$comisionRepository->find($idComision);
-			$asignacion->setComision($comision);
-			$asignacion->setPaseOriginario(($primerAsignacion[0])->getPaseOriginario());
-			$asignacion->setExpediente($expediente);
-			$asignacion->setFechaAsignacion(new \DateTime('now'));
-			$asignacion->setUsuarioCreacion($usuario->getUsuario());
-			$em->persist($asignacion);
-		}
 		
-		$em->flush();
-		
-		return $this->view("Las nuevas asignaciones se generaron en forma exitosa",200);
-		
-		
+		try {
+				$listaAsignaciones=$this->crearAsignacion($idExpediente, $listaComisiones, $usuario);
+				
+				$em = $this->getDoctrine()->getManager();
+				foreach ($listaAsignaciones as $asignacion)
+					$em->persist($asignacion);
+					
+				$em->flush();
+				return $this->view("Las nuevas asignaciones se generaron en forma exitosa",200);
+				
+		} catch (Exception $e) {
+			return $this->view($e->getMessage(),500);
+		}	
 	}
 	
     /**
@@ -146,6 +169,9 @@ class RestComisionAsignacionController extends FOSRestController{
     									'dictamen_segunda_minoria_es_u'=>(!is_null($e->getDictamenSegundaMinoria())
     																				?$e->getDictamenSegundaMinoria()->getUltimoMomento()
     																				:false),
+				    					'lista_dictamen_mayoria_que_agrega'=>$e->getListaDictamenesMayoriaQueAgrega(),
+				    					'lista_dictamen_primera_minoria_que_agrega'=>$e->getListaDictamenesPrimeraMinoriaQueAgrega(),
+    									'lista_dictamen_segunda_minoria_que_agrega'=>$e->getListaDictamenesSegundaMinoriaQueAgrega(),
     									'recibido'=>!is_null($e->getPaseOriginario()->getRemito()->getFechaRecepcion()),
     									'anulado'=>$e->getAnulado(),
     									'edicion_habilitada'=>$e->getPermiteEdicion(),
@@ -210,12 +236,18 @@ class RestComisionAsignacionController extends FOSRestController{
     	$em = $this->getDoctrine()->getManager();
     	
     	foreach ($expedientesAsignados as $expedienteAsignacion){
-    		//$expedienteAsignacion->setUltimoMomento($sesion->getTieneOrdenDelDia());
     		$dictamenMayoria=$expedienteAsignacion->getDictamenMayoria();
     		if (!is_null($dictamenMayoria)){
     			$dictamenMayoria->setUltimoMomento($sesion->getTieneOrdenDelDia());
     			$dictamenMayoria->setFechaModificacion(new \DateTime());
     			$dictamenMayoria->setUsuarioModificacion($usuario->getUsuario());
+    			$agregados=$dictamenMayoria->getExpedientesAgregadosEnDictamenMayoria();
+    			foreach ($agregados as $agregado){
+    				$agregado->setSesion($sesion);
+    				$agregado->setFechaModificacion(new \DateTime());
+    				$agregado->setUsuarioModificacion($usuario->getUsuario());
+    				$em->persist($agregado);
+    			}
     			$em->persist($dictamenMayoria);
     		}
     		$dictamenPrimeraMinoria=$expedienteAsignacion->getDictamenPrimeraMinoria();
@@ -223,6 +255,13 @@ class RestComisionAsignacionController extends FOSRestController{
     			$dictamenPrimeraMinoria->setUltimoMomento($sesion->getTieneOrdenDelDia());
     			$dictamenPrimeraMinoria->setFechaModificacion(new \DateTime());
     			$dictamenPrimeraMinoria->setUsuarioModificacion($usuario->getUsuario());
+    			$agregados=$dictamenMayoria->getExpedientesAgregadosEnPrimeraMinoria();
+    			foreach ($agregados as $agregado){
+    				$agregado->setSesion($sesion);
+    				$agregado->setFechaModificacion(new \DateTime());
+    				$agregado->setUsuarioModificacion($usuario->getUsuario());
+    				$em->persist($agregado);
+    			}
     			$em->persist($dictamenPrimeraMinoria);
     		}
     		$dictamenSegundaMinoria=$expedienteAsignacion->getDictamenSegundaMinoria();
@@ -230,6 +269,13 @@ class RestComisionAsignacionController extends FOSRestController{
     			$dictamenSegundaMinoria->setUltimoMomento($sesion->getTieneOrdenDelDia());
     			$dictamenSegundaMinoria->setFechaModificacion(new \DateTime());
     			$dictamenSegundaMinoria->setUsuarioModificacion($usuario->getUsuario());
+    			$agregados=$dictamenMayoria->getExpedientesAgregadosEnSegundaMinoria();
+    			foreach ($agregados as $agregado){
+    				$agregado->setSesion($sesion);
+    				$agregado->setFechaModificacion(new \DateTime());
+    				$agregado->setUsuarioModificacion($usuario->getUsuario());
+    				$em->persist($agregado);
+    			}
     			$em->persist($dictamenSegundaMinoria);
     		}
     		$expedienteAsignacion->setSesion($sesion);
@@ -254,7 +300,6 @@ class RestComisionAsignacionController extends FOSRestController{
        	$idNuevoEstadoExpediente=$this->getParameter('id_estado_espera_recepcion');
     	$estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
     	$nuevoEstadoExpediente=$estadoExpedienteRepository->find($idNuevoEstadoExpediente);
-    	
     	$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
     	$expedienteComision=$expedienteComisionRepository->find($idAsignacion);
     	$idExpediente=$expedienteComision->getExpediente()->getId();
@@ -351,8 +396,7 @@ class RestComisionAsignacionController extends FOSRestController{
     					 'incluye_vistos_y_considerandos'=>(($dictamen instanceof DictamenRevision)
     					 									?$dictamen->getRevisionProyecto()->getIncluyeVistosyConsiderandos():true),
     					 'revision_id'=>(($dictamen instanceof DictamenRevision)
-    					 					?$dictamen->getRevisionProyecto()->getId():0)//,
-    					 //'sesion_id'=>(!is_null($dictamen->getSesion())?$dictamen->getSesion()->getId():0)
+    					 					?$dictamen->getRevisionProyecto()->getId():0)    			
     					 );
    
     	return $this->view($resultado,200);
@@ -370,6 +414,7 @@ class RestComisionAsignacionController extends FOSRestController{
     	$tipoRedaccion=$request->request->get('tipoRedaccion');
     	$idTipoDictamen=$request->request->get('tipoDictamen');
     	$comisiones=$request->request->get('comisiones');
+    	$agregados=$request->request->get('agregados');
     	$texto=$request->request->get('texto');
     	//$idSesion=$request->request->get('idSesion');
     	$idRevision=$request->request->get('idRevision');
@@ -390,7 +435,6 @@ class RestComisionAsignacionController extends FOSRestController{
     	$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
     	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
     	$estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
-    	//$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
  
     	if ($idDictamen!=0)
     		$dictamenOriginal = $dictamenRepository->find($idDictamen);
@@ -407,9 +451,7 @@ class RestComisionAsignacionController extends FOSRestController{
 	        	
     	//campo común a todos los tipos
     	$dictamen->setTextoLibre($texto);
-    	//$sesion=$sesionRepository->find($idSesion);
-    	//$dictamen->setSesion($sesion);
-    		
+    	    		
     	//para el tipo articulado
     	if ($tipoRedaccion=="articulado"){
     		$tipoDictamen=$tipoProyectoRepository->find($idTipoDictamen);
@@ -460,9 +502,11 @@ class RestComisionAsignacionController extends FOSRestController{
     	}
     	
     	$em = $this->getDoctrine()->getManager();
-    	    	
-    	$comisionesArray=explode(",", $comisiones);
-    	foreach ($comisionesArray as $idComision){
+    	 
+    	//comisiones que dictaminan
+    	
+    	$listaComisiones=explode(",", $comisiones);
+    	foreach ($listaComisiones as $idComision){
        		
        		$expedienteComision=$expedienteComisionRepository->findByExpediente_IdAndComision_Id($idExpediente, $idComision);
        		$sesion=$expedienteComision->getSesion();  
@@ -502,16 +546,48 @@ class RestComisionAsignacionController extends FOSRestController{
 	       		   
 	       		if (!is_null($dictamenOriginal) && !$dictamenOriginal->getTieneAsignaciones()) 
 	       			$em->remove($dictamenOriginal);
-       		}
-       		
+	       		
+       		}	
        	}
        	
-      	$expediente=$expedienteRepository->find($idExpediente);
-      	$idNuevoEstadoExpediente=$this->getParameter('id_estado_dictamen_comision');
-      	$nuevoEstadoExpediente=$estadoExpedienteRepository->find($idNuevoEstadoExpediente);
-      	$expediente->setEstadoExpediente($nuevoEstadoExpediente);
-      	
-      	$em->persist($expediente);
+       	$expediente=$expedienteRepository->find($idExpediente);
+       	$idNuevoEstadoExpediente=$this->getParameter('id_estado_dictamen_comision');
+       	$nuevoEstadoExpediente=$estadoExpedienteRepository->find($idNuevoEstadoExpediente);
+       	$expediente->setEstadoExpediente($nuevoEstadoExpediente);
+       	
+       	$em->persist($expediente);
+       	       	
+       	//Expedientes agregados
+       	
+       	$listaComisionesAgregadas=[];
+       	$idsExpedientesAgregados=explode(',', $agregados);
+       	foreach ($idsExpedientesAgregados as $idExpedienteAgregado){
+       		
+       		$listaComisionesExpediente=$this->crearAsignacion($idExpedienteAgregado, $listaComisiones, $usuario);
+       		$listaComisionesAgregadas=array_merge($listaComisionesAgregadas,$listaComisionesExpediente);
+       	}
+       	
+       	foreach ($listaComisionesAgregadas as $expedienteComisionAAgregar){
+       		
+       		if (!$expedienteComisionAAgregar->getPermiteEdicion())
+       			
+       			return $this->view("El expediente.".$expedienteComisionAAgregar->getExpediente()->getNumeroCompleto().
+       							   " ,que se intenta agregar, con giro a la comisión de ".
+       							   $expedienteComisionAAgregar->getComision()->getComision().
+       							   " se encuentra incorporado a sesión con fecha ".
+       							   $expedienteComisionAAgregar->getSesion()->getFechaFormateada().
+       							   ", con orden del día ya generada.",500);
+       					
+       			if($numeroDictaminantes==1)       				
+       				$dictamen->addExpedienteAgregadoDictamenMayoria($expedienteComisionAAgregar);
+       			
+       			if($numeroDictaminantes==2)
+       				$dictamen->addExpedienteAgregadoDictamenPrimeraMinoria($expedienteComisionAAgregar);
+       			
+       			if($numeroDictaminantes==3)
+       				$dictamen->addExpedienteAgregadoDictamenPrimeraMinoria($expedienteComisionAAgregar);
+       	}
+       	
        	$em->persist($dictamen);  
        	$em->flush();
        	
@@ -560,17 +636,28 @@ class RestComisionAsignacionController extends FOSRestController{
        */
       public  function traerExpedienteAsignados(Request $request){
       	
-      	$term=$request->query->get('q');
-      	$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
-      	$expedientesAsignados=$expedienteComisionRepository->findExpedienteVigenteByNumero($term);
-      	$expedientes=[];
-      	foreach ($expedientesAsignados as $expedienteAsignado){
-      		$expedientes[]=array(
-      							'id' => $expedienteAsignado->getExpediente()->getId(),
-      							'numeroCompleto' => $expedienteAsignado->getExpediente()->getNumeroCompleto()
-      					       );
-      	}
-      	return $this->view($expedientes,200);
+      	
+//       	try {
+      		
+      		$term=$request->query->get('q');
+      		//$estado=$request->query->get('r');
+      		
+      		$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
+      		$expedientesAsignados=$expedienteComisionRepository->findExpedienteVigenteByNumero($term);
+      		$expedientes=[];
+      		foreach ($expedientesAsignados as $expedienteAsignado){
+      			$expedientes[]=array(
+      					'id' => $expedienteAsignado->getExpediente()->getId(),
+      					'numeroCompleto' => $expedienteAsignado->getExpediente()->getNumeroCompleto()
+      			);
+      		}
+      		return $this->view($expedientes,200);
+      		
+//       	} catch (\Exception $e) {
+      		
+//       		return $this->view($e->getMessage(),500);
+//       	}
+      	
       }
       
       /**

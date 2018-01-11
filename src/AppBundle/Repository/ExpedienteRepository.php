@@ -145,24 +145,79 @@ class ExpedienteRepository extends EntityRepository{
 		
 	}
 	
-	public function findByNumeroCompleto($numero,$oficina){
+	public function findByNumeroCompleto($numero,$numeroExcluido=null,$tieneSancion=null,$tieneAsignacionComision=null){
 		
 		$numeroSeparado=explode('-', $numero);
+		$numeroExcluidoSeparado=is_null($numeroExcluido)?$numeroExcluido:explode('-',$numeroExcluido);
 		
 		if (count($numeroSeparado)!=2)
 			throw new \Exception('El criterio de busqueda debe tener el formato {numero}-{año} (por ejemplo 1-17)');
 		
 		$periodo='20'.$numeroSeparado[1];
 		$numerador=$numeroSeparado[0];
-		$qb = $this->createQueryBuilder('e');
-		$qb -> where($qb->expr()->andX(
-										$qb->expr()->eq('e.numeroExpediente', '?1'),
-										$qb->expr()->eq('e.periodo','?2'),
-										$qb->expr()->isNull('e.fechaArchivo')
-									  )
-				)
-			->setParameter(1, $numerador)
-			->setParameter(2,$periodo);
+		$periodoNumeroExcluido=is_null($numeroExcluido)?null:'20'.$numeroExcluidoSeparado[1];
+		$numeradorNumeroExcluido=is_null($numeroExcluido)?null:$numeroExcluidoSeparado[0];
+		
+		$qb1 = $this->createQueryBuilder('esq');
+		
+		if (!is_null($tieneAsignacionComision)){
+			
+			if($tieneAsignacionComision==true){
+				$qb1 -> select('DISTINCT esq.id')
+					 -> innerJoin('esq.asignacionComisiones', 'ecsq')
+					 -> innerJoin('esq.estadoExpediente', 'eesq')
+					 -> where($qb1->expr()->eq('eesq.id','?8'));
+			}
+			else{	
+					$qb1 -> select('DISTINCT esq.id')
+						 -> leftJoin('esq.asignacionComisiones', 'ecsc')
+						 -> where($qb1->expr()->isNull('ecsc.id'));
+			}
+		}
+			 
+		$qb = $this->createQueryBuilder('e')
+				   ->leftJoin('e.asignacionComisiones', 'a');
+		$qb -> where($qb->expr()
+						->andX(
+								$qb->expr()->eq('e.numeroExpediente','?1'),
+								$qb->expr()->eq('e.periodo','?2'),
+								$qb->expr()->isNull('e.fechaArchivo'),
+								$qb->expr()
+								   ->orX(
+										 $qb->expr()->isNull('?3'),
+										 $qb->expr()
+								   			->not(
+												  $qb->expr()
+								   					 ->andX(
+															$qb->expr()->eq('e.numeroExpediente','?4'),
+															$qb->expr()->eq('e.periodo','?5')
+														   )
+												 )
+										),
+								$qb->expr()
+							       ->orX(
+							       		  $qb->expr()->isNull('?6'),
+							       		  $qb->expr()->eq('e.numeroSancion', '?6')
+										),
+								$qb->expr()
+								   ->orX(
+								   		  $qb->expr()->isNull('?7'),
+								   		  $qb->expr()->in('e.id', $qb1->getDQL())
+ 								   		)
+							  )
+					)
+			->groupBy('e.id')
+			->setParameter(1,$numerador)
+			->setParameter(2,$periodo)
+			->setParameter(3,$numeroExcluido)
+			->setParameter(4,$numeradorNumeroExcluido)
+			->setParameter(5,$periodoNumeroExcluido)
+			->setParameter(6,$tieneSancion)
+ 			->setParameter(7,$tieneAsignacionComision);
+		
+ 		if($tieneAsignacionComision==true)
+ 			$qb->setParameter(8, '2');
+		
 		return $qb->getQuery()->getResult();
 			
 	}
@@ -469,6 +524,16 @@ class ExpedienteRepository extends EntityRepository{
 					)
 			->  setParameter(1, '%'.$patronNombre.'%')
 			->setParameter(2, $idTipoOficina);
+		return $qb->getQuery()->getResult();
+	}
+	
+	public function findBySesion_Id($idSesion)
+	{
+		$qb	= $this -> createQueryBuilder('e');
+		$qb -> innerJoin('e.sesion', 's')
+		 	-> where($qb->expr()->eq('s.id', '?1'))
+			->  setParameter(1, $idSesion);
+		
 		return $qb->getQuery()->getResult();
 	}
 	

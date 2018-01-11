@@ -7,7 +7,7 @@ use JMS\Serializer\Annotation\VirtualProperty;
 /**
  * Speech
  * 
- * @ORM\Table(name="speech")
+ * @ORM\Table(name="speech",uniqueConstraints={@ORM\UniqueConstraint(name="titulo", columns={"tituloSpeech"})})
  * @ORM\Entity(repositoryClass="AppBundle\Repository\SpeechRepository")
  *
  */
@@ -34,14 +34,14 @@ class Speech {
 	/**
 	 * @var string
 	 *
-	 * @ORM\Column(name="textoSuperior", type="string", length=1000)
+	 * @ORM\Column(name="textoSuperior", type="string", length=1000, nullable=true)
 	 */
 	private $textoSuperior;
 	
 	/**
 	 * @var string
 	 *
-	 * @ORM\Column(name="textoInferior", type="string", length=1000)
+	 * @ORM\Column(name="textoInferior", type="string", length=1000, nullable=true)
 	 */
 	private $textoInferior;
 	
@@ -51,6 +51,16 @@ class Speech {
 	 * @ORM\Column(name="incluirSancion", type="boolean", nullable=false)
 	 */
 	private $incluirSancion;
+	
+	//------------------------------------constructor---------------------------------------------
+	
+	/**
+	 * Constructor
+	 */
+	public function __construct()
+	{
+		$this->incluirSancion = false;
+	}
 	
 	//-------------------------------------setters y getters--------------------------------------
 	

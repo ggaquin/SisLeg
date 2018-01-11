@@ -144,5 +144,15 @@ class ExpedienteSesionRepository extends EntityRepository{
 		return  $resultado;
 				
 	}
+	
+	public function findBySesion_Id($idSesion)
+	{
+		$qb	= $this -> createQueryBuilder('ec');
+		$qb -> innerJoin('e.csesion', 's')
+			-> where($qb->expr()->eq('s.id', '?1'))
+			->  setParameter(1, $idSesion);
+		
+		return $qb->getQuery()->getResult();
+	}
 		
 }

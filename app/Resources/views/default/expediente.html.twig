@@ -154,8 +154,21 @@
 
 		function criterio(){
 			var tipo=$("#selBusqueda").val();
-			return ((tipo=="todo" || tipo=="busqueda-7")?"0":$("#"+tipo).val());	
+			var valorRetorno;
+
+			if(tipo=="todo" || tipo=="busqueda-7")
+				valorRetorno="0";
+			else{
+					if (tipo=="busqueda-8")
+						valorRetorno=$("#selSesionFiltro").val();
+					else
+						valorRetorno=$("#"+tipo).val();
+				}
+			
+			
+			return valorRetorno;	
 		}
+		
 		function tipoCriterio(){
 			return $("#selBusqueda").val();
 		}
@@ -413,7 +426,7 @@
 							        "url": "api/expediente/getByCriteria/"+tipoCriterio()+"/"+criterio(),
 			            			"dataSrc": '',
 			            			"error": function (xhr, error, thrown) {
-				            			
+			            				$("#estadoFiltro").bootstrapToggle('off');
 			            			    toastr.error(JSON.parse(xhr.responseText));
 			            			}
 							    },
@@ -1709,6 +1722,33 @@
 			//---------------------------------INICIALIZACIÓN DE CONTROLES------------------------------------------------
 			//------------------------------------------------------------------------------------------------------------
 
+			$("#selAñoFiltro").change(function(){
+
+				var periodo=$(this).val();
+
+				if (periodo==0)
+					$("#selSesionFiltro").html('<option value="0">Seleccione Sesion</option>');
+				else {
+    					$.ajax({
+        					type:'Get',
+        					dataType: 'json	',
+        					url:'{{ app.request.getBaseURL() }}'+'/api/sesion/getAllByPeriodo/'+periodo,
+        					success: function(data){
+        						$("#selSesionFiltro").html('');
+        						var html='<option value="0">Seleccione Sesion</option>'
+        						$.each(data, function(index,sesion){
+        							html+='<option value="'+sesion.id+'">'+sesion.fecha_formateada+'</option>';
+        						}); 
+        						$("#selSesionFiltro").html(html);    			
+        					},
+        					error: function(jqXHR,textStatus,errorThrown ){
+        						toastr.error(JSON.parse(jqXHR.responseText));
+        					}
+        		      	});
+				}
+
+			});
+			
 			$("#btn-nueva-sesion-asignacion").click(function(){
 				$("#modalAltaSesion").find('input[name="control"]').val("selSesionAsignacion");
 				$("#modalAltaSesion").modal('show');
@@ -1750,12 +1790,17 @@
 				var control=$(this).val();
 				$(".busqueda").addClass('hidden');
 				if(control!="todo" && control!="busqueda-7")
-					$("#"+control).removeClass('hidden');
+					if (control=="busqueda-8")
+						$(".sesion").removeClass('hidden');
+					else
+						$("#"+control).removeClass('hidden');
 				else{
 					$("#busqueda-1").val("");
 					$("#busqueda-2").val("0");
 					$("#busqueda-3").val("");
 					$("#busqueda-4").val("0");
+					$("#selAñoFiltro").val("0");
+					$("#selAñoFiltro").change();
 				}
 			});
 
@@ -1849,7 +1894,7 @@
 			        Gestión Expedientes
 			    </h2>
 			</div>
-			<div class="col-md-6 col-md-offset-3">
+			<div class="col-md-8 col-md-offset-1">
 				<nav class="navbar navbar-default">
 					<div class="container-fluid">
 						<div class="navbar-header">
@@ -1872,6 +1917,7 @@
 											<option value="busqueda-5">Nombres Particular</option>
 											<option value="busqueda-6">DNI Particular</option>
 											<option value="busqueda-7">Archivados</option>
+											<option value="busqueda-8">Sesión</option>
 										</select>
 										<input class="form-control busqueda hidden filtro" id="busqueda-1"/>
 										<select class="form-control busqueda hidden filtro" id="busqueda-2">
@@ -1880,7 +1926,7 @@
 								                <option value="{{ estado.id }}">{{ estado.estadoExpediente }}</option>
 								            {% endfor %}
 										</select>
-										<input class="form-control busqueda hidden filtro" id="busqueda-3" placeholder="numero-año (ejemplo 1-17)"/>
+										<input class="form-control busqueda hidden filtro" id="busqueda-3" placeholder="ejemplo 1-17"/>
 										<select class="form-control busqueda hidden filtro" id="busqueda-4">
 											<option value="0">Seleccione Tipo</option>
 											{% for tipo in tipos %}
@@ -1889,6 +1935,15 @@
 										</select>
 										<input class="form-control busqueda hidden filtro" id="busqueda-5"/>
 										<input class="form-control busqueda hidden filtro" id="busqueda-6"/>
+										<select class="form-control busqueda hidden filtro sesion" id="selAñoFiltro">
+											<option value="0">Seleccione Año</option>
+											{% for año in años %}
+								                <option value="{{ año }}">{{ año }}</option>
+								            {% endfor %}
+										</select>
+										<select class="form-control busqueda hidden filtro sesion" id="selSesionFiltro">
+											<option value="0">Seleccione Sesión</option>
+										</select>
 									</div>
 								</form>
 							</div>

@@ -144,14 +144,16 @@ class SesionRepository extends EntityRepository{
 
 	}
 	
-	public function findByDistinctPeriodos(){
+	public function findByDistinctPeriodos($tieneOrdenDelDia=null){
 		
 		$qb = $this->createQueryBuilder('s')
 				   -> select('s.periodo');
-		$qb -> where($qb->expr()->eq('s.tieneOrdenDelDia', '?1'))
-			-> orderBy('s.periodo','desc')
-			-> distinct()
-			->setParameter(1, true);
+		if ($tieneOrdenDelDia==true)
+			$qb -> where($qb->expr()->eq('s.tieneOrdenDelDia', '?1'))
+				->setParameter(1, true);
+		$qb -> orderBy('s.periodo','desc')
+			-> distinct();
+
 
 		$resultado = $qb->getQuery()->getResult();
 		$periodos=[];
@@ -164,17 +166,22 @@ class SesionRepository extends EntityRepository{
 		
 	}
 	
-	public function findActivasByPeriodo($periodo){
+	public function findActivasByPeriodo($periodo, $tieneOrdenDelDia=true){
 		
 		$qb = $this->createQueryBuilder('s');
-		$qb	-> where($qb->expr()->andX(
-										$qb->expr()->eq('s.periodo', '?1'),
-										$qb->expr()->eq('s.tieneOrdenDelDia', '?2')
-					                   )
-					 )
-			->orderBy('s.fecha','desc')
-			->setParameter('1', $periodo)
-			->setParameter('2', true);
+		if ($tieneOrdenDelDia==true){
+			$qb	-> where($qb->expr()->andX(
+											$qb->expr()->eq('s.periodo', '?1'),
+											$qb->expr()->eq('s.tieneOrdenDelDia', '?2')
+						                   )
+						 ) 
+				 ->setParameter('2', true);
+		}
+		else
+			$qb	-> where($qb->expr()->eq('s.periodo', '?1'));
+			
+		$qb ->orderBy('s.fecha','desc')
+			->setParameter('1', $periodo);
 					
 		return $qb->getQuery()->getResult();
 			

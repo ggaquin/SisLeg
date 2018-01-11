@@ -160,8 +160,14 @@
 
 		function criterio(){
 			var tipo=$("#selBusqueda").val();
-			var valorRetorno;
-			return ((tipo=="todo")?"0":$("#"+tipo).val());	
+			var valorRetorno="";
+
+			if (tipo=="todo")
+				valorRetorno="0"
+			else
+				valorRetono=$("#"+tipo).val();
+			
+			return valorRetorno
 		}
 		function tipoCriterio(){
 			return $("#selBusqueda").val();
@@ -460,7 +466,7 @@
     				if (data.firma_secretario==true)
 						$("#firmaSecretario").bootstrapToggle('on');
 					
-    				if (data.firma_presidente=true)
+    				if (data.firma_presidente==true)
 						$("#firmaPresidente").bootstrapToggle('on');
     				
     				if (restauraDictamen==true)
@@ -801,8 +807,8 @@
 		        var vistos=$("#vistos").html();
 		        var considerandos=$("#considerandos").html();
 		        var idSesion=$("#idSesion").val();
-		        var firmaPresidente=($("#firmaPresidente").is(":checked")?$("#presidente").val():"");
-		        var firmaSecretario=($("#firmaSecretario").is(":checked")?$("#secretario").val():"");
+		        var firmaPresidente=$("#firmaPresidente").is(":checked");
+		        var firmaSecretario=$("#firmaSecretario").is(":checked");
 
 		        var validacion='';
 				var formData=new FormData();
@@ -813,14 +819,13 @@
 			 	 
 				validacion+=((tipoSancion==0 && tipoRedaccion=="articulado")
 							 ?'<li>Debe especificar el tipo de resolución</li>':'');
-
+/* 
 				validacion+=(($("#firmaSecretario").is(":checked") &&
 							  firmaSecretario.replace(/ /g,'').length==0)
 							  ?'<li>Debe indicar el nombre del secretario</li>':'');
 
-				validacion+=(($("#firmaPresidente").is(":checked") &&
-						     firmaPresidente.replace(/ /g,'').length==0)
-							 ?'<li>Debe indicar el nombre del presidente</li>':'');
+				validacion+=(firmaPresidente && !firmaSecretario)
+							 ?'<li>Debe indicar el nombre del presidente</li>':''); */
 				 
 				if (tipoRedaccion=="articulado")					
 					validacion+=((articulos.length==0)
@@ -1341,7 +1346,7 @@
 				$("#modalSpeech").find('input[name="tipoPlantilla"]').val('encabezado');
 				$("#textoSuperior").data("wysihtml5").editor.setValue('');
 				$("#textoInferior").data("wysihtml5").editor.setValue('');
-				$("#tituloSpeech"),val('');
+				$("#tituloSpeech").val('');
 				$("#incluirSancion").bootstrapToggle('off');
 			});
 
@@ -1351,7 +1356,7 @@
 				
 				var textoSuperior = $("#modalSpeech").find('textarea[name="textoSuperior"]').val();
 				var textoInferior= $("#modalSpeech").find('textarea[name="textoInferior"]').val();
-				var tituloSpeech= $("#modalSpeech").find('textarea[name="tituloSpeech"]').val();
+				var tituloSpeech= $("#modalSpeech").find('input[name="tituloSpeech"]').val();
 				var validacion="";
 
 				validacion+=((tituloSpeech.replace(/ /g,'').length==0)
@@ -1394,7 +1399,7 @@
     	                processData: false,
                         success: function(data) {
 
-                        		var newOption = new Option(date.titulo, data.id, true, true);
+                        		var newOption = new Option(data.titulo, data.id, true, true);
    						 		$("#selSpeech").append(newOption).trigger('change');
             					$('#modalSpeech').modal('hide');
             					toastr.success(data.mensaje);
@@ -1620,7 +1625,7 @@
 				var control=$(this).val();
 				$(".busqueda").addClass('hidden');
 				if(control!="todo")
-					$("#"+control).removeClass('hidden');
+					 $("#"+control).removeClass('hidden');
 				else{
 					$("#busqueda-1").val("");
 					$("#busqueda-2").val("0");
@@ -1629,7 +1634,9 @@
 
 			$("#btn-busqueda").click(function(){
 				var valorBusqueda=$("#selBusqueda").val();
-				if(((valorBusqueda=="busqueda-1"|| valorBusqueda=="busqueda-2" || valorBusqueda=="busqueda-3") && criterio()!="" && criterio()!="0"))
+				if(((valorBusqueda=="busqueda-1"|| valorBusqueda=="busqueda-2" || 
+					valorBusqueda=="busqueda-3" || valorBusqueda=="busqueda-4") && 
+					criterio()!="" && criterio()!="0"))
 				{
 					tabla.ajax.url("api/sesion/getExpedienteSesionByCriteria/"+$("#idSesion").val()+"/"+tipoCriterio()+"/"+criterio()).load();
 					$(".filtro").prop('disabled',true);
@@ -1757,7 +1764,7 @@
 											{% for tipoExpedienteSesion in tiposExpedienteSesion %}
 								                <option value="{{ tipoExpedienteSesion.letra }}">{{ tipoExpedienteSesion.letra }}</option>
 								            {% endfor %}
-										</select>										
+										</select>								
 									</div>
 								</form>
 							</div>

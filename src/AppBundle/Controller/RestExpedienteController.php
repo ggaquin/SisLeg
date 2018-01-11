@@ -88,6 +88,45 @@ class RestExpedienteController extends FOSRestController{
     		return $this->view($e->getMessage(),500);
     	}
     }
+    
+//     /**
+//      * @Rest\Get("/getNumeroCompletoByNumero")
+//      */
+//     public function traerNumeroCompletoByNumeroYPeriodoAction(Request $request)
+//     {
+//     	try{
+    		
+//     		$numeroYPeriodo=$request->query->get('q');
+//     		$expedienteExclusion=$request->query->get('r');
+//     		$usuario=$this->getUser();
+    		
+//     		$valorRetorno=[];
+//     		$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+//     		$resultados=$expedienteRepository->findNumeroCompletoByNumero($numero,
+//     				$usuario->getRol()->getOficina(),
+//     				$destino
+//     				);
+    		
+//     		if (count($resultados)>0){
+    			
+//     			foreach ($resultados as $resultado){
+    				
+//     				$ejercicio=substr($resultado['periodo'],2);
+//     				$numeroCompleto=$resultado["numero"].'-'.$resultado["letra"].'-'.$ejercicio.'('.$resultado["folios"].')';
+//     				$valorRetorno[]=array(
+//     						'id' => $resultado["id"],
+//     						'numeroCompleto' => $numeroCompleto
+//     				);
+//     			}
+//     		}
+    		
+//     		return $this->view($valorRetorno,200);
+    		
+//     	}catch(\Exception $e){
+    		
+//     		return $this->view($e->getMessage(),500);
+//     	}
+//     }
     		
     
     /**
@@ -117,6 +156,8 @@ class RestExpedienteController extends FOSRestController{
                 $expedientes=$expedienteRepository->findByParticular_DNI($criterio);
             if ($tipoCriterio=='busqueda-7')
                 $expedientes=$expedienteRepository->findByArchivo();
+            if ($tipoCriterio=='busqueda-8')
+            	$expedientes=$expedienteRepository->findBySesion_Id($criterio);
 		
             $resutado=[];	
             foreach ($expedientes as $expediente){
