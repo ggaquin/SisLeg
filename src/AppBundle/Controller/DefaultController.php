@@ -662,12 +662,29 @@ class DefaultController extends Controller
     	
     	//crea el word
     	$word = $servicioImpresion->getTemplateOD();
+    	$content=$sesionRepository->traerTextoSancion($idSancion);
+    	
+    	$textoSancion=($content[0]["textoSancion"]);
+    	$numerosExpedientes=($content[0]["numerosExpedientes"]);
+    	
     	$page=$servicioImpresion->getPage($word, 'Legal');
     	$page=$servicioImpresion->setHeader($page,  $base.'/document_bootstrap/header_concejo.png');
     	
-    	$content=$sesionRepository->traerTextoSancion($idSancion);
-    	$html.=($content[0]["textoSancion"]);
-    	$page=$servicioImpresion->writeHTMLToPage($html, $page);
+    	if (($content[0]["poseeSpeech"])==true){
+    		
+	    	$page=$servicioImpresion->addMembreteExpedientes($page,$numerosExpedientes);
+	    	
+	    	$speech=($content[0]["speechSuperior"]).'<p></p>'.
+	      	(($content[0]["incluyeSancion"]==true)?$textoSancion:'').'<p></p>'.
+	    			($content[0]["speechInferior"]);
+	    	$page=$servicioImpresion->writeHTMLToPage($speech, $page);
+	    	
+	    	$page=$servicioImpresion->getPage($word, 'Legal');
+    	}
+    	
+    	$page=$servicioImpresion->addMembreteExpedientes($page,$numerosExpedientes);
+    	$page=$servicioImpresion->writeHTMLToPage($textoSancion, $page);
+    	
     	$firmaSecretario=$content[0]["firmaSecretario"];
     	$firmaPresidente=$content[0]["firmaPresidente"];
     	$page=$servicioImpresion->addsignatureSancion($page, $base.'/document_bootstrap/escudo.png',

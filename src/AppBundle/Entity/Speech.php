@@ -60,6 +60,8 @@ class Speech {
 	public function __construct()
 	{
 		$this->incluirSancion = false;
+		$this->textoSuperior='';
+		$this->textoInferior='';
 	}
 	
 	//-------------------------------------setters y getters--------------------------------------

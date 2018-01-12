@@ -15,156 +15,12 @@ class ImpresionServicio
 {
    
    private $em;
-  // private $tempDir="";
 
     public function __construct(EntityManager $em,$rootDir) {
             $this->em=$em;
-           // $this->tempDir=$rootDir.'/../web/tmp';
     }
     
-    public function traerParametrosCaratula($idExpediente)
-    {
-         try {
-
-            if (is_null($idExpediente))
-                return null;
-			$documento=[];
-            $expedienteRepository=$this->em->getRepository('AppBundle:Expediente');
-            $expediente=$expedienteRepository->find($idExpediente);
-            $pgph_style='<p style="text-align: justify;margin-top: 0">&nbsp;&nbsp;&nbsp;&nbsp;';
-            $documento["caratula"]  = str_replace('<p>', $pgph_style, $expediente->getCaratula());
-            $documento["numeroExp"] = $expediente->getNumeroExpediente();
-            $documento["letra"] = $expediente->getTipoExpediente()->getLetra();
-            $documento["ejercicio"] = $expediente->getEjercicio();
-            $documento["entrada"] = $expediente->getFechaCreacionFormateada();
-
-            $idTipoExpediente = $expediente->getTipoExpediente()->getId();
-			
-            $tieneProyecto=false;
-            $idProyecto=null;
-
-         
-            switch ($idTipoExpediente) {
-                case '3': //Petición Particular
-                	$demandante=$expediente->getDemandanteParticular();
-                	$demandante="PARTICULAR".((!is_null($demandante))?(" - ".$demandante):"");
-                	$documento["origen"]=$demandante;
-                    break;
-                case '4': //Poder Ejecutivo
-                	$externo=$expediente->getOrigenExterno()->getOficina()->getOficina();
-                	$origen=((!is_null($externo))?(" - ".$externo):"");
-                	$origen='PODER EJECUTIVO'.$origen;
-                	$documento["origen"]=$origen;
-                    break;
-                case '5': //Secretaría Administrativa
-                    $documento["origen"]='SECRETARIA ADMINISTRATIVA';
-                    break;
-                default: //proyecto
-                    $proyecto=$expediente->getProyecto();
-                    //$bloques=$proyecto->getBloques();
-                    //$listaConcejales="";
-                    //$perfilRepository=$this->em->getRepository('AppBundle:Perfil');
-//                     foreach ($bloques as $bloque) {
-//                        $listaConcejales.=($listaConcejales!=""?" - ":"");
-//                        $listaConcejales.=$perfilRepository->findLegisladorByBloque_Id($bloque->getId());
-//                     }
-                    //$listaConcejales.=($listaConcejales!=""?" - ":"");
-                    //$listaConcejales.=$proyecto->getListaConcejales(";");
-                    $documento["origen"]=$proyecto->getConcejal()->getBloque()->getBloque();
-                    $tieneProyecto=true;
-                    $idProyecto=$proyecto->getId();
-                    break;
-            }
-
-            $tipo = $expediente->getTipoExpediente()->getTipoExpediente();
-            $numeroCompleto = $expediente->getNumeroCompleto();
-
-            $nombreArchivo=sprintf('Expediente %s %s.pdf', $expediente->getNumeroCompleto(), date('d-m-Y H:i:s'));
-
-            $titulo=sprintf('Expediente %s', $expediente->getNumeroCompleto());
-
-            $nombreArchivo=sprintf('Expediente %s %s.pdf', $numeroCompleto, date('d-m-Y H:i:s'));
-            return array('documento' => $documento, 'tipo' => $tipo, 'nombreArchivo' => $nombreArchivo, 'titulo' => $titulo, 'tieneProyecto' => $tieneProyecto, 'idProyecto' => $idProyecto);
-            
-        } catch (Exception $e) {
-            throw $e;
-        }
-
-    }
-
-    public function traerParametrosProyecto($idProyecto)
-    {
-        
-        try{
-
-            if(is_null($idProyecto))
-                return null;
-
-            $proyectoRepository=$this->em->getRepository('AppBundle:Proyecto');
-            $proyecto=$proyectoRepository->find($idProyecto);
-            //return $proyecto;
-            
-            $documento = $this->traerDatosProyecto($proyecto);  
-            $numeroCompleto = $proyecto->getId();
-            $tipo=$proyecto->getTipoProyecto()->getTipoProyecto();
-
-            $nombreArchivo=sprintf('Proyecto %s %s.pdf', $numeroCompleto, date('d-m-Y H:i:s'));
-            $titulo=sprintf('Proyecto %s', $numeroCompleto);
-
-            return array('documento' => $documento, 'tipo' => $tipo, 'nombreArchivo' => $nombreArchivo, 'titulo' => $titulo);
-
-        } catch (Exception $e) {
-            throw $e;
-        }
-        
-    }
-
-    protected function traerDatosProyecto($proyecto)
-    {
-        
-        $articulos='';
-        $quienSanciona='';
-        $htmlArticulos='';
-        $visto='';
-        $considerando='';
-        $tipoProyecto='';
-        $htmlArticulos='';
-        
-        if(!is_null($proyecto)){
-
-            $articulos=$proyecto->getArticulos();
-            $pgph_style='<p style="text-align: justify;margin-top: 0">&nbsp;&nbsp;&nbsp;&nbsp;';
-            $tipoProyecto=$proyecto->getTipoProyecto()->getTipoProyecto();
-            
-            
-            $quienSanciona=$pgph_style.'<strong>EL HONORABLE CONCEJO DELIBERANTE EN USO DE LAS FACULTADES QUE LE SON PROPIAS SANCIONA '.
-            			  (($tipoProyecto=='Decreto')?'EL':'LA').' SIGUIENTE:</strong></p>';
-            
-            foreach ($articulos as $articulo) {
-                $textoArticulo=substr($articulo['texto'], 3,strlen($articulo['texto'])+3);
-                $textoArticulo=str_replace('<p>', $pgph_style, $textoArticulo);
-                $htmlArticulos.='<p><strong><u>Artículo '.$articulo['numero'].'°</u>.- </strong>';
-                $htmlArticulos.=$textoArticulo;
-
-                if(count($articulo['incisos'])>0){
-                    $htmlArticulos.='<ul style="list-style-type: none;">';
-                    foreach ($articulo['incisos'] as $inciso) {
-                        $htmlArticulos.='<li>'.$inciso['orden'].' '.strip_tags($inciso['texto'],'<br>').'</li>';
-                    }
-                    $htmlArticulos.='</ul>';
-                }
-            } 
-            
-            $visto=str_replace('<p>', $pgph_style, $proyecto->getVisto());
-            $considerando= str_replace('<p>', $pgph_style, $proyecto->getConsiderandos());
-            
-
-            return array('visto' => $visto, 'considerando' => $considerando, 
-                         'tipoProyecto' => $tipoProyecto, 'articulos' => $htmlArticulos,
-                         'quienSanciona' => $quienSanciona);
-        }
-    }
-    
+   
     private function getIdentation($identationType)
     {
     	$identation=new \PhpOffice\PhpWord\Style\Indentation();
@@ -198,46 +54,8 @@ class ImpresionServicio
 		    				    'marginLeft'=>\PhpOffice\PhpWord\Shared\Converter::cmToInch(-0.5)
 		    				   )
     				   	  );
-//     	$fontTextHeader=array('name'=>'Times New Roman', 'size'=>14, 'color'=>'000000', 'bold'=>true);
-//     	$paragraphTextHeader=array('indentation' => $this->getIdentation('none'),
-//     							   'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::START,
-//     							   'valign'=>Jc::CENTER,'spaceAfter' => 0);
-//     	$table = $header->addTable(array('cellMarginTop' => 150, 'cellMarginLeft' => 0, 
-//     									 'cellMarginBottom' => 0, 'cellMarginRight' => 0));
-//     	$table->addRow(10);
-//     	$cellRowSpan = array('vMerge' => 'restart', 'indentation' => $this->getIdentation('none'));
-//     	$cellImage=$table->addCell(1400,$cellRowSpan);
-//     	$cellImage=$table->addCell(1400);
-// 		$cellImage->addImage($urlImage,
-// 			    		 array('width' => 30, 'height' => 39,
-// 			    			   'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER,
-// 			    		 	   'wrappingStyle'=>'square',
-// 			    		 	   'marginTop'=>10
-// 			    			   )
-// 			    		);
-// 		$texto=$textUp.chr(015).$textDown;
-// 		$table->addCell(8200,array('borderTopSize'=>10, 'borderBottomSize'=>10))
-// 			  ->addText($texto,$fontTextHeader,$paragraphTextHeader);
-// 		$cellText=$table->addCell(8200,array('borderTopSize'=>10));
-		
-		
-//     	$table->addRow(5);
-//     	$cellRowContinue = array('vMerge' => 'continue', 'indentation' => $this->getIdentation('none'));
-//     	$table->addCell(1400,$cellRowContinue);
-//     	$table->addCell(8200,array('borderBottomSize'=>10))->addText($textDown,$fontTextHeader);
+
     	\PhpOffice\PhpWord\Shared\Html::addHtml($header, '<p></p>');
-//     	$header->addShape( 'line',
-// 			    			array(
-// 			    					'points'  => '1,1 570,1',
-// 			    					'outline' => array(
-// 			    							'color'      => '#000000',
-// 			    							'line'       => 'thickThin',
-// 			    							'weight'     => 2,
-// 			    							'startArrow' => 'none',
-// 			    							'endArrow'   => 'none',
-// 			    					),
-// 			    			)
-//     					);
     	
     	return $section;
     }
@@ -275,14 +93,14 @@ class ImpresionServicio
     									 'underline'=>'single'),
     							   array('alignment'=>Jc::BOTH, 'indentation' => $this->getIdentation('none')));
     	//encabezado para tipo de proyecto
-    	$phpWord->addTitleStyle(5, array('name'=>'Times New Roman', 'size'=>16, 'color'=>'000000',
+    	$phpWord->addTitleStyle(5, array('name'=>'Times New Roman', 'size'=>13, 'color'=>'000000',
     								     'bold'=>true, 'underline' => 'single'),
     							   array('alignment'=>Jc::CENTER, 'indentation' => $this->getIdentation('none')));
     	//encabezado de lugar y fecha
     	$phpWord->addTitleStyle(6, array('name'=>'Times New Roman', 'size'=>12, 'color'=>'000000'),
     							   array('alignment'=>Jc::END, 'indentation' => $this->getIdentation('none')));
     	////encabezade de secciones del proyecto vistos, considerandos,...,etc
-    	$phpWord->addTitleStyle(7, array('name'=>'Times New Roman', 'size'=>13, 'color'=>'000000',
+    	$phpWord->addTitleStyle(7, array('name'=>'Times New Roman', 'size'=>12, 'color'=>'000000',
     									 'bold'=>true, 'underline' => 'single'),
     							  array('alignment'=>Jc::START, 'indentation' => $this->getIdentation('none')));
     	//encabezado de caratula del expediente y encabezado para formato de artículo
@@ -472,16 +290,11 @@ class ImpresionServicio
     	$row5->addCell(2500,$cellRowContinue);
     	$row5->addCell(3200,$cellRowSpan);
     	
-    	    
-    	return $page;
-    	
-    	
+    	return $page;    	
     }
     
     public function setHeaderRemito(\PhpOffice\PhpWord\Element\Section $page,$urlImagen,$tipo,$numero)
     {
-    	//$header=$page->addHeader();
-    	
     	$fechaActual=new \DateTime('now');
     	$fechaImpresion=$fechaActual->format('d/m/Y');
     	$cellRowSpan = array('vMerge' => 'restart', 'indentation' => $this->getIdentation('none'));
@@ -706,6 +519,56 @@ class ImpresionServicio
 //     	$page2=$this->setHeaderRemito($page2, $urlImagen, 'COPIA', $numero);
     	
     	return $phpWord;
+    }
+    
+    public function addMembreteExpedientes($page,$numerosExpedientes){
+    	
+//     	\PhpOffice\PhpWord\Shared\Html::addHtml($page, '<p></p>');
+    	
+    	$expedientes=explode(',', $numerosExpedientes);
+    	$tableStyle = array('cellMargin' => 0, 'cellMarginRight' => 0,
+			    			'cellMarginBottom' => -10, 'cellMarginLeft' => 0
+			    		   );
+    	$cellTextStyle = array('name'=>'Times New Roman', 'size'=>11, 'color'=>'000000', 'bold'=>true);
+    	$cellSettings = array('alignment'=>Jc::START, 'indentation' => $this->getIdentation('none'),'spaceAfter' => 0);
+    	
+    	$tablaNumeros=$page->addTable($tableStyle);
+    	$esPrimerFila=true;
+    	$totalFilas=count($expedientes);
+    	$filaActual=1;
+    	foreach ($expedientes as $expediente){
+    		$row=$tablaNumeros->addRow(10,array('exactHeight'=>10));
+    		
+    		$row->addCell(2500)->addText('',$cellTextStyle,$cellSettings);
+    		
+    		if ($esPrimerFila==true){
+    			$row->addCell(3200)->addText("CORRESPONDE AL EXPTE. N°",$cellTextStyle,$cellSettings);
+    			$esPrimerFila=false;
+    		}
+    		else{
+    			if($filaActual==$totalFilas)
+    				$row->addCell(3200,array('borderBottomSize'=>10,'borderBottomColor'=>000000))
+	    				->addText('                 "             "         "        " ',
+	    						  $cellTextStyle,$cellSettings);
+    			else
+    				$row->addCell(3200)
+    				->addText('                 "             "         "        " ',
+    						  $cellTextStyle,$cellSettings);
+    		}
+    		if($filaActual==$totalFilas)
+    			$row->addCell(3100,array('borderBottomSize'=>10,'borderBottomColor'=>000000))
+    				->addText($expediente,$cellTextStyle,$cellSettings);
+    		else
+    			$row->addCell(3100)
+    				->addText($expediente,$cellTextStyle,$cellSettings);
+    		
+    				$filaActual++;
+    	}
+    	
+    	\PhpOffice\PhpWord\Shared\Html::addHtml($page, '<p></p>');
+    	
+    	return $page;
+    	
     }
     
     public function crearCaratulaExpediente(\PhpOffice\PhpWord\Element\Section $page,

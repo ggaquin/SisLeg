@@ -207,9 +207,14 @@ class SesionRepository extends EntityRepository{
 		$rsm = new ResultSetMapping();
 		$rsm->addScalarResult('texto', 'textoSancion', 'text');
 		$rsm->addScalarResult('expediente', 'expediente', 'string');
+		$rsm->addScalarResult('numeros', 'numerosExpedientes', 'string');
 		$rsm->addScalarResult('numeroSancion', 'numeroSancion', 'string');
-		$rsm->addScalarResult('firmaSecretario', 'firmaSecretario','string');
-		$rsm->addScalarResult('firmaPresidente', 'firmaPresidente', 'string');
+		$rsm->addScalarResult('secretario', 'firmaSecretario','string');
+		$rsm->addScalarResult('presidente', 'firmaPresidente', 'string');
+		$rsm->addScalarResult('poseeSpeech', 'poseeSpeech', 'boolean');
+		$rsm->addScalarResult('textoSuperioSpeech', 'speechSuperior', 'text');
+		$rsm->addScalarResult('textoInferiorSpeech', 'speechInferior', 'text');
+		$rsm->addScalarResult('incluyeSancion','incluyeSancion', 'boolean');
 		
 		$query = $this -> getEntityManager()
 		-> createNativeQuery('call conformarSancion(:idSancion)',$rsm)
