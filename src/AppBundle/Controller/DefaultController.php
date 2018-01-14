@@ -166,6 +166,30 @@ class DefaultController extends Controller
         return $this->render('default/usuario.html.twig', $data);
          
     }
+    
+    /**
+     * @Route("/autoridades", name="autoridades")
+     */
+    public function autoridadesAction(Request $request)
+    {
+    	$autoridadRepository=$this->getDoctrine()->getRepository('AppBundle:Autoridad');
+    	
+    	$autoridadPresidente=$autoridadRepository->findAutoridadByTipo(1);
+    	$autoridadSecretario=$autoridadRepository->findAutoridadByTipo(2);
+    	
+    	return $this->render('default/autoridades.html.twig', 
+    						 array(
+    								'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
+    						 		'id_presidente'=>$autoridadPresidente->getPerfil()
+    						 											 ->getId(),
+    						 		'nombre_presidente'=>$autoridadPresidente->getPerfil()
+    						 												 ->getNombreCompleto(),
+    						 		'id_secretario'=>$autoridadSecretario->getPerfil()
+    						 											 ->getId(),
+    						 		'nombre_secretario'=>$autoridadSecretario->getPerfil()
+    						 												 ->getNombreCompleto(),
+    						 ));	
+    }
 
     /**
      * @Route("/legisladores", name="legisladores")

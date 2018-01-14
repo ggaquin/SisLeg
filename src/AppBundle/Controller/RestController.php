@@ -28,6 +28,7 @@ use AppBundle\Entity\PlantillaTexto;
 use AppBundle\Entity\VersionTaquigrafica;
 use AppBundle\Entity\TipoSpeech;
 use AppBundle\Entity\Speech;
+use AppBundle\Entity\Autoridad;
 
 
 class RestController extends FOSRestController{
@@ -83,6 +84,17 @@ class RestController extends FOSRestController{
         $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
         $perfiles=$perfilRepository->findLegisladorByPatronBusqueda($term,true);
         return $this->view($perfiles,200);
+    }
+    
+    /**
+     * @Rest\Get("/api/usuario/descripcion/getByCriteria")
+     */
+    public function traerUsuarioDescripcionPorCriterioAction(Request $request)
+    {
+    	$term=$request->query->get('q');
+    	$perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
+    	$perfiles=$perfilRepository->findUsuarioByPatronBusqueda($term);
+    	return $this->view($perfiles,200);
     }
 
     /**
@@ -153,6 +165,82 @@ class RestController extends FOSRestController{
     	$em->flush();
     	
     	return $this->view($mensaje,200);
+    	
+    }
+    
+    /**
+     * @Rest\Post("/api/autoridad/save")
+     */
+    public function guardarAutoridades(Request $request)
+    {
+    	$editaPresidente=$request->request->get('editaPresidente');
+    	$editaSecretario=$request->request->get('editaSecretario');
+    	$idPresidente=$request->request->get('idPresidente');
+    	$idSecretario=$request->request->get('idSecretario');
+    	$usuarioSesion=$this->getUser();
+    	
+    	$autoridadRepository=$this->getDoctrine()->getRepository('AppBundle:Autoridad');
+    	$tipoAutoridadRepository=$this->getDoctrine()->getRepository('AppBundle:TipoAutoridad');
+    	$perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
+    	$em = $this->getDoctrine()->getManager();
+    	
+    	$nuevoPresidente=null;
+    	$nuevoSecretario=null;
+    	
+    	if ($editaPresidente=='true'){
+    		$tipoAutoridad=$tipoAutoridadRepository->find(1);
+    		$presidenteActual=$autoridadRepository->findAutoridadByTipo(1);
+    		$perfilAutoridad=$perfilRepository->find($idPresidente);
+    		$presidenteActual->setActivo(false);
+    		$nuevoPresidente=new Autoridad();
+    		$nuevoPresidente->setFechaAlta(new \DateTime());
+    		$nuevoPresidente->setUsuarioAlta($usuarioSesion->getUsername());
+    		$nuevoPresidente->setPerfil($perfilAutoridad);
+    		$nuevoPresidente->setTipoAutoridad($tipoAutoridad);
+    		$em->persist($presidenteActual);
+    		$em->persist($nuevoPresidente);
+    	}
+
+    	
+    	if ($editaSecretario=='true'){
+    		$tipoAutoridad=$tipoAutoridadRepository->find(2);
+    		$secretarioActual=$autoridadRepository->findAutoridadByTipo(2);
+    		$perfilAutoridad=$perfilRepository->find($idSecretario);
+    		$secretarioActual->setActivo(false);
+    		$nuevoSecretario=new Autoridad();
+    		$nuevoSecretario->setFechaAlta(new \DateTime());
+    		$nuevoSecretario->setUsuarioAlta($usuarioSesion->getUsername());
+    		$nuevoSecretario->setPerfil($perfilAutoridad);
+    		$nuevoSecretario->setTipoAutoridad($tipoAutoridad);
+    		$em->persist($secretarioActual);
+    		$em->persist($nuevoSecretario);
+    	}
+    	
+    	$em->flush();
+    	
+    	$datosActuales= array(
+    			'id_presidente'=>(!is_null($nuevoPresidente)
+    										?$nuevoPresidente->getPerfil()
+    													  	 ->getId()
+    										:null),
+    			'nombre_presidente'=>(!is_null($nuevoPresidente)
+    										?$nuevoPresidente->getPerfil()
+    														 ->getNombreCompleto()
+    										:null),
+    			'id_secretario'=>(!is_null($nuevoSecretario)
+    										?$nuevoSecretario->getPerfil()
+    														 ->getId()
+    										:null),
+    			'nombre_secretario'=>(!is_null($nuevoSecretario)
+    										?$nuevoSecretario->getPerfil()
+    														 ->getNombreCompleto()
+    										:null)
+    			);	
+    	
+    	return $this->view(array('mensaje'=>"El cambio de autoridades se realizo en forma exitosa",
+    							 'datos_actuales'=>$datosActuales
+    							),
+    					    200);
     	
     }
     

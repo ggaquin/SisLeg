@@ -54,6 +54,18 @@ class Autoridad
     private $activo;
     
     /**
+     * @var \DateTime
+     * @ORM\Column(name="fechaAlta", type="datetime", nullable=false)
+     */
+    private $fechaAlta;
+    
+    /**
+     * @var string
+     * @ORM\Column(name="usuarioAlta", type="string", length=70, nullable=false)
+     */
+    private $usuarioAlta;
+    
+    /**
      * Constructor
      */
     public function __construct()
@@ -113,5 +125,65 @@ class Autoridad
 		return $this;
 	}
 	
+	/**
+	 * Get activo
+	 * 
+	 * @return boolean
+	 */
+	public function getActivo() {
+		return $this->activo;
+	}
+	
+	/**
+	 * Set activo
+	 * 
+	 * @param boolean $activo
+	 * @return \AppBundle\Entity\Autoridad
+	 */
+	public function setActivo($activo) {
+		$this->activo = $activo;
+		return $this;
+	}
+	
+	/**
+	 * Get fechaAlta
+	 * 
+	 * @return DateTime
+	 */
+	public function getFechaAlta() {
+		return $this->fechaAlta;
+	}
+	
+	/**
+	 * Set fechaAlta
+	 * 
+	 * @param \DateTime $fechaAlta
+	 * @return \AppBundle\Entity\Autoridad
+	 */
+	public function setFechaAlta(\DateTime $fechaAlta) {
+		$this->fechaAlta = $fechaAlta;
+		return $this;
+	}
+	
+	/**
+	 * Get usuarioAlta
+	 * 
+	 * @return string
+	 */
+	public function getUsuarioAlta() {
+		return $this->usuarioAlta;
+	}
+	
+	/**
+	 * Set usuarioAlta
+	 * 
+	 * @param String $usuarioAlta
+	 * @return \AppBundle\Entity\Autoridad
+	 */
+	public function setUsuarioAlta($usuarioAlta) {
+		$this->usuarioAlta = $usuarioAlta;
+		return $this;
+	}
+		
     
 }

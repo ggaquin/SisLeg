@@ -824,5 +824,37 @@ class Dictamen
     		$comisiones.=(($comisiones!="")?'-':'').$asinacion->getComision()->getLetraOrdenDelDia();
     		return $comisiones;
     }
+    
+    /**
+     * get lListaAgregados
+     *
+     * @return array
+     * @VirtualProperty()
+     */
+    public function getListaAgregados(){
+    	
+    	$agregados=null;
+    	$listaRetorno=[];
+    	
+    	if(count($this->expedientesAgregadosDictamenMayoria)>0)
+    		$agregados=$this->expedientesAgregadosDictamenMayoria;
+    	
+    	if(count($this->expedientesAgregadosDictamenPrimeraMinoria)>0)
+    		$agregados=$this->expedientesAgregadosDictamenPrimeraMinoria;
+    		
+    	if(count($this->expedientesAgregadosDictamenSegundaMinoria)>0)
+    		$agregados=$this->expedientesAgregadosDictamenSegundaMinoria;
+    	
+    	foreach ($agregados as $agregado){
+	    	$expediente=array(
+			    				'numeroCompleto'=>$agregado->getExpediente()->getNumeroCompleto(),
+			    				'id'=>$agregado->getExpediente()->getId()	
+			    			 );
+    		$listaRetorno[]=$expediente;
+    	}
+    	
+    	return $listaRetorno;   	
+    	
+    }
   
 }

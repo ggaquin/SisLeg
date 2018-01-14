@@ -302,11 +302,26 @@ class RestComisionAsignacionController extends FOSRestController{
     	$nuevoEstadoExpediente=$estadoExpedienteRepository->find($idNuevoEstadoExpediente);
     	$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
     	$expedienteComision=$expedienteComisionRepository->find($idAsignacion);
+    	$idEstadoExpediente=$expedienteComision->getExpediente()->getEstadoExpediente()->getId();
+    	$sesionAsignacion=$expedienteComision->getSesion();
     	$idExpediente=$expedienteComision->getExpediente()->getId();
     	$idComision=$expedienteComision->getComision()->getId();
     	$cuentaAsignaciones=$expedienteComisionRepository
     							->countComisionesByExpediente_IdAndFiltro($idExpediente,$idComision);
     	
+    	
+    	
+    	if (!is_null($sesionAsignacion) && $sesionAsignacion->getTieneOrdenDelDia())
+    			
+    		return $this->view("No se puede anular el expediente forma parte de la sesión ".
+    						   "del día ".$sesionAsignacion->getFechaFormateada().
+    						   ", y ya se generó la orden del día",500);
+    		else
+    			return $this->view("No se puede anular el expediente no está en un estado posible ".
+    							   "de anular",500);
+    			
+    	
+  				
     	$expedienteComision->setAnulado(true);
     	$expedienteComision->setFechaModificacion(new \DateTime());
     	$expedienteComision->setUsuarioModificacion($usuario->getUsuario());
@@ -314,28 +329,28 @@ class RestComisionAsignacionController extends FOSRestController{
     	$em = $this->getDoctrine()->getManager();
     	$em->persist($expedienteComision);
     	
-    	if ($cuentaAsignaciones[1]==0){
-    		
-    		$oficinaOrigen=$expedienteComision->getPaseOriginario()->getRemito()->getOrigen();
-    		
-    		$expediente=$expedienteComision->getExpediente()->setEstadoExpediente($nuevoEstadoExpediente);
-    		$expediente->setOficinaActual($oficinaOrigen); 
-    		
-    		$remito= new Remito();
-    		$remito->setDestino($oficinaOrigen);
-    		$remito->setOrigen($usuario->getRol()->getOficina());
-    		$remito->setFechaCreacion(new \DateTime());
-    		$remito->setUsuarioCreacion($usuario->getUsuario());
-    		
-    		$pase=new Pase();
-    		$pase->setExpediente($expediente);
-    		$pase->setFechaCreacion(new \DateTime());
-    		$pase->setUsuarioCreacion($usuario->getUsuario());
-    		$pase->setFojas($expediente->getFolios());
-    		$pase->setObservacion('Devuelto por anulacion de comisiones');
-    		
-    		$remito->addMovimiento($pase);
-    		$em->persist($remito);
+    	if ($cuentaAsignaciones[1]==0 && $idEstadoExpediente<>11){
+    		    		
+	    		$oficinaOrigen=$expedienteComision->getPaseOriginario()->getRemito()->getOrigen();
+	    		
+	    		$expediente=$expedienteComision->getExpediente()->setEstadoExpediente($nuevoEstadoExpediente);
+	    		$expediente->setOficinaActual($oficinaOrigen); 
+	    		
+	    		$remito= new Remito();
+	    		$remito->setDestino($oficinaOrigen);
+	    		$remito->setOrigen($usuario->getRol()->getOficina());
+	    		$remito->setFechaCreacion(new \DateTime());
+	    		$remito->setUsuarioCreacion($usuario->getUsuario());
+	    		
+	    		$pase=new Pase();
+	    		$pase->setExpediente($expediente);
+	    		$pase->setFechaCreacion(new \DateTime());
+	    		$pase->setUsuarioCreacion($usuario->getUsuario());
+	    		$pase->setFojas($expediente->getFolios());
+	    		$pase->setObservacion('Devuelto por anulacion de comisiones');
+	    		
+	    		$remito->addMovimiento($pase);
+	    		$em->persist($remito);
     		    		
     	}
     	
@@ -396,7 +411,8 @@ class RestComisionAsignacionController extends FOSRestController{
     					 'incluye_vistos_y_considerandos'=>(($dictamen instanceof DictamenRevision)
     					 									?$dictamen->getRevisionProyecto()->getIncluyeVistosyConsiderandos():true),
     					 'revision_id'=>(($dictamen instanceof DictamenRevision)
-    					 					?$dictamen->getRevisionProyecto()->getId():0)    			
+    					 					?$dictamen->getRevisionProyecto()->getId():0),
+    					 'agregados'=>$dictamen->getListaAgregados()
     					 );
    
     	return $this->view($resultado,200);

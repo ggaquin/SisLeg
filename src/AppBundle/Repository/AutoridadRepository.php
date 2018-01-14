@@ -11,7 +11,7 @@ class AutoridadRepository extends EntityRepository{
 		$qb = $this->createQueryBuilder('a');
 		$qb -> innerJoin('a.tipoAutoridad', 't')
 			-> where($qb->expr()->andX(
-										$qb->expr()->eq('t.tipoAutoridad', ':tipoAutoridad'),
+										$qb->expr()->eq('t.id', ':tipoAutoridad'),
 										$qb->expr()->eq('a.activo', ':activo')
 									  )
 					)

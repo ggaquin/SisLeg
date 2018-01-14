@@ -351,6 +351,7 @@
 	        var idComision=data[ "comision_id" ];
 	        $("#modalDictamen").find('input[name="idComision"]').val(idComision);
 	        $("#selComisiones").empty().change();
+	        $("#selAgregados").empty().change();
 	        var newOption = new Option(nombreComision, idComision, true, true);
 		   	$("#selComisiones").append(newOption).trigger('change');
 		   	$("#editaRevision").bootstrapToggle('on');
@@ -1026,6 +1027,7 @@
 				
 				$("#selTipoRedaccion").val("basico");
 		        $("#selTipoRedaccion").change();
+		        $("#selAgregados").empty().change();
 		        $("#selComisiones").prop("disabled", false);
 		        $("#texto").data("wysihtml5").editor.setValue('');
 		        $("#articulos > tbody").html('');
@@ -1050,7 +1052,12 @@
             					if (data.clase_dictamen=="articulado")
             						$("#selTipoDictamen").val(data.id_tipo_dictamen);
         						          			
-            					$("#texto").data("wysihtml5").editor.setValue(data.texto_libre);						
+            					$("#texto").data("wysihtml5").editor.setValue(data.texto_libre);
+
+            					$.each(data.agregados,function(index,agregado){
+            						 var newOption = new Option(agregado.numeroCompleto, agregado.id, true, true);
+            						 $("#selAgregados").append(newOption).trigger('change');
+            					});		
 
             				 	//caso particular dictamen articulado
 								if (data.clase_dictamen=="articulado"){

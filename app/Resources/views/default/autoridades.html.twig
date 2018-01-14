@@ -1,0 +1,280 @@
+{% extends 'layout.html.twig' %}
+
+
+
+{% block stylesheets %}
+	{# parent() #}
+  	{% stylesheets '@css_datatables' %}
+      	<link rel="stylesheet" href="{{ asset_url }}" /></link>
+  	{% endstylesheets %}
+{% endblock %}
+
+{% block javascripts %}
+	{# parent() #}
+    {% javascripts '@js_datatables'%}
+        <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+{% endblock %}
+
+{% block body %}
+	
+	<style type="text/css">
+	/* 
+		.toggle-on.btn{
+			line-height: 0px!important;
+		}
+		.toggle-off.btn{
+			line-height: 22.5px!important;
+		} */
+		.toggle.btn.btn-danger.btn-sm{
+			margin-top: 23px!important;
+		}
+		.toggle.btn.btn-sm.btn-success{
+			margin-top: 23px!important;
+		}
+		
+		.toggle-on.btn{
+			line-height: 22.5px!important;
+		}
+		.toggle-off.btn{
+			line-height: 22.5px!important;
+		}
+		
+  
+	</style>
+
+	<script type="text/javascript">
+
+		function actualizarControl(id,nombre,controlNombre){
+
+			var newOption = new Option(nombre,id, true, true);
+			$("#"+controlNombre).append(newOption).trigger('change');
+		}
+
+		$(document).ready(function () {
+
+			var idPresidentePersistido='{{ id_presidente }}';
+			var nombrePresidentePersistido='{{ nombre_presidente }}';
+			var idSecretarioPersistido='{{ id_secretario }}';
+			var nombreSecretarioPersistido='{{ nombre_secretario }}';
+
+			actualizarControl(idPresidentePersistido,
+							  nombrePresidentePersistido,
+							  'selPresidente');
+			
+			actualizarControl(idSecretarioPersistido,
+							  nombreSecretarioPersistido,
+                			  'selSecretario');
+			
+			
+			$('.habilitaAutoridad').bootstrapToggle({
+			      on:  'Modificar',
+			      off: 'No Modificar',
+			      offstyle: 'danger',
+			      onstyle: 'success',
+			      width: "150",
+			      height: "34px"
+			 });
+
+			$(".selAutoridad").select2({
+					ajax: {
+        				    url: '{{ app.request.getBaseURL() }}'+"/api/usuario/descripcion/getByCriteria",
+        				    dataType: 'json',
+        				    delay: 250,
+        				    cache: true,
+        				    data: function (params) {
+        				      return {
+        				        q: params.term, // search term
+        				        page: params.page
+        				      };
+        				    },
+        				    processResults: function (data) {
+        				       var dato=data;
+        			           return {
+        					        results: $.map(dato, function(item) {
+        					            return { id: item.perfil.id, text: item.perfil.nombre_completo };
+        					        })
+        					    };
+        			        },
+        				  },
+        				  placeholder:"Seleccione Persona",	
+        				  language: "es",
+        				  minimumInputLength: 3,
+        				  theme: "bootstrap",
+        	});
+
+			$("#btn-aceptar-modificacion-autoridad").click(function(){
+
+				$("#btn-aceptar-modificacion-autoridad").prop("disabled",true);
+				
+				var editaPresidente=$("#editaPresidente").is(":checked");
+				var editaSecretario=$("#editaSecretario").is(":checked");
+				var idPresidente=$("#selPresidente").val();
+				var idSecretario=$("#selSecretario").val();
+
+				debugger;
+				var formData=new FormData();
+
+				var validacion='';
+				
+	            validacion+=((editaPresidente==true && idPresidente==null)
+	    	            		?'<li>Si indica que edita el presidente debe seleccionar uno</li>':'');
+	          
+              	validacion+=((editaSecretario==true && idSecretario==null)
+                      		  ?'<li>Si indica que edita el secretario debe seleccionar uno</li>':'');
+
+      		  	validacion+=((editaPresidente==false && idSecretario==false)
+      	      		  		  ?'<li>No seleccionó ningún cambio de autoridad</li>':'');
+
+      		  	validacion+=((idPresidente==idSecretario)
+	      		  		  		?'<li>Ambas autoridades no pueden ser la misma persona</li>':'');
+	  		  		
+      			validacion+=((idPresidente==idPresidentePersistido && editaPresidente==true)
+  		  		  				?'<li>El nuevo presidente seleccionado es el mismo que el anterior</li>':'');
+
+      			validacion+=((idSecretario==idSecretarioPersistido && editaSecretario==true)
+  		  		  			?'<li>El nuevo secretario seleccionado es el mismo que el anterior</li>':'');
+					
+		        if (validacion.length>0) 
+				{
+					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+								 validacion+'</ul>':'');
+					toastr.error(validacion);
+					$("#btn-aceptar-modificacion-autoridad").prop("disabled", false);
+					return false;
+				}
+				else{ 
+
+						formData.append('editaPresidente',editaPresidente);
+						formData.append('editaSecretario',editaSecretario);
+						formData.append('idPresidente',idPresidente);
+						formData.append('idSecretario',idSecretario);
+						
+        				$.ajax({
+        	                async: true,
+        	                url: '{{ app.request.getBaseURL() }}/api/autoridad/save',
+        	                data: formData,
+        	                contentType: false,
+        	                cache: false,
+    		                processData: false,
+        	                type:  'POST',
+                        success: function(data) {
+                            
+							var datosActuales=data.datos_actuales;
+
+							if(datosActuales.id_presidente!=null){
+								idPresidentePersistido=datosActuales.id_presidente;
+								nombrePresidentePersistido=datosActuales.nombre_presidente;
+							}
+
+							if(datosActuales.id_secretario!=null){
+								idSecretarioPersistido=datosActuales.id_secretario;
+								nombreSecretarioPersistido=datosActuales.nombre_secretario;
+							}
+
+        	                $(".habilitaAutoridad").bootstrapToggle('off');
+        	                
+                            toastr.success(data.mensaje);
+        					$("#retornoExterno").modal('hide');
+                        	},
+                        complete:function(){
+                        	$("#btn-aceptar-modificacion-autoridad").prop("disabled", false);
+                        },
+                        error: function(jqXHR,textStatus,errorThrown ){
+        					toastr.error(JSON.parse(jqXHR.responseText));
+        					}
+                    	});
+				}
+			});
+
+ 			$(".habilitaAutoridad").change(function(e){
+
+ 				 var control=e.currentTarget;
+				 var nombreDestino=$(control).data("id");
+				 var idSeleccion=null;
+				 var nombreSeleccion=null;
+				 
+				 if ($(control).is(":checked")){
+					 		
+					 $("#"+nombreDestino).attr("disabled",false);
+					 $("#"+nombreDestino).empty().change();
+				 }
+				 else{
+    					 $("#"+nombreDestino).attr("disabled",true);
+    					 if(nombreDestino=='selPresidente'){
+    						 idSeleccion=idPresidentePersistido;
+    						 nombreSeleccion=nombrePresidentePersistido;
+    					 }
+    					 else{
+    						 	idSeleccion=idSecretarioPersistido;
+    						 	nombreSeleccion=nombreSecretarioPersistido;
+    					 }
+    					 actualizarControl(idSeleccion,nombreSeleccion,nombreDestino);	 	 
+				 }
+			 });
+			 
+		});
+
+	</script>
+	
+	<section class="content">
+	  	<form role="form">
+	  		<div class="row">
+	  			<div class="col-md-6 col-md-offset-3">
+            		<h2>Modificación de Autoridades</h2>
+            		<br>
+                    <div class="panel panel-primary">
+                        <div class="panel-heading text-center"><strong>Autoridades del HCD</strong></div>
+                        <div class="panel-body">
+        					<div class="row">
+                    			<div class="col-md-3 col-md-offset-1">
+                	    			<input type="checkbox" class="habilitaAutoridad" data-id="selPresidente" id="editaPresidente" data-size="small"/>
+                				</div>
+                    			<div class="col-md-7">
+                	    			<div class="form-group">
+                	    				<label for="selPresidente">Presidente <sup>(*)</sup></label>
+                						<select class="form-control selAutoridad" data-width="100%" id="selPresidente" 
+                								name="selPresidente" disabled="disabled">
+                						</select>
+                					</div>
+                				</div>
+                			</div>
+                			<div class="row">
+                    			<div class="col-md-3 col-md-offset-1">
+                	    			<input type="checkbox" class="habilitaAutoridad" data-id="selSecretario" id="editaSecretario" data-size="small"/>
+                				</div>
+                    			<div class="col-md-7">
+                	    			<div class="form-group">
+                	    				<label for="selSecretario">Secretario <sup>(*)</sup></label>
+                						<select class="form-control selAutoridad" data-width="100%" id="selSecretario" 
+                								name="selSecretario" disabled="disabled">
+                						</select>
+                					</div>
+                				</div>
+                			</div>
+                			<div class="row">
+                    			<div class="col-md-7 col-md-offset-4">
+                					<label><sup>(*)</sup> Ambas autoridades deden poseer usuario en el sistema</label>
+                				</div>
+                			</div>
+        				</div>
+                        <div class="panel-footer">
+                            <div class="row">
+                	    		<div class="col-md-12">
+                	        		<div class="text-center">
+                		    			<div class="btn-group">
+                				        	<!-- <button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button> -->
+                       			 			<button type="button" class="btn btn-primary" id="btn-aceptar-modificacion-autoridad">Guardar</button>
+                				        </div>
+                			        </div>
+                			    </div>
+                	    	</div>
+                        </div>
+                    </div>
+               	</div>
+           	</div>
+    	</form>
+	   	
+	</section>
+	
+{% endblock %}

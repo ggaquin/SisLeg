@@ -297,6 +297,9 @@
             <ul class="sidebar-menu">
               <li class="header text-center" tabindex="-1"><h5>Principal</h5></li>
               
+              {% if app.user.rol.rol=="ROLE_ADMINISTRADOR" or app.user.rol.rol=="ROLE_DESPACHO" %}
+              	<li class="menu-fired" tabindex="1" id="bloques-menu"><a href="#" onclick="cargarMenu('/autoridades')" ><i class="fa fa-gavel"></i><span>Autoridades</span></a></li>
+              {% endif %}
               <li class="menu-fired" tabindex="1" id="bloques-menu"><a href="#" onclick="cargarMenu('/bloques')" ><i class="fa fa-sitemap"></i><span>Bloques</span></a></li>
               
               {# ------------------------------------------SECTOR DE COMISIONES----------------------------------- #}

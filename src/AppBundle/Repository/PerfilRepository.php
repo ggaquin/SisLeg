@@ -45,6 +45,25 @@ class PerfilRepository extends EntityRepository{
 	        return $qb->getQuery()->getResult();
 	}
 	
+	public function findUsuarioByPatronBusqueda($patronBusqueda){
+		
+		$rep=$this->getEntityManager()->getRepository('AppBundle:Usuario');
+		$qb = $rep->createQueryBuilder('u');
+		$qb->innerJoin('u.perfil','p');
+		$qb ->where($qb->expr()->andX(
+										$qb->expr()->orX(
+															$qb->expr()->like('p.nombres', '?1'),
+															$qb->expr()->like('p.apellidos','?1')	
+									                     ),
+										$qb->expr()->eq('u.activo','?2')
+									  )
+				)
+	
+			 ->setParameter(1, '%'.$patronBusqueda.'%')
+			 ->setParameter(2, true);
+		return $qb->getQuery()->getResult();
+	}
+	
   	
 	/**
 	 * <p>Indica si un determinado perfil posee un usuario ya generado</p>
