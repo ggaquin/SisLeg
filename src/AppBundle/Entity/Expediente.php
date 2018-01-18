@@ -775,7 +775,7 @@ class Expediente
     }
     
     /**
-     * Get movimiento
+     * Get movimientos
      *
      * @return \Doctrine\Common\Collections\Collection
      */
@@ -1129,7 +1129,7 @@ class Expediente
     public function getListaComisionesAsignadas()
     {  	$comisionesAsignadas="";
     	foreach ($this->getAsignacionComisiones() as $asignacionComision)
-    		if (is_null($asignacionComision->getDictamenMayoria()) && !$asignacionComision->getAnulado()){
+    		if (is_null($asignacionComision->getLi) && !$asignacionComision->getAnulado()){
     			$comisionesAsignadas.="\n".$asignacionComision->getComision()->getComision();
     	}
     	return ((strlen($comisionesAsignadas)>0)?("A estudio de:".$comisionesAsignadas):'');
@@ -1159,11 +1159,10 @@ class Expediente
      * 
      * @VirtualProperty()
      */
-	public function getPermiteEdicion(){
+	public function getPermiteEdicion($ignoraSesion=false){
 		
 		return !($this->numeroSancion!='' || 
-				(!is_null($this->sesion) && $this->sesion->getTieneOrdenDelDia()) ||
-				(!is_null($this->sesion) && $this->sesion->getTieneEdicionBloqueada()) ||
+				($ignoraSesion || (!is_null($this->sesion) && $this->sesion->getTieneOrdenDelDia())) ||
 				 !is_null($this->fechaArchivo)
 				);	
 	}
@@ -1180,6 +1179,20 @@ class Expediente
 		return (!is_null($this->fechaArchivo)?$this->fechaArchivo->format('d/m/Y'):'');
 	}
 
+	
+	/**
+	 * Get nombreEstado
+	 * 
+	 * @return string
+	 * @VirtualProperty()
+	 */
+	public function getNombreEstado(){
+		
+		if(!is_null($this->sesion) && $this->sesion->getTieneOrdenDelDia())
+			return 'Orden del Día';
+		else 
+			return $this->getEstadoExpediente()->getEstadoExpediente();
+	}
 
     //----------------------------administracion de carga de archivos-------------------------------
 
@@ -1260,14 +1273,4 @@ class Expediente
 
     }
 
-    /*  
-     * @ORM\PostRemove()
-     *
-    public function removeUpload()
-    {
-        foreach ($listaNombreArchivos as $nombreArchivo) {
-            $archivo=$this->getRutaInternaExpediente($nombreArchivo);
-            unlink($archivo);
-        }
-    }*/
 }

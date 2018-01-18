@@ -18,16 +18,6 @@
 
 {% block body %}
 	
-	<style type="text/css">
-	
-    	.selGrupoConcejales{
-    		    min-height: 150px!important;
-    		    max-height: 151px!important;
-    		    overflow-y: auto!important;
-    	} 	
-
-	</style>
-
 	<script type="text/javascript">
 	
 		$(document).ready(function () {
@@ -229,29 +219,25 @@
 	<section class="content">
 	  	<div class="row">
 	    	<div class="col-xs-12">
-	     		{# <div class="box">
-		            <div class="box-body"> #}
-		              	<table id="registroBloques" class="table table-striped">
-			                <thead>
-			                	<tr>
-			                		<th>id</th>
-    		                		<th>
-    		                			{% if 'BLOQ_ADD' in app.user.listaPermisos %}
-        		                			<button type="button" title="Agregar Bloque"class="btn btn-primary btn-xs btn-alta">
-        							    			<span class="glyphicon glyphicon-plus"></span>
-        							    	</button>
-        							    {% endif %}
-    							    </th>
-					                <th>Bloque</th>
-					                <th>Concejales</th>
-					                <th>Fecha Creacion</th>
-					            </tr>
-			                </thead>
-			                <tbody>
-			                </tbody>
-		               	</table>
-		            {# </div> #} {# box-body #}
-		        {# </div> #} {# box #}
+              	<table id="registroBloques" class="table table-striped">
+	                <thead>
+	                	<tr>
+	                		<th>id</th>
+	                		<th>
+	                			{% if 'BLOQ_ADD' in app.user.listaPermisos %}
+		                			<button type="button" title="Agregar Bloque"class="btn btn-primary btn-xs btn-alta">
+							    			<span class="glyphicon glyphicon-plus"></span>
+							    	</button>
+							    {% endif %}
+						    </th>
+			                <th>Bloque</th>
+			                <th>Concejales</th>
+			                <th>Fecha Creacion</th>
+			            </tr>
+	                </thead>
+	                <tbody>
+	                </tbody>
+               	</table>   
 	        </div> {# col #}
 	    </div> {# row #}
 	   	<div id="modalBloque" class="modal fade" role="dialog" data-backdrop="static" 

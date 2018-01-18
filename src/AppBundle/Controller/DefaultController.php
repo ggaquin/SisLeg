@@ -382,7 +382,7 @@ class DefaultController extends Controller
     	}
     	
     	$comisiones=$comisionesRepository->findAll();
-    	$comisionesHTML="";
+    	$comisionesHTML="<option value='0'>Selecione comisión</option>";
     	foreach ($comisiones as $comision){
     		$comisionesHTML.="<option value='".$comision->getId().
     		"'>".$comision->getComision().
@@ -862,7 +862,7 @@ class DefaultController extends Controller
 		$word = $servicioImpresion->getTemplateOD();
 		//$page= $servicioImpresion->getPage($word, 'A4');
 		
-		$content=$expedienteRepository->traerDatosRemito($idRemito);//($idRemito);
+		$content=$expedienteRepository->traerDatosRemito($idRemito);
 		$destino=$content[0]["destino"];
 		$numero=$content[0]["numero"];
 		$pases=$content[0]["pases"];
@@ -873,7 +873,6 @@ class DefaultController extends Controller
 												 $urlImagen, $destino, $usuario->getNombreCompleto(),
 												 $numero);
 		
-// 		$word->duplicateSection($page);
 		return  $servicioImpresion->getArchivoRemito($word, $fecha, 1);
 		
 	}

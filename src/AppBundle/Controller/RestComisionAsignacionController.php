@@ -53,7 +53,6 @@ class RestComisionAsignacionController extends FOSRestController{
 		$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
 		$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
 		$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
-// 		$em = $this->getDoctrine()->getManager();
 		$expediente=$expedienteRepository->find($idExpediente);
 		
 		$primerAsignacion=$expedienteComisionRepository->findPrimerAsignacionByExpediente_Id($idExpediente);
@@ -70,18 +69,16 @@ class RestComisionAsignacionController extends FOSRestController{
 					$asignacion=new ExpedienteComision();
 					$comision=$comisionRepository->find($idComision);
 					$asignacion->setComision($comision);
-					$asignacion->setPaseOriginario(($primerAsignacion[0])->getPaseOriginario());
+					$asignacion->addPaseAsociado(($primerAsignacion[0])->getPaseOriginario());
 					$asignacion->setExpediente($expediente);
 					$asignacion->setFechaAsignacion(new \DateTime('now'));
 					$asignacion->setUsuarioCreacion($usuario->getUsuario());
-	// 				$em->persist($asignacion);
 					$listaAsignaciones[]=$asignacion;
  			}
  			else 
  				$listaAsignaciones[]=$expedienteComisionPersistido;
  		}
 		
-// 		$em->flush();
 		return $listaAsignaciones;
 	}
 	
@@ -178,7 +175,6 @@ class RestComisionAsignacionController extends FOSRestController{
     									'sesion_muestra'=>$e->getSesionMuestra(),
     									'sesion_id'=>(is_null($e->getSesion())?0:$e->getSesion()->getId()),
     									'sesion'=>$e->getSesion()
-    									//'ultimo_momento'=>$e->getUltimoMomento()
 				    				);
     			$respuesta[]=$datosAsignacion;
     		}
@@ -430,9 +426,8 @@ class RestComisionAsignacionController extends FOSRestController{
     	$tipoRedaccion=$request->request->get('tipoRedaccion');
     	$idTipoDictamen=$request->request->get('tipoDictamen');
     	$comisiones=$request->request->get('comisiones');
-    	$agregados=$request->request->get('agregados');
+    	$agregados=json_decode($request->request->get('agregados'));
     	$texto=$request->request->get('texto');
-    	//$idSesion=$request->request->get('idSesion');
     	$idRevision=$request->request->get('idRevision');
     	$editaRevision=$request->request->get('editaRevision');
     	$vistosYConsiderandos=$request->request->get('vistosYConsiderandos');
@@ -488,7 +483,7 @@ class RestComisionAsignacionController extends FOSRestController{
     				$revision=new ProyectoRevision();
     				$revision->setArticulos($proyecto->getArticulos());
     				$revision->setConsiderandos($proyecto->getConsiderandos());
-    				$revision->setVisto($proyecto->getVistos());
+    				$revision->setVisto($proyecto->getVisto());
     				$revision->setFechaCreacion(new \DateTime('now'));
     				$revision->setIncluyeVistosYConsiderandos($vistosYConsiderandos);
     				$revision->setOficina($usuario->getRol()->getOficina);
@@ -527,8 +522,8 @@ class RestComisionAsignacionController extends FOSRestController{
        		$expedienteComision=$expedienteComisionRepository->findByExpediente_IdAndComision_Id($idExpediente, $idComision);
        		$sesion=$expedienteComision->getSesion();  
        		
-       		if((!is_null($dictamenOriginal) && !$expedienteComision->getPermiteEdicion()) ||
-       			is_null($dictamenOriginal) && $sesion->getTieneUltimoMomento()){
+       		if((is_null($expedienteComision) || !$expedienteComision->getPermiteEdicion()) ||
+       			(!is_null($sesion) && $sesion->getTieneUltimoMomento())){
        		
        			return $this->view("El dictamen no está habilitado para edición",500);
        		}	
@@ -536,7 +531,7 @@ class RestComisionAsignacionController extends FOSRestController{
        			
        			//analiza si es ultimo momento       			
        			if(is_null($dictamenOriginal))
-       				$dictamen->setUltimoMomento($sesion->getTieneOrdenDelDia());
+       				$dictamen->setUltimoMomento(!is_null($sesion)?$sesion->getTieneOrdenDelDia():false);
        			else 
        				$dictamen->setUltimoMomento($dictamenOriginal->getUltimoMomento());
        			
@@ -574,10 +569,8 @@ class RestComisionAsignacionController extends FOSRestController{
        	$em->persist($expediente);
        	       	
        	//Expedientes agregados
-       	
-       	$listaComisionesAgregadas=[];
-       	$idsExpedientesAgregados=explode(',', $agregados);
-       	foreach ($idsExpedientesAgregados as $idExpedienteAgregado){
+        $listaComisionesAgregadas=[];
+       	foreach ($agregados as $idExpedienteAgregado){
        		
        		$listaComisionesExpediente=$this->crearAsignacion($idExpedienteAgregado, $listaComisiones, $usuario);
        		$listaComisionesAgregadas=array_merge($listaComisionesAgregadas,$listaComisionesExpediente);
@@ -651,28 +644,21 @@ class RestComisionAsignacionController extends FOSRestController{
        * @Rest\Get("/getExpedientefromAsignados")
        */
       public  function traerExpedienteAsignados(Request $request){
-      	
-      	
-//       	try {
-      		
+      	     		
       		$term=$request->query->get('q');
-      		//$estado=$request->query->get('r');
       		
       		$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
       		$expedientesAsignados=$expedienteComisionRepository->findExpedienteVigenteByNumero($term);
       		$expedientes=[];
       		foreach ($expedientesAsignados as $expedienteAsignado){
-      			$expedientes[]=array(
-      					'id' => $expedienteAsignado->getExpediente()->getId(),
-      					'numeroCompleto' => $expedienteAsignado->getExpediente()->getNumeroCompleto()
-      			);
+      			if(!is_null($expedienteAsignado->getPaseOriginario()->getRemito()->getFechaRecepcion()))
+      				$expedientes[]=array(
+					      				'id' => $expedienteAsignado->getExpediente()->getId(),
+					      				'numeroCompleto' => $expedienteAsignado->getExpediente()->getNumeroCompleto()
+					      				);
       		}
+      		$expedientes=array_unique($expedientes);
       		return $this->view($expedientes,200);
-      		
-//       	} catch (\Exception $e) {
-      		
-//       		return $this->view($e->getMessage(),500);
-//       	}
       	
       }
       

@@ -5,6 +5,7 @@ namespace AppBundle\Repository;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Select;
 use Doctrine\ORM\Query\ResultSetMapping;
+use Symfony\Component\Validator\Constraints\EqualTo;
 
 class ExpedienteComisionRepository extends EntityRepository{
 	
@@ -97,29 +98,6 @@ class ExpedienteComisionRepository extends EntityRepository{
 		return $qb->getQuery()->getResult();
 		
 	}
-	
-// 	public function findExpedienteComisionByComision_IdAndExediente_IdAndExpedienteEstado_Id($idComision,$idExpediente,$idEstadoExpediente){
-		
-// 		$qb = $this->createQueryBuilder('ec');
-// 		$qb ->innerJoin('ec.comision', 'c')
-// 			->innerJoin('ec.expediente', 'e')
-// 			->innerJoin('e.estadoExpediente', 'ee')
-// 			->leftJoin('ec.sesion', 's');
-// 		$qb ->where($qb->expr()->andX(
-// 										$qb->expr()->eq('c.id', ':idComision'),
-// 										$qb->expr()->eq('ee.id', ':idEstado'),
-// 										$qb->expr()->eq('ee.id', ':idExpediente'),
-// 										$qb->expr()->eq('ec.anulado', ':anulado')
-// 									 )
-// 					)
-// 			->setParameter('idComision', $idComision)
-// 			->setParameter('idEstado', $idEstadoExpediente)
-// 			->setParameter('idExpediente', $idExpediente)
-// 			->setParameter('anulado', false);
-				
-// 		return $qb->getQuery()->getResult();
-				
-// 	}
 		
 	public function findExpedienteVigenteByNumero($numeroExpediente,$estado=null){
 		
@@ -257,13 +235,19 @@ class ExpedienteComisionRepository extends EntityRepository{
 		$qb ->innerJoin('ec.expediente', 'e')
 			->innerJoin('ec.comision', 'c')
 			->innerJoin('e.estadoExpediente', 'es')
+			->leftJoin('ec.sesion', 's')
 			->where($qb->expr()->andX(
 										$qb->expr()->eq('e.id', '?1'),
-										$qb->expr()->like('c.id', '?2')										
+										$qb->expr()->like('c.id', '?2'),
+										$qb->expr()->orX(
+															$qb->expr()->isNull('s.id'),
+															$qb->expr()->eq('s.tieneOrdenDelDia', ':tieneOrdenDelDia')
+														)
 									  )
 				   )
 			->setParameter(1, $idExpediente)
-			->setParameter(2, $idComision);
+			->setParameter(2, $idComision)
+			->setParameter('tieneOrdenDelDia', false);
 		return $qb->getQuery()->getOneOrNullResult();
 	}
 	

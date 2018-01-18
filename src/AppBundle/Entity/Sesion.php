@@ -105,7 +105,6 @@ class Sesion
      */
     public function __construct()
     {
-        //$this->ordenDelDia = new \Doctrine\Common\Collections\ArrayCollection();
         $this->tieneOrdenDelDia=false;
         $this->tieneUltimoMomento=false;
         $this->tieneEdicionBloqueada=false;

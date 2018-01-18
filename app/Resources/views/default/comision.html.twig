@@ -370,31 +370,27 @@
 	<section class="content">
 	  	<div class="row">
 	    	<div class="col-xs-12">
-	     		{# <div class="box">
-		            <div class="box-body"> #}
-		              	<table id="registroComisiones" class="table table-striped">
-			                <thead>
-			                	<tr>
-			                		<th>id</th>
-    		                		<th>
-    		                			{% if 'COM_ADD' in app.user.listaPermisos %}
-        		                			<button type="button" title="Agregar Comisión"class="btn btn-primary btn-xs btn-alta">
-        							    			<span class="glyphicon glyphicon-plus"></span>
-        							    	</button>
-        							    {% endif %}
-    							    </th>
-					                <th>Comision</th>
-					                <th>Presidente</th>
-					                <th>Vice</th>
-					                <th>Titulares</th>
-					                <th>Suplentes</th>
-					            </tr>
-			                </thead>
-			                <tbody>
-			                </tbody>
-		               	</table>
-		            {# </div> #} {# box-body #}
-		        {# </div> #} {# box #}
+              	<table id="registroComisiones" class="table table-striped">
+	                <thead>
+	                	<tr>
+	                		<th>id</th>
+	                		<th>
+	                			{% if 'COM_ADD' in app.user.listaPermisos %}
+		                			<button type="button" title="Agregar Comisión"class="btn btn-primary btn-xs btn-alta">
+							    			<span class="glyphicon glyphicon-plus"></span>
+							    	</button>
+							    {% endif %}
+						    </th>
+			                <th>Comision</th>
+			                <th>Presidente</th>
+			                <th>Vice</th>
+			                <th>Titulares</th>
+			                <th>Suplentes</th>
+			            </tr>
+	                </thead>
+	                <tbody>
+	                </tbody>
+               	</table>
 	        </div> {# col #}
 	    </div> {# row #}
 	   	<div id="modalComision" class="modal fade" role="dialog" data-backdrop="static" 

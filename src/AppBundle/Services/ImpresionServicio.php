@@ -513,18 +513,12 @@ class ImpresionServicio
 	    	\PhpOffice\PhpWord\Shared\Html::addHtml($page, $html);
 	    	
     	}
-    	
-//     	$page2=$phpWord->duplicateSection($page);
-//     	$page=$this->setHeaderRemito($page, $urlImagen, 'ORIGINAL', $numero);
-//     	$page2=$this->setHeaderRemito($page2, $urlImagen, 'COPIA', $numero);
-    	
+	
     	return $phpWord;
     }
     
     public function addMembreteExpedientes($page,$numerosExpedientes){
-    	
-//     	\PhpOffice\PhpWord\Shared\Html::addHtml($page, '<p></p>');
-    	
+        	
     	$expedientes=explode(',', $numerosExpedientes);
     	$tableStyle = array('cellMargin' => 0, 'cellMarginRight' => 0,
 			    			'cellMarginBottom' => -10, 'cellMarginLeft' => 0

@@ -119,13 +119,17 @@ class ExpedienteComision
     /**
      *@var \AppBundle\Entity\Pase
      *
-     * @ORM\manyToOne(targetEntity="AppBundle\Entity\Pase")
-     * @ORM\JoinColumns({
-     * 		@ORM\JoinColumn(name="idMovimiento", referencedColumnName="idMovimiento")
-     * })
+     * @ORM\manyToMany(targetEntity="AppBundle\Entity\Movimiento")
+     * @ORM\JoinTable(name="expedienteComision_movimiento",
+     * 				  joinColumns={@ORM\JoinColumn(name="idExpedienteComision", 
+     * 							                   referencedColumnName="idExpedienteComision")},
+     * 				  inverseJoinColumns={@ORM\JoinColumn(name="idMovimiento", 
+     * 													  referencedColumnName="idMovimiento",
+     * 				  									  unique=true)}
+     * 				  )
      */
-    private $paseOriginario;
-        
+    private $pasesAsociados;
+            
     /**
      * @var \DateTime
      *
@@ -162,6 +166,7 @@ class ExpedienteComision
     public function __construct()
     {
     	$this->fechaCreacion=new \DateTime("now");
+    	$this->pasesAsociados= new \Doctrine\Common\Collections\ArrayCollection();
     	$this->anulado=false;
     }
 
@@ -268,26 +273,6 @@ class ExpedienteComision
         return $this->comision;
     }
     
-    /**
-     * Get paseOriginario
-     * 
-     * @return \AppBundle\Entity\Pase
-     */
-	public function getPaseOriginario() {
-		return $this->paseOriginario;
-	}
-	
-	/**
-	 * Set paseOriginario
-	 * 
-	 * @param \AppBundle\Entity\Pase $paseOriginario
-	 * 
-	 * @return ExpedienteComision
-	 */
-	public function setPaseOriginario($paseOriginario) {
-		$this->paseOriginario = $paseOriginario;
-		return $this;
-	}
 				
 	/**
 	 * set dictamenMayoria
@@ -443,6 +428,42 @@ class ExpedienteComision
     }
     
     /**
+     * Get pasesAsociados
+     * 
+     * @return \Doctrine\Common\Collections\Collection
+     */
+	public function getPasesAsociados() {
+		return $this->pasesAsociados;
+	}
+	
+	/**
+	 * Add paseAsociado
+	 *
+	 * @param \AppBundle\Entity\Movimiento $movimiento
+	 *
+	 * @return Expediente
+	 */
+	public function addPaseAsociado(\AppBundle\Entity\Movimiento $movimiento)
+	{
+		$this->pasesAsociados[] = $movimiento;
+		return $this;
+	}
+	
+	/**
+	 * Remove paseAsociado
+	 *
+	 * @param \AppBundle\Entity\Movimiento $movimiento
+	 *
+	 * @return Expediente
+	 */
+	public function removePaseAsociado(\AppBundle\Entity\Movimiento $movimiento)
+	{
+		$this->pasesAsociados->removeElement($movimiento);
+		return $this;
+	}
+	
+	   
+    /**
      * Set fechaCreacion
      *
      * @param \DateTime $fechaCreacion
@@ -538,68 +559,26 @@ class ExpedienteComision
     	return $this->usuarioModificacion;
     }
     
-    //------------------------------------otras propiedades---------------------------------------
-    
-    /*
-     * Get dictamenMayoria
-     * 
-     * @param integer $idDictamen
-     * 
-     * @return Dictamen
-     
-    public function getDictamenMayoria($idDictamen){
-    	
-    	$dictamenBuscado=null;
-    	foreach ($this->dictamenesMayoria as $dictamen){
-    		if($dictamen->getId()==$idDictamen)
-    			$dictamenBuscado=$dictamen;   		
-    	}
-    	
-    	return $dictamenBuscado;
-    }
-    
-    /**
-     * Get dictamenPrimeraMinoria
-     *
-     * @param integer $idDictamen
-     *
-     * @return Dictamen
-     
-    public function getDictamenPrimeraMinoria($idDictamen){
-    	
-    	$dictamenBuscado=null;
-    	foreach ($this->dictamenesPrimeraMinoria as $dictamen){
-    		if($dictamen->getId()==$idDictamen)
-    			$dictamenBuscado=$dictamen;
-    	}
-    	
-    	return $dictamenBuscado;
-    }
-    
-    /**
-     * Get dictamenSegundaMinoria
-     *
-     * @param integer $idDictamen
-     *
-     * @return Dictamen
-     
-    public function getDictamenSegundaMinoria($idDictamen){
-    	
-    	$dictamenBuscado=null;
-    	foreach ($this->dictamenesSegundaMinoria as $dictamen){
-    		if($dictamen->getId()==$idDictamen)
-    			$dictamenBuscado=$dictamen;
-    	}
-    	
-    	return $dictamenBuscado;
-    }
-    
-    */
     
     //------------------------------Propiedades virtuales-----------------------------------------
     
-    		
-    		
+   /**
+    * Get paseOriginario
+    *
+    * @return \AppBundle\Entity\Pase
+    * @VirtualProperty
+    */
+   public function getPaseOriginario() {
+   	
+   		$pasesAsociados=$this->pasesAsociados;
+   		$ultimoPase=null;
+   		foreach ($pasesAsociados as $pase){
+   			if(is_null($ultimoPase) || $ultimoPase->getId()<$pase->getId())
+   				$ultimoPase=$pase;
+   		}
+    	return $ultimoPase;
+    }
+    		    		
     /**
      * Get permiteEdicion
      *
@@ -609,7 +588,10 @@ class ExpedienteComision
      */
     public function getPermiteEdicion()
     {
-    	return (is_null($this->getSesion()) || $this->getSesion()->getTieneOrdenDelDia()==false);
+    	$estaEnHCD=!$this->expediente->getOficinaActual()->getEsExterna();
+    	return (((is_null($this->getSesion()) && $estaEnHCD)|| 
+    			  $this->getSesion()->getTieneOrdenDelDia()==false) &&
+    			  !is_null($this->getPaseOriginario()->getRemito()->getFechaRecepcion()));
     }
     
     /**
@@ -617,7 +599,7 @@ class ExpedienteComision
      *
      * @return string
      *
-     * @VirtualProperty
+     * @VirtualPropertyx|x|
      */
     public function getSesionMuestra()
     {

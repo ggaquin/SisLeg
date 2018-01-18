@@ -103,11 +103,7 @@
 		.toggle-off.btn{
 			line-height: 22.5px!important;
 		}
-					    
-        .col-nopadding {
-           padding: 0 !important;
-           margin: 0 !important;
-        }
+	
         #selOficinasDestino .select2.select2-container.select2-container--bootstrap.select2-container--below.select2-container--focus, .select2-selection.select2-selection--multiple{
 			height: 95px;
 		    max-height: 95px;
@@ -568,7 +564,7 @@
 		function cargarDetalle(tipo){
 
 			/*
-			 	TODO actualizar para que tome la plantilla sin tipo
+			 	TODO: actualizar para que tome la plantilla sin tipo
 			 */
 
 			$.ajax({
@@ -819,14 +815,7 @@
 			 	 
 				validacion+=((tipoSancion==0 && tipoRedaccion=="articulado")
 							 ?'<li>Debe especificar el tipo de resolución</li>':'');
-/* 
-				validacion+=(($("#firmaSecretario").is(":checked") &&
-							  firmaSecretario.replace(/ /g,'').length==0)
-							  ?'<li>Debe indicar el nombre del secretario</li>':'');
 
-				validacion+=(firmaPresidente && !firmaSecretario)
-							 ?'<li>Debe indicar el nombre del presidente</li>':''); */
-				 
 				if (tipoRedaccion=="articulado")					
 					validacion+=((articulos.length==0)
 							      ? '<li>Debe poveer los articulos para la resolución articulada</li>':'') ;

@@ -104,14 +104,6 @@ class Proyecto
      */
     private $concejal;
     
-    /*
-     * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\OneToMany(targetEntity="AppBundle\Entity\ProyectoFirma", cascade={"persist"}, mappedBy="proyecto")
-     *
-    private $firmas;
-    */
-
     /**
      * @var \DateTime
      *
@@ -142,28 +134,6 @@ class Proyecto
      */
     private $usuarioModificacion;
     
-    /*
-     * @var \AppBundle\Entity\ProyectoRevision
-     *
-     * @ORM\OneToOne(targetEntity="AppBundle\Entity\ProyectoRevision", fetch="LAZY" )
-     * @ORM\JoinColumns({
-     *  @ORM\JoinColumn(name="idProyectoRevision", referencedColumnName="idProyectoRevision")
-     * })
-     *
-    private $ultimaRevision;
-    */
-
-    //------------------------------------constructor---------------------------------------------
-
-    /*
-     * Constructor
-     *
-    public function __construct()
-    {
-        $this->concejales = new \Doctrine\Common\Collections\ArrayCollection();
-        $this->firmas = new \Doctrine\Common\Collections\ArrayCollection();
-    }
-    */
 
     //-------------------------------------setters y getters--------------------------------------
  
@@ -336,126 +306,6 @@ class Proyecto
 		$this->concejal = $concejal;
 		return $this;
 	}
-	
-
-    /*
-     * set concejales
-     *
-     * @param array $nuevosConcejales
-     *
-     * @return Proyecto
-     *
-    public function setConcejales($nuevosConcejales)
-    {
-        $collection= new \Doctrine\Common\Collections\ArrayCollection();
-        foreach ($nuevosConcejales as $concejal) {
-            $collection[]=$concejal;
-        }
-        $this->concejales = $collection;
-
-        return $this;
-    }
-
-    
-     * Add concejal
-     *
-     * @param \AppBundle\Entity\Perfil $concejal
-     *
-     * @return Proyecto
-     *
-    public function addConcejal(\AppBundle\Entity\Perfil $concejal)
-    {
-        $this->concejales[] = $concejal;
-
-        return $this;
-    }
-
-    
-     * Remove concejal
-     *
-     * @param \AppBundle\Entity\Perfil $concejal
-     *
-     * @return Proyecto
-     *
-    public function removeConcejal(\AppBundle\Entity\Perfil $concejal)
-    {
-        $this->concejales->removeElement($concejal);
-        return $this;
-    }
-
-    
-     * Get concejales
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     *
-    public function getConcejales()
-    {
-        return $this->concejales;
-    }
-    */
-
-    /*
-     * Add firma
-     *
-     * @param \AppBundle\Entity\ProyectoFirma $firma
-     *
-     * @return Proyecto
-     *
-    public function addFirma(\AppBundle\Entity\ProyectoFirma $firma)
-    {
-        $firma->setProyecto($this);
-
-        $this->firmas[] = $firma;
-
-        return $this;
-    }
-
-    
-     * Remove firma
-     *
-     * @param \AppBundle\Entity\ProyectoFirma $firma
-     *
-     * @return Proyecto
-     *
-    public function removeFirma(\AppBundle\Entity\ProyectoFirma $firma)
-    {
-        $this->firmas->removeElement($firma);
-    }
-
-    
-     * Get firmas
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     *
-    public function getFirmas()
-    {
-        return $this->firmas;
-    }
-    
-    
-     * Set ultimaRevision
-     *
-     * @param \AppBundle\Entity\ProyectoRevision $ultimaRevision
-     *
-     * @return Proyecto
-     *
-    public function setUltimaRevision($ultimaRevision)
-    {
-    	$this->ultimaRevision = $ultimaRevision;
-    	
-    	return $this;
-    }
-    
-    
-     * Get ultimaRevision
-     *
-     * @return \AppBundle\Entity\ProyectoRevision
-     *
-    public function getTUltimaRevision()
-    {
-    	return $this->ultimaRevision;
-    }
-    */
 
     /**
      * Set fechaCreacion

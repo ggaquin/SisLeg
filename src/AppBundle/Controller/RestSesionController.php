@@ -315,7 +315,6 @@ class RestSesionController extends FOSRestController{
     	$tipoRedaccion=$request->request->get('tipoRedaccion');
     	$idTipoSancion=$request->request->get('tipoSancion');
     	$idSpeech=$request->request->get('idSpeech');
-//     	$idSpeechPie=$request->request->get('idSpeechPie');
     	$firmaPresidente=$request->request->get('firmaPresidente');
     	$firmaSecretario=$request->request->get('firmaSecretario');
     	$numeroSancion=$request->request->get('numeroSancion');

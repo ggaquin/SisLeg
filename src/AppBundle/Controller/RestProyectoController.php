@@ -124,11 +124,11 @@ class RestProyectoController extends FOSRestController{
     
     /**
      *  @Rest\Get("/sendMail/{idProyecto}")
-     */
+     *
     public function enviarMailProyectoAction(Request $request)
     {
         $idProyecto=$request->get("idProyecto");
-        // $idProyecto=$request->request->get("idProyecto");
+
         $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
         $proyecto=$proyectoRepository->find($idProyecto);
 
@@ -147,7 +147,7 @@ class RestProyectoController extends FOSRestController{
             foreach ($articulos as $articulo) {
                  $htmlArticulos.='<strong><u>Artículo '.$articulo->numero.'°</u>.- </strong>'.str_replace('</p>', '<br>',strip_tags($articulo->texto,'</p>'));
                 if(count($articulo->incisos)>0){
-                    //recordar setear ul{list-style-type: none;}
+                   
                     $htmlArticulos.='<ul style="list-style-type: none;">';
                     foreach ($articulo->incisos as $inciso) {
                         $htmlArticulos.='<li>'.$inciso->orden.' '.strip_tags($inciso->texto,'<br>').'</li>';
@@ -177,7 +177,7 @@ class RestProyectoController extends FOSRestController{
 
             $this->get('mailer')->send($message);
          
-    }
+    }*/
 
      /**
      *  @Rest\Post("/create")

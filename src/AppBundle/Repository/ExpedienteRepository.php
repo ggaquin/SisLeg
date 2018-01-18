@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\ResultSetMapping;
 use AppBundle\Entity\Movimiento;
 use AppBundle\Entity\Pase;
+use AppBundle\Entity\SolicitudInforme;
 
 class ExpedienteRepository extends EntityRepository{
 	
@@ -113,7 +114,7 @@ class ExpedienteRepository extends EntityRepository{
 		
 		$fechaActual=new \DateTime('now');
 		
-		$sql='SELECT e.idExpediente, e.numeroExpediente, t.letra, e.periodo, e.folios '.
+		$sql='SELECT DISTINCT e.idExpediente, e.numeroExpediente, t.letra, e.periodo, e.folios '.
 			 'FROM expediente e '.
 			 'inner join tipoExpediente t '.
 			 'on e.idTipoExpediente=t.idTipoExpediente ';
@@ -122,11 +123,13 @@ class ExpedienteRepository extends EntityRepository{
 		
 		if(!is_null($oficina)){
 			$sql.='inner join oficina o on e.idOficina=o.idOficina ';
-			$condition.=' and o.idOficina=:idOficina and e.fechaArchivo is null ';
+			$condition.=' and o.idOficina in (:oficinas) and e.fechaArchivo is null ';
 			
 			if($oficina->getId()==9 && $destino==3){
-				$sql.='inner join sesion s on e.idSesion=s.idSesion ';
-				$condition.=' and (e.idTipoExpediente in (2,7,9) or s.tieneEdicionBloqueada=1)';
+				$sql.='left join sesion s on e.idSesion=s.idSesion ';
+				$condition.=' and (e.idTipoExpediente in (2,7,9) or '.
+							' e.idExpediente in (select DISTINCT idExpediente '.
+									  			'from expedienteSesion))';
 			}
 		}
 		
@@ -136,11 +139,13 @@ class ExpedienteRepository extends EntityRepository{
 		->createNativeQuery($sql,$rsm);
 		$query->setParameter('numero',$numero);
 		
-		if(!is_null($oficina)){
-			$query->setParameter('idOficina',$oficina->getId());
-			if ($oficina->getId()==9)
-				$query->setParameter('fechaActual',$fechaActual);
+		if ($oficina->getId()==9){
+			$oficinas=array($oficina->getId(),3);
+			$query->setParameter('oficinas',$oficinas);
 		}
+		else
+			$query->setParameter('oficinas',$oficina->getId());
+		
 		return $query->getResult();
 		
 	}
@@ -236,22 +241,7 @@ class ExpedienteRepository extends EntityRepository{
 		    ->setParameter(2, false);
 		return $qb->getQuery()->getResult();
 	}
-	
-// 	public function findInformesByExpediente_Id($idExpediente){
 		
-// 		$rep = $this->getEntityManager()->getRepository('AppBundle:SolicitudInforme');
-// 		$qb = $rep->createQueryBuilder('m');
-// 		$qb -> innerJoin('m.expediente', 'e')
-// 			-> where($qb->expr()->andX(
-// 										$qb->expr()->eq('e.id', '?1'),
-// 										$qb->expr()->eq('m.anulado', '?2')	
-// 									   )
-// 					)
-// 			->setParameter(1, $idExpediente)
-// 			->setParameter(2, false);
-// 		return $qb->getQuery()->getResult();
-// 	}
-	
 	public function findInformesByExpediente_Id($idExpediente){
 			
 		$rsm = new ResultSetMapping();
@@ -537,22 +527,27 @@ class ExpedienteRepository extends EntityRepository{
 		return $qb->getQuery()->getResult();
 	}
 	
-	/*
-	public function traerExpedienteParaImpresion($idExpediente)
+	
+	public function findLastMovimientoByIdExpediente($idExpediente)
 	{
-		$rsm = new ResultSetMapping();
-		$rsm->addScalarResult('caratula', 'caratula');
-		$rsm->addScalarResult('numeroExpediente', 'numeroExpediente');
-		$rsm->addScalarResult('letra', 'letra');
-		$rsm->addScalarResult('periodo', 'periodo');
-		$rsm->addScalarResult('fechaIngreso', 'fechaIngreso');
-		$rsm->addScalarResult('origen', 'origen');
-		$rsm->addScalarResult('textoProyecto', 'textoProyecto');		
+		$rep = $this->getEntityManager()->getRepository('AppBundle:Movimiento');
+		$qb1 = $rep->createQueryBuilder('msq');
+		$qb1 ->select('MAX(msq.id)')
+			 ->innerJoin('msq.expediente', 'esq')
+			 ->where($qb1->expr()->andX(
+			 							$qb1->expr()->eq('esq.id', ':idExpediente'),
+			 							$qb1->expr()->eq('msq.anulado', ':anulado')
+			 						  )
+			 		)
+			 ->groupBy('msq.id');
 		
-		$query = $this -> getEntityManager()
-					   -> createNativeQuery('call conformarExpediente(:idExpediente)',$rsm)
-					   -> setParameter('idExpediente',$idExpediente);
-		
-		return $query->getResult();
-	}*/
+		$qb = $rep->createQueryBuilder('m');
+		$qb ->innerJoin('m.expediente', 'e')
+			->where($qb->expr()->in('m.id', $qb1->getDQL()))
+			->setParameter(':idExpediente', $idExpediente)
+			->setParameter(':anulado', false);
+			
+			
+		return $qb->getQuery()->getOneOrNullResult();
+	}
 }

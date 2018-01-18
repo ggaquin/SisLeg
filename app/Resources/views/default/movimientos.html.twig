@@ -31,26 +31,6 @@
 
 		.select2-selection--multiple { max-height: 10rem; overflow-y: auto }
 
-		.file-preview {
-			max-height: 470px;
-			height: 470px;
-			background-color: #fff;
-			display: inline-block;
-			overflow-y: scroll;
-		}
-		
-		.disabled-select {
-		   background-color:#FFF;
-		   opacity:0.2;
-		   border-radius:3px;
-		   cursor:not-allowed;
-		   position:absolute;
-		   top:0;
-		   bottom:0;
-		   right:0;
-		   left:0;
-		}
-
 		.div-articulos{
 			height: 470px;
 			max-height: 475px;
@@ -74,18 +54,6 @@
 		.herramienta-fila{
 			vertical-align: middle!important;
 		}
-		.text-area-mini{
-			height: 80px!important;
-		}
-		.text-area-corta{
-			height: 200px!important;
-		}
-		.text-area-media{
-			height: 366px!important;
-		}
-		.text-area-larga{
-			height: 475px!important;
-		}
 		.tab{
 			height: 545px;
 		}
@@ -105,11 +73,7 @@
 			max-height: 415px;
 			overflow-y: auto;
 		}
-		
-		textarea.vertical-resize {
-          resize: vertical;
-        }
-		
+				
 	</style>
 	<script type="text/javascript">
 
@@ -354,7 +318,7 @@
 				var formData=new FormData();
 
 				var idDestino=$("#selDestino").val();
-				formData.append("idDestino",idDestino);
+				
 				var filas=$('#detalleRemito >tbody >tr').length;
 
 				validacion+=((idDestino==0)?'<li>Debe seleccionar un destino</li>':'');
@@ -364,36 +328,52 @@
 				var esOficinaComisiones=($("#selDestino option:selected").text()=="COMISIONES");
 				var muestra_comisiones="{{ muestra_comisiones|raw }}";
 				$('#detalleRemito >tbody >tr').each(function(){
+					
 					var celdas=$(this).find('td');
+					
+					var numeroExpediente=$(celdas[1]).text();
+					var tipoMovimiento=$(celdas[3]).find('select').val();
+					var incluyeComision=((esOficinaComisiones && muestra_comisiones==1)?true:false);
+					var idComision=$(celdas[4]).find('select').val();
+
+					if (((tipoMovimiento==1 && incluyeComision==true) || tipoMovimiento==2) && idComision==0){
+
+						validacion+='<li>No especificó ninguna comision para el expediente '+numeroExpediente+'</li>';
+						return false;
+					}
 					
 					detalle={
 							id:$(celdas[0]).text(),
 							folios:$(celdas[2]).find('input').val(),
-							idTipoMovimiento:$(celdas[3]).find('select').val(),
-							incluyeComision:((esOficinaComisiones && muestra_comisiones==1)?true:false),
-							idComision:((esOficinaComisiones==true && muestra_comisiones==1)?($(celdas[4]).find('select').val()):0),
+							idTipoMovimiento:tipoMovimiento,
+							incluyeComision:incluyeComision,
+							idComision:idComision,
 							observaciones:$(celdas[5]).find('textarea').val()
 						  };
+					  
 					remitoDetalle.push(detalle);
+					
 				});
 
-				formData.append("remitoDetalle",JSON.stringify(remitoDetalle));
-
+				
 	            if (validacion.length>0) 
 				{
 					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
 								validacion+'</ul>':'');
-					$('#btn-guardar-proyecto').prop("disabled",false);
+					$('#btn-guardar-remito').prop("disabled",false);
 					toastr.error(validacion);
 					return false;
 				}
 				else{
 
+					formData.append("idDestino",idDestino);
+					formData.append("remitoDetalle",JSON.stringify(remitoDetalle));
+					
 	            	$.ajax({
 		                async: true,
 		                url: '{{ app.request.getBaseURL() }}'+'/api/expediente/createRemito',
 		                data: formData,
-		                type: 'post',
+		                type: 'POST',
 		                cache: false,
 		                contentType: false,
 		                processData: false,
@@ -507,6 +487,24 @@
 			  theme: "bootstrap"
 			});	
 
+			$(document).on("change",".selMovimiento",function(event){
+
+				var control=event.currentTarget;
+				var valorSeleccion=$(control).val();
+				var esOficinaComisiones=($("#selDestino option:selected").text()=="COMISIONES");
+				var muestra_comisiones="{{ muestra_comisiones|raw }}";
+
+				var fila=$(control).parent().parent();
+				var selectComisiones=$(fila).find('td.selComision').find('select:eq(0)');
+
+				if ((valorSeleccion==1 && esOficinaComisiones && muestra_comisiones==1)||
+					 valorSeleccion==2)
+
+						$(selectComisiones).prop('disabled',false);
+				else
+						$(selectComisiones).prop('disabled',true);
+			});
+
 			$("#btn-generar-remito").click(function(){
 
 				if($("#selDestino").val()==0){
@@ -522,16 +520,16 @@
 				var oficinas={{ oficinas|serialize("json")|raw }};
 				var comisiones="{{ comisiones|raw }}";
 				var movimientosCompletos="{{ movimientosCompletos|raw }}";
-				var movimientoPase="{{ movimientoPase|raw }}";				
-				var esOficinaInterna=false;
+				var movimientoPase="{{ movimientoPase|raw }}";
 				var esOficinaComisiones=($("#selDestino option:selected").text()=="COMISIONES");
-				var muestra_comisiones="{{ muestra_comisiones|raw }}";
+				var muestra_comisiones="{{ muestra_comisiones|raw }}";				
+				var esOficinaInterna=false;
 				$.each(oficinas,function(i,oficina){
 					if(oficina.id==$("#selDestino").val() && oficina.tipo_oficina.tipo_oficina=="Interna")
 						esOficinaInterna=true;
-				})
-				if (esOficinaComisiones && muestra_comisiones==1)
-					$(".header-comision").removeClass("hidden");
+				});
+				/* if (esOficinaComisiones && muestra_comisiones==1)
+					$(".header-comision").removeClass("hidden"); */
 				
 				if (filas==0){
     
@@ -541,16 +539,25 @@
     					var texto=$(this).text();
     					var numero=texto.substring(0,texto.indexOf('('));
     					var folios=texto.substring(texto.indexOf('(')+1,texto.indexOf(')'));
-    					html+="<tr><td class='hidden'>"+$(this).val()+"</td><td><input type='text' class='form-control text-center' readonly value='"+numero+"'></td>"+
-    						  "<td><input type='number' class='form-control text-center' min='"+folios+"' id='"+
-    						  numero+"' name='"+numero+"' value='"+folios+"' onblur='validarFolios(this);'></td>"+
-    						  "<td><select class='form-control' name='selMovimiento"+numero+"'>"+
-    						  (esOficinaInterna?movimientoPase:movimientosCompletos) + "</select>"+
-    						  ((esOficinaComisiones && muestra_comisiones==1)?"<td><select class='form-control' name='selComision"+numero+"'>"+
-    								  			   comisiones + "</select></td>"
-    								  			  :"<td class='hidden'></td>")+
-    						  "<td><textarea class='form-control vertical-resize' rows=3></textarea></td></tr>";
-    				});
+    					html+="<tr>"+
+            					  "<td class='hidden'>"+$(this).val()+"</td>"+
+            					  "<td><input type='text' class='form-control text-center' readonly value='"+numero+"'></td>"+
+        						  "<td><input type='number' class='form-control text-center' min='"+folios+"' id='"+
+        						  		numero+"' name='"+numero+"' value='"+folios+"' onblur='validarFolios(this);'>"+
+        						  "</td>"+
+        						  "<td>"+
+        						  		"<select class='form-control selMovimiento' name='selMovimiento"+numero+"' >"+
+        						  		(esOficinaInterna?movimientoPase:movimientosCompletos) + 
+        						  		"</select>"+
+        						  "</td>"+
+        						  "<td class='selComision'>"+
+        						  		"<select class='form-control' name='selComision"+numero+"' "+
+        						  		((esOficinaComisiones && muestra_comisiones==1)?">":"disabled >")+
+        								 comisiones + "</select>"+
+        						  "</td>"+
+        						  "<td><textarea class='form-control vertical-resize' rows=3></textarea></td>"+
+    						  "</tr>";
+    				});	
     
     				$("#detalleRemito > tbody").append(html);
     				filas=$('#detalleRemito >tbody >tr').length;
@@ -736,7 +743,7 @@
                     						    <th width="10%" class="text-center" >Nro Exp</th>
                     						    <th width="10%" class="text-center" ">Fojas</th>
                     			                <th width="20%">Tipo Movimiento</th>
-                    			                <th width="20" class="header-comision hidden">Comisión</th>
+                    			                <th width="20">Comisión</th>
                     			                <th width="40%">Observación</th>
                     	                	</tr>
                     	                </thead>

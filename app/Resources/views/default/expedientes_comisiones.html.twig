@@ -108,7 +108,8 @@
 		} 
 		.bootstrap-primary-background{
 			background: #3c8dbc!important;
-		}    
+		}  
+	
 	</style>
 	<script type="text/javascript">
 	
@@ -524,7 +525,8 @@
     													
     									            	}
     								            		else{
-    															html+="<button type='button' class='btn btn-xs btn-primary btn-asignar-sesion' data-toggle='modal' data-target='#modalSesionAsignacion' >Asignar Sesión</button>";
+    															html+="<button type='button' class='btn btn-xs btn-primary btn-asignar-sesion' "+
+    																  ((row.edicion_habilitada==false)?"disabled":"")+" data-toggle='modal' data-target='#modalSesionAsignacion' >Asignar Sesión</button>";
     
     									            		}
 								            		}
@@ -552,9 +554,9 @@
 
     												if (row.dictamen_mayoria_id==0){
     													
-        												if (row.recibido==true)
+        												if (row.recibido==true){
             												
-        													if ('{{ 'COM_EXP_DICT_ADD' in app.user.listaPermisos }}')
+        													if ('{{ 'COM_EXP_DICT_ADD' in app.user.listaPermisos }}'){
 
         														if (row.lista_dictamen_mayoria_que_agrega!=null)
         															html+="<button type='button' class='btn btn-info btn-xs' >"+
@@ -567,9 +569,13 @@
                 														  ((row.sesion==null ||
                         													row.sesion.tiene_ultimo_momento==false)
                         													?"":"disabled")+" >Agregar Dictamen</button>";
+        													}
+        												}                        													
         												else
 
-        													html+="<span class='label label-danger'>Sin Dictamen</span>";
+        														html+="<button type='button' "+
+														  			  "class='btn btn-danger btn-xs' disabled >Sin Dictamen</button>";
+        									
     												}
     												else{
 															
@@ -611,9 +617,9 @@
 													
     												if (row.dictamen_primera_minoria_id==0){
     													
-    													if (row.recibido==true)
+    													if (row.recibido==true){
 
-    														if ('{{ 'COM_EXP_DICT_ADD' in app.user.listaPermisos }}')
+    														if ('{{ 'COM_EXP_DICT_ADD' in app.user.listaPermisos }}'){
 
       															if (row.lista_dictamen_primera_minoria_que_agrega!=null)
         															html+="<button type='button' class='btn btn-info btn-xs' >"+
@@ -626,8 +632,13 @@
                               												row.sesion.tiene_ultimo_momento==false)
                               													?"":"disabled")+" >Agregar Dictamen</button>";
     														
-        												else
-        													html+="<span class='label label-danger'>Sin Dictamen</span>";
+    														}
+    													}
+                            							else
+
+                            									html+="<button type='button' "+
+												  			  	  	  "class='btn btn-danger btn-xs' disabled >Sin Dictamen</button>";
+				
     												}
         											else{
             												if (row.dictamen_primera_minoria_es_u==true && '{{ 'DIC_ULT_MOM' in  app.user.listaPermisos }}')
@@ -666,9 +677,9 @@
 													
     												if (row.dictamen_segunda_minoria_id==0){
     													    												
-        												if (row.recibido==true)
+        												if (row.recibido==true){
             												
-        													if ('{{ 'COM_EXP_DICT_ADD' in app.user.listaPermisos }}')
+        													if ('{{ 'COM_EXP_DICT_ADD' in app.user.listaPermisos }}'){
 
         														if (row.lista_dictamen_segunda_minoria_que_agrega!=null)
         															html+="<button type='button' class='btn btn-info btn-xs' >"+
@@ -680,9 +691,13 @@
                 														  ((row.sesion==null ||
                               												row.sesion.tiene_ultimo_momento==false)
                               													?"":"disabled")+" >Agregar Dictamen</button>";
+        													}
+        												}
         												else
 
-        													html+="<span class='label label-danger'>Sin Dictamen</span>";
+        														html+="<button type='button' "+
+												  			  	  	  "class='btn btn-danger btn-xs' disabled >Sin Dictamen</button>";
+														
     												}
     												else{    		
         													if (row.dictamen_segunda_minoria_es_u==true && '{{ 'DIC_ULT_MOM' in  app.user.listaPermisos }}')
@@ -1164,7 +1179,7 @@
 				formData.append('tipoRedaccion',tipoRedaccion);
 				formData.append('tipoDictamen',tipoDictamen);
 				formData.append('comisiones',comisiones);
-				formData.append('agregados',agregados);
+				formData.append('agregados',JSON.stringify(agregados));
 				formData.append('texto',texto);
 				formData.append('idRevision',idRevision);
 				formData.append('editaRevision',editaRevision);
@@ -1587,9 +1602,6 @@
 		        $.each(articulosRevision,function(i,articulo){
 					agregarArticulo(articulo,'articulos-revision');
 				});
-		       /*  $.each(articulosRevision,function(i,articulo){
-					agregarArticulo(articulo,'articulos-revision');
-				}); */
 				$(".dependiente-proyecto").removeClass("hidden");
 				$('#modalRevisiones').modal('hide');
 		       
@@ -1839,7 +1851,8 @@
 			  language: "es",
 			  minimumInputLength: 1,
 			  theme: "bootstrap",
-			  matcher: select2MatchCustom
+			  matcher: select2MatchCustom,
+			  placeholder: "{número}-{año} ej. 1-17"
 			});
 
 			$("#selFirmantes").select2({
@@ -2542,17 +2555,6 @@
     								</div>
 				    			</div>
                 			</div>
-                <!-- 			<div class="row">
-                    			<div class="col-md-12">
-                    				<div class="text-center">
-        				        		<div class="form-group hidden divChkUltimoMomento">
-        				        			<label for="chkUltimoMomento">Ultimo Momento</label>
-        					        		<input type="checkbox" class="form-control chkUltimoMomento" 
-        					        			   id="chkUltimoMomento" name="chkUltimoMomento" data-size="normal"/>
-        					        	</div>
-        					        </div>
-    					        </div>
-    					    </div> -->
                 			<hr>
     				    	<div class="row">
     				    		<div class="col-md-12">

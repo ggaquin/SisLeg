@@ -56,10 +56,6 @@
 			max-height: 600px;
 		}
 
-		.text-area-caratula{
-			height: 370px!important;
-		}
-
 		#nuevoExpediente{
 			z-index: 10000;
 		}
@@ -511,7 +507,6 @@
 									            "data": 'oficina_actual',
 									            "orderable":true,
 									            "render": function(data, type, row){
-										            
 									            	var html="<div>";
 									            	if(data=="COMISIONES"){
 										            	if(row.lista_comisiones_asignadas.length>0)
@@ -1964,20 +1959,18 @@
 	                	<tr>
 	                		<th>id</th>
 	                		<th>
-	                			<!-- <div class="text-center"> -->
-    	                			<div class="btn-group">
-    	                				{% if 'EXP_NEW' in  app.user.listaPermisos %}
-    		                			<button type="button" title="Agregar expediente"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#nuevoExpediente">
-    							    			<span class="glyphicon glyphicon-plus"></span>
-    							    	</button>
-    							    	{% endif %}
-    							    	{% if 'EXP_ADD' in app.user.listaPermisos %}
-    							    	<button type="button" title="Ingresar proyecto"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#proyectosBusqueda">
-    							    			<span class="glyphicon glyphicon-download-alt"></span>
-    							    	</button>
-    							    	{% endif %}
-    							    </div>
-    							<!-- </div> -->
+	                			<div class="btn-group">
+	                				{% if 'EXP_NEW' in  app.user.listaPermisos %}
+		                			<button type="button" title="Agregar expediente"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#nuevoExpediente">
+							    			<span class="glyphicon glyphicon-plus"></span>
+							    	</button>
+							    	{% endif %}
+							    	{% if 'EXP_ADD' in app.user.listaPermisos %}
+							    	<button type="button" title="Ingresar proyecto"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#proyectosBusqueda">
+							    			<span class="glyphicon glyphicon-download-alt"></span>
+							    	</button>
+							    	{% endif %}
+							    </div>
 						    </th>	
 						    <th>Numero</th>
 			                <th>Tipo</th>
