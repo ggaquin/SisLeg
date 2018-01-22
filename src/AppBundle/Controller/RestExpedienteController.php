@@ -379,6 +379,10 @@ class RestExpedienteController extends FOSRestController{
     		$expediente=$expedienteRepository->find($idExpediente);
     		//recupera el último movimiento (no anulado) del presente expediente
     		$ultimoMovimiento=$expedienteRepository->findLastMovimientoByIdExpediente($idExpediente);
+    		
+    		if (is_null($ultimoMovimiento->getRemito()->getFechaRecepcion()))
+    			return $this->view("No se puede realizar el retorno, ".
+    							   "el remito no tiene recepción",500);
     		    	    		    			
     		$mesaDeEntradas=$oficinaRepository->find($idOficinaMesaEntradas);
     		$fechaRecepcion= \DateTime::createFromFormat('d/m/Y', $fecha);
@@ -386,7 +390,7 @@ class RestExpedienteController extends FOSRestController{
     		$em = $this->getDoctrine()->getManager();
     		
     		//remito con destino a mesa de entradas
-    		$remitoMesaEntradas= new Remito();
+	    	$remitoMesaEntradas= new Remito();
     		$origen=$oficinaRepository->find($expediente->getOficinaActual());
     		$remitoMesaEntradas->setDestino($mesaDeEntradas);
     		$remitoMesaEntradas->setOrigen($origen);
@@ -587,6 +591,7 @@ class RestExpedienteController extends FOSRestController{
     	$movimientoPase=$this->getParameter('id_movimiento_pase');
     	$idNuevoEstadoExpediente=$this->getParameter('id_estado_espera_recepcion');
     	$idOficinaComisiones=$this->getParameter('id_comisiones');
+    	$oficinaComisiones=$oficinaRepository->find($idOficinaComisiones);
     	$idOficinaDespacho=$this->getParameter('id_comisiones');
     	
     	$remito= new Remito();
@@ -605,43 +610,42 @@ class RestExpedienteController extends FOSRestController{
     		$expediente=$expedienteRepository->find($detalle->id);
     		
     		if(!$expediente->getPermiteEdicion($origen->getId()==$idOficinaDespacho)) 
-    			return $this->view("El expediente ".$expediente->getNumeroCompleto.
+    			return $this->view("El expediente ".$expediente->getNumeroCompleto().
     							   " no posee un estado habilitante para realizar movimientos"
     							   ,500);
-    		
-    		//actualización de los datos del expediente
-    		
-    		$expediente->setOficinaActual($destino);
-    		$expediente->setSesion(null);		
-    		$estadoExpediente=$estadoExpedienteRepository->find($idNuevoEstadoExpediente);
-    		$expediente->setEstadoExpediente($estadoExpediente);
-    		$expediente->setFechaModificacion($fechaActual);
-    		$expediente->setUsuarioModificacion($usuario->getUsuario());
     		 
     		//movimiento común de giro
     		if($detalle->idTipoMovimiento==$movimientoPase){
     			
-    		   	$detalleMovimiento=new Pase();
-    		   	$detalleMovimiento->setFojas($detalle->folios);
-    		   	
-    		   	$expedienteComision=null;
-    		   	
-    		   	if ($detalle->incluyeComision){ //solo en el caso de pase a comisiones
-    		   		
-    		   		$expedienteComision=new ExpedienteComision();
-    		   		$expedienteComision->setExpediente($expediente);
-    		   		$expedienteComision->setFechaCreacion($fechaActual);
-    		   		$expedienteComision->setUsuarioCreacion($usuario->getUsuario());
-    		   		$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
-    		   		$comision=$comisionRepository->find($detalle->idComision);
-    		   		$expedienteComision->setComision($comision);
-    		   		$expedienteComision->addPaseAsociado($detalleMovimiento);
-    		     		   	
-    		   		$expediente->addAsignacionComision($expedienteComision);
-    		   		
-    		   	}
-        	
+    			if($expediente->getOficinaActual()->getId()==$oficinaComisiones->getId())
+    				return $this->view("Al expediente ".$expediente->getNumeroCompleto().
+    								   " solo se le pueden gestionar SOLICITUDES DE INFORME".
+    								   " dado que se encuentra en la oficina de comisiones"
+    								   ,500);
+    				
+    			else{
+		    		   	$detalleMovimiento=new Pase();
+		    		   	$detalleMovimiento->setFojas($detalle->folios);
+		    		   	
+		    		   	$expedienteComision=null;
+		    		   	
+		    		   	if ($detalle->incluyeComision){ //solo en el caso de pase a comisiones
+		    		   		
+		    		   		$expedienteComision=new ExpedienteComision();
+		    		   		$expedienteComision->setExpediente($expediente);
+		    		   		$expedienteComision->setFechaCreacion($fechaActual);
+		    		   		$expedienteComision->setUsuarioCreacion($usuario->getUsuario());
+		    		   		$comisionRepository=$this->getDoctrine()->getRepository('AppBundle:Comision');
+		    		   		$comision=$comisionRepository->find($detalle->idComision);
+		    		   		$expedienteComision->setComision($comision);
+		    		   		$expedienteComision->addPaseAsociado($detalleMovimiento);
+		    		     		   	
+		    		   		$expediente->addAsignacionComision($expedienteComision);
+		    		   		
+		    		   	}
+    			}
     		}
+    		
     		//movimiento de giro por solicitud de informe. Expediente tomado de comsiones
     		if($detalle->idTipoMovimiento==$movimientoInforme){
     		
@@ -649,23 +653,44 @@ class RestExpedienteController extends FOSRestController{
     			$comision=$comisionRepository->find($detalle->idComision);
     			
     			//asignación de comision para este expediente	
+    			$comisionesAsignadas=$expedienteComisionRepository
+    									->findVigentesBydExpediente_IdAndFechaActualAndODEStado
+    										($detalle->id,$fechaActual,'conOD');
+    			
+    			if(count($comisionesAsignadas)>0)
+    				//existen asignaciones en comision para el expediente con orden del día generada
+    				return $this->view("El expediente ".
+    								   $expediente->getNumeroCompleto().
+    								   " posee asignaciones a comisión con orden del día ya generada ",
+    								   500);
+
     			$expedienteComisionAsignado=$expedienteComisionRepository
-	    										->findByExpediente_IdAndComision_Id
-	    									   	  ($detalle->id, $detalle->idComision);
-	    		
-	    									   
+    											->findByExpediente_IdAndComision_Id($detalle->idExpediente, 
+    																				$detalle->idComision);
+	    				   
 	    		if(is_null($expedienteComisionAsignado)){
-	    			//no se encontró la asignación de comisión para el expediente
-	    			return $this->view("El expediente ".
-	    							   $expediente->getNumeroCompleto().
-	    							   " no se encuentra asignado a la comision de ".
-	    							   $comision->getComision().
-	    							   " o la misma posee una sesión con Orden del Día generada",500);
+	    		  
+		    		//no se encontró la asignación de comisión para el expediente
+		    		return $this->view("El expediente ".
+		    							$expediente->getNumeroCompleto().
+		    							" no se encuentra asignado a la comision de ".
+		    							$comision->getComision(),500);
 	    		}
 	    		else{
-	    				//no tiene sesion con orden del dia generada, se nulea la sesión
-			    		$expedienteComisionAsignado->setSesion(null);
-			    		$em->persist($expedienteComisionAsignado);
+	    				if (is_null($expedienteComisionAsignado->getPaseOriginario()
+	    													   ->getRemito()->getFechaRecepcion())
+	    				   )
+	    					
+	    					return $this->view("El giro del expediente ".
+	    									   $expediente->getNumeroCompleto().
+	    									   " a la comisión ".$comision->getComision().
+	    									   " no se encuentra confirmado",500);
+	    				else {
+			    				//no tiene sesion con orden del dia generada y 
+			    				//se encuentra recibido. Se nulea la sesión
+					    		$expedienteComisionAsignado->setSesion(null);
+					    		$em->persist($expedienteComisionAsignado);
+	    				}
 	    			
     			}
     			
@@ -673,13 +698,21 @@ class RestExpedienteController extends FOSRestController{
     			//generado solo por no crear saltos en el recorrido
     			//del expediente
     			$detalleMovimientoAMesa=new Pase();
-    			$detalleMovimiento->setFojas($detalle->folios);
+    			$detalleMovimientoAMesa->setFojas($detalle->folios);
     			
     			//solicitud de informe
     			$detalleMovimiento= new SolicitudInforme();
     			$detalleMovimiento->setComision($comision);
 	    		
     		}
+    		
+    		//actualización de los datos del expediente
+    		$expediente->setOficinaActual($destino);
+    		$expediente->setSesion(null);
+    		$estadoExpediente=$estadoExpedienteRepository->find($idNuevoEstadoExpediente);
+    		$expediente->setEstadoExpediente($estadoExpediente);
+    		$expediente->setFechaModificacion($fechaActual);
+    		$expediente->setUsuarioModificacion($usuario->getUsuario());
     		
     		//resto de la información del remito final
     		$detalleMovimiento->setExpediente($expediente);
@@ -692,7 +725,6 @@ class RestExpedienteController extends FOSRestController{
     		if(!is_null($detalleMovimientoAMesa)){
     			
     			$remitoMovimientoAMesa= new Remito();
-    			$oficinaComisiones=$oficinaRepository->find($idOficinaComisiones);
     			$remitoMovimientoAMesa->setDestino($origen); //la oficina que genera la presente
     			$remitoMovimientoAMesa->setOrigen($oficinaComisiones);
     			$remitoMovimientoAMesa->setFechaCreacion($fechaActual);
@@ -704,7 +736,7 @@ class RestExpedienteController extends FOSRestController{
     			$detalleMovimientoAMesa->setExpediente($expediente);
     			$detalleMovimientoAMesa->setFechaCreacion($fechaActual);
     			$detalleMovimientoAMesa->setUsuarioCreacion($usuario->getUsuario());
-    			$detalleMovimientoAMesa->setObservacion("Pase automático por solicitus de informe");
+    			$detalleMovimientoAMesa->setObservacion("Pase automático por solicitud de informe");
     			
     			$remitoMovimientoAMesa->addMovimiento($detalleMovimientoAMesa);
     			
@@ -781,6 +813,7 @@ class RestExpedienteController extends FOSRestController{
 
     	$estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
     	$remitoRepository=$this->getDoctrine()->getRepository('AppBundle:Remito');
+    	$expedienteAsignadoRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
     	$remito = $remitoRepository->find($idRemito);
     	
     	if ($remito->getFechaRecepcion()!=null)
@@ -794,14 +827,29 @@ class RestExpedienteController extends FOSRestController{
     	$remito->setFechaModificacion($fecha);
     	
     	$idOficinaComisiones=$this->getParameter('id_comisiones');
+    	$idEstadoEstudio=$this->getParameter('id_estado_estudio_comision');
+    	$idEstadoDictamen=$this->getParameter('id_estado_dictamen_comision');
+    	
     	foreach ($remito->getMovimientos() as $movimiento){
     		
-    		if ($usuario->getRol()->getOficina()->getId()==$idOficinaComisiones)
-    			$idNuevoEstadoExpediente=$this->getParameter('id_estado_estudio_comision');
-    		else
-    			$idNuevoEstadoExpediente=$this->getParameter('id_estado_en_tramite');
+    		$nuevoEstadoExpediente=$estadoExpedienteRepository->find($idEstadoEstudio);
     		
-    		$nuevoEstadoExpediente=$estadoExpedienteRepository->find($idNuevoEstadoExpediente);
+    		if ($usuario->getRol()->getOficina()->getId()==$idOficinaComisiones){
+    			
+    			$expediente=$movimiento->getExpediente();
+    			$expedientesAsignados=$expedienteAsignadoRepository
+    									->findVigentesBydExpediente_IdAndFechaActualAndODEStado
+    										($expediente->getId(),$fecha);
+    			
+    			foreach ($expedientesAsignados as $expedienteAsignado){
+    	
+    				if($expedienteAsignado->getTieneDictamen()){
+    					$nuevoEstadoExpediente=$estadoExpedienteRepository->find($idEstadoDictamen);
+    					break;
+    				}   					
+    			}
+    		}
+		
     		$movimiento->getExpediente()->setEstadoExpediente($nuevoEstadoExpediente);
     		$movimiento->getExpediente()->setUsuarioModificacion($usuario->getUsuario());
     		$movimiento->getExpediente()->setFechaModificacion($fecha);

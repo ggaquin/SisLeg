@@ -174,7 +174,8 @@ class RestComisionAsignacionController extends FOSRestController{
     									'edicion_habilitada'=>$e->getPermiteEdicion(),
     									'sesion_muestra'=>$e->getSesionMuestra(),
     									'sesion_id'=>(is_null($e->getSesion())?0:$e->getSesion()->getId()),
-    									'sesion'=>$e->getSesion()
+    									'sesion'=>$e->getSesion(),
+    								    'inhabilita_sesion'=>$e->getInhabilitaSesion()
 				    				);
     			$respuesta[]=$datosAsignacion;
     		}
@@ -219,19 +220,28 @@ class RestComisionAsignacionController extends FOSRestController{
     	$idAsignacion=$request->request->get('idAsignacion');
     	$idSesion=$request->request->get('idSesion');
     	$usuario=$this->getUser();
+    	$fechaActual=new \DateTime('now');
     	
     	$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
     	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
     	$expedienteComision=$expedienteComisionRepository->find($idAsignacion);
-    	$expedientesAsignados=$expedienteComisionRepository->findByExpediente_Id($expedienteComision
-    																			 ->getExpediente()
-    																			 ->getId()
-    																			);
+    	$expedientesAsignados=$expedienteComisionRepository
+    							->findVigentesBydExpediente_IdAndFechaActualAndODEStado
+    							($expedienteComision->getExpediente()->getId(),$fechaActual);
     								
     	$sesion=$sesionRepository->find($idSesion);	
     	$em = $this->getDoctrine()->getManager();
     	
     	foreach ($expedientesAsignados as $expedienteAsignacion){
+    		
+    		if($expedienteAsignacion->getSesion()->getTieneOrdenDelDia()==true)
+    			return $this->view("La asignación a la comisión ".
+    							   $expedienteAsignacion->getComision()->getComision().
+    							   " del expediente ".
+    							   $expedienteAsignacion->getExpediente()->getNUmeroCompleto().
+    							   " esta asociada a una sesión con Orden del Día generada",
+    							   500);
+    		
     		$dictamenMayoria=$expedienteAsignacion->getDictamenMayoria();
     		if (!is_null($dictamenMayoria)){
     			$dictamenMayoria->setUltimoMomento($sesion->getTieneOrdenDelDia());

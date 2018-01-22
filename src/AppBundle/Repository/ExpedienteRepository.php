@@ -247,7 +247,7 @@ class ExpedienteRepository extends EntityRepository{
 		$rsm = new ResultSetMapping();
 		$rsm->addScalarResult('idMovimiento', 'id');
 		$rsm->addScalarResult('tipo', 'tipo');
-		$rsm->addScalarResult('numero_Remito', 'numero_remito');
+		$rsm->addScalarResult('numero_remito', 'numero_remito');
 		$rsm->addScalarResult('destino', 'destino');
 		$rsm->addScalarResult('fecha_envio', 'fecha_envio');
 		$rsm->addScalarResult('observacion', 'observacion');
@@ -539,7 +539,7 @@ class ExpedienteRepository extends EntityRepository{
 			 							$qb1->expr()->eq('msq.anulado', ':anulado')
 			 						  )
 			 		)
-			 ->groupBy('msq.id');
+			 ->groupBy('esq.id');
 		
 		$qb = $rep->createQueryBuilder('m');
 		$qb ->innerJoin('m.expediente', 'e')

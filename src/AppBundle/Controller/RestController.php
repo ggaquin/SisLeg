@@ -488,6 +488,9 @@ class RestController extends FOSRestController{
 		    	
 		    	if($idComision!=0){
 		    		$comision=$comisionReposiory->find($idComision);
+		    		if (preg_match('/^[a-euz][A-EUZ]/', $letra))
+		    			return $this->view('La letra ya esta asociada a otras secciones de  '.
+		    							   'la orden del día',500);
 		    		if(!is_null($comisionPorLetra) && $comisionPorLetra->getId()!=$comision->getId())
 		    			return $this->view('La letra ya esta asignada a la comisión de '.
 		    							   $comisionPorLetra->getComision(),500);
@@ -496,6 +499,10 @@ class RestController extends FOSRestController{
 		    		$mensaje="La comisión ".$comision->getComision()." se modificó con éxito";
 		    	}
 		    	else {
+		    			
+		    			if (preg_match('/^[a-euzA-EUZ]/', $letra))
+		    				return $this->view('La letra ya esta asociada a otras secciones de  '.
+		    								   'la orden del día',500);	
 		    			if(!is_null($comisionPorLetra))
 			    			return $this->view('La letra ya esta asignada a la comisión de'.
 			    					$comisionPorLetra->getComision(),500);

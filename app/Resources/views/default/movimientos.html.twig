@@ -303,11 +303,11 @@
 			//EVENTO ABRIR MODAL NUEVO REMITO
 		    $('#nuevoMovimiento').on('show.bs.modal', function () {
 		    	$("#detalleRemito > tbody").html("");
-		    	$("#selExpedientes").val();
 		    	$("#total-filas").val("");
 				$("#total-filas").addClass("hidden");
 		    	$("#selExpedientes").empty().change();
 		    	$("#selExpedientes").prop("disabled", true);
+		    	$("#selDestino").val(0);
 			});
 						
 			//GUARDAR REMITO

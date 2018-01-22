@@ -1159,12 +1159,12 @@ class Expediente
      * 
      * @VirtualProperty()
      */
-	public function getPermiteEdicion($ignoraSesion=false){
+	public function getPermiteEdicion($esDespacho=false){
 		
-		return !($this->numeroSancion!='' || 
-				($ignoraSesion || (!is_null($this->sesion) && $this->sesion->getTieneOrdenDelDia())) ||
-				 !is_null($this->fechaArchivo)
-				);	
+		return (($esDespacho || $this->numeroSancion=='') && 
+				($esDespacho || (is_null($this->sesion) || $this->sesion->getTieneOrdenDelDia()==false)) &&
+				 is_null($this->fechaArchivo)
+			   );	
 	}
 	
 	/**

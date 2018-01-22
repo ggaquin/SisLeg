@@ -299,7 +299,8 @@
 				},10);
 			}
 			else {
-					if(valorControl<minimoValor){	
+					
+					if(parseInt(valorControl)<parseInt(minimoValor)){	
 						toastr.error("El contenido ingresado en folios del expediente " +idControl+ " es menor al minimo");
 						setTimeout(function(){
 							   $("#"+idControl).select();
@@ -458,9 +459,9 @@
     											        if (row.sesion!=""){
     											            
     														html+="<button type='button' class='btn btn-xs btn-success btn-editar-sesion' ";
-    														html+=((row.permite_edicion==false)?"disabled":"")+">";
+    														html+=((row.permite_edicion==false || row.oficina_actual_externa==true)?"disabled":"")+">";
     														html+="<span>"+row.sesion.fecha_muestra;
-    														html+= ((row.permite_edicion==false)
+    														html+= ((row.permite_edicion==false || row.oficina_actual_externa==true)
     																	?" <li class='fa fa-lock'></li>"
     																	:" <li class='fa fa-unlock'></li>");
     														html+="</span></button>";
@@ -689,6 +690,7 @@
 		    $('#retornoExterno').on('hidden.bs.modal', function () {
 		    	$("#retornoExterno").find('input[name="idExpediente"]').val("");
 		    	$("#retornoExterno").find('input[name="fechaRetorno"]').val("");
+		    	$("#retornoExterno").find('input[name="numeroRemitoRetorno"]').val("");
 			});
 
 			//BOTÓN GUARDAR RETORNO
@@ -1434,7 +1436,8 @@
 
                     							            	
                 							                	if (("{{ app.user.rol.oficina is null }}" || "{{ app.user.rol.oficina.id }}"== "9" ) 
-                    									            	 && data=="" && '{{ "EXP_REPORT_RETURN" in app.user.listaPermisos}}'){
+                    									            	 && data=="" && '{{ "EXP_REPORT_RETURN" in app.user.listaPermisos}}'
+                    									            	 && row.tipo=="notificacion"){
             	    												return "<button type='button' title='Ingresar Fecha Respuesta' "+
             	    													   "class='btn btn-primary btn-xs btn-respuesta-informe'"+
             	    													   " data-toggle='modal' data-target='#respuestaInforme'>" +

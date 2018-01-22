@@ -5,8 +5,6 @@ namespace AppBundle\Repository;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Select;
 use Doctrine\ORM\Query\ResultSetMapping;
-use Symfony\Component\Validator\Constraints\EqualTo;
-
 class ExpedienteComisionRepository extends EntityRepository{
 	
 	/*********************************************************************************************
@@ -29,6 +27,43 @@ class ExpedienteComisionRepository extends EntityRepository{
 			->setParameter('tieneOrdenDia', false)
 			->setParameter('anulado', false);
 		
+		return $qb->getQuery()->getResult();
+				
+	}
+	
+	public function findVigentesBydExpediente_IdAndFechaActualAndODEStado($idExpediente,$fecha,$estadoOD=null){
+		
+		$qb =  $this->createQueryBuilder('ec')
+			-> innerJoin('ec.expediente', 'e');
+			
+		$qb -> where($qb->expr()->andX(
+										$qb->expr()->eq('e.id', ':idExpediente'),
+										$qb->expr()->gte('s.fecha', ':fecha'),
+										$qb->expr()->eq('ec.anulado', ':anulado')
+										
+									  )
+					)
+			-> setParameter('fecha', $fecha)
+			-> setParameter('anulado', false)
+			-> setParameter('idExpediente', 'idExpediente');
+		
+		if ($estadoOD=='sinOD'){
+			$qb -> leftJoin('ec.sesion', 's')
+				-> andWhere($qb->expr()->andX(
+												$qb->expr()->isNull('s.id'),
+												$qb->expr()->eq('s.tieneOrdenDelDia', ':tieneOrdenDia')
+											  )
+						    )
+			   ->setParameter('tieneOrdenDia', false);
+		}
+		if($estadoOD=='conOD'){
+			$qb -> innerJoin('ec.sesion', 's')
+				-> andWhere($qb->expr()->eq('s.tieneOrdenDelDia', ':tieneOrdenDia'))
+				->setParameter('tieneOrdenDia', true);
+			
+		}
+			
+				
 		return $qb->getQuery()->getResult();
 				
 	}
@@ -310,7 +345,7 @@ class ExpedienteComisionRepository extends EntityRepository{
 	 
 	 return $qb->getQuery()->getResult();
 	 }
-	
+	 
 	 public function findIntegrantesComisionesByDictamen($patron, $idDictamen){
 	 	
 	 	$rsm = new ResultSetMapping();

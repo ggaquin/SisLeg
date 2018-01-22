@@ -588,10 +588,20 @@ class ExpedienteComision
      */
     public function getPermiteEdicion()
     {
-    	$estaEnHCD=!$this->expediente->getOficinaActual()->getEsExterna();
-    	return (((is_null($this->getSesion()) && $estaEnHCD)|| 
-    			  $this->getSesion()->getTieneOrdenDelDia()==false) &&
+    	
+    	return ((is_null($this->getSesion())|| 
+    			 (!is_null($this->getSesion()) && $this->getSesion()->getTieneOrdenDelDia()==false)) &&
     			  !is_null($this->getPaseOriginario()->getRemito()->getFechaRecepcion()));
+    }
+    
+    /**
+     * Get inhabilitaSesion
+     * 
+     * @return boolean
+     * @VirtualProperty
+     */
+    public function getInhabilitaSesion(){
+    	return !$this->expediente->getOficinaActual()->getEsExterna();
     }
     
     /**
@@ -599,7 +609,7 @@ class ExpedienteComision
      *
      * @return string
      *
-     * @VirtualPropertyx|x|
+     * @VirtualProperty
      */
     public function getSesionMuestra()
     {
@@ -655,6 +665,18 @@ class ExpedienteComision
 					    	" (".$this->dictamenSegundaMinoriaQueAgrega->getListaLetrasComisionesSegundaMinoria().")"
 					    	:null);
     	return $comisiones;
+    }
+    
+    /**
+     * Get tieneDictamen
+     * 
+     * @return boolean
+     * @VirtualProperty()
+     */
+    public function getTieneDictamen(){
+    	return  (!is_null($this->getDictamenMayoria()) ||
+    			 !is_null($this->getDictamenPrimeraMinoria()) ||
+    			 !is_null($this->getDictamenSegundaMinoria()));
     }
     
    

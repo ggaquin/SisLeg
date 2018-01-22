@@ -516,7 +516,7 @@
     								            		if (row.sesion_muestra!=""){
     
     														html+="<button type='button' class='btn btn-xs btn-success btn-editar-sesion' "; 
-    														html+=((row.edicion_habilitada==false)?"disabled":"")+" data-toggle='modal' data-target='#modalSesionAsignacion' >";
+    														html+=((row.edicion_habilitada==false || row.inhabilita_sesion==true)?"disabled":"")+" data-toggle='modal' data-target='#modalSesionAsignacion' >";
     														html+="<span>"+row.sesion_muestra;
     														html+= ((row.edicion_habilitada==false)
     																	?" <li class='fa fa-lock'></li>"
@@ -526,7 +526,7 @@
     									            	}
     								            		else{
     															html+="<button type='button' class='btn btn-xs btn-primary btn-asignar-sesion' "+
-    																  ((row.edicion_habilitada==false)?"disabled":"")+" data-toggle='modal' data-target='#modalSesionAsignacion' >Asignar Sesión</button>";
+    																  ((row.edicion_habilitada==false || row.inhabilita_sesion==true)?"disabled":"")+" data-toggle='modal' data-target='#modalSesionAsignacion' >Asignar Sesión</button>";
     
     									            		}
 								            		}
@@ -566,8 +566,8 @@
             													
                 													html+="<button type='button' title='Agregar Dictamen' "+
                 														  "class='btn btn-primary btn-xs btn-nuevo-dictamen-mayoria' "+
-                														  ((row.sesion==null ||
-                        													row.sesion.tiene_ultimo_momento==false)
+                														  (((row.sesion==null || row.sesion.tiene_ultimo_momento==false) &&
+                     														 row.edicion_habilitada==true)
                         													?"":"disabled")+" >Agregar Dictamen</button>";
         													}
         												}                        													
@@ -628,8 +628,8 @@
           														else	
                 													html+="<button type='button' title='Agregar Dictamen' "+
                 														  "class='btn btn-primary btn-xs btn-nuevo-dictamen-primera-minoria'" +
-                														  ((row.sesion==null ||
-                              												row.sesion.tiene_ultimo_momento==false)
+                														  (((row.sesion==null || row.sesion.tiene_ultimo_momento==false) &&
+                															 row.edicion_habilitada==true)
                               													?"":"disabled")+" >Agregar Dictamen</button>";
     														
     														}
@@ -688,8 +688,8 @@
           														else
                 													html+="<button type='button' title='Agregar Dictamen' "+
                 														  "class='btn btn-primary btn-xs btn-nuevo-dictamen-segunda-minoria' "+
-                														  ((row.sesion==null ||
-                              												row.sesion.tiene_ultimo_momento==false)
+                														  (((row.sesion==null || row.sesion.tiene_ultimo_momento==false) &&
+                     													     row.edicion_habilitada==true)
                               													?"":"disabled")+" >Agregar Dictamen</button>";
         													}
         												}
