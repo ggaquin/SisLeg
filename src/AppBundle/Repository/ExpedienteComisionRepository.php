@@ -31,39 +31,50 @@ class ExpedienteComisionRepository extends EntityRepository{
 				
 	}
 	
-	public function findVigentesBydExpediente_IdAndFechaActualAndODEStado($idExpediente,$fecha,$estadoOD=null){
+	public function findVigentesBydExpediente_IdAndFechaActualAndODEStado($idExpediente,$fecha,$estadoOD='todo'){
 		
-		$qb =  $this->createQueryBuilder('ec')
-			-> innerJoin('ec.expediente', 'e');
-			
-		$qb -> where($qb->expr()->andX(
-										$qb->expr()->eq('e.id', ':idExpediente'),
-										$qb->expr()->gte('s.fecha', ':fecha'),
-										$qb->expr()->eq('ec.anulado', ':anulado')
-										
-									  )
-					)
-			-> setParameter('fecha', $fecha)
-			-> setParameter('anulado', false)
-			-> setParameter('idExpediente', 'idExpediente');
+		
+			$qb =  $this->createQueryBuilder('ec')
+				-> innerJoin('ec.expediente', 'e');
+			$qb -> where($qb->expr()->andX(
+											$qb->expr()->eq('e.id', ':idExpediente'),
+											$qb->expr()->eq('ec.anulado', ':anulado')
+										  )
+						)
+				-> setParameter('anulado', false)
+				-> setParameter('idExpediente', $idExpediente);
+		
+		if($estadoOD=='todo'){
+		
+			$qb -> leftJoin('ec.sesion', 's')
+				-> andWhere($qb->expr()->orX(
+												$qb->expr()->isNull('s.id'),
+												$qb->expr()->gte('s.fecha', ':fecha')
+											)
+							)
+				-> setParameter('fecha', $fecha);
+		}
 		
 		if ($estadoOD=='sinOD'){
 			$qb -> leftJoin('ec.sesion', 's')
-				-> andWhere($qb->expr()->andX(
+				-> andWhere($qb->expr()->orX(
 												$qb->expr()->isNull('s.id'),
 												$qb->expr()->eq('s.tieneOrdenDelDia', ':tieneOrdenDia')
 											  )
 						    )
-			   ->setParameter('tieneOrdenDia', false);
+			   ->andWhere($qb->expr()->gte('s.fecha', ':fecha'))
+			   ->setParameter('tieneOrdenDia', false)
+			   -> setParameter('fecha', $fecha);
 		}
+		
 		if($estadoOD=='conOD'){
 			$qb -> innerJoin('ec.sesion', 's')
 				-> andWhere($qb->expr()->eq('s.tieneOrdenDelDia', ':tieneOrdenDia'))
-				->setParameter('tieneOrdenDia', true);
-			
+				->andWhere($qb->expr()->gte('s.fecha', ':fecha'))
+				->setParameter('tieneOrdenDia', true)
+				-> setParameter('fecha', $fecha);
 		}
 			
-				
 		return $qb->getQuery()->getResult();
 				
 	}

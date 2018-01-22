@@ -73,7 +73,7 @@ class Dictamen
      *
      * @ORM\OneToMany(targetEntity="AppBundle\Entity\ExpedienteComision", 
      * 				  cascade={"persist","merge","refresh"}, mappedBy="dictamenPrimeraMinoria")
-     */
+     */	
     private $asignacionesPorPrimeraMinoria;
     
      /**

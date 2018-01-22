@@ -116,6 +116,25 @@
 		    
 	</style>
 	<script type="text/javascript">
+
+		/* Mousetrap.bind('n a right', function(e) {
+  	  		 $("#selTipoRedaccion").focus();
+          	return false;
+      	});
+
+		Mousetrap.bind('t a b 0', function(e) {
+			 habilitar("tab-0");
+          	return false;
+      	});
+
+		Mousetrap.bind('t a b 1', function(e) {
+			 habilitar("tab-1");
+         	return false;
+     	});
+
+     	$(document).on('keypress','.form-control text-area text-area-libre wysihtml5-editor',function(e){
+			alert('key up');
+         }); */
 	
 		wysihtml5.dom.getPastedHtml = function(event) {
     		var html;
@@ -1694,7 +1713,11 @@
 					$("#textoSpeech").data("wysihtml5").editor.setValue('');
 					$(".speech").prop("disabled",true);
 				}
-			})
+			});
+
+		/* 	$('.wysihtml5-sandbox').contents().find('body').on("keyup",function(e) {
+		        console.log($(e.currentTarget).parent().parent().parent().parent());
+		    }); */
 
 	});
 	</script>
@@ -1785,8 +1808,7 @@
                	</table>     
 	        </div> {# col #}
 	    </div> {# row #}
-		<div id="modalSancion" class="modal fade custom-modal" role="dialog" data-backdrop="static" 
-   data-keyboard="false">
+		<div id="modalSancion" class="modal fade custom-modal" role="dialog" data-backdrop="static">
 		 	<div class="modal-dialog modal-xl">
 			    <!-- Modal content-->
 			    <div class="modal-content">
@@ -1805,7 +1827,8 @@
 					    			<div class="col-md-12">
         					    		<div class="form-group">
         					        		<label for="selTipoRedaccion">Tipo Redacción</label>
-        					        		<select class="form-control" id="selTipoRedaccion" name="selTipoRedaccion">
+        					        		<select class="form-control" id="selTipoRedaccion" 
+        					        				name="selTipoRedaccion" autofocus="autofocus">
         					        		</select>
         				        		</div>
         					        	<div style="min-height: 68.78px">

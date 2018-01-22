@@ -234,7 +234,8 @@ class RestComisionAsignacionController extends FOSRestController{
     	
     	foreach ($expedientesAsignados as $expedienteAsignacion){
     		
-    		if($expedienteAsignacion->getSesion()->getTieneOrdenDelDia()==true)
+    		if(!is_null($expedienteAsignacion->getSesion()) &&
+    			$expedienteAsignacion->getSesion()->getTieneOrdenDelDia()==true)
     			return $this->view("La asignación a la comisión ".
     							   $expedienteAsignacion->getComision()->getComision().
     							   " del expediente ".
@@ -247,7 +248,7 @@ class RestComisionAsignacionController extends FOSRestController{
     			$dictamenMayoria->setUltimoMomento($sesion->getTieneOrdenDelDia());
     			$dictamenMayoria->setFechaModificacion(new \DateTime());
     			$dictamenMayoria->setUsuarioModificacion($usuario->getUsuario());
-    			$agregados=$dictamenMayoria->getExpedientesAgregadosEnDictamenMayoria();
+    			$agregados=$dictamenMayoria->getExpedientesAgregadosDictamenMayoria();
     			foreach ($agregados as $agregado){
     				$agregado->setSesion($sesion);
     				$agregado->setFechaModificacion(new \DateTime());
@@ -261,7 +262,7 @@ class RestComisionAsignacionController extends FOSRestController{
     			$dictamenPrimeraMinoria->setUltimoMomento($sesion->getTieneOrdenDelDia());
     			$dictamenPrimeraMinoria->setFechaModificacion(new \DateTime());
     			$dictamenPrimeraMinoria->setUsuarioModificacion($usuario->getUsuario());
-    			$agregados=$dictamenMayoria->getExpedientesAgregadosEnPrimeraMinoria();
+    			$agregados=$dictamenMayoria->getExpedientesAgregadosDictamenPrimeraMinoria();
     			foreach ($agregados as $agregado){
     				$agregado->setSesion($sesion);
     				$agregado->setFechaModificacion(new \DateTime());
@@ -275,7 +276,7 @@ class RestComisionAsignacionController extends FOSRestController{
     			$dictamenSegundaMinoria->setUltimoMomento($sesion->getTieneOrdenDelDia());
     			$dictamenSegundaMinoria->setFechaModificacion(new \DateTime());
     			$dictamenSegundaMinoria->setUsuarioModificacion($usuario->getUsuario());
-    			$agregados=$dictamenMayoria->getExpedientesAgregadosEnSegundaMinoria();
+    			$agregados=$dictamenMayoria->getExpedientesAgregadosDictamenSegundaMinoria();
     			foreach ($agregados as $agregado){
     				$agregado->setSesion($sesion);
     				$agregado->setFechaModificacion(new \DateTime());

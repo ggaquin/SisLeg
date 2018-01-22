@@ -601,7 +601,7 @@ class ExpedienteComision
      * @VirtualProperty
      */
     public function getInhabilitaSesion(){
-    	return !$this->expediente->getOficinaActual()->getEsExterna();
+    	return $this->expediente->getOficinaActual()->getEsExterna();
     }
     
     /**
