@@ -528,8 +528,6 @@
 					if(oficina.id==$("#selDestino").val() && oficina.tipo_oficina.tipo_oficina=="Interna")
 						esOficinaInterna=true;
 				});
-				/* if (esOficinaComisiones && muestra_comisiones==1)
-					$(".header-comision").removeClass("hidden"); */
 				
 				if (filas==0){
     
@@ -563,6 +561,8 @@
     				filas=$('#detalleRemito >tbody >tr').length;
     				$("#total-filas").val("Expedientes en movimiento:"+filas);
     				$("#total-filas").removeClass("hidden");
+    				$("#selExpedientes").prop("disabled", true);
+    				$("#selDestino").prop('disabled',true);
 				}
 				else{
 					 toastr.error("El remito ya posee expedientes oprima <strong>'Reiniciar'</strong>, para volver a generar el detalle");
@@ -574,6 +574,8 @@
 				$("#detalleRemito > tbody").html("");
 				$("#total-filas").addClass("hidden");
 				$(".header-comision").addClass("hidden");
+				$("#selExpedientes").prop("disabled", false);
+				$("#selDestino").prop('disabled',false);
 			});
 
 			$(".campo-fecha").datetimepicker({

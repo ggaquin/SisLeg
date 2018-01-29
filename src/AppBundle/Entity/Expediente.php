@@ -273,6 +273,7 @@ class Expediente
        $this->archivoBorrado="";
        $this->movimientos = new \Doctrine\Common\Collections\ArrayCollection();
        $this->proyecto=null;
+       $this->fechaArchivo=null;
        $this->numeroSancion='';
        $this->ultimoMomento=false;
     }
@@ -626,7 +627,7 @@ class Expediente
 	 * @param \DateTime $fechaArchivo
 	 * @return Expediente
 	 */
-	public function setFechaArchivo(\DateTime $fechaArchivo) {
+	public function setFechaArchivo(\DateTime $fechaArchivo=null) {
 		$this->fechaArchivo = $fechaArchivo;
 		return $this;
 	}

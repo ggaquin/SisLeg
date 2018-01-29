@@ -14849,7 +14849,7 @@ function program17(depth0,data) {
           'strong': {},
           'em': {},
           'p': {},
-          'br': {},
+//          'br': {},
           'ol': {},
           'ul': {},
           'li': {},

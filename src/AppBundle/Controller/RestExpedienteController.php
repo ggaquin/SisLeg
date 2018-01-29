@@ -149,7 +149,7 @@ class RestExpedienteController extends FOSRestController{
     }
     
     /**
-     * @Rest\Put("/archivar/{id}")
+     * @Rest\POST("/archivar/{id}")
      */
     public function archivarExpedienteAction(Request $request){
     	
@@ -160,7 +160,7 @@ class RestExpedienteController extends FOSRestController{
     	$expediente=$expedienteRepository->find($id);
     	$usuario=$this->getUser();
     	
-    	if (!is_null($expediente->getFerchaArchivo()))
+    	if (!is_null($expediente->getFechaArchivo()))
     		return $this->view("El expediente ya se encuentra archivado desde "+$expediente->fechaArchivoFormateada(),500);
     	else {
     			$fechaActual=new \DateTime('now');
@@ -179,11 +179,11 @@ class RestExpedienteController extends FOSRestController{
 	}
 	
 	/**
-	 * @Rest\Put("/desarchivar/{id}")
+	 * @Rest\POST("/desarchivar/{id}")
 	 */
 	public function desarchivarExpediente(Request $request){
 		
-		$id=$request->request->get('id');
+		$id=$request->get('id');
 		$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
 		$estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
 		$estadoExpediente=$estadoExpedienteRepository->find(7);

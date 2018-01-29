@@ -112,8 +112,6 @@ class ExpedienteRepository extends EntityRepository{
 		$rsm->addScalarResult('periodo', 'periodo');
 		$rsm->addScalarResult('folios', 'folios');
 		
-		$fechaActual=new \DateTime('now');
-		
 		$sql='SELECT DISTINCT e.idExpediente, e.numeroExpediente, t.letra, e.periodo, e.folios '.
 			 'FROM expediente e '.
 			 'inner join tipoExpediente t '.

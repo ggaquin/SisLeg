@@ -639,7 +639,7 @@
 				var id = data[ "id" ];
 				$.ajax({
 
-					type:'Put',
+					type:'POST',
 					dataType: 'json	',
 					url:'{{ app.request.getBaseURL() }}/api/expediente/archivar/'+id,
 					success: function(data){
@@ -654,12 +654,12 @@
 			
 			//EVENTO DESARCHIVAR
 			$('#registroExpediente tbody').on('click','.btn-desarchivar',function(){
-
-				var data = tabla.row( $(this).parents('tr') ).data();
+				
+				var data = tabla.row($(this).parents('tr') ).data();
 				var id = data[ "id" ];
 				$.ajax({
 
-					type:'Put',
+					type:'POST',
 					dataType: 'json	',
 					url:'{{ app.request.getBaseURL() }}/api/expediente/desarchivar/'+id,
 					success: function(data){

@@ -214,7 +214,7 @@ assetic:
                 - '@AppBundle/Resources/Public/js/plugins/bootstrap3-datepicker/bootstrap-datetimepicker.min.js'
                 - '@AppBundle/Resources/Public/js/plugins/mousetrap-1.6.1/mousetrap.js'
                 #- '@AppBundle/Resources/Public/js/plugins/datepicker/bootstrap-datepicker.js'
-                - '@AppBundle/Resources/Public/js/plugins/wysihtml5-0.3.0/wysihtml5-0.3.0.min.js'
+                #- '@AppBundle/Resources/Public/js/plugins/wysihtml5-0.3.0/wysihtml5-0.3.0.min.js'
                 - '@AppBundle/Resources/Public/js/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.js'
                 - '@AppBundle/Resources/Public/js/plugins/slimScroll/jquery.slimscroll.min.js'
                 - '@AppBundle/Resources/Public/js/app.js'

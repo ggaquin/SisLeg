@@ -1484,7 +1484,7 @@
 				toolbar: {
 				    "image": false,
 					"size": "xs",
-				},
+				}
 			});
 
 			$(".text-area-speech").wysihtml5({
@@ -1715,9 +1715,21 @@
 				}
 			});
 
-		/* 	$('.wysihtml5-sandbox').contents().find('body').on("keyup",function(e) {
-		        console.log($(e.currentTarget).parent().parent().parent().parent());
-		    }); */
+			/* $('textarea').wysihtml5({
+				"events": {
+				"keyup": function() {
+					alert('keyup');
+				}
+				}
+			}); */
+
+			/* $("#texto").change(function(evt){
+				console.log(evt);
+			}) */
+
+			$('.wysihtml5-sandbox').contents().find('body').on("keyup",function(evt) {
+		        console.log(evt);
+		    });
 
 	});
 	</script>
