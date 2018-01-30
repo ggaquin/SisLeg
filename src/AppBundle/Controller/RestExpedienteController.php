@@ -951,6 +951,7 @@ class RestExpedienteController extends FOSRestController{
             $caratula=$request->request->get('caratula');
             $archivos=$request->files->all();
             $usuario=$this->getUser();
+            $servicioUtilidades=$this->get('utilidades_servicio');
             
             //repositorios y parámetros de configuración
             $tipoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
@@ -966,7 +967,7 @@ class RestExpedienteController extends FOSRestController{
             $expediente->setArchivos($archivos);
             $expediente->setNumeroExpediente($numeroExpediente);
             $expediente->setPeriodo($año);
-            $expediente->setCaratula($caratula);
+            $expediente->setCaratula($servicioUtilidades->clean_str_with_br($caratula));
                       
             //establece la oficina actual (todos ingresan por mesa de entradas)
             $oficina=$oficinaRepository->find($idMesaEntradas);
@@ -1061,6 +1062,7 @@ class RestExpedienteController extends FOSRestController{
             $año=$request->request->get('año');
             $archivos=$request->files->all();
             $usuario=$this->getUser();
+            $servicioUtilidades=$this->get('utilidades_servicio');
 
             $tipoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
             $oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
@@ -1074,7 +1076,7 @@ class RestExpedienteController extends FOSRestController{
             $expediente->setNumeroExpediente($numeroExpediente);
             $expediente->setPeriodo($año);
             $expediente->setFolios($folios);
-            $expediente->setCaratula($caratula);
+            $expediente->setCaratula($servicioUtilidades->clean_str_with_br($caratula));
             $expediente->setArchivos($archivos);
             $proyecto=$expediente->getProyecto();
             

@@ -189,7 +189,10 @@ class RestProyectoController extends FOSRestController{
         $idConcejal=$request->request->get('idConcejal');
         $visto=$request->request->get('visto');
         $considerando=$request->request->get('considerando');
-        $articulos=json_decode($request->request->get('articulos'));
+        $articulos=$request->request->get('articulos');
+        $servicioUtilidades=$this->get('utilidades_servicio');
+        $articulos=$servicioUtilidades->clean_str_without_br($articulos);
+        $articulosAsJson=json_decode($articulos);
  
         $usuario=$this->getUser();
 
@@ -200,13 +203,13 @@ class RestProyectoController extends FOSRestController{
         $proyecto=new Proyecto();
         $proyecto->setTipoProyecto($tipoProyecto);
         $proyecto->setClavesBusqueda($claves);
-        $proyecto->setVisto($visto);
-        $proyecto->setConsiderandos($considerando);
+        $proyecto->setVisto($servicioUtilidades->clean_str_without_br($visto));
+        $proyecto->setConsiderandos($servicioUtilidades->clean_str_without_br($considerando));
         
         $concejal=$perfilRepository->find($idConcejal);
         $proyecto->setConcejal($concejal);
 
-        $proyecto->setArticulos($articulos);
+        $proyecto->setArticulos($articulosAsJson);
         $proyecto->setUsuarioCreacion($usuario->getUsername());
         $proyecto->setFechaCreacion(new \DateTime("now"));
 
@@ -285,8 +288,11 @@ class RestProyectoController extends FOSRestController{
         $idConcejal=$request->request->get('idConcejal');
         $visto=$request->request->get('visto');
         $considerando=$request->request->get('considerando');
-        $articulos=json_decode($request->request->get('articulos'));
+        $articulos=$request->request->get('articulos');
         $usuario=$this->getUser();
+        $servicioUtilidades=$this->get('utilidades_servicio');
+        $articulos=$servicioUtilidades->clean_str_without_br($articulos);
+        $articulosAsJson=json_decode($articulos);
         
         $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
         $perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
@@ -296,12 +302,12 @@ class RestProyectoController extends FOSRestController{
         $proyecto=$proyectoRepository->find($idProyecto);
         $proyecto->setTipoProyecto($tipoProyecto);
         $proyecto->setClavesBusqueda($claves);
-        $proyecto->setVisto($visto);
-        $proyecto->setConsiderandos($considerando);
+        $proyecto->setVisto($servicioUtilidades->clean_str_without_br($visto));
+        $proyecto->setConsiderandos($servicioUtilidades->clean_str_without_br($considerando));
 
         $concejal=$perfilRepository->find($idConcejal);
         $proyecto->setConcejal($concejal);
-        $proyecto->setArticulos($articulos);
+        $proyecto->setArticulos($articulosAsJson);
         $proyecto->setUsuarioModificacion($usuario->getUsername());
         $proyecto->setFechaModificacion(new \DateTime("now"));
 

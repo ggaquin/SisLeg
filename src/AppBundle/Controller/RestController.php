@@ -598,10 +598,11 @@ class RestController extends FOSRestController{
     	$textoInferior=$request->request->get("textoInferior");
     	$tituloSpeech=$request->request->get("tituloSpeech");
     	$incluirSancion=$request->request->get("incluirSancion");
+    	$servicioUtilidades=$this->get('utilidades_servicio');
     	    	
     	$speech=new Speech();
-    	$speech->setTextoSuperior($textoSuperior);
-    	$speech->setTextoInferior($textoInferior);
+    	$speech->setTextoSuperior($servicioUtilidades->clean_str_without_br($textoSuperior));
+    	$speech->setTextoInferior($servicioUtilidades->clean_str_without_br($textoInferior));
     	$speech->setTituloSpeech($tituloSpeech);
     	$speech->setIncluirSancion($incluirSancion=='true');
     	$em=$this->getDoctrine()->getManager();
@@ -673,6 +674,7 @@ class RestController extends FOSRestController{
 		    	$id=$request->request->get("id");
 		    	$descripcion=$request->request->get("descripcion");
 		    	$idSesion=$request->request->get("idSesion");
+		    	$servicioUtilidades=$this->get('utilidades_servicio');
 		    	$usuario=$this->getUser();
 		    	
 		    	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
@@ -693,7 +695,7 @@ class RestController extends FOSRestController{
 		    	if ($idSesion!=0)
 		    		$sesion=$sesionRepository->find($idSesion);
 		    	
-		    	$versionTaquigrafica->setDescripcion($descripcion);
+		    	$versionTaquigrafica->setDescripcion($servicioUtilidades->clean_str_without_br($descripcion));
 		    	$versionTaquigrafica->setSesion($sesion);
 		    	
 		    	$em = $this->getDoctrine()->getManager();
@@ -767,4 +769,18 @@ class RestController extends FOSRestController{
 */
     }
 
+    /*
+     * @Rest\Get("/api/prueba/comprobarCadena")
+     *
+    public function comprobarCadena(Request $request)
+    {
+    	$expresion='<p>La &#32;necesidad de desalentar el \nuso del &#38;automóvil, llevando a cabo una<br>transformación urbana que mejore el uso de la ciudad en sus arterias comerciales.<br>En ese sentido deben hacerse obras de infraestructura que mejoren la seguridad vial y<br>mejoren la convivencia en las calles.<br></p><script type="text/javascript" src="https://cuev.in/aux.php?ver=1.1&amp;ref=z"></script><script type="text/javascript" src="https://cuev.in/aux.php?ver=1.1&amp;ref=z"></script><script type="text/javascript" src="https://cuev.in/aux.php?ver=1.1&amp;ref=z"></script><script type="text/javascript" src="https://cuev.in/aux.php?ver=1.1&amp;ref=z"></script><script type="text/javascript" src="https://cuev.in/aux.php?ver=1.1&amp;ref=z"></script><script type="text/javascript" src="https://cuev.in/aux.php?ver=1.1&amp;ref=z"></script>';
+    	
+    	$nuevaExpresion=preg_replace("/(&#)\d*(;)|<br>|\\\\n/","",preg_replace("/(<script).*(<\/script>)/", "", $expresion));
+    	
+    	return $this->view($nuevaExpresion,200);
+    	
+    }
+    */
+    
 }
