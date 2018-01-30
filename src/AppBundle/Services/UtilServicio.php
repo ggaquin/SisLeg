@@ -14,4 +14,26 @@ class UtilServicio {
 		}
 		return $str;
 	}
+	
+	/**
+	 * Retrona la exopresión original sin tags de script, html entities
+	 * ni elementos br
+	 * 
+	 * @param mixed $expresion
+	 * @return mixed
+	 */
+	function clean_str_with_br($expresion){
+		return preg_replace("/(&#)\d*(;)|<br>|\\\\n/","",preg_replace("/(<script).*(<\/script>)/", "", $expresion));
+	}
+	
+	/**
+	 * Retrona la exopresión original sin tags de script, html entities
+	 * pero conserva elementos br
+	 *
+	 * @param mixed $expresion
+	 * @return mixed
+	 */
+	function clean_str_without_br($expresion){
+		return preg_replace("/(&#)\d*(;)|\\\\n/","",preg_replace("/(<script).*(<\/script>)/", "", $expresion));
+	}
 }

@@ -297,7 +297,7 @@ class DefaultController extends Controller
      */
     public function traerExpedientesOrdenDiaAction(Request $request)
     {
-    	$idSesion=$request->query->get('idSesion');
+	    	$idSesion=$request->query->get('idSesion');
     	$tipoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
     	$tipoProyectoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoProyecto');
     	$tipoExpedienteSesionRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpedienteSesion');
@@ -876,6 +876,8 @@ class DefaultController extends Controller
 		return  $servicioImpresion->getArchivoRemito($word, $fecha, 1);
 		
 	}
+	
+	
     
 }
 

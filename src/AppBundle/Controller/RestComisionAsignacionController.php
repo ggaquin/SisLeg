@@ -444,7 +444,11 @@ class RestComisionAsignacionController extends FOSRestController{
     	$vistosYConsiderandos=$request->request->get('vistosYConsiderandos');
     	$vistos=$request->request->get('vistos');
     	$considerandos=$request->request->get('considerandos');
-    	$articulos=json_decode($request->request->get('articulos'));
+    	$articulos=$request->request->get('articulos');
+    	$servicioUtilidades=$this->get('utilidades_servicio');
+    	$articulos=$servicioUtilidades->clean_str_without_br($articulos);
+    	$articulosAsJson=json_decode($articulos);
+    	
     	
     	$dictamen=null;
     	$dictamenOriginal=null;
@@ -477,7 +481,7 @@ class RestComisionAsignacionController extends FOSRestController{
     	//para el tipo articulado
     	if ($tipoRedaccion=="articulado"){
     		$tipoDictamen=$tipoProyectoRepository->find($idTipoDictamen);
-    		$dictamen->setTextoArticulado($articulos);
+    		$dictamen->setTextoArticulado($articulosAsJson);
     		$dictamen->setTipoDictamen($tipoDictamen);
     	}
     		
@@ -510,9 +514,9 @@ class RestComisionAsignacionController extends FOSRestController{
     		{	//edita la revisión seleccionada
     			$proyecto=$proyectoRepository->find($idProyecto);
     			$revision=new ProyectoRevision();
-    			$revision->setArticulos($articulos);
-    			$revision->setConsiderandos($considerandos);
-    			$revision->setVisto($vistos);
+    			$revision->setArticulos($articulosAsJson);
+    			$revision->setConsiderandos($servicioUtilidades->clean_str_without_br($considerandos));
+    			$revision->setVisto($servicioUtilidades->clean_str_without_br($vistos));
     			$revision->setFechaCreacion(new \DateTime('now'));
     			$revision->setIncluyeVistosYConsiderandos((($vistosYConsiderandos=="true")?true:false));
     			$revision->setOficina($usuario->getRol()->getOficina);
