@@ -351,13 +351,14 @@ class DefaultController extends Controller
     	$usuario=$this->getUser();
     	$oficinaUsuario=$usuario->getRol()->getOficina();
     	$idMesaEntradas=$this->getParameter('id_mesa_entradas');
+    	$idOficinaDespacho=$this->getParameter('id_despacho');
     	$oficinas=null;
     	$tiposMovimientos=null;    	
     	
     	if ($oficinaUsuario!=null && $oficinaUsuario->getId()!=$idMesaEntradas){
     		$oficinas=$oficinaRepository->findBy(array('tipoOficina' => $tipoOficina));
     		$tiposMovimientos=$tipoMovimientoRepository->findBy(array('tipoMovimiento' => 'Pase'));
-    		$muestra_comisiones=0;
+    		$muestra_comisiones=(($oficinaUsuario->getId()==$idOficinaDespacho)?1:0);
     		$muestra_remitos=0;
     	}
     	else{
