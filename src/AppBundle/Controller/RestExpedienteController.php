@@ -592,7 +592,7 @@ class RestExpedienteController extends FOSRestController{
     	$idNuevoEstadoExpediente=$this->getParameter('id_estado_espera_recepcion');
     	$idOficinaComisiones=$this->getParameter('id_comisiones');
     	$oficinaComisiones=$oficinaRepository->find($idOficinaComisiones);
-    	$idOficinaDespacho=$this->getParameter('id_comisiones');
+    	$idOficinaDespacho=$this->getParameter('id_despacho');
     	
     	$remito= new Remito();
     	$destino=$oficinaRepository->find($idOficina);

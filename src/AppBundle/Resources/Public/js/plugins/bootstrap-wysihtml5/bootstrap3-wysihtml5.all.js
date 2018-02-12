@@ -5214,7 +5214,10 @@ wysihtml5.dom.copyAttributes = function(attributesToCopy) {
           for (; i<length; i++) {
             attribute = attributesToCopy[i];
             if (typeof(elementToCopyFrom[attribute]) !== "undefined" && elementToCopyFrom[attribute] !== "") {
-              elementToCopyTo[attribute] = elementToCopyFrom[attribute];
+              if (attribute=="id")
+            	  $(elementToCopyTo).attr('data-id',elementToCopyFrom[attribute]);//elementToCopyTo[attribute] = elementToCopyFrom[attribute]+"-Wysihtml5-Body";
+              else
+            	  elementToCopyTo[attribute] = elementToCopyFrom[attribute];
             }
           }
           return { andTo: arguments.callee };
@@ -6875,8 +6878,9 @@ wysihtml5.dom.replaceWithChildNodes = function(node) {
 
   wysihtml5.dom.Sandbox = Base.extend(
     /** @scope wysihtml5.dom.Sandbox.prototype */ {
-
+    
     constructor: function(readyCallback, config) {
+    
       this.callback = readyCallback || wysihtml5.EMPTY_FUNCTION;
       this.config   = wysihtml5.lang.object({}).merge(config).get();
       this.editableArea   = this._createIframe();
@@ -12204,7 +12208,7 @@ wysihtml5.views.View = Base.extend(
 
       if (!this.config.noTextarea) {
           dom.copyAttributes([
-              "className", "spellcheck", "title", "lang", "dir", "accessKey"
+              "className", "spellcheck", "title", "lang", "dir", "accessKey", "id"
           ]).from(this.textarea.element).to(this.element);
       }
 
