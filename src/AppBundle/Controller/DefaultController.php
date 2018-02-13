@@ -570,13 +570,14 @@ class DefaultController extends Controller
      	//caratula
      	$page=$servicioImpresion->getPage($word,'Legal');
      	$page=$servicioImpresion->writeHTMLToPage('<p></p><p></p><p></p>', $page);
-     	$page=$servicioImpresion->addImageToPage($base.'/document_bootstrap/portada_orden_dia.png', $page);
+     	
      	$nombreDocumento=(($tipo=='OD')?'Orden del Día':'Último Momento');
      	$html='<p></p><p></p><p></p><h1><strong>SESIÓN '.(($tipoSesion=='Mayores Contribuyentes')?'DE ':'').
      		  strtoupper($tipoSesion	).' A CELEBRARSE EL DÍA '.
      		  strtoupper($fecha).'</strong></h1><p></p><p></p><p></p><p></p><h2><strong>'.
      		  strtoupper($nombreDocumento).'</strong></h2>';
-     	$page=$servicioImpresion->writeHTMLToPage($html, $page,1);
+     	//$page=$servicioImpresion->writeHTMLToPage($html, $page,1);
+     	$page=$servicioImpresion->addImageToPage($base.'/document_bootstrap/portada_orden_dia.png', $html,$page);
      
      	
      	//primer página

@@ -136,12 +136,36 @@ class ImpresionServicio
     	return $page;
     }
     
-    public function addImageToPage($url,\PhpOffice\PhpWord\Element\Section $page)
+    public function addImageToPage($url,$htmlText,\PhpOffice\PhpWord\Element\Section $page)
     {
+    	$table=$page->addTable(array('cellMargin' => 0, 'cellMarginRight' => 0,
+    								 'cellMarginBottom' => 0, 'cellMarginLeft' => 0)
+    						  );
+    	
+    	$cellRowSpan = array('indentation' => $this->getIdentation('none'),'valign' => Jc::CENTER,
+    						 'alignment'=>Jc::CENTER);
+    	
+    	$row1=$table->addRow();
+    	$cell1=$row1->addCell(8800,$cellRowSpan);
+    	
+    	$cell1->addImage($url,array('width' => 585, 'height' => 316, 'positioning' => 'absolute',
+    								'posHorizontalRel' => 'margin',
+    								'posVerticalRel' => 'line',
+    								'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER,
+    								'wrappingStyle' => 'tight'));
+    	$row2=$table->addRow();
+    	$cell2=$row2->addCell(8800,$cellRowSpan);
+    	\PhpOffice\PhpWord\Shared\Html::addHtml($cell2, $htmlText);
+    	
+    	$page->addPageBreak();
+    	
+    	/*
     	$page->addImage($url,array('width' => 630, 'height' => 340, 'positioning'=>'relative',
     							   'marginTop' => 100, 'marginLeft'    => 0,
     					           'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER,
     					           'wrappingStyle' => 'square'));
+    	*/
+    	
     	return $page;
     }
     
