@@ -29,6 +29,7 @@
         	  var win = window.open(url, '_blank');
         	  win.focus();
         }
+        /*
         Mousetrap.bind('ctrl+m', function(e) {
     	   $("#bloques-menu").focus();
             return false;
@@ -38,6 +39,9 @@
     	   $("#sidebar-collapse").click();
             return false;
         });
+       */
+
+       
        
         $(document).on('keyup','.menu-fired',function(e){
             if (event.which==32){
@@ -60,9 +64,6 @@
 	        $('[autofocus]', e.target).focus();
 	     });
 
-       /*  $(document).on('ready', function (e) {	
-	        $('[autofocus]', e.target).focus();
-	     }); */
       </script>
       <div class="wrapper">
         <header class="main-header">
@@ -309,10 +310,12 @@
                       		<i class="fa fa-minus"></i>Expedientes Girados</a>
                       	</li>
  
-                      	<li class="menu-fired" tabindex="5" >
-                      		<a href="#" onclick="cargarMenu('/movimientos')">
-                      		<i class="fa fa-minus"></i>Movimientos</a>
-						</li>
+ 						{% if app.user.rol.rol=="ROLE_COMISIONES" %}
+                          	<li class="menu-fired" tabindex="5" >
+                          		<a href="#" onclick="cargarMenu('/movimientos')">
+                          		<i class="fa fa-minus"></i>Movimientos</a>
+    						</li>
+    					{% endif %}
                     </ul>
                   </li>
               {% endif %}
@@ -321,7 +324,7 @@
                {% if app.user.rol.rol=="ROLE_DESPACHO" or app.user.rol.rol=="ROLE_MESA_ENTRADA" or app.user.rol.rol=="ROLE_LEGISLADOR"%}
               		<li class="menu-fired" tabindex="6" title="persione -> para abrir">
               			<a href="#" onclick="cargarMenu('/comisiones');">
-              			<i class="fa fa-users"></i>Comisiones</a>
+              			<i class="fa fa-users"></i><span>Comisiones</</span></a>
               		</li>
                {% endif %}
                
@@ -348,20 +351,22 @@
                       		<i class="fa fa-minus"></i>Expedientes Orden del Día</a>
                       	</li>
                       	
-                      	<li class="menu-fired" tabindex="10" >
-                      		<a href="#" onclick="cargarMenu('/expedientesComisiones');">
-                      		<i class="fa fa-minus"></i>Expedientes En Comisiones</a>
-                      	</li>
-                 
-                      	<li class="menu-fired" tabindex="11" >
-                      		<a href="#" onclick="cargarMenu('/expedientes')">
-                      		<i class="fa fa-minus"></i>Listado Expedientes</a>
-                      	</li>
-                      	                      
-                      	<li class="menu-fired" tabindex="12" >
-                      		<a href="#" onclick="cargarMenu('/movimientos')">
-                      		<i class="fa fa-minus"></i>Movimientos</a>
-                      	</li>
+                      	{% if app.user.rol.rol=="ROLE_DESPACHO" %}
+                          	<li class="menu-fired" tabindex="10" >
+                          		<a href="#" onclick="cargarMenu('/expedientesComisiones');">
+                          		<i class="fa fa-minus"></i>Expedientes Comisiones</a>
+                          	</li>
+                        
+                          	<li class="menu-fired" tabindex="11" >
+                          		<a href="#" onclick="cargarMenu('/expedientes')">
+                          		<i class="fa fa-minus"></i>Listado Expedientes</a>
+                          	</li>
+                                               	                      
+                          	<li class="menu-fired" tabindex="12" >
+                          		<a href="#" onclick="cargarMenu('/movimientos')">
+                          		<i class="fa fa-minus"></i>Movimientos</a>
+                          	</li>
+                        {% endif %}
                       	
                       	<li class="menu-fired" tabindex="13" >
                       		<a href="#" onclick="cargarMenu('/versionesTaquigraficas');">

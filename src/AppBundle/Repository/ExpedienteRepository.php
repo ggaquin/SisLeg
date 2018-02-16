@@ -105,6 +105,14 @@ class ExpedienteRepository extends EntityRepository{
 	
 	public function findNumeroCompletoByNumero($numero,$oficina,$destino){
 		
+		if(preg_match('/^\d*\-\d{2}/',$numero)!==1)
+			throw new \Exception('El criterio de busqueda debe tener el formato  #[#..#]-AA (por ejemplo 1-17)');
+		
+		$numeroSeparado=explode('-', $numero);
+			
+		$periodo='20'.$numeroSeparado[1];
+		$numerador=$numeroSeparado[0];
+		
 		$rsm = new ResultSetMapping();
 		$rsm->addScalarResult('idExpediente', 'id');
 		$rsm->addScalarResult('numeroExpediente', 'numero');
@@ -117,7 +125,7 @@ class ExpedienteRepository extends EntityRepository{
 			 'inner join tipoExpediente t '.
 			 'on e.idTipoExpediente=t.idTipoExpediente ';
 		
-		$condition='WHERE e.numeroExpediente=:numero';
+		$condition='WHERE e.numeroExpediente=:numero and e.periodo=:periodo';
 		
 		if(!is_null($oficina)){
 			$sql.='inner join oficina o on e.idOficina=o.idOficina ';
@@ -135,7 +143,8 @@ class ExpedienteRepository extends EntityRepository{
 		
 		$query = $this->getEntityManager()
 		->createNativeQuery($sql,$rsm);
-		$query->setParameter('numero',$numero);
+		$query->setParameter('numero',$numerador);
+		$query->setParameter('periodo', $periodo);
 		
 		if ($oficina->getId()==9){
 			$oficinas=array($oficina->getId(),3);
@@ -150,12 +159,12 @@ class ExpedienteRepository extends EntityRepository{
 	
 	public function findByNumeroCompleto($numero,$numeroExcluido=null,$tieneSancion=null,$tieneAsignacionComision=null){
 		
+		if(preg_match('/^\d*\-\d{2}/',$numero)!==1)
+			throw new \Exception('El criterio de busqueda debe tener el formato  #[#..#]-AA (por ejemplo 1-17)');
+				
 		$numeroSeparado=explode('-', $numero);
 		$numeroExcluidoSeparado=is_null($numeroExcluido)?$numeroExcluido:explode('-',$numeroExcluido);
-		
-		if (count($numeroSeparado)!=2)
-			throw new \Exception('El criterio de busqueda debe tener el formato {numero}-{año} (por ejemplo 1-17)');
-		
+				
 		$periodo='20'.$numeroSeparado[1];
 		$numerador=$numeroSeparado[0];
 		$periodoNumeroExcluido=is_null($numeroExcluido)?null:'20'.$numeroExcluidoSeparado[1];
@@ -308,6 +317,9 @@ class ExpedienteRepository extends EntityRepository{
 	
 	public function findInformeByNumeroExpediente($numero)
 	{
+		if(preg_match('/^\d*\-\d{2}/',$numero)!==1)
+			throw new \Exception('El criterio de busqueda debe tener el formato  #[#..#]-AA (por ejemplo 1-17)');
+		
 		$rsm = new ResultSetMapping();
 		$rsm->addScalarResult('idMovimiento', 'id');
 		$rsm->addScalarResult('numeroExpediente', 'numero_expediente');
@@ -319,10 +331,7 @@ class ExpedienteRepository extends EntityRepository{
 		$rsm->addScalarResult('comision', 'comision_reserva');
 	
 		$numeroSeparado=explode('-', $numero);
-		
-		if (count($numeroSeparado)!=2)
-			throw new \Exception('El criterio de busqueda debe tener el formato {numero}-{año} (por ejemplo 1-17)');
-			
+					
 		$periodo='20'.$numeroSeparado[1];
 		$numerador=$numeroSeparado[0];
 		

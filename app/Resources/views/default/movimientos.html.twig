@@ -307,6 +307,7 @@
 				$("#total-filas").addClass("hidden");
 		    	$("#selExpedientes").empty().change();
 		    	$("#selExpedientes").prop("disabled", true);
+		    	$("#selDestino").prop('disabled',false);
 		    	$("#selDestino").val(0);
 			});
 						
@@ -459,6 +460,18 @@
 				}	
 			});
 
+			$.fn.select2.defaults.defaults['language'].inputTooShort = function(){
+				  return 'Ingrese con formato #[#..#]-AA, ej.: 1-17,100-18'
+			};
+
+			$.fn.select2.defaults.defaults['language'].noResults = function(args){
+				  return 'El expediente no tiene asignacion o no está habilitado para la seleción'
+			};
+
+			$.fn.select2.defaults.defaults['language'].errorLoading = function(){
+				  return 'Lo ingresado no coincide con el formato #[#..#]-AA'
+			};
+
 			$("#selExpedientes").select2({
 				ajax: {
     			    url: '{{ app.request.getBaseURL() }}'+"/api/expediente/getNumeroCompletoByNumero",
@@ -483,7 +496,7 @@
 			  },
 			  allowClear: true,
 			  language: "es",
-			  minimumInputLength: 1,
+			  minimumInputLength: 4,
 			  theme: "bootstrap"
 			});	
 

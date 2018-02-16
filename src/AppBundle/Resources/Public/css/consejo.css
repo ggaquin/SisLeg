@@ -60,7 +60,7 @@ body {
   -moz-transition: -moz-transform 0.3s ease-in-out, margin 0.3s ease-in-out;
   -o-transition: -o-transform 0.3s ease-in-out, margin 0.3s ease-in-out;
   transition: transform 0.3s ease-in-out, margin 0.3s ease-in-out;
-  margin-left: 270px;
+  margin-left: 230px;
   z-index: 820;
 }
 .layout-top-nav .content-wrapper,
@@ -419,7 +419,7 @@ a:focus {
   left: 0;	
   padding-top: 50px;
   min-height: 100%;
-  width: 270px;
+  width: 230px;
   z-index: 810;
   -webkit-transition: -webkit-transform 0.3s ease-in-out, width 0.3s ease-in-out;
   -moz-transition: -moz-transform 0.3s ease-in-out, width 0.3s ease-in-out;
@@ -678,7 +678,7 @@ a:focus {
 .sidebar-menu,
 .main-sidebar .user-panel,
 .sidebar-menu > li.header {
-  white-space: nowrap;
+  white-space: normal;
   overflow: hidden;
 }
 .sidebar-menu:hover {

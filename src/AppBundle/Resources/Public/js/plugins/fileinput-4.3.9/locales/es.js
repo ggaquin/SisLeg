@@ -14,7 +14,7 @@
     $.fn.fileinputLocales['es'] = {
         fileSingle: 'archivo',
         filePlural: 'archivos',
-        browseLabel: 'Examinar &hellip;',
+        browseLabel: 'Expl<u>o</u>rar &hellip;',
         removeLabel: 'Quitar',
         removeTitle: 'Quitar archivos seleccionados',
         cancelLabel: 'Cancelar',

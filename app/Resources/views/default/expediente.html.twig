@@ -141,8 +141,8 @@
 		wysihtml5.dom.getPastedHtml = function(event) {
     		var html;
     		if (event.clipboardData) {
-    			html = event.clipboardData.getData('text/plain');
-    			html = html.replace(/\r?\n/g, '<br/>');
+    			html = '<p>'+event.clipboardData.getData('text/plain')+'</p>';
+    			html = html.replace(/\r?\n/g, '</p><p>');
                 html = html.replace(/\t/g, '');
 		  	}
 		  	return html;
@@ -443,7 +443,8 @@
 											        html+="<button type='button' title='Giros' class='btn btn-info btn-xs btn-giros' data-toggle='modal' data-target='#giros'><span class='glyphicon glyphicon-refresh'></span></button>";
 											        html+="<button type='button' title='Informes' class='btn btn-info btn-xs btn-informes' data-toggle='modal' data-target='#informes'><span class='glyphicon glyphicon-list-alt'></span></button>";
 											        if('{{ 'EXP_EDIT' in  app.user.listaPermisos }}' && row.permite_edicion==true)
-									            		html+="<button type='button'title='Editar expediente' class='btn btn-primary btn-xs btn-editar ' data-toggle='modal' data-target='#modificacionExpediente'><span class='glyphicon glyphicon-pencil'></span></button> ";
+									            		//html+="<button type='button'title='Editar expediente' class='btn btn-primary btn-xs btn-editar ' data-toggle='modal' data-target='#modificacionExpediente'><span class='glyphicon glyphicon-pencil'></span></button> ";
+									            		html+="<button type='button'title='Editar expediente' class='btn btn-primary btn-xs btn-editar'><span class='glyphicon glyphicon-pencil'></span></button> ";
 										            if ('{{ 'EXP_ARCH' in  app.user.listaPermisos }}' && row.fecha_archivo_formateada=='' && 
 												            row.permite_edicion==true && "{{ app.user.rol.oficina.id }}"== "9")
 										            	html+="<button type='button'title='Archivar expediente' class='btn btn-danger btn-xs btn-archivar '><i class='fa fa-level-down' aria-hidden='true'></i></button> ";
@@ -819,7 +820,8 @@
 			//EVENTO BOTON EDITAR EXPEDIENTE EN GRILLA
 		    $('#registroExpediente tbody').on( 'click', '.btn-editar', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
-		        $("#modificacionExpediente").find('input[name="id"]').val(data[ "id" ]);
+		        //$("#modificacionExpediente").find('input[name="id"]').val(data[ "id" ]);
+		        cargarMenuConParametro('/expediente_a_m','id',data[ "id" ]);
 		    } );
 
 		    //EVENTO ABRIR MODAL MODIFICAR EXPEDIENTE
@@ -1880,8 +1882,14 @@
 		<div class="row pull-right">
 			<ol class="breadcrumb">
 		        <li><a href="#"><i class="fa fa-dashboard"></i> Principal</a></li>
-		        <li>Expedientes</li>
-		        <li class="active">Gestión Expedientes</li>
+		        <li>{{ menuPadre | capitalize }}</li>
+		        <li class="active">
+		        	{% if gestionaExpedientes==1 %}
+		        		Gestión Expedientes
+		        	{% else %}	
+		        		Listado Expedientes
+		        	{% endif %}
+		        </li>
 		        
 		    </ol>
 		</div>
@@ -1889,7 +1897,11 @@
 		<div class="row">
 			<div class="col-md-3">
 				<h2>
-			        Gestión Expedientes
+			        {% if gestionaExpedientes==1 %}
+		        		Gestión de Expedientes
+		        	{% else %}	
+		        		Listado Expedientes
+		        	{% endif %}
 			    </h2>
 			</div>
 			<div class="col-md-8 col-md-offset-1">
@@ -1924,7 +1936,7 @@
 								                <option value="{{ estado.id }}">{{ estado.estadoExpediente }}</option>
 								            {% endfor %}
 										</select>
-										<input class="form-control busqueda hidden filtro" id="busqueda-3" placeholder="ejemplo 1-17"/>
+										<input class="form-control busqueda hidden filtro" id="busqueda-3" placeholder="ej.: 1-17,100-18"/>
 										<select class="form-control busqueda hidden filtro" id="busqueda-4">
 											<option value="0">Seleccione Tipo</option>
 											{% for tipo in tipos %}
@@ -1964,15 +1976,18 @@
 	                		<th>
 	                			<div class="btn-group">
 	                				{% if 'EXP_NEW' in  app.user.listaPermisos %}
-		                			<button type="button" title="Agregar expediente"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#nuevoExpediente">
-							    			<span class="glyphicon glyphicon-plus"></span>
-							    	</button>
+    		                			<!-- <button type="button" title="Agregar expediente"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#nuevoExpediente">
+    							    			<span class="glyphicon glyphicon-plus"></span>
+    							    	</button> -->
+    							    	<button type="button" title="Agregar expediente"class="btn btn-primary btn-xs" onclick="cargarMenu('/expediente_a_m')">
+    							    			<span class="glyphicon glyphicon-plus"></span>
+    							    	</button>
 							    	{% endif %}
-							    	{% if 'EXP_ADD' in app.user.listaPermisos %}
+							    	{# if 'EXP_ADD' in app.user.listaPermisos %}
 							    	<button type="button" title="Ingresar proyecto"class="btn btn-primary btn-xs" data-toggle="modal" data-target="#proyectosBusqueda">
 							    			<span class="glyphicon glyphicon-download-alt"></span>
 							    	</button>
-							    	{% endif %}
+							    	{% endif #}
 							    </div>
 						    </th>	
 						    <th>Numero</th>

@@ -80,14 +80,18 @@ class ExpedienteComisionRepository extends EntityRepository{
 	}
 	
 	public function findByExpediente_Numero($numeroExpediente,$anulados){
+		
+		
+		if(preg_match('/^\d*\-\d{2}/',$numeroExpediente)!==1)
+			throw new \Exception('El criterio de busqueda debe tener el formato  #[#..#]-AA (por ejemplo 1-17)');
 				
 		$numeroExpedienteSeparado=explode('-', $numeroExpediente);
 		
-		if (count($numeroExpediente)!=2)
-			throw new \Exception('El criterio de busqueda debe tener el formato {numero}-{año} (por ejemplo 1-17)');
+// 		if (count($numeroExpediente)!=2)
+// 			throw new \Exception('El criterio de busqueda debe tener el formato {numero}-{año} (por ejemplo 1-17)');
 			
-			$periodo='20'.$numeroExpedienteSeparado[1];
-			$numerador=$numeroExpedienteSeparado[0];
+		$periodo='20'.$numeroExpedienteSeparado[1];
+		$numerador=$numeroExpedienteSeparado[0];
 			
 		$qb = $this->createQueryBuilder('ec')
 			->innerJoin('ec.expediente','e')
@@ -147,42 +151,46 @@ class ExpedienteComisionRepository extends EntityRepository{
 		
 	public function findExpedienteVigenteByNumero($numeroExpediente,$estado=null){
 		
-		$numeroSeparado=explode('-', $numeroExpediente);
+		if(preg_match('/^\d*\-\d{2}/',$numeroExpediente)==1){
 		
-		if (count($numeroSeparado)!=2)
-			throw new \Exception('El criterio de busqueda debe tener el formato {numero}-{año} (por ejemplo 1-17)');
+			$numeroSeparado=explode('-', $numeroExpediente);
 			
+// 			if (count($numeroSeparado)!=2)
+// 				throw new \Exception('El criterio de busqueda debe tener el formato {numero}-{año} (por ejemplo 1-17)');
+				
 			$periodo='20'.$numeroSeparado[1];
 			$numerador=$numeroSeparado[0];
-		
-		$qb = $this->createQueryBuilder('ec')
-			->innerJoin('ec.expediente','e')
-			->innerJoin('e.estadoExpediente', 'ee')
-			->leftJoin('ec.sesion', 's');
-		$qb ->where($qb->expr()->andX(
-										$qb->expr()->eq('e.numeroExpediente', '?1'),
-										$qb->expr()->eq('e.periodo', '?2'),
-										$qb->expr()->orX(
-															$qb->expr()->isNull('s.id'),
-															$qb->expr()->eq('s.tieneOrdenDelDia','?3')
-														 ),
-										$qb->expr()->orX(
-												$qb->expr()->isNull('?6'),
-												$qb->expr()->eq('ee.id','?6')
-												),
-										$qb->expr()->eq('ec.anulado', '?4'),
-										$qb->expr()->isNull('e.fechaArchivo'),
-										$qb->expr()->eq('e.numeroSancion', '?5')
-									 )
-				   )
-			->setParameter(1, $numerador)
-			->setParameter(2, $periodo)
-			->setParameter(3, false)
-			->setParameter(4, false)
-			->setParameter(5,'')
-			->setParameter(6,$estado);
 			
-		return $qb->getQuery()->getResult();
+			$qb = $this->createQueryBuilder('ec')
+				->innerJoin('ec.expediente','e')
+				->innerJoin('e.estadoExpediente', 'ee')
+				->leftJoin('ec.sesion', 's');
+			$qb ->where($qb->expr()->andX(
+											$qb->expr()->eq('e.numeroExpediente', '?1'),
+											$qb->expr()->eq('e.periodo', '?2'),
+											$qb->expr()->orX(
+																$qb->expr()->isNull('s.id'),
+																$qb->expr()->eq('s.tieneOrdenDelDia','?3')
+															 ),
+											$qb->expr()->orX(
+													$qb->expr()->isNull('?6'),
+													$qb->expr()->eq('ee.id','?6')
+													),
+											$qb->expr()->eq('ec.anulado', '?4'),
+											$qb->expr()->isNull('e.fechaArchivo'),
+											$qb->expr()->eq('e.numeroSancion', '?5')
+										 )
+					   )
+				->setParameter(1, $numerador)
+				->setParameter(2, $periodo)
+				->setParameter(3, false)
+				->setParameter(4, false)
+				->setParameter(5,'')
+				->setParameter(6,$estado);
+				
+			return $qb->getQuery()->getResult();
+		}
+		else			throw new \Exception('El criterio de busqueda debe tener el formato {numero}-{año} (por ejemplo 1-17)');
 		
 	}
 
@@ -284,7 +292,7 @@ class ExpedienteComisionRepository extends EntityRepository{
 			->leftJoin('ec.sesion', 's')
 			->where($qb->expr()->andX(
 										$qb->expr()->eq('e.id', '?1'),
-										$qb->expr()->like('c.id', '?2'),
+										$qb->expr()->eq('c.id', '?2'),
 										$qb->expr()->orX(
 															$qb->expr()->isNull('s.id'),
 															$qb->expr()->eq('s.tieneOrdenDelDia', ':tieneOrdenDelDia')

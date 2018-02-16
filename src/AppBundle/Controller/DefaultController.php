@@ -236,6 +236,8 @@ class DefaultController extends Controller
         $tipoSesionRepository=$this->getDoctrine()->getRepository('AppBundle:TipoSesion');
         $sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
         $idOficinaExterna=$this->getParameter('id_oficina_externa');
+        $idOficinaMesa=$this->getParameter('id_mesa_entradas');
+        $usuario=$this->getUser();
         
         $tiposExpediente=$tiposExpedienteRepository->findBy(array(),array('tipoExpediente' => 'ASC'));
         $estadosExpediente=$estadoExpedienteRepository->findBy(array(),array('estadoExpediente' => 'ASC'));
@@ -250,7 +252,36 @@ class DefaultController extends Controller
         $array['oficinasExternas']=$oficinasExternas;
         $array['tiposSesion']=$tipoSesionRepository->findAll();
         $array['años']=$años;
+        $array['menuPadre']=(($usuario->getRol()->getOficina()==null ||
+        					$usuario->getRol()->getOficina()->getId()==$idOficinaMesa)
+        					?"Expedientes"
+        					:$usuario->getRol()->getOficina()->getOficina());	
+        $array['gestionaExpedientes']=(($usuario->getRol()->getOficina()==null || 
+        							   $usuario->getRol()->getOficina()->getId()==$idOficinaMesa)?1:0);
         return $this->render('default/expediente.html.twig', $array);
+    }
+    
+    /**
+     * @Route("/expediente_a_m", name="expediente_a_m")
+     */
+    public function expedienteAMAction(Request $request)
+    {
+    	$id=$request->query->get("id");
+    	$tiposExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
+    	$tipoOficinaRepository=$this->getDoctrine()->getRepository('AppBundle:TipoOficina');
+    	$oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
+    	$idOficinaExterna=$this->getParameter('id_oficina_externa');
+    	
+    	$tiposExpediente=$tiposExpedienteRepository->findBy(array(),array('tipoExpediente' => 'ASC'));
+    	$tipoOficinaExterna=$tipoOficinaRepository->find($idOficinaExterna);
+    	$oficinasExternas=$oficinaRepository->findBy(array('tipoOficina' => $tipoOficinaExterna));
+    	
+    	$array=[];
+    	$array['base_dir']=realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR;
+    	$array['tipos']=$tiposExpediente;
+    	$array['oficinasExternas']=$oficinasExternas;
+    	$array['idExpediente']=$id;
+    	return $this->render('default/expediente_a_m.html.twig', $array);
     }
     
     /**
@@ -262,14 +293,25 @@ class DefaultController extends Controller
     	$tipoProyectoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoProyecto');
     	$tipoSesionRepository=$this->getDoctrine()->getRepository('AppBundle:TipoSesion');
     	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
+    	$idOficinaComisiones=$this->getParameter('id_comisiones');
+    	$usuario=$this->getUser();
     	
     	$años=$sesionRepository->findByDistinctPeriodos();
     	$comisiones=$comisionRepository->findBy(array('activa' => true));
     	$tipoProyectos=$tipoProyectoRepository->findAll();
+    	$menuPadre=(($usuario->getRol()->getOficina()==null ||
+    				 $usuario->getRol()->getOficina()->getId()==$idOficinaComisiones)
+    				 ?"Comisiones"
+    				 :$usuario->getRol()->getOficina()->getOficina());
+    	$gestionaDictamenes=(($usuario->getRol()->getOficina()==null ||
+    						  $usuario->getRol()->getOficina()->getId()==$idOficinaComisiones)?1:0);
+    	
     	return $this->render('default/expedientes_comisiones.html.twig',array(
     		   'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
     		   'comisiones' => $comisiones, 'tipoProyectos'=> $tipoProyectos,
     		   'años'=>$años,
+    		   'menuPadre'=>$menuPadre,
+    		   'gestionaDictamenes'=>$gestionaDictamenes,
     		   'MAYORIA' => $this->getParameter('dictaminantes_en_mayoria'),
     		   'PRIMERA_MINORIA' => $this->getParameter('dictaminantes_en_primer_minoria'),
     		   'SEGUNDA_MINORIA' => $this->getParameter('dictaminantes_en_segunda_minoria'),

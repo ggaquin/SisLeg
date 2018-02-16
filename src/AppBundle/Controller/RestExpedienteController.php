@@ -665,7 +665,7 @@ class RestExpedienteController extends FOSRestController{
     								   500);
 
     			$expedienteComisionAsignado=$expedienteComisionRepository
-    											->findByExpediente_IdAndComision_Id($detalle->idExpediente, 
+    											->findByExpediente_IdAndComision_Id($detalle->id, 
     																				$detalle->idComision);
 	    				   
 	    		if(is_null($expedienteComisionAsignado)){
@@ -1123,6 +1123,119 @@ class RestExpedienteController extends FOSRestController{
             return $this->view($e->getMessage(),500);
             
         }
+    }
+    
+    /**
+     *  @Rest\Post("/save")
+     */
+    public function guardarExpedienteAction(Request $request)
+    {
+    	try{
+    		
+    		$idExpediente=$request->request->get('idExpediente');
+    		$idproyecto=$request->request->get('idProyecto'); 
+    		$idTipoExpediente=$request->request->get('idTipoExpediente');
+    		$numeroExpediente=$request->request->get('numeroExpediente');
+    		$folios=$request->request->get('folios');
+    		$documentoParticular=$request->request->get('documentoParticular');
+    		$apellidosParticular=$request->request->get('apellidosParticular');
+    		$nombresParticular=$request->request->get('nombresParticular');
+    		$idOrigen=$request->request->get('idOrigen');
+    		$numeros=json_decode($request->request->get('numeros'));
+    		$caratula=$request->request->get('caratula');
+    		$año=$request->request->get('año');
+    		$archivos=$request->files->all();
+    		$usuario=$this->getUser();
+    		$servicioUtilidades=$this->get('utilidades_servicio');
+    		
+    		$tipoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
+    		$oficinaRepository=$this->getDoctrine()->getRepository('AppBundle:Oficina');
+    		$estadoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:EstadoExpediente');
+    		$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
+    		$idMesaEntradas=$this->getParameter('id_mesa_entradas');
+    		$expediente=null;
+    		
+    		if ($idExpediente==0){ /* nuevo expediente */
+    			
+    			$expediente=new Expediente();
+    			$expediente->setUsuarioCreacion($usuario->getUsername());
+    			$expediente->setFechaCreacion(new \DateTime("now"));
+    			
+    			//establece la oficina actual (todos ingresan por mesa de entradas)
+    			$oficina=$oficinaRepository->find($idMesaEntradas);
+    			$expediente->setOficinaActual($oficina);
+    			
+    			//establece el proyecto
+    			$proyecto=null;
+    			if($idproyecto!=0){
+    				$proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
+    				$proyecto=$proyectoRepository->find($idproyecto);
+    				$expediente->setProyecto($proyecto);
+    			}
+    
+    			//establece el estado del expediente
+    			$estadoExpediente=$estadoExpedienteRepository->find(1);
+    			$expediente->setEstadoExpediente($estadoExpediente);
+    		}
+    		else{ /* edición de expediente */
+    			
+    			$expediente=$expedienteRepository->find($idExpediente);
+    			//el expediente no permite ediciónes
+    			if (!($expediente->getPermiteEdicion()))
+    				return $this->view('El expediente '.$numeroExpediente.' no puede ser editado',500);
+    			$expediente->setUsuarioModificacion($usuario->getUsername());
+    			$expediente->setFechaModificacion(new \DateTime("now"));
+    		}
+    		    			
+    		//datos del HCD
+    		$expediente->setNumeroExpediente($numeroExpediente);
+    		$expediente->setPeriodo($año);
+    		$expediente->setFolios($folios);
+    		$expediente->setCaratula($servicioUtilidades->clean_str_with_br($caratula));
+    		$expediente->setArchivos($archivos);
+    			
+    		$proyecto=$expediente->getProyecto();
+    			
+    		$tipoExpediente=null;
+    		if($proyecto==null)
+    			$tipoExpediente=$tipoExpedienteRepository->find($idTipoExpediente);
+    		else
+    			$tipoExpediente=$proyecto->getTipoProyecto()->getTipoExpediente();
+    		$expediente->setTipoExpediente($tipoExpediente);
+    					
+    		$demandanteParticular=null;
+    		if ($idTipoExpediente==3){
+    			$demandanteParticular= new DemandanteParticular();
+    			$demandanteParticular->setDocumento($documentoParticular);
+    			$demandanteParticular->setApellidos($apellidosParticular);
+    			$demandanteParticular->setNombres($nombresParticular);
+    			$expediente->setOrigenExterno(null);
+    		}
+    		$expediente->setDemandanteParticular($demandanteParticular);
+    					
+    		$origenExterno=null;
+    		if ($idTipoExpediente==4){
+    			$origenExterno= new OrigenExterno();
+    			$origenExterno->setNumeracionOrigen($numeros);
+    			$oficinaOrigen = $oficinaRepository->find($idOrigen);
+    			$origenExterno->setOficina($oficinaOrigen);
+    			$expediente->setDemandanteParticular(null);
+    		}
+    		$expediente->setOrigenExterno($origenExterno);
+    	    					
+    		$em = $this->getDoctrine()->getManager();
+   			$em->persist($expediente);
+   			$em->flush();
+   				
+   			return $this->view('El expediente '.$numeroExpediente.' se guardó en forma exitosa',200);
+    					
+    	}catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e){
+    		return $this->view('El expediente '.$numeroExpediente.' ya existe',500);
+    		
+    	}catch(\Exception $e){
+    		return $this->view($e->getMessage(),500);
+    		
+    	}
     }
 
     /**
