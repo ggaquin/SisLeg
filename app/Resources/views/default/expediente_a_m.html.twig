@@ -1003,7 +1003,7 @@
 		{% if idExpediente==0 %}
     		{% if 'EXP_ADD' in app.user.listaPermisos %}
     			<div class="btn-group" style="padding-bottom: 15px">
-                	<button type="button" id="btn-ingresar-proyecto" title="Ingresar proyecto" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#proyectosBusqueda">
+                	<button type="button" id="btn-ingresar-proyecto" title="Ctrl+C" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#proyectosBusqueda">
                 			<u>C</u>rear desde Proyecto <span class="glyphicon glyphicon-download-alt"></span>
                 	</button>
                 </div>
@@ -1023,7 +1023,7 @@
     							<label for="selTipoExpediente"><u>T</u>ipo</label> 
     							<select
     								class="form-control" id="selTipoExpediente"
-    								name="selTipoExpediente">
+    								name="selTipoExpediente" title="Alt+T">
     								<option value="0">Seleccione Tipo</option>
     								{% for tipo in tipos %}
     								<option value="{{ tipo.id }}" class="opcion-{{ tipo.letra }}">{{ tipo.tipoExpediente }}
@@ -1036,23 +1036,23 @@
     					</div>
     					<div class="col-md-3">
     						<div class="form-group">
-    							<label for="numeroExpediente"><u>N</u>° Exp.</label> <input
-    								type="text" class="form-control es-numero" id="numeroExpediente"
-    								name="numeroExpediente" placeholder="N° Expediente">
+    							<label for="numeroExpediente"><u>N</u>° Exp.</label> 
+    							<input type="text" class="form-control es-numero" id="numeroExpediente"
+    								   title="Alt+N" name="numeroExpediente" placeholder="N° Expediente">
     						</div>
     					</div>
     					<div class="col-md-2">
     						<div class="form-group">
     							<label for="folios"><u>F</u>olios</label> <input type="text"
     								class="form-control es-numero" id="folios" name="folios"
-    								placeholder="Folios">
+    								placeholder="Folios" title="Alt+F">
     						</div>
     					</div>
     					<div class="col-md-2">
     						<div class="form-group">
     							<label for="añoIngreso"><u>A</u>ño</label> <input type="text"
     								class="form-control es-numero" id="añoIngreso" name="añoIngreso"
-    								placeholder="Año" maxlength="4">
+    								placeholder="Año" maxlength="4" title="Alt+A">
     						</div>
     					</div>
     					{# DATOS EXP. HCD #}
@@ -1065,21 +1065,21 @@
     						<div class="form-group">
     							<label for="documentoParticular"><u>D</u>ocumento</label> <input
     								type="text" id="documentoParticular" name="documentoParticular"
-    								class="form-control text-center es-numero" maxlength="8">
+    								class="form-control text-center es-numero" maxlength="8" title="Alt+D">
     						</div>
     					</div>
     					<div class="col-md-5">
     						<div class="form-group">
     							<label for="apellidosParticular">A<u>p</u>ellidos</label> <input
     								type="text" id="apellidosParticular" name="apellidosParticular"
-    								class="form-control">
+    								class="form-control" title="Alt+P">
     						</div>
     					</div>
     					<div class="col-md-5">
     						<div class="form-group">
     							<label for="nombresParticular">No<u>m</u>bres</label> <input type="text"
     								id="nombresParticular" name="nombresParticular"
-    								class="form-control">
+    								class="form-control" title="Alt+M">
     						</div>
     					</div>
     					{# DATOS DEMANDANTE EXP. PARTICULAR #}
@@ -1100,7 +1100,7 @@
     					<div class="col-md-4">
     						<div class="form-group">
     							<label for="selOrigen">Origen <u>E</u>xterno</label> <select
-    								class="form-control" id="selOrigen" name="selOrigen">
+    								class="form-control" id="selOrigen" name="selOrigen" title="Alt+E">
     								<option value="0">Seleccione origen</option>
     								{% for oficina in oficinasExternas %}
     								<option value="{{ oficina.id }}">{{ oficina.oficina|capitalize }}</option>
@@ -1115,7 +1115,7 @@
     							</div>
     							<div class="col-md-6">
     								<button type="button" class="btn btn-sm btn-primary pull-right"
-    									id="btn-agregar-numeros-externos"
+    									id="btn-agregar-numeros-externos" title="Ctrl+A"
     									onclick="abrirModalExternos('nuevoExpediente','tabla-numeros');">
     									<u>A</u>gregar Número</button>
     							</div>
@@ -1148,7 +1148,7 @@
     				<div class="form-group">
     					<label for="caratula"><u>C</u>aratula</label>
     					<textarea class="form-control text-area-caratula" id="caratula"
-    						name="caratula" placeholder="Caratula"></textarea>
+    						name="caratula" placeholder="Caratula" title="Alt+C - ESC (Salir)"></textarea>
     				</div>
     			</div>
     			<div class="col-md-7">
@@ -1163,9 +1163,9 @@
     			<div class="col-md-12">
     				<div class="text-center">
     					<div class="btn-group">
-    						<button type="button" class="btn btn-info" 
+    						<button type="button" class="btn btn-info" title="Ctrl+E (Enfocar)"
     								id="btn-cancelar-expediente" >Canc<u>e</u>lar</button>
-    						<button type="submit" class="btn btn-primary"
+    						<button type="submit" class="btn btn-primary" title="Ctrl+G (Enfocar)"
     								id="btn-guardar-expediente"><u>G</u>uardar</button>
     					</div>
     				</div>

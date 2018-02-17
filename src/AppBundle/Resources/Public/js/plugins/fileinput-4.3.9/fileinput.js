@@ -372,12 +372,12 @@
                 '   <div class="file-caption-name"></div>\n' +
                 '</div>\n';
             //noinspection HtmlUnknownAttribute
-            tBtnDefault = '<button type="{type}" tabindex="500" title="{title}" class="{css}" ' +
+            tBtnDefault = '<button type="{type}" tabindex="500" title="Ctrl+O" class="{css}" ' +
                 '{status}>{icon} {label}</button>';
             //noinspection HtmlUnknownAttribute
             tBtnLink = '<a href="{href}" tabindex="500" title="{title}" class="{css}" {status}>{icon} {label}</a>';
             //noinspection HtmlUnknownAttribute
-            tBtnBrowse = '<div tabindex="500" class="{css}" {status}>{icon} {label}</div>';
+            tBtnBrowse = '<div tabindex="500" class="{css}" title="Ctrl+O" {status}>{icon} {label}</div>';
             tModalMain = '<div id="' + $h.MODAL_ID + '" class="file-zoom-dialog modal fade" ' +
                 'tabindex="-1" aria-labelledby="' + $h.MODAL_ID + 'Label"></div>';
             tModal = '<div class="modal-dialog modal-lg" role="document">\n' +
