@@ -141,7 +141,7 @@
 							        "url": "api/expediente/getRemitosByCriteria/"+tipoCriterio()+"/"+criterio(),
 			            			"dataSrc": '',
 			            			"error": function (xhr, error, thrown) {
-				            			
+			            				$("#estadoFiltro").bootstrapToggle('off');
 			            			    toastr.error(JSON.parse(xhr.responseText));
 			            			}
 							    },
@@ -596,6 +596,11 @@
 		    	format:'DD/MM/YYYY',
 		    	maxDate : 'now'
 		    });
+
+			$("#busqueda-5").keydown(function(event){
+				if (event.which==111)
+					return false;			
+			})
 					
 	});
 	</script>
@@ -656,7 +661,7 @@
 										</select>
 										<input class="form-control campo-fecha text-center busqueda hidden filtro" 
 											   id="busqueda-4">
-										<input class="form-control busqueda hidden filtro" placeholder="numero-año (ejemplo 1-17)" id="busqueda-5">
+										<input class="form-control busqueda hidden filtro" placeholder="ej.: 1-17,100-18" id="busqueda-5">
 									<div>
 								</form>
 							</div>

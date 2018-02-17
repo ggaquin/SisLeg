@@ -122,11 +122,13 @@ class RemitoRepository extends EntityRepository{
 	
 	public function findByNumeroCompleto($oficina,$numero){
 		
+		if(preg_match('/^\d*\-\d{2}/',$numero)!==1)
+			throw new \Exception('El criterio de busqueda debe tener el formato  #[#..#]-AA (por ejemplo 1-17)');
 		
 		$numeroSeparado=explode('-', $numero);
 		
-		if (count($numeroSeparado)!=2)
-			throw new \Exception('El criterio de busqueda debe tener el formato {numero}-{año} (por ejemplo 1-17)');
+// 		if (count($numeroSeparado)!=2)
+// 			throw new \Exception('El criterio de busqueda debe tener el formato {numero}-{año} (por ejemplo 1-17)');
 			
 		$periodo='20'.$numeroSeparado[1];
 		$numerador=$numeroSeparado[0];

@@ -136,15 +136,15 @@
 			alert('key up');
          }); */
 	
-		wysihtml5.dom.getPastedHtml = function(event) {
-    		var html;
-    		if (event.clipboardData) {
-    			html = event.clipboardData.getData('text/plain');
-    			html = html.replace(/\r?\n/g, '<br/>');
-                html = html.replace(/\t/g, '');
-    	  	}
-    	  	return html;
-		};
+         wysihtml5.dom.getPastedHtml = function(event) {
+     		var html;
+     		if (event.clipboardData) {
+     			html = '<p>'+event.clipboardData.getData('text/plain')+'</p>';
+     			html = html.replace(/\r?\n/g, '</p><p>');
+                 html = html.replace(/\t/g, '');
+ 		  	}
+ 		  	return html;
+ 		};
 
 		Array.prototype.reemplazar  = function(objeto, clave){
 			   var array = $.map(this, function(v,i){
