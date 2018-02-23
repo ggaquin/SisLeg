@@ -460,7 +460,7 @@
 				}	
 			});
 
-			$.fn.select2.defaults.defaults['language'].inputTooShort = function(){
+		/* 	$.fn.select2.defaults.defaults['language'].inputTooShort = function(){
 				  return 'Ingrese con formato #[#..#]-AA, ej.: 1-17,100-18'
 			};
 
@@ -470,9 +470,21 @@
 
 			$.fn.select2.defaults.defaults['language'].errorLoading = function(){
 				  return 'Lo ingresado no coincide con el formato #[#..#]-AA'
-			};
+			}; */
 
 			$("#selExpedientes").select2({
+				language:{
+					locale: "es",
+					inputTooShort: function(){
+						  return 'Ingrese con formato #[#..#]-AA, ej.: 1-17,100-18'
+					},
+					noResults: function(){
+						  return 'El expediente no tiene asignacion o no está habilitado para la seleción'
+					},
+					errorLoading: function(){
+						  return 'Lo ingresado no coincide con el formato #[#..#]-AA'
+					}
+				},
 				ajax: {
     			    url: '{{ app.request.getBaseURL() }}'+"/api/expediente/getNumeroCompletoByNumero",
     			    dataType: 'json',
@@ -495,7 +507,7 @@
     		        }
 			  },
 			  allowClear: true,
-			  language: "es",
+			  //language: "es",
 			  minimumInputLength: 4,
 			  theme: "bootstrap"
 			});	

@@ -826,7 +826,7 @@ class Dictamen
     }
     
     /**
-     * get lListaAgregados
+     * get listaAgregados
      *
      * @return array
      * @VirtualProperty()

@@ -311,6 +311,7 @@
 		
 		
 		function agregarInciso(){
+			debugger;
 			var letra=String.fromCharCode($("#incisos").find('tr').length+65);
 			var inciso='<tr>'+
 	        		   '<td class="numero-fila">'+letra.toLowerCase()+') -</td>' +
@@ -588,8 +589,9 @@
 															if ('{{ 'COM_EXP_DICT_EDIT' in app.user.listaPermisos }}')
         														html+="<button type='button' title='Editar Dictamen' "+
         															  "class='btn btn-success btn-xs btn-editar-dictamen-mayoria' "+
-        															  ((row.edicion_habilitada==false)?"disabled":"")+
-        															  " data-toggle='modal' data-target='#modalDictamen' id='"+row.dictamen_mayoria_id+"'>"+
+        															  ((row.edicion_habilitada==false)?"disabled":"")+" id='"+row.dictamen_mayoria_id+"'>"+
+        															  /* ((row.edicion_habilitada==false)?"disabled":"")+
+        															  " data-toggle='modal' data-target='#modalDictamen' id='"+row.dictamen_mayoria_id+"'>"+ */
         															  "Editar Dictamen</button>";
 
         													html+="<button type='button' title='Firmas' "+
@@ -1000,38 +1002,44 @@
 		    $('#registroAsignaciones tbody').on( 'click', '.btn-nuevo-dictamen-mayoria', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        var numeroDictaminantes='{{ MAYORIA }}';
-		        abrirAltaDictamen(data,numeroDictaminantes);
+		        //abrirAltaDictamen(data,numeroDictaminantes);
+		        cargarMenuConDosParametros('/dictamen_a_m','idAsignacion',data[ 'id' ],'numeroDictaminantes',numeroDictaminantes);
 		    } );
 
 		    $('#registroAsignaciones tbody').on( 'click', '.btn-nuevo-dictamen-primera-minoria', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        var numeroDictaminantes='{{ PRIMERA_MINORIA }}';
-		        abrirAltaDictamen(data,numeroDictaminantes);
+		        //abrirAltaDictamen(data,numeroDictaminantes);
+		        cargarMenuConDosParametros('/dictamen_a_m','idAsignacion',data[ 'id' ],'numeroDictaminantes',numeroDictaminantes);
 		    });
 
 		    $('#registroAsignaciones tbody').on( 'click', '.btn-nuevo-dictamen-segunda-minoria', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        var numeroDictaminantes='{{ SEGUNDA_MINORIA }}';
-		        abrirAltaDictamen(data,numeroDictaminantes,id);
+		        //abrirAltaDictamen(data,numeroDictaminantes,id);
+		        cargarMenuConDosParametros('/dictamen_a_m','idAsignacion',data[ 'id' ],'numeroDictaminantes',numeroDictaminantes);
 		    });
 		    
 			//EVENTO EDITAR DICTAMEN DE LA GRILLA DE ASIGNACIONES
 		    $('#registroAsignaciones tbody').on( 'click', '.btn-editar-dictamen-mayoria', function (e) {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        var numeroDictaminantes='{{ MAYORIA }}';
-		        abrirEdicionDictamen(data,numeroDictaminantes,e.currentTarget.id);
+		        //abrirEdicionDictamen(data,numeroDictaminantes,e.currentTarget.id);
+		        cargarMenuConDosParametros('/dictamen_a_m','idAsignacion',data[ 'id' ],'numeroDictaminantes',numeroDictaminantes);
 		    });
 
 		    $('#registroAsignaciones tbody').on( 'click', '.btn-editar-dictamen-primera-minoria', function (e) {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        var numeroDictaminantes='{{ PRIMERA_MINORIA }}';
-		        abrirEdicionDictamen(data,numeroDictaminantes,e.currentTarget.id);
+		        //abrirEdicionDictamen(data,numeroDictaminantes,e.currentTarget.id);
+		        cargarMenuConDosParametros('/dictamen_a_m','idAsignacion',data[ 'id' ],'numeroDictaminantes',numeroDictaminantes);
 		    });
 
 		    $('#registroAsignaciones tbody').on( 'click', '.btn-editar-dictamen-segunda-minoria', function (e) {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        var numeroDictaminantes='{{ SEGUNDA_MINORIA }}';
-		        abrirEdicionDictamen(data,numeroDictaminantes,e.currentTarget.id);
+		        //abrirEdicionDictamen(data,numeroDictaminantes,e.currentTarget.id);
+		        cargarMenuConDosParametros('/dictamen_a_m','idAsignacion',data[ 'id' ],'numeroDictaminantes',numeroDictaminantes);
 		    });
 
 			//EVENTO MOSTRAR DEL MODAL DE DICTAMEN
@@ -1750,19 +1758,7 @@
 			  minimumInputLength: 3,
 			  theme: "bootstrap",
 			});
-			
-			$.fn.select2.defaults.defaults['language'].inputTooShort = function(){
-				  return 'Ingrese con formato #[#..#]-AA, ej.: 1-17,100-18'
-			};
-
-			$.fn.select2.defaults.defaults['language'].noResults = function(args){
-				  return 'El expediente no tiene asignacion o no está habilitado para la seleción'
-			};
-
-			$.fn.select2.defaults.defaults['language'].errorLoading = function(){
-				  return 'Lo ingresado no coincide con el formato #[#..#]-AA'
-			};
-
+		
 			$("#selAgregados").select2({
 				ajax: {
 			    url: '{{ app.request.getBaseURL() }}'+"/api/comisionAsignacion/getExpedientefromAsignados",
@@ -1840,6 +1836,18 @@
 			});
 
 			$("#selExpedienteAdd").select2({
+				language:{
+					locale: "es",
+					inputTooShort: function(){
+						  return 'Ingrese con formato #[#..#]-AA, ej.: 1-17,100-18'
+					},
+					noResults: function(){
+						  return 'El expediente no tiene asignacion o no está habilitado para la seleción'
+					},
+					errorLoading: function(){
+						  return 'Lo ingresado no coincide con el formato #[#..#]-AA'
+					}
+				},
 				ajax: {
 			    url: '{{ app.request.getBaseURL() }}'+"/api/comisionAsignacion/getExpedientefromAsignados",
 			    dataType: 'json',
@@ -1860,8 +1868,7 @@
 				    };
 		        },
 			  },
-			  language: "es",
-			  minimumInputLength: 1,
+			  minimumInputLength: 4,
 			  theme: "bootstrap",
 			  matcher: select2MatchCustom,
 			  placeholder: "ej.: 1-17, 100-18"

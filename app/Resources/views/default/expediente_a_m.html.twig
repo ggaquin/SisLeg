@@ -1,7 +1,5 @@
 {% extends 'layout.html.twig' %}
 
-
-
 {% block stylesheets %}
 	{# parent() }#}
   	{% stylesheets '@css_datatables' %}
@@ -18,15 +16,7 @@
 
 {% block body %}
 	<style type="text/css">
-		@media (min-width: 768px) {
-		  .modal-xl {
-		    width: 95%;
-		    max-width:1600px;
-		  }
-		}
-
-		.select2-selection--multiple { max-height: 10rem; overflow-y: auto }
-
+		
 		.file-preview {
 			max-height: 371px;
 			height: 370px;
@@ -34,70 +24,22 @@
 			display: inline-block;
 			overflow-y: auto;
 		}
-
-		.scrollable-div{
-			min-height: 39px;
-			max-height: 40px;
-			overflow-y: auto;
-			border: 1px solid #ccc;
-		}
-
-		.div-Preview{
-			max-height: 194px;
-			height: 194px;
-			padding-left: 10px;
-			padding-right: 10px;
-			background-color: #fff;	
-			overflow-y: scroll;
+		
+		.text-area-caratula{
+			height: 370px!important;
 		}
 
 		#proyectosBusqueda .modal-body{
 			height: 600px;
 			max-height: 600px;
-		}
-
-		#nuevoExpediente{
-			z-index: 10000;
-		}
-			
-		#respuestaInforme{
-			z-index: 10000;
 		}	
 				
 		#numeroExterno{
 			z-index: 15000;
 		}
-		
-		#modalAltaSesion{
-			z-index: 15000;
-		}
-		
+			
 		#kvFileinputModal{
 			z-index: 15000;
-		}
-
-		.tab{
-			height: 545px;
-			max-height:545px;
-			overflow-y: auto; 
-		}
-		
-		.tab-active{
-			font-weight: bold;
-			color: #0000ff;
-			padding-left: 10px;
-		}
-		
-		.tab-active::before{
-			content: "- ";
-			font-weight: bold;
-		}
-		
-		.toggle-on.btn{
-			line-height: 22.5px!important;
-		}
-		.toggle-off.btn{
-			line-height: 22.5px!important;
 		}
 					
 		table {
@@ -264,7 +206,7 @@
 		wysihtml5.dom.getPastedHtml = function(event) {
     		var html;
     		if (event.clipboardData) {
-    			html = '<p>'+event.clipboardData.getData('text/plain')+'</p>';
+    			html = event.clipboardData.getData('text/plain');
     			html = html.replace(/\r?\n/g, '</p><p>');
                 html = html.replace(/\t/g, '');
 		  	}
@@ -305,44 +247,7 @@
 						break;
 			};
 		}
-		
-		/* function mostrarOrigenParaEdicion(mostrar){
-
-			$(".chkSesion").bootstrapToggle("on");
-			
-			switch(parseInt(mostrar)){
-			
-				case 3:
-						$(".ente-externo").addClass('hidden');
-						$(".proyecto-concejal").addClass('hidden');
-						$(".expediente-particular").removeClass('hidden');
-						$("#apellidosParticularMod").val('');
-						$("#nombresParticularMod").val('');
-						$("#documentoParticularMod").val('');
-						break;
-				case 4:
-				case 9:
-						$(".proyecto-concejal").addClass('hidden');
-						$(".expediente-particular").addClass('hidden');
-						$(".ente-externo").removeClass('hidden');
-						$("#tabla-numeros-mod > tbody").html("");
-						$("#selOrigenMod").val(0);
-						break;
-				case 0:		
-				case 5:
-				case 8:
-						$(".expediente-particular").addClass('hidden');
-						$(".ente-externo").addClass('hidden');
-						$(".proyecto-concejal").addClass('hidden');
-						break;
-				default:
-						$(".expediente-particular").addClass('hidden');
-						$(".ente-externo").addClass('hidden');
-						$(".proyecto-concejal").removeClass('hidden');
-						break;
-			};
-		} */
-			
+					
 		function mostrarTiposPara(mostrar){
 			if (mostrar=="no-proyectos"){
 				$(".opcion-P").addClass("hidden");
@@ -401,12 +306,6 @@
 			}
 
 			mostrarOrigen($("#selTipoExpediente").val());
-			/* $("#numeroExpediente").val('');
-			$("#folios").val('');
-			$("#añoIngreso").val((new Date()).getFullYear());
-			$("#caratula").data("wysihtml5").editor.setValue(''); */
-			
-
 		}
 
 		function edicionExpediente(id) {
@@ -421,7 +320,6 @@
 
 					var tipoExpediente=data.tipo_expediente;
 					$("#selTipoExpediente").val(tipoExpediente);
-					//mostrarOrigen(tipoExpediente);
 					$("#numeroExpediente").val(data.numero_expediente);
 					$("#caratula").data("wysihtml5").editor.setValue(data.caratula);
 					$("#folios").val(data.folios);
@@ -430,7 +328,6 @@
 					if(data.proyecto!=0){
 						$("#selTipoExpediente").prop( "disabled", true );
 						$("#concejal").val(data.concejal);
-						//$("#concejales").html(data.concejal);
 						mostrarTiposPara("proyectos");
 						setTimeout(function(){ $("#numeroExpediente").focus(); }, 0);
 					}
@@ -568,128 +465,7 @@
 	    		$("#numeroExterno").modal('hide');
 		    	
 			}); 
-			
-			//---------------------------------------------------------------------------------------------------------------
-			//---------------------------------------EDICIÓN DEL EXPEDIENTE--------------------------------------------------
-			//---------------------------------------------------------------------------------------------------------------
-
-			//GUARDAR MODIFICACION DEL EXPEDIENTE
-			/*
-			$("#modificacion").on('submit',function(e){
-
-				e.preventDefault();
-				$("#btn-Modificacion-expediente").prop("disabled",true);
-             	var form=$(e.target);
-              	var formData=new FormData();
-
-				var idExpediente=$("#modificacionExpediente").find('input[name="id"]').val();
-              	var idTipoExpediente=$("#selTipoExpedienteMod").val();
-              	var numeroExpediente=$("#numeroExpedienteMod").val();
-              	var folios=$("#foliosMod").val();
-              	var documentoParticular=$("#documentoParticularMod").val();
-              	var apellidosParticular=$("#apellidosParticularMod").val();
-              	var nombresParticular=$("#nombresParticularMod").val();
-              	var idOrigen=$("#selOrigenMod").val();
-				var año=$("#añoIngresoMod").val();
-				var numeros=[];
-              	$("#tabla-numeros-mod > tbody > tr").each(function(){ 
-                  	var numero = { 
-                          			ente:$(this).find("td:eq(0)").html(), 
-                              		numero:$(this).find("td:eq(1)").html(), 
-                              		letra:$(this).find("td:eq(2)").html(), 
-                              		año: $(this).find("td:eq(3)").html(), 
-                              		folios:$(this).find("td:eq(4)").html(),
-                              		cuerpos:$(this).find("td:eq(5)").html()
-                              	  }; 
-                	 numeros.push(numero);
-                });
-
-                var caratula=$("#caratulaMod").val();
-                var archivos=$(form).find('[name="input-file-Mod"]')[0].files;
-
-                var validacion='';
-
-                formData.append('idExpediente',idExpediente); 
-            	
-              	formData.append('idTipoExpediente',idTipoExpediente);
-              	validacion+=((idTipoExpediente==0)?'<li>Debe seleccionar un tipo de expediente</li>':'');
-              	
-              	formData.append('numeroExpediente',numeroExpediente);
-              	validacion+=((numeroExpediente.replace(/ /g, '').length==0)?'<li>El expediente debe tener un número</li>':'');
-              	validacion+=((!$.isNumeric(numeroExpediente))?'<li>El número de expediente no puede contener letras ni espacios</li>':'');
-              	
-              	formData.append('folios',folios);
-              	validacion+=((folios.replace(/ |\n/g, '').length==0)?'<li>Debe especificar la cantidad de folios</li>':'');
-              	validacion+=((!$.isNumeric(folios))?'<li>la número de folios no puede contener letras ni espacios</li>':'');
-              	
-              	formData.append('documentoParticular',documentoParticular);
-              	validacion+=((idTipoExpediente==3 && folios.replace(/ |\n/g, '').length!=0 && !$.isNumeric(documentoParticular))
-                      		  ?'<li>la número de documento no puede contener letras ni espacios</li>':'');
-				formData.append('apellidosParticular',apellidosParticular);
-				validacion+=((idTipoExpediente==3 && apellidosParticular.replace(/ |\n/g, '').length==0)
-							  ?'<li>Debe especificar un apellido para el demandante particular</li>':'');
-				  
-				formData.append('nombresParticular',nombresParticular);
-				validacion+=((idTipoExpediente==3 && apellidosParticular.replace(/ |\n/g, '').length==0)
-						  	  ?'<li>Debe especificar un nombre para el demandante particular</li>':'');
-			  	  
-				formData.append('idOrigen',idOrigen);
-				validacion+=((idTipoExpediente==4 && idOrigen==0)
-					  	  	  ?'<li>Debe especificar el origen del expediente</li>':'');
-		  	  	  
-				formData.append('numeros',JSON.stringify(numeros));
-				validacion+=((idTipoExpediente==4 && numeros.length==0)
-				  	  	  	  ?'<li>Debe especificar el/los numero/s de origen del expediente</li>':'');	
-	  	  	  	  		
-				formData.append('caratula',caratula);
-				validacion+=((caratula.replace(/ |\n/g, '').length==0)
-							  ?'<li>Debe especificar un texto para la caratula</li>':'');
-				validacion+=((caratula.length>1000)
-						  	  ?'<li>La carátula del expediente puede tener como máximo 1000 símbolos incluidos espacios y retornos de línea y formatos</li>':'');	
-		
-				formData.append('año',año);
-				validacion+=((año.replace(/ |\n/g, '').length==0)
-						  	 ?'<li>Debe especificar un año para el expediente</li>':'');
-				validacion+=((parseInt(año)>(new Date()).getFullYear())
-					  	 	  ?'<li>El año del expediente no puede ser mayor que el actual</li>':'');
-				  
-				$.each(archivos, function(i, archivo) {
-                	formData.append('uploadedFiles-' + i, archivo);
-            	});
-				
-	            if (validacion.length>0) 
-				{
-					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
-								validacion+'</ul>':'');
-					toastr.error(validacion);
-					$('#btn-Modificacion-expediente').prop("disabled", false);
-					return false;
-				}
-				else{
-
-	            	$.ajax({
-		                async: true,
-		               
-		                data: formData,
-		                cache: false,
-		                contentType: false,
-		                processData: false,
-		                type:  $(form).attr('method'),
-	                success: function(data) {
-	                    toastr.success(data);
-						tabla.ajax.reload();
-						$('#modificacionExpediente').modal('hide');
-	                	},
-	                complete:function(){
-	                	$('#btn-Modificacion-expediente').prop("disabled", false);
-	                },
-	                error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(JSON.parse(jqXHR.responseText));
-						}
-	            	});
-	            }
-			});*/
-			
+						
 			//--------------------------------------------------------------------------------------------------------------
 			//-------------------------------------------NUEVO EXPEDIENTE----------------------------------------------------
 			//--------------------------------------------------------------------------------------------------------------
@@ -802,11 +578,7 @@
 	                success: function(data) {
 	                    toastr.success(data);
 	                    cargarMenu('/expedientes');
-	                    //setTimeout(function(){ cargarMenu('/expedientes'); }, 1000);
-	                	},/*
-	                complete: function(){
-	                	$('#btn-guardar-expediente').prop("disabled", false);
-	                },*/
+	                },
 	                error: function(jqXHR,textStatus,errorThrown ){
 	                	$('#btn-guardar-expediente').prop("disabled", false);
 						toastr.error(JSON.parse(jqXHR.responseText));
@@ -964,8 +736,6 @@
 			});
 
 			iniciarFormulario($("#idExpediente").val());
-
-			
 			
 	});
 	</script>
@@ -1011,8 +781,8 @@
         {% endif %}
         	
     	<form id="frm-expediente" action="api/expediente/save" method="POST">
-    		<input type="hidden" id="idProyecto" name="idProyecto" value="{{ idPrroyecto }}">
-    		<input type="hidden" id="idTipoExpediente" name="idTipoExpediente" value="{{ idTipoExpediente }}">
+    		<input type="hidden" id="idProyecto" name="idProyecto">
+    		<input type="hidden" id="idTipoExpediente" name="idTipoExpediente">
     		<input type="hidden" id="idExpediente" name="idExpediente" value="{{ idExpediente }}">
     		<div class="row">
     			<div class="col-md-5">
@@ -1090,7 +860,6 @@
     						<div class="form-group">
     							<label for="concejal">Concejal</label>
     							<input type="text" class="form-control" id="concejal" name="concejal" disabled="disabled"> 
-    							<!-- <div class="scrollable-div" id="concejales" name="concejales"></div> -->
     						</div>
     					</div>
     					{# DATOS AUTORES EXP. LEGISLATIVO #}

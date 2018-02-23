@@ -15,6 +15,29 @@
 	  </style>
 
       <script type="text/javascript">
+
+      document.onkeydown = checkKeycode;
+      
+        function checkKeycode(e) {
+    
+          var keycode;
+          if (window.event)
+              keycode = window.event.keyCode;
+          else if (e)
+              keycode = e.which;
+          
+          if (e.ctrlKey && keycode == 82) {
+              if (e.preventDefault)
+              {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  
+              }
+          }
+          
+        
+        }
+      
         function noImplementado(){
           toastr.warning("NO IMPLEMENTADO EN ESTA VERSIÓN");
         }
@@ -25,6 +48,11 @@
         function cargarMenuConParametro(url,parametroNombre, parametroValor){
         	$("#contenidoUsuario").load('{{ app.request.getBaseURL() }}'+ url +'?'+parametroNombre+'='+parametroValor);
 		} 
+        function cargarMenuConDosParametros(url,parametro1Nombre, parametro1Valor,parametro2Nombre, parametro2Valor){
+        	$("#contenidoUsuario").load('{{ app.request.getBaseURL() }}'+ url +
+                						'?'+parametro1Nombre+'='+parametro1Valor+
+                						'&'+parametro2Nombre+'='+parametro2Valor);
+		}
         function obtenerRecurso(url) {
         	  var win = window.open(url, '_blank');
         	  win.focus();

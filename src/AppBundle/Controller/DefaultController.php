@@ -5,7 +5,6 @@ namespace AppBundle\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 // use twig\twig;
 
 use AppBundle\Entity\Bloque;
@@ -18,7 +17,6 @@ use AppBundle\Entity\Sesion;
 use AppBundle\Entity\TipoExpedienteSesion;
 use AppBundle\Entity\TipoSesion;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use AppBundle\Services\ImpresionServicio;
 
 
 class DefaultController extends Controller
@@ -186,8 +184,8 @@ class DefaultController extends Controller
     						 												 ->getNombreCompleto(),
     						 		'id_secretario'=>$autoridadSecretario->getPerfil()
     						 											 ->getId(),
-    						 		'nombre_secretario'=>$autoridadSecretario->getPerfil()
-    						 												 ->getNombreCompleto(),
+	    						 		'nombre_secretario'=>$autoridadSecretario->getPerfil()
+	    						 												 ->getNombreCompleto(),
     						 ));	
     }
 
@@ -317,6 +315,98 @@ class DefaultController extends Controller
     		   'SEGUNDA_MINORIA' => $this->getParameter('dictaminantes_en_segunda_minoria'),
     		   'tiposSesion'=>$tipoSesionRepository->findAll()
     	));
+    }
+    
+    /**
+     * @Route("/dictamen_a_m", name="dictamen_a_m")
+     */
+    public function dictamenAMAction(Request $request)
+    {
+    	$id=$request->query->get("idAsignacion");
+    	$numeroDictaminantes=$request->query->get("numeroDictaminantes");
+    	
+    	$expedienteComisionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteComision');
+    	$tipoProyectoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoProyecto');
+    	$dictamenRepository=$this->getDoctrine()->getRepository('AppBundle:Dictamen');
+    	
+    	$expedienteComision=$expedienteComisionRepository->find($id);
+    	$tipoProyectos=$tipoProyectoRepository->findAll();
+    	$proyecto=$expedienteComision->getExpediente()->getProyecto();
+    	$comision=$expedienteComision->getComision();
+    	$idDictamen=0;
+    	
+    	if ($numeroDictaminantes==$this->getParameter('dictaminantes_en_mayoria') &&
+    		!is_null($expedienteComision->getDictamenMayoria()))
+    		$idDictamen=$expedienteComision->getDictamenMayoria()->getId();
+    		
+    	if ($numeroDictaminantes==$this->getParameter('dictaminantes_en_primer_minoria') &&
+    		!is_null($expedienteComision->getDictamenPrimeraMinoria()))
+    			$idDictamen=$expedienteComision->getDictamenPrimeraMinoria()->getId();
+    		
+    	if ($numeroDictaminantes==$this->getParameter('dictaminantes_en_segunda_minoria') &&
+    		!is_null($expedienteComision->getDictamenSegundaMinoria()))
+    			$idDictamen=$expedienteComision->getDictamenSegundaMinoria()->getId();
+    		
+    	$dictamen=$dictamenRepository->find($idDictamen);
+    	
+    	$textoArticulado=[];
+    	$articulos=[];
+    	
+    	if (!is_null($dictamen)){
+    		
+	    	if($dictamen instanceof \AppBundle\Entity\DictamenArticulado){
+	    		foreach ($dictamen->getTextoArticulado() as $item)
+		    		$textoArticulado[]=$item;
+		    	$textoArticulado=$this->container->get('serializer')->serialize($textoArticulado,'json');
+	    	} else $textoArticulado=$this->container->get('serializer')->serialize([],'json');
+	    	
+	    	
+	    	if($dictamen instanceof \AppBundle\Entity\DictamenRevision){
+		    	foreach ($dictamen->getRevisionProyecto()->getArticulos() as $item)
+		    		$articulos[]=$item;
+		    		$articulos=$this->container->get('serializer')->serialize($articulos,'json');
+	    	} else $articulos=$this->container->get('serializer')->serialize([],'json');
+	    			
+	    	$data=array(
+	    				'clase_dictamen'=>$dictamen->getClaseDictamen(),
+	    				'id_tipo_dictamen'=>(($dictamen instanceof \AppBundle\Entity\DictamenArticulado)
+	    						?$dictamen->getTipoDictamen()->getId():0),
+	    				'texto_libre'=>$dictamen->getTextoLibre(),
+	    				'texto_articulado'=>$textoArticulado,
+	    				'vistos'=>(($dictamen instanceof \AppBundle\Entity\DictamenRevision)
+	    								?$dictamen->getRevisionProyecto()->getVisto():''),
+	    				'considerandos'=>(($dictamen instanceof \AppBundle\Entity\DictamenRevision)
+	    									?$dictamen->getRevisionProyecto()->getConsiderandos():''),
+	    				'articulos'=>$articulos,
+	    				'incluye_vistos_y_considerandos'=>$this->container->get('serializer')->serialize((($dictamen instanceof \AppBundle\Entity\DictamenRevision)
+	    													?$dictamen->getRevisionProyecto()->getIncluyeVistosyConsiderandos():true),'json'),
+	    				'revision_id'=>(($dictamen instanceof \AppBundle\Entity\DictamenRevision)
+	    									?$dictamen->getRevisionProyecto()->getId():0),
+	    				'agregados'=>$this->container->get('serializer')->serialize($dictamen->getListaAgregados(), 'json')//;$dictamen->getListaAgregados()
+	    			  );
+    	}
+    	else $data=array(
+		    			'texto_articulado'=>$this->container->get('serializer')->serialize($textoArticulado, 'json'),
+		    			'articulos'=>$this->container->get('serializer')->serialize($articulos, 'json'),
+		    			'agregados'=>$this->container->get('serializer')->serialize([], 'json'),
+    					'incluye_vistos_y_considerandos'=>$this->container->get('serializer')->serialize(true,'json'),
+    					'revision_id'=>-1
+    					
+    	);
+    	
+    	$array=[];
+    	$array['base_dir']=realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR;
+    	$array['dictaminantes']=$numeroDictaminantes;
+    	$array['idAsignacion']=$expedienteComision->getId();
+    	$array['idExpediente']=$expedienteComision->getExpediente()->getId();
+    	$array['idProyecto']=(!is_null($proyecto)?$proyecto->getId():0);
+    	$array['idComision']=$comision->getId();
+    	$array['nombreComision']=$comision->getComision();
+    	$array['tipoProyectos']=$tipoProyectos;
+    	$array['idDictamen']=$idDictamen;
+    	$array['data']=$data;
+    	
+    	return $this->render('default/dictamen_a_m.html .twig', $array);
     }
     
     

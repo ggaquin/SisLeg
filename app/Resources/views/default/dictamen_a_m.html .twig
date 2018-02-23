@@ -1,0 +1,1699 @@
+{% extends 'layout.html.twig' %}
+
+
+
+{% block stylesheets %}
+	{# parent() }#}
+  	{% stylesheets '@css_datatables' %}
+      	<link rel="stylesheet" href="{{ asset_url }}" /></link>
+  	{% endstylesheets %}
+{% endblock %}
+
+{% block javascripts %}
+	{# parent() #}
+    {% javascripts '@js_datatables'%}
+        <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+{% endblock %}
+
+{% block body %}
+	<style type="text/css">
+		@media (min-width: 768px) {
+		  .modal-xl {
+		    width: 95%;
+		    max-width:1600px;
+		  }
+		}
+					
+		.text-area-larga{
+			height: 467px!important;
+		}
+		
+		.text-area-corta{
+			height: 200px!important;
+		}
+		
+		.text-area-mini{
+			height: 80px!important;
+		}
+		
+		.numero-fila{
+			font-size: 150%;
+			font-weight: bold;
+			vertical-align: middle!important;
+		}
+		.herramienta-fila{
+			vertical-align: middle!important;
+		}
+		
+		.div-articulos{
+			max-height: 449px;
+			overflow-y:auto;
+			overflow-x: hidden; 
+		}
+		
+		.div-incisos{
+			height: 255px;
+			max-height: 255px;
+			overflow-y: auto;
+			overflow-x: hidden;
+		}
+		
+		.tab{
+			height: 502px;
+			max-height:503px;
+		}
+		
+		.div-revision{
+			height: 466px;
+			max-height:467px;
+			overflow-y: auto;
+			overflow-x: hidden;
+		}
+							
+		.tab-active{
+			background-color: #f8f8ff;
+		}
+			
+		.toggle-on.btn{
+			line-height: 22.5px!important;
+		}
+		.toggle-off.btn{
+			line-height: 22.5px!important;
+		}
+	
+		.selComisiones{
+		    min-height: 120px!important;
+		    max-height: 121px!important;
+		    overflow-y: auto!important;
+		} 
+		
+		.selAgregados{
+		    min-height: 120px!important;
+		    max-height: 121px!important;
+		    overflow-y: auto!important;
+		} 
+		
+	
+	</style>
+	<script type="text/javascript">
+
+	/*  window.addEventListener("keydown", function(e) {
+		 	
+			if (e.ctrlKey==true && e.which==17){
+				e.preventDefault();	
+				return false;
+			} 
+		},true); */
+	
+		/////////////////atajos de teclado/////////////
+
+		/************    atajo botones   *************/
+	
+    	$.Shortcuts.add({ //tipo de expediente
+    	    type: 'down',
+    	    mask: 'Ctrl+I',
+    	    enableInInput: true,
+    	    handler: function() {
+  
+    			if ($("#link-tab-3").hasClass('tab-active'))
+    				$("#btn-revisiones").click();
+    	    }
+    	});
+
+    	$.Shortcuts.add({ //tipo de expediente
+    	    type: 'down',
+    	    mask: 'Ctrl+N',
+    	    enableInInput: true,
+    	    handler: function(e) {
+        	    e.preventDefault;
+    	    	e.stopPropagation();
+    			alert("event stopped"); 
+    	    }
+    	});
+    
+    	$.Shortcuts.add({ //cancelar alta/edicion de dictamen
+    	    type: 'down',
+    	    mask: 'Ctrl+E',
+    	    enableInInput: true,
+    	    handler: function() {
+    	    	if ($('#modalArticulo').hasClass('in'))
+        	    	$("#btn-cancelar-articulo").focus();
+    	    	else
+        	    	$("#btn-cancelar-dictamen").focus();
+    	    }
+    	});
+    
+    	$.Shortcuts.add({ //boton edita revision
+    	    type: 'down',
+    	    mask: 'Ctrl+V',
+    	    enableInInput: true,
+    	    handler: function(e) {
+        	    e.stopPropagation();
+    	    	if ($("#link-tab-3").hasClass('tab-active') && !$("#div-edita-revision").hasClass("hidden")){
+        	    	if ($("#editaRevision").is(":checked"))
+        	    		$("#editaRevision").bootstrapToggle('off');
+        	    	else
+        	    		$("#editaRevision").bootstrapToggle('on');	 
+    	    	}
+    	    }
+    	});
+    
+    	$.Shortcuts.add({ //boton incluir vistos y considerandos
+    	    type: 'down',
+    	    mask: 'Ctrl+C',
+    	    enableInInput: true,
+    	    handler: function() {
+    	    	if ($("#link-tab-3").hasClass('tab-active') && !$("#div-vistosYConsiderandos").hasClass("hidden")){
+        	    	if ($("#vistosYConsiderandos").is(":checked"))
+        	    		$("#vistosYConsiderandos").bootstrapToggle('off');
+        	    	else
+        	    		$("#vistosYConsiderandos").bootstrapToggle('on');	 
+    	    	}
+    	    }
+    	});
+
+    	$.Shortcuts.add({ //nuevo articulo
+    	    type: 'down',
+    	    mask: 'Ctrl+A',
+    	    enableInInput: true,
+    	    handler: function() {
+
+    	    	if ($('#modalArticulo').hasClass('in'))
+        	    	$("#btn-agregar-articulo").focus();
+    	    	else{
+    				if ($("#link-tab-2").hasClass('tab-active'))
+        	    		$("#btn-nuevo-articulo").click();
+    	    		
+    				if ($("#link-tab-3").hasClass('tab-active') && !$("#div-revision").hasClass("hidden"))
+        	    		$("#btn-nuevo-articulo-revision").click();
+    	    	}
+    	    }
+    	});
+
+    	$.Shortcuts.add({ //nuevo articulo
+    	    type: 'down',
+    	    mask: 'Ctrl+D',
+    	    enableInInput: true,
+    	    handler: function(e) {
+        	    e.preventDefault();
+        	    if ($("#id").val()!=0)
+    	    		$("#btn-deshacer-cambios").focus();
+    	    }
+    	});
+
+    	$.Shortcuts.add({ //nuevo articulo
+    	    type: 'down',
+    	    mask: 'Ctrl+S',
+    	    enableInInput: true,
+    	    handler: function(e) {
+        	    e.preventDefault();
+        	    if ($("#link-tab-3").hasClass('tab-active') && $('#modalArticulo').hasClass('in'))
+        				$("#btn-agregar-inciso").click();
+    	    }
+    	});
+
+    	/************    atajo controles   *************/
+			
+    	$.Shortcuts.add({ //tipo de redaccion
+    	    type: 'down',
+    	    mask: 'Alt+R',
+    	    enableInInput: true,
+    	    handler: function() {
+    	    	$("#selTipoRedaccion").focus();
+    	    }
+    	});
+
+    	$.Shortcuts.add({ //tipo de dictamen
+    	    type: 'down',
+    	    mask: 'Alt+D',
+    	    enableInInput: true,
+    	    handler: function() {
+    	    	$("#selTipoDictamen").focus();
+    	    }
+    	});
+
+    	$.Shortcuts.add({ //selector de comisiones
+    	    type: 'down',
+    	    mask: 'Alt+C',
+    	    enableInInput: true,
+    	    handler: function() {
+    	    	$("#selComisiones").focus();
+    	    }
+    	});
+
+    	$.Shortcuts.add({ //selector de expedientes agregados
+    	    type: 'down',
+    	    mask: 'Alt+E',
+    	    enableInInput: true,
+    	    handler: function() {
+    	    	$("#selAgregados").focus();
+    	    }
+    	});
+
+    	$.Shortcuts.add({ //seleccion de pestaña de texto
+    	    type: 'down',
+    	    mask: 'Alt+X',
+    	    enableInInput: true,
+    	    handler: function() {
+    	    	habilitar('tab-1');
+    	    	$("#link-tab-1").focus();
+    	    }
+    	});
+
+    	$.Shortcuts.add({ //selector de pestaña de articulado
+    	    type: 'down',
+    	    mask: 'Alt+A',
+    	    enableInInput: true,
+    	    handler: function() {
+        	    if ($("#selTipoRedaccion").val()=='articulado'){
+        	    	habilitar('tab-2')
+        	    	$("#link-tab-2").focus();
+        	    }
+    	    }
+    	});
+
+    	$.Shortcuts.add({ //selector de pestaña de revision
+    	    type: 'down',
+    	    mask: 'Alt+Y',
+    	    enableInInput: true,
+    	    handler: function() {
+    	    	 if ($("#selTipoRedaccion").val()=='revision'){
+        	    	habilitar('tab-3')
+        	    	$("#link-tab-3").focus();
+    	    	 }
+    	    }
+    	});
+
+    	$.Shortcuts.add({ //editor de texto de nuevo articulo
+    	    type: 'down',
+    	    mask: 'Alt+L',
+    	    enableInInput: true,
+    	    handler: function() {
+				if ($('#modalArticulo').hasClass('in'))
+					$("#articulo").data("wysihtml5").editor.focus();
+    	    }
+    	});
+
+    	$.Shortcuts.add({ //posicionamiento de vistos en revision
+    	    type: 'down',
+    	    mask: 'Alt+S',
+    	    enableInInput: true,
+    	    handler: function() {
+        	 	$("#div-revision").scrollToTop("#vistosLabel");
+        	 	$("#btn-editar-vistos-revision").focus();
+    	    }
+    	});
+
+    	$.Shortcuts.add({ //posicionamiento de considerandos en revision
+    	    type: 'down',
+    	    mask: 'Alt+N',
+    	    enableInInput: true,
+    	    handler: function() {
+        	 	$("#div-revision").scrollToTop("#considerandosLabel");
+        	 	$("#btn-editar-considerandos-revision").focus();
+    	    }
+    	});
+
+    	$.Shortcuts.add({ //posicionamiento de articulos en articulado/revision
+    	    type: 'down',
+    	    mask: 'Alt+T',
+    	    enableInInput: true,
+    	    handler: function() {
+        	 	if ($("#link-tab-3").hasClass('tab-active')){
+				
+        	 		$("#div-revision").scrollToTop("#articulos-revision");
+        	 		$("#articulos-revision > tbody").find("tr:first")
+        	 										.find("td:last")
+        	 										.find("button:first").focus();
+
+        	 	}
+        	 	
+        	 	if ($("#link-tab-2").hasClass('tab-active')){
+        	 		$("#div-revision").scrollToTop("#articulos");
+        	 		$("#articulos > tbody").find("tr:first")
+        	 								   .find("td:last")
+        	 								   .find("button:first").focus();
+        	 	}
+    	    }
+    	});
+
+    	$.Shortcuts.add({ //posicionamiento de articulos en articulado/revision
+    	    type: 'down',
+    	    mask: 'Alt+I',
+    	    enableInInput: true,
+    	    handler: function(e) {
+    	    	if($("#modalArticulo").hasClass("in")){
+    				
+    				if ($('#incisos > tbody > tr').length>0)
+    					$("#inciso-a").data("wysihtml5").editor.focus();
+    			}
+    	    }
+    	});
+
+    	
+    	
+
+     	$.Shortcuts.start();
+
+		///////////////fin atajos de teclado////////////	
+
+    	$.fn.scrollToTop = function(elem, speed) { 
+    	    $(this).animate({
+    	        scrollTop:  $(this).scrollTop() - $(this).offset().top + $(elem).offset().top 
+    	    }, speed == undefined ? 1000 : speed); 
+    	    return this; 
+    	};
+
+    	$.fn.scrollToBottom = function(elem, speed) { 
+    	    $(this).animate({
+    	        scrollTop:  $(this).height() 
+    	    }, speed == undefined ? 1000 : speed); 
+    	    return this; 
+    	};
+    	
+    	wysihtml5.dom.getPastedHtml = function(event) {
+    		var html;
+    		if (event.clipboardData) {
+    			html = event.clipboardData.getData('text/plain');
+    			html = html.replace(/\r?\n/g, '</p><p>');
+                html = html.replace(/\t/g, '');
+		  	}
+		  	return html;
+		};
+    	
+		Array.prototype.reemplazar  = function(objeto, clave){
+			   var array = $.map(this, function(v,i){
+			      	return v[clave] == objeto[clave] ? objeto : v;
+			   });
+			   this.length = 0;
+			   this.push.apply(this, array);
+		};
+
+		Array.prototype.renumerar  = function(clave,numeracion){
+			   var semilla=(numeracion=='digito')?0:64;
+			   var array = $.map(this, function(v,i){
+			   		v[clave]=((numeracion=='digito')?(semilla+1):String.fromCharCode(semilla+1));
+			   		semilla++;
+			      	return v;
+			   });
+			   this.length = 0;
+			   this.push.apply(this, array);
+		};
+
+		Array.prototype.eliminar  = function(clave,valor){
+				debugger;	
+			    var array = $.map(this, function(v,i){
+			      	return v[clave] == valor ? null : v;
+			   });
+			   this.length = 0;
+			   this.push.apply(this, array);
+		};
+		
+		function select2MatchCustom(params, data) {
+		    // If there are no search terms, return all of the data
+		    if ($.trim(params.term) === '') {
+		      return data;
+		    }
+
+		    // Do not display the item if there is no 'text' property
+		    if (typeof data.numeroCompleto === 'undefined') {
+		      return null;
+		    }
+
+		    // `params.term` should be the term that is used for searching
+		    // `data.text` is the text that is displayed for the data object
+		    var numeroBusqueda=term.split('-');
+		    var numeroCompleto=(data.numeroCompleto).split('-');
+		    if (numeroBusqueda[0]==numeroCompleto && numeroBusqueda[1]==numeroCompleto[2]) {
+		     	return data;
+		    }
+
+		    // Return `null` if the term should not be displayed
+		    return null;
+		}
+		
+		function habilitar(nombre){
+			$(".tab").addClass("hidden");
+			$(".selectable").removeClass("tab-active");
+			
+			$("#"+nombre).removeClass("hidden");
+			$("#link-"+nombre).addClass("tab-active");
+			$("#link-"+nombre).blur();
+			
+			if (nombre=="tab-3")
+				$("#div-btn-revision").removeClass("hidden");
+			else
+				$("#div-btn-revision").addClass("hidden");
+		}
+	
+		function addClasssToSelect2(div,clase){
+			$("#"+div).find('span[class="select2-selection select2-selection--multiple"]').addClass(clase);
+		}
+
+		function traerArticuloPorNumero(numero,articulos){
+			var articuloBuscado;
+			$.each(articulos,function(index,articulo){
+				if(articulo.numero==numero) articuloBuscado=articulo;
+			});
+			return articuloBuscado;
+		}
+
+		function actualizarArticulo(articulo,tabla){
+
+			numero=articulo.numero;
+			var cuerpoArticulo='<div class="well well-sm">' +
+							   '<div class="btn-group pull-right">'+
+							   '<button type="button" class="btn btn-sm btn-primary btn-editar-articulo" title="Editar artículo">'+
+							   		'Editar</button>'+
+							   /* '<button type="button" class="btn btn-sm btn-warning" title="Cambiar orden" onClick="noImplementado();">'+
+							   		'Mover</button>'+ */
+							   '<button type="button" class="btn btn-sm btn-danger btn-eliminar-articulo" title="Eliminar artículo">'+
+							   		'Eliminar</button></div>'+
+							   '<div>'+articulo.texto+'<br><ul class="list-unstyled">';
+							   
+			$.each(articulo.incisos,function(index,inciso){
+				texto=inciso.texto.replace(/<p>/g,'').replace(/<\/p>/g,'<br>');
+				cuerpoArticulo+='<li style="padding-left:30px">'+inciso.orden+') - '+texto+'</li>';
+			});
+
+			cuerpoArticulo+='</ul></div>';
+
+			var nuevoContenido='<td class="numero-fila">'+numero+'</td>'+
+	        			 	   '<td>'+cuerpoArticulo+'</td>';
+
+			$("#"+tabla+" > tbody > tr").each(function(){
+
+				if($(this).find('td:first').html()==numero)
+					$(this).html(nuevoContenido);
+			});
+
+		}
+		
+		function agregarArticulo(articulo,tabla,scrollBottom){
+			var numero=((articulo.hasOwnProperty('numero'))?articulo.numero:$("#"+tabla+"> tbody > tr").length+1);
+			var cuerpoArticulo='<div class="well well-sm">' +
+							   '<div class="btn-group pull-right">'+
+							   '<button type="button" class="btn btn-sm btn-primary btn-editar-articulo" title="Editar artículo">'+
+							   		'Editar</button>'+
+							   /* '<button type="button" class="btn btn-sm btn-warning" title="Cambiar orden" onClick="noImplementado();">'+
+							   		'Mover</button>'+ */
+							   '<button type="button" class="btn btn-sm btn-danger btn-eliminar-articulo" title="Eliminar artículo">'+
+							   		'Eliminar</button></div>'+
+							   '<div>'+articulo.texto+'<br><ul class="list-unstyled">';
+							   
+			$.each(articulo.incisos,function(index,inciso){
+				texto=inciso.texto.replace(/<p>/g,'').replace(/<\/p>/g,'<br>');
+				cuerpoArticulo+='<li style="padding-left:30px">'+inciso.orden+') - '+texto+'</li>';
+			});
+		
+			cuerpoArticulo+='</ul></div>';
+
+			var nuevoArticulo='<tr>'+
+	        			 	  '<td class="numero-fila">'+numero+'</td>' +
+	        			 	  '<td>'+cuerpoArticulo+'</td>'+
+	        			 	  '</tr>';
+
+	        var divContenedor=((tabla=='articulos')?'div-articulos':'div-revision');	 	  		
+	        $("#"+tabla+" > tbody").append(nuevoArticulo);
+	        if (scrollBottom)
+	        	$("#"+divContenedor).animate({ scrollTop: $("#"+divContenedor)[0].scrollHeight}, 1000);
+	        articulo.numero=numero;
+	        return articulo;
+	        
+		}
+
+		function registrarEventosParaWysihtml5(){
+			$('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {
+				if (event.which==27){//ESC
+					if($(this).data("id").substring(0,6)=="inciso")
+						$("#eliminar-inciso-"+$(this).data("id").substring(7)).focus();
+
+					if($(this).data("id")=="texto"){
+						if($("#selTipoRedaccion").val()=="basico")
+							$("#btn-guardar-dictamen").focus();
+						if($("#selTipoRedaccion").val()=="articulado")
+							$("#link-tab-2").click();
+						if($("#selTipoRedaccion").val()=="revision")
+							$("#link-tab-3").click();						
+					}
+
+					if($(this).data("id")=="articulo")
+						$("#btn-agregar-inciso") .focus();
+				}
+				
+		    });
+		}
+
+		function controlWysihtml5Focus(event){
+			var control=event.currentTarget;
+			var desplazamiento=0;
+			var letra=$(control).data("id").substring(7);
+			var rowHeight=$("#incisos > tbody").find("tr:first").height();
+			var divHeight=$("#div-incisos").height();
+			if(letra.charCodeAt(0)>98)
+				desplazamiento=rowHeight*(letra.charCodeAt(0)-98)
+			$("#div-incisos").animate({ scrollTop: desplazamiento}, 500);
+		}
+
+		function cargarInciso(nuevoInciso){
+			debugger;
+			var orden=nuevoInciso.orden.toLowerCase();
+			var inciso='<tr>'+
+	        		   '<td class="numero-fila">'+orden+') -</td>' +
+	        		   '<td><textarea class="form-control text-area text-area-mini" id="inciso-'+orden+'" '+
+	        		   'name="inciso-'+orden+'" placeholder="Inciso"></textarea></td>'+
+	        		   /* '<td class="herramienta-fila text-center"><div class="row text-center">'+
+	        		   '<button type="button" class="btn btn-sm btn-info" onClick="noImplementado();"><span class="glyphicon glyphicon-tasks"></button></div>'+
+	        		   '<div class="row text-center"><button type="button" class="btn btn-sm btn-danger btn-eliminar-inciso">'+
+	        		   '<span class="glyphicon glyphicon-remove"></button></div></td>'+ */
+	        		   '<td class="herramienta-fila text-center">'+
+	        		   '<button type="button" class="btn btn-sm btn-danger btn-eliminar-inciso" id="eliminar-inciso-'+orden+'">'+
+	        		   '<span class="glyphicon glyphicon-remove"></button></td>'+ 
+	        		   '</tr>';
+
+	        $("#incisos > tbody").append(inciso);
+	        $("#inciso-"+orden).wysihtml5({
+				toolbar: {
+				    "image": false,
+					"size": "xs",
+				},
+				/*events: {
+					"load": registrarEventosParaWysihtml5(),
+				} */
+			});
+			$("#inciso-"+orden).data("wysihtml5").editor.setValue(nuevoInciso.texto);
+			$("#inciso-"+orden).data("wysihtml5").editor.on("load", registrarEventosParaWysihtml5);
+			$("#inciso-"+orden).data("wysihtml5").editor.on("focus", controlWysihtml5Focus);
+			$("#inciso-"+orden).data("wysihtml5").editor.focus();
+		}
+		
+		
+		function agregarInciso(texto){
+			var letra=String.fromCharCode($("#incisos > tbody").find('tr').length+65).toLowerCase();
+			var inciso='<tr>'+
+	        		   '<td class="numero-fila">'+letra+') -</td>' +
+	        		   '<td><textarea class="form-control text-area text-area-mini" id="inciso-'+letra+'" '+
+	        		   'name="inciso-'+letra+'" placeholder="Inciso"></textarea></td>'+
+	        		   /* '<td class="herramienta-fila"><div class="text-center">'+
+	        		   '<button type="button" class="btn btn-sm btn-info" onClick="noImplementado();"><span class="glyphicon glyphicon-tasks"></button></div>'+
+	        		   '<div class="row text-center"><button type="button" class="btn btn-sm btn-danger btn-eliminar-inciso">'+
+	        		   '<span class="glyphicon glyphicon-remove"></button></div></td>'+ */
+	        		   '<td class="herramienta-fila text-center">'+
+	        		   '<button type="button" class="btn btn-sm btn-danger btn-eliminar-inciso" id="eliminar-inciso-'+letra+'">'+
+	        		   '<span class="glyphicon glyphicon-remove"></button></td>'+
+	        		   '</tr>';
+
+	        $("#incisos > tbody").append(inciso);
+	        $("#inciso-"+letra).wysihtml5({
+				toolbar: {
+				    "image": false,
+					"size": "xs",
+				},
+				/* events: {
+					"load": registrarEventosParaWysihtml5(),
+				} */
+			});
+			
+	        $("#inciso-"+letra).data("wysihtml5").editor.on("load", registrarEventosParaWysihtml5);
+	        $("#inciso-"+letra).data("wysihtml5").editor.on("focus", controlWysihtml5Focus);
+	        
+	        if(texto==null){
+	        	$("#inciso-"+letra).data("wysihtml5").editor.focus();
+				//$("#div-incisos").animate({ scrollTop: $("#div-incisos")[0].scrollHeight}, 1000);
+	        }
+	        else 
+	        	 $("#inciso-"+letra).data("wysihtml5").editor.setValue(texto);
+		}
+
+		function InicializarPagina(){
+
+			debugger;
+			articulos=null;
+
+			htmlTipoRedaccion="<option value='basico' selected='selected'>Básico</option>" +
+						      "<option value='articulado'>Articulado</option>";	
+						     
+	        if ($("#idProyecto").val()!=0)
+		        htmlTipoRedaccion+="<option value='revision'>Revisión</option>";
+
+			$("#selTipoRedaccion").html(htmlTipoRedaccion);
+			
+	        var nombreComision=$("#nombreComision").val();
+	        var idComision=$("#idComision").val();
+	        var newOption = new Option(nombreComision, idComision, true, true);
+	        $("#selComisiones").empty().change();
+		   	$("#selComisiones").append(newOption).trigger('change');
+	        $("#selAgregados").empty().change();
+	        $("#articulos > tbody").html('');
+	        $("#articulos-revision > tbody").html('');
+		   	$("#editaRevision").bootstrapToggle('on');
+		   	$("#vistosYConsiderandos").bootstrapToggle('on');
+		   	$(".dependiente-proyecto").addClass("hidden");
+		   	
+		   	var idDictamen=$("#id").val();
+
+    		if (idDictamen!=0){
+
+    			$("#selComisiones").prop("disabled", true);
+        		
+    		   
+						
+    					//controles comunes a todos los dictamenes
+    					$("#selTipoRedaccion").val('{{ data.clase_dictamen }}');
+    					
+    					if ('{{ data.clase_dictamen }}'=="articulado")
+    						$("#selTipoDictamen").val('{{ data.id_tipo_dictamen }}');
+		
+    					$("#texto").data("wysihtml5").editor.setValue('{{ data.texto_libre | raw }}');
+
+    					var agregados={{ data.agregados | raw }};  	
+    					$.each(agregados,function(index,agregado){
+    						 var newOption = new Option(agregado.numeroCompleto, agregado.id, true, true);
+    						 $("#selAgregados").append(newOption).trigger('change');
+    					});
+
+    				 	//caso particular dictamen articulado
+						if ('{{ data.clase_dictamen }}'=="articulado"){
+    				 	
+        				    $.each({{ data.texto_articulado | raw }},function(index,articulo){
+        						agregarArticulo(articulo,'articulos',false);
+        					});
+    
+    				    	//articulos=data.texto_articulado; 
+    					} 
+
+						//caso particular dictamen por revision
+    					if ('{{ data.clase_dictamen }}'=="revision"){
+        					
+    					    $("#vistos").html('{{ data.vistos | raw }}');
+    				        $("#considerandos").html('{{ data.considerandos | raw}}');
+    				        
+    				        $.each({{ data.articulos | raw }},function(index,articulo){
+        						agregarArticulo(articulo,'articulos-revision',false);
+        					});
+    
+    				    	//articulos=data.articulos; 
+
+							if ({{ data.incluye_vistos_y_considerandos | raw }})
+								$("#vistosYConsiderandos").bootstrapToggle('on');
+							else
+								$("#vistosYConsiderandos").bootstrapToggle('off');
+
+    				    	$("#idRevision").val({{ data.revision_id }});  
+
+    				    	$("#selTipoRedaccion").change();
+
+        				}	
+    			
+			}
+	 	
+		}
+		
+		$(document).ready(function () {
+
+	  		$('[autofocus]', this).focus();
+
+			var articulosDictamen={{ data.texto_articulado | raw }};
+			var articulosRevision={{ data.articulos | raw }};
+
+			var tablaRevisiones;
+
+		    //GUARDAR DE DICTAMEN
+		    $("#btn-guardar-dictamen").click(function(){
+
+		    	$(this).prop("disabled",true);
+		    	
+		    	var idAsignacion=$("#idAsignacion").val();
+				var idDictamen=$("#id").val();
+				var idProyecto=$("#idProyecto").val();
+				var idExpediente=$("#idExpediente").val();
+				var numeroDictaminantes=$("#idDictaminantes").val();
+				
+				var tipoRedaccion= $("#selTipoRedaccion").val();
+				var tipoDictamen=$("#selTipoDictamen").val();
+		        var comisiones=$("#selComisiones").val();
+		        var agregados=$("#selAgregados").val();
+		        var texto=$("#texto").val();
+		        var articulos=null;
+		        if (tipoRedaccion!="basico")
+		        	articulos=((tipoRedaccion=="articulado")?articulosDictamen:articulosRevision);
+	        	var vistosYConsiderandos= $("#vistosYConsiderandos").is(":checked");
+	        	var editaRevision=$("#editaRevision").is(":checked");
+	        	
+	        	var idRevision=$("#idRevision").val();
+		        var vistos=$("#vistos").html();
+		        var considerandos=$("#considerandos").html();
+
+		        var validacion='';
+				var formData=new FormData();
+
+				validacion+=((texto.replace(/ /g, '').length==0)
+						 	 ?'<li>Debe poveer un texto para el dictamen</li>':'');
+			 	 
+				validacion+=((tipoDictamen==0 && tipoRedaccion=="articulado")
+							 ?'<li>Debe especificar el tipo de dictamen</li>':'');
+				 
+				if (tipoRedaccion=="articulado")					
+					validacion+=((articulos.length==0)
+							      ? '<li>Debe poveer los articulos para el dictamen articulado</li>':'') ;
+				
+				if (tipoRedaccion=="revision"){
+					if (idRevision==-1)
+						validacion+='<li>No se seleccionó ninguna revision del proyecto</li>';
+					else {
+        					if (editaRevision){
+        
+            					validacion+=((articulos.length==0)?'<li>Debe poveer los articulos la revision</li>':'');
+            			           
+            					validacion+=((vistos.replace(/ /g,'').length==0 && vistosYConsiderandos)
+            					           ?'<li>Debe poveer un texto para los vistos de la revision</li>':'');
+            					
+            					validacion+=((considerandos.replace(/ /g,'').length==0 && vistosYConsiderandos)
+            					              ?'<li>Debe poveer un texto para los considerandos de la revision</li>':'');
+            				}
+					}
+				
+		    	}	
+				
+				if (validacion.length>0) 
+				{
+					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+								validacion+'</ul>':'');
+					$(this).prop("disabled",false);
+					toastr.error(validacion);
+					return false;
+				}
+				else{
+
+					formData.append('idAsignacion',idAsignacion);
+					formData.append('idDictamen',idDictamen);
+					formData.append('idExpediente',idExpediente);
+					formData.append('idProyecto',idProyecto);
+					formData.append('numeroDictaminantes',numeroDictaminantes);
+					formData.append('tipoRedaccion',tipoRedaccion);
+					formData.append('tipoDictamen',tipoDictamen);
+					formData.append('comisiones',comisiones);
+					formData.append('agregados',JSON.stringify(agregados));
+					formData.append('texto',texto);
+					formData.append('idRevision',idRevision);
+					formData.append('editaRevision',editaRevision);
+					formData.append('vistosYConsiderandos',vistosYConsiderandos);
+					formData.append('vistos',vistos);
+					formData.append('considerandos',considerandos);
+					formData.append('articulos',JSON.stringify(articulos));
+
+	            	$.ajax({
+		                async: true,
+		                url: '{{ app.request.getBaseURL() }}'+ '/api/comisionAsignacion/saveDictamen',
+		                data: formData,
+		                type: 'POST',
+		                cache: false,
+		                contentType: false,
+		                processData: false,
+	                success: function(data) {
+	                    toastr.success(data);
+	                    cargarMenu('/expedientesComisiones');
+	                	},
+	                error: function(jqXHR,textStatus,errorThrown ){
+						toastr.error(JSON.parse(jqXHR.responseText));
+						$("#btn-guardar-dictamen").prop("disabled",false);
+						}
+	            	});
+	            }  
+			});
+		    		    
+		  //---------------------------------------------------------------------------------------------------------------
+		  //----------------------------------------------ARTICULADO-------------------------------------------------------
+		  //---------------------------------------------------------------------------------------------------------------
+
+			//EVENTO CLICK DEL BOTON DE NUEVO ARTICULO EN EL MODAL DE DICTAMEN
+			$("#btn-nuevo-articulo-revision").click(function(){
+				$("#modalArticulo").find('input[name="id"]').val(0);
+				$("#modalArticulo").find('input[name="tabla"]').val("articulos-revision");
+				$("#modalArticulo").modal('show');	
+			});
+			
+			//EVENTO CLICK DEL BOTON DE NUEVO ARTICULO EN EL MODAL DE DICTAMEN
+			$("#btn-nuevo-articulo").click(function(){
+				$("#modalArticulo").find('input[name="id"]').val(0);
+				$("#modalArticulo").find('input[name="tabla"]').val("articulos");
+				$("#modalArticulo").modal('show');	
+			});		  	
+		  
+			//EVENTO CLICK DEL BOTON EDITAR DE LAS FILAS EN LA TABLA DE ARTICULOS 
+			//DEL DICTAMEN ARTICULADO
+			$("#articulos > tbody").on('click','.btn-editar-articulo',function(){
+				var numero=$(this).parents("tr").find('td:first').text();
+				$("#modalArticulo").find('input[name="id"]').val(numero);
+				$("#modalArticulo").find('input[name="tabla"]').val("articulos");
+				$("#modalArticulo").modal('show');	
+			});
+
+			//EVENTO CLICK DEL BOTON EDITAR DE LAS FILAS EN LA TABLA DE ARTICULOS 
+			//DEL DICTAMEN DE REVISION
+			$("#articulos-revision > tbody").on('click','.btn-editar-articulo',function(){
+				var numero=$(this).parents("tr").find('td:first').text();
+				$("#modalArticulo").find('input[name="id"]').val(numero);
+				$("#modalArticulo").find('input[name="tabla"]').val("articulos-revision");
+				$("#modalArticulo").modal('show');	
+			});
+
+			//EVENTO MOSTRAR DEL MODAL DEL MODAL DE ARTICULO
+			$("#modalArticulo").on('show.bs.modal', function () {
+				var numeroArticulo= $("#modalArticulo").find('input[name="id"]').val();
+				var tabla = $("#modalArticulo").find('input[name="tabla"]').val();
+				$("#articulo").data("wysihtml5").editor.setValue('');
+				$("#incisos > tbody").html('');
+				if (numeroArticulo!=0){
+					
+					var articulo;
+					
+					if (tabla=="articulos")
+    					articulo=traerArticuloPorNumero(numeroArticulo,articulosDictamen);
+					else
+						articulo=traerArticuloPorNumero(numeroArticulo,articulosRevision);
+					
+    				$("#articulo").data("wysihtml5").editor.setValue(articulo.texto);
+    				
+    				$.each(articulo.incisos,function(index,inciso){
+    					cargarInciso(inciso);
+    				});
+				}				
+			});
+
+			////EVENTO OCULTAR DEL MODAL DEL MODAL DE ARTICULO
+			$("#modalArticulo").on('hidden.bs.modal', function () {	
+				setTimeout(function() { $("#btn-nuevo-articulo").focus(); }, 100);
+			});
+
+			//EVENTO CLICK DEL BOTON ELIMINAR DE LAS FILAS EN LA TABLA DE ARTICULOS
+			$("#articulos > tbody").on('click','.btn-eliminar-articulo',function(){
+				var numero=$(this).parents("tr").find('td:first').text();
+				var tabla = $("#modalArticulo").find('input[name="tabla"]').val();
+				articulosDictamen.eliminar('numero',numero);
+				articulosDictamen.renumerar('numero','digito');
+				$("#articulos > tbody").html('');
+    				$.each(articulosDictamen,function(i,articulo){
+    					agregarArticulo(articulo,'articulos',false);
+    				});
+			});
+
+			$("#articulos-revision > tbody").on('click','.btn-eliminar-articulo',function(){
+				var numero=$(this).parents("tr").find('td:first').text();
+				var tabla = $("#modalArticulo").find('input[name="tabla"]').val();
+				articulosRevision.eliminar('numero',numero);
+				articulosRevision.renumerar('numero','digito');
+				$("#articulos-revision > tbody").html('');
+				$.each(articulosRevision,function(i,articulo){
+					agregarArticulo(articulo,'articulos-revision',false);
+				});
+
+			});
+			
+			//EVENTO CLICK DEL BOTON ELIMINAR DE LAS FILAS EN LA TABLA DE INCISOS
+			$("#incisos > tbody").on('click','.btn-eliminar-inciso',function(){
+				$(this).parents("tr").remove();
+				var incisos=[];
+				$("#incisos > tbody > tr").each(function(i,row){
+					var textarea=$(row).find("textarea");
+					incisos.push($(textarea).val());
+				})
+				$("#incisos > tbody").html('');
+				$.each(incisos,function(i,inciso){
+					agregarInciso(inciso);
+				})
+			});
+
+			//EVENTO ACEPTAR DEL MODAL DE ARTICULOS
+			$("#btn-agregar-articulo").click(function(){
+				
+				var validacion='';
+				var incisos=[];
+				var tabla = $("#modalArticulo").find('input[name="tabla"]').val();
+	
+				$("#incisos").find('tr').each(function(i,row){
+					var textarea=$(row).find("textarea");
+					var	orden=$(row).find("td:first").text().replace(/ |\)|-/g,'');
+					var texto=$(textarea).val();
+
+					if(texto.length==0)
+						validacion+='<li>El inciso '+ orden +' no posee texto</li>';
+
+					if (validacion.length==0){
+						inciso={
+							orden: orden,
+							texto: texto
+						}
+						incisos.push(inciso);
+					}
+					else{
+						if (incisos.length>0)
+							incisos=[];
+					}
+				});
+
+				if($("#articulo").val().length==0){
+					validacion='<li>El artículo no posee texto</li>'+validacion;
+
+				}
+
+				if (validacion.length>0) 
+				{
+					Validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+								validacion+'</ul>':'');
+					toastr.error(validacion);
+					return false;
+				}
+				else{
+					
+ 					var numero=$("#modalArticulo").find('input[name="id"]').val();	
+					var texto=$("#articulo").val();
+
+					if(numero==0){
+						var articuloActual={
+            								texto: texto,
+            								incisos:incisos
+                							}
+
+						articuloActual=agregarArticulo(articuloActual,tabla,true);
+						if (tabla=="articulos")
+							articulosDictamen.push(articuloActual);
+						else
+							articulosRevision.push(articuloActual);
+					}
+					else{
+							var articuloActual={
+                								numero: numero,
+                								texto: texto,
+                								incisos:incisos
+                    							}
+							
+							actualizarArticulo(articuloActual,tabla);
+							if (tabla=="articulos")
+								articulosDictamen.reemplazar(articuloActual,'numero'); 
+							else
+								articulosRevision.reemplazar(articuloActual,'numero'); 
+						}
+					$('#modalArticulo').modal('hide');
+				}
+			});
+
+			//------------------------------------------------------------------------------------------------------------
+			//--------------------------------------MODAL DE REVISIONES---------------------------------------------------
+			//------------------------------------------------------------------------------------------------------------
+			
+
+			$('#modalRevisiones').on('show.bs.modal', function () {
+
+				var idProyecto=$("#idProyecto").val();
+
+				tablaRevisiones=$('#revisiones').DataTable({
+					    			  "language": {
+							              "infoEmpty": "Sin registros para mostrar",
+							              "paginate": {
+									          	"last": "Ultima Página",
+									          	"first": "Primer página",
+									          	"next": "Siguiente",
+									          	"previous": "Anterior"
+									       },
+									       "search":"Búsqueda rápida",
+									       "emptyTable": "Sin Datos",
+									       "lengthMenu": 'Registros Listados <select class="form-control input-sm">'+
+											             '<option value="10">10</option>'+
+											             '<option value="20">20</option>'+
+											             '<option value="30">30</option>'+
+											             '<option value="40">40</option>'+
+											             '<option value="50">50</option>'+
+											             '<option value="-1">Todos</option>'+
+											             '</select>',
+											"loadingRecords": "Espere...cargando datos",
+											"processing": "Procesando...",
+											"sInfo": "Mostrando  _START_ a _END_ de _TOTAL_ registros",
+
+						          	  },
+								      "processing": false,
+								      "ajax": {
+										        "url": "api/proyecto/getRevisiones/"+idProyecto,
+						            			"dataSrc": '',
+										    },
+									  "columnDefs": [
+											            {
+											                "targets": [ 0 ],
+											                "visible": false,
+											                "searchable": false
+											            },
+											            {
+											            	"targets": [ 1 ],
+												            "data": null,
+												            "orderable":false,
+												            "render": function(data, type, row){
+												            	return "<button type='button' class='btn btn-primary btn-xs btn-usar' autofocus='autofocus'><span class='glyphicon glyphicon-check'></span></button>";
+												            }
+											            },
+											            {
+												            "targets": [ 2 ],
+												            "data": null,
+												            "orderable":false,
+												            "render": function(data, type, row){
+												            	return ((row.id==0)?"(original)":row.id);
+												            }
+												        },
+											            {
+												            "targets": [ 3 ],
+												            "data": null,
+												            "orderable":false,
+												            "render": function(data, type, row){
+												            	return ((data==true)?"SI":"NO");
+												            }
+												        },
+											            {
+												            "targets": [ 6 ],
+												            "data": "oficina",
+												            "orderable":false,
+												            "render": function(data, type, row){
+												            	return ((data!=null)?data["oficina"]:"---");
+												            }
+												        }
+												       
+									  ],
+								      "columns": [
+								      		{ "data": "id" },
+								      		{ "data": "null","width":"10%"},
+								      		{ "data": "null","width":"18%" },
+								      		{ "data": "incluye_vistos_y_considerandos","width":"16%" },
+								      		{ "data": "fecha_creacion_formateada","width":"18%"},
+								      		{ "data": "usuario_creacion","width":"20%"},
+								            { "data": "null","width":"18%" },
+								        ],
+								      "autoWidth":false,
+								      "paging": true,
+								      "lengthChange": true,
+								      "searching": true,
+								      "ordering": true,
+								      "info": true,
+							});
+
+			});
+
+			$('#modalRevisiones').on('hidden.bs.modal', function () {
+				tablaRevisiones.destroy();
+			});
+			
+			$('#revisiones tbody').on( 'click', '.btn-usar', function () {
+		        var data = tablaRevisiones.row( $(this).parents('tr') ).data();
+		        $("#vistos").html(data[ "visto" ]);
+		        $("#idRevision").val(data[ "id" ]);
+		        $("#considerandos").html(data[ "considerandos" ]);
+		        $("#articulos-revision > tbody	").html('');
+		        articulosRevision=data[ "articulos" ];
+		        $.each(articulosRevision,function(i,articulo){
+		        	setTimeout(function() { agregarArticulo(articulo,'articulos-revision',false);}, 0);
+				});
+		        $(".dependiente-proyecto").removeClass("hidden");
+				$('#modalRevisiones').modal('hide');		       
+		    } );
+
+		    //------------------------------------------------------------------------------------------------------------
+			//--------------------------EDICION DE VISTOS Y CONSIDERANDOS DE LA REVISIÓN----------------------------------
+			//------------------------------------------------------------------------------------------------------------
+
+		    $("#btn-editar-vistos-revision").click(function(){
+
+		    	$("#modalTexto").find('input[name="idTexto"]').val("vistos");
+		    	var htmlEdicion=$("#vistos").html();
+		    	$("#edicion-texto").data("wysihtml5").editor.setValue(htmlEdicion);
+		    	setTimeout(function() { $("#edicion-texto").data("wysihtml5").editor.focus(); }, 10);
+		   		$("#modalTexto").modal("show");
+			});
+
+		    $("#btn-editar-considerandos-revision").click(function(){
+
+		    	$("#modalTexto").find('input[name="idTexto"]').val("considerandos");
+		    	var htmlEdicion=$("#considerandos").html();
+		    	$("#edicion-texto").data("wysihtml5").editor.setValue(htmlEdicion);
+		    	setTimeout(function() { $("#edicion-texto").data("wysihtml5").editor.focus(); }, 10);
+		   		$("#modalTexto").modal("show");
+		    	
+			});
+
+		    $("#btn-cambio-texto").click(function(){
+
+			   var divTexto=$("#modalTexto").find('input[name="idTexto"]').val(); 
+			   if (divTexto=="vistos")
+				   $("#vistos").html($("#edicion-texto").val());
+			   else
+				   $("#considerandos").html($("#edicion-texto").val());
+
+			   $("#modalTexto").modal("hide");
+				
+		    });
+
+		    //------------------------------------------------------------------------------------------------------------
+			//---------------------------------INICIALIZACIÓN DE CONTROLES------------------------------------------------
+			//------------------------------------------------------------------------------------------------------------
+						
+			$(".text-area").wysihtml5({
+				toolbar: {
+				    "image": false,
+					"size": "xs",
+				},
+			});
+
+			$("#selComisiones").select2({
+				ajax: {
+			    url: '{{ app.request.getBaseURL() }}'+"/api/comisionAsignacion/getByExpedienteAndNombreWhithFiltro",
+			    dataType: 'json',
+			    delay: 250,
+			    cache: false,
+			    data: function (params) {
+			      return {
+							q: params.term, // search term
+  			        		r: $("#idExpediente").val(),
+  			        		s: $("#idComision").val(),
+        			        page: params.page
+        			      };
+			    },
+			    processResults: function (data) {
+			       var dato=data;
+		           return {
+				        results: $.map(dato, function(item) {
+				            return { id: item.id, text: item.comision };
+				        })
+				    };
+		        },
+			  },
+			  language: "es",
+			  minimumInputLength: 3,
+			  theme: "bootstrap",
+			});
+
+
+			$("#selComisiones").on('select2:unselecting',function(evt){
+				
+				var seleccion=evt.params.args.data.id;
+				var idComision= $("#idComision").val();
+				
+				if (seleccion==idComision){
+					evt.preventDefault();
+					toastr.error("No se puede eliminar la comisión original");
+				}
+				
+			});
+				
+			$("#selAgregados").select2({
+				language:{
+					locale: "es",
+					inputTooShort: function(){
+						  return 'Ingrese con formato #[#..#]-AA, ej.: 1-17,100-18'
+					},
+					noResults: function(){
+						  return 'El expediente no tiene asignacion o no está habilitado para la seleción'
+					},
+					errorLoading: function(){
+						  return 'Lo ingresado no coincide con el formato #[#..#]-AA'
+					}
+				},
+				ajax: {
+    			    url: '{{ app.request.getBaseURL() }}'+"/api/comisionAsignacion/getExpedientefromAsignados",
+    			    dataType: 'json',
+    			    delay: 250,
+    			    cache: false,
+    			    data: function (params) {
+    			      return {
+    							q: params.term, // search term
+            			        page: params.page
+            			      };
+    			    },
+    			    processResults: function (data) {
+    			       var dato=data;
+    		           return {
+    				        results: $.map(dato, function(item) {
+    				            return { id: item.id, text: item.numeroCompleto };
+    				        })
+    				    };
+		        	},
+			  },
+			  minimumInputLength: 4,
+			  theme: "bootstrap",
+			  matcher: select2MatchCustom,
+			}).on('select2:selecting', function (e) {
+				
+			    var data = e.params.args.data;
+			    var idExpediente=$("#idExpediente").val();
+			    if(data.id==idExpediente){
+				    toastr.info("No se puede agregar el expediente actual");
+					return false;
+				}
+				return true;
+			});
+									
+			addClasssToSelect2("group-selComisiones","selComisiones");
+			addClasssToSelect2("group-selAgregados","selAgregados");
+			
+			$('#vistosYConsiderandos').bootstrapToggle({
+			      on:  'In<u>c</u>luye Vistos y Considerandos',
+			      off: 'No In<u>c</u>luye Vistos y Considerandos',
+			      offstyle: 'danger',
+			      onstyle: 'success',
+			      width: "250px",
+			      height: "25px"
+			 });
+
+			$('#editaRevision').bootstrapToggle({
+			      on:  'Editar Re<u>v</u>ision',
+			      off: 'Re<u>v</u>isión Sin Cambios',
+			      offstyle: 'danger',
+			      onstyle: 'success',
+			      width: "200px",
+			      height: "25px"
+			 });
+
+			 $("#vistosYConsiderandos").change(function(){
+				 if (!$(this).is(":checked"))
+					 $(".texto-revision").addClass("hidden");
+				 else
+					 $(".texto-revision").removeClass("hidden");
+			 });
+
+			 $("#editaRevision").change(function(){
+				 if (!$(this).is(":checked")){
+					$("#div-revision").addClass("hidden");
+				 	$('#div-vistosYConsiderandos').addClass("hidden");
+				 }
+				 else{
+					 	$("#div-revision").removeClass("hidden");
+					 	$('#div-vistosYConsiderandos').removeClass("hidden");
+				 }
+			 });
+
+			$("#selTipoRedaccion").change(function(){
+
+				$(".dependiente-proyecto").addClass("hidden");
+				
+				if ($(this).val()=="basico"){
+					$("#group-tipoDictamen").addClass("hidden");
+					$("#link-tab-2").addClass("hidden");
+					$("#link-tab-3").addClass("hidden");
+				}
+				if ($(this).val()=="articulado") {
+					$("#group-tipoDictamen").removeClass("hidden");
+					$("#link-tab-3").addClass("hidden");
+					$("#link-tab-2").removeClass("hidden");
+					$("#selTipoDictamen").val(0);
+				}
+				if ($(this).val()=="revision") {
+					$("#group-tipoDictamen").addClass("hidden");
+					$("#link-tab-2").addClass("hidden");
+					$("#link-tab-3").removeClass("hidden");
+					if ($("#idRevision").val()!=-1)
+						$(".dependiente-proyecto").removeClass("hidden");
+				}
+
+				habilitar("tab-1");	
+			});
+
+			$(".campo-fecha-futura").datetimepicker({
+		    	locale: 'es',
+		    	format:'DD/MM/YYYY',
+		    	minDate : 'now'
+		    });
+
+			$("#btn-cancelar-dictamen").click(function(){
+				var idDictamen='{{ idDictamen }}';
+				var mensaje='Se canceló '+(idDictamen==0?'el alta':'la edición')+' del dictamen';
+				toastr.warning(mensaje,'ATENCIÓN');
+				cargarMenu('/expedientesComisiones');
+			});
+			
+			$("#btn-deshacer-cambios").click(function(){
+				InicializarPagina();
+			});
+			
+			$("#link-tab-1").focus(function(){
+				$("#texto").data("wysihtml5").editor.focus();
+			});
+
+			$("#link-tab-2").focus(function(){
+				setTimeout(function() { $("#btn-nuevo-articulo").focus(); }, 100);
+			});
+
+			$("#link-tab-3").focus(function(){
+				setTimeout(function() { $("#btn-revisiones").focus(); }, 100);
+			});
+
+			registrarEventosParaWysihtml5();
+
+			InicializarPagina();
+			
+			/* $('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {
+				if (event.which==27){
+					debugger;
+					if($(this).data("id")=="articulo" || $(this).data("id").substring(0,7)=="inciso")
+						$("#btn-agregar-inciso").focus();
+				}
+		    }); */
+	});
+	</script>
+	<section class="content-header">
+		<div class="row pull-right">
+			<ol class="breadcrumb">
+		        <li><a href="#"><i class="fa fa-dashboard"></i> Principal</a></li>
+		        <li>Comisiones</li>
+		        <li>Expedientes Girados</li>
+		         <li class="active">
+		            {% if idDictamen==0 %}
+			        	Alta
+			        {% else %}
+			        	Edición
+			        {% endif %}
+		        </li>
+		    </ol>
+		</div>
+		<hr>
+		<div class="row">
+			<div class="col-md-3">
+				<h2>
+				    {% if idDictamen==0 %}
+			        	Alta de Dictamen
+			        {% else %}
+			        	Edición de Dictamen
+			        {% endif %}
+				</h2>
+			</div>
+	    </div> 
+	</section>
+    <section class="content">
+    	<form id="frm-dictamen">
+        	<input type="hidden" id="idAsignacion" name="idAsignacion" value="{{ idAsignacion }}"> 
+        	<input type="hidden" id="id" name="id" value="{{ idDictamen }}"> 
+        	<input type="hidden" id="idProyecto" name="idProyecto" value="{{ idProyecto }}"> 
+        	<input type="hidden" id="idExpediente" name="idExpediente" value="{{ idExpediente }}"> 
+        	<input type="hidden" id="idComision" name="idComision" value="{{ idComision }}"> 
+        	<input type="hidden" id="idDictaminantes" name="idDictaminantes" value="{{ dictaminantes }}"> 
+        	<input type="hidden" id="nombreComision" name="nombreComision" value="{{ nombreComision }}">
+        	<div class="row">
+        		<div class="col-md-3">
+        			<div class="form-group">
+        				<label for="selTipoRedaccion">Tipo <u>R</u>edacción</label> <select
+        					class="form-control" id="selTipoRedaccion" title="Alt+R" name="selTipoRedaccion"
+        					autofocus="autofocus">
+        					<option value="basico" selected="selected">Básico</option>
+        					<option value="articulado">Articulado</option>
+        					<option value="revision">Revisión</option>
+        				</select>
+        			</div>
+        			<div style="min-height: 68.78px">
+        				<div class="form-group hidden" style="margin-bottom: 0px !important"
+        					id="group-tipoDictamen">
+        					<label for="selTipoDictamen">Tipo <u>D</u>ictamen</label> <select
+        						class="form-control" id="selTipoDictamen" name="selTipoDictamen"
+        						title="Alt+D">
+        						<option value="0">Seleccione Tipo Dictamen</option>
+        						{% for tipo in tipoProyectos %}
+        						<option value="{{ tipo.id }}">{{ tipo.tipoProyecto }}</option>
+        						{% endfor %}
+        					</select>
+        				</div>
+        			</div>
+        			<div class="form-group" id="group-selComisiones">
+        				<label for="selComisiones"><u>C</u>omisiones:</label> <select
+        					class="form-control" multiple="multiple" data-width="100%"
+        					id="selComisiones" name="selComisiones" title="Alt+C">
+        				</select>
+        			</div>
+        			<div class="form-group" id="group-selAgregados">
+        				<label for="selAgregados"><u>E</u>xpedientes Agregados:</label> <select
+        					class="form-control" multiple="multiple" data-width="100%"
+        					id="selAgregados" name="selAgregados" title="Alt+E">
+        				</select>
+        			</div>
+        			<hr>
+        			<div class="text-center">
+        				<div class="btn-group">
+        					<button type="button" class="btn btn-info"  title="Ctrl+E (foco)"
+        							id="btn-cancelar-dictamen">Canc<u>e</u>lar</button>
+        					{% if idDictamen!=0 %}
+            					<button type="button" class="btn btn-info" 
+            							id="btn-deshacer-cambios"><u>D</u>eshacer</button>
+            				{% endif %}
+        					<button type="button" class="btn btn-primary" title="Ctrl+G (foco)"
+        							id="btn-guardar-dictamen"><u>G</u>uardar</button>
+        				</div>
+        			</div>
+        		
+        		</div>
+        		<div class="col-md-9">
+        			<div class="row">
+        				<div class="col-md-12">
+        					<nav>
+        						<ul class="nav nav-pills">
+        							<li role="presentation"><a href="#" id="link-tab-1" title="Alt+X"
+        								class="selectable" onclick="habilitar('tab-1')"><h4>Te<u>x</u>to</h4></a></li>
+        							<li role="presentation"><a href="#" id="link-tab-2" title="Alt+A"
+        								class="selectable hidden" onclick="habilitar('tab-2')"><h4><u>A</u>rtículos</h4></a></li>
+        							<li role="presentation"><a href="#" id="link-tab-3" title="Alt+Y"
+        								class="selectable hidden" onclick="habilitar('tab-3')"><h4>Revision
+        										Pro<u>y</u>ecto</h4></a></li>
+        						</ul>
+        					</nav>
+        				</div>
+        			</div>
+        			<br>
+        			<div class="row tab" id="tab-1">
+        				<div class="col-md-12">
+        					<div class="row">
+        						<div class="col-md-12">
+        							<textarea class="form-control text-area text-area-larga" title="ESC (salir)"
+        								id="texto" name="texto" placeholder="Texto Libre"></textarea>
+        						</div>
+        					</div>
+        				</div>
+        			</div>
+        			<div class="row tab hidden" id="tab-2">
+        				<div class="col-md-12">
+        					<div class="row" style="padding-top: 5px">
+        						<div class="col-md-12">
+        							<div class="div-articulos" title="Alt+T: Para ir al inicio" id="div-articulos">
+        								<table class="table table-striped" id="articulos">
+        									<tbody>
+        									</tbody>
+        								</table>
+        							</div>
+        						</div>
+        					</div>
+        					<hr>
+        					<div class="row" style="padding-top: 15px;">
+        						<div class="col-md-12">
+        							<button type="button" class="btn btn-primary btn-sm" title="Ctrl+A"
+        								id="btn-nuevo-articulo" style="margin-left: 15px">Nuevo
+        								<u>A</u>rtículo</button>
+        						</div>
+        					</div>
+        				</div>
+        			</div>
+        			<div class="row tab hidden" id="tab-3">
+        				<div class="col-md-12">
+        					<input type="hidden" id="idRevision" value="-1">
+        					<div class="row" style="margin-bottom: 5px">
+        						<div class="col-md-1" style="text-align: left;">
+        							<button type="button" class="btn btn-warning btn-sm"
+        								id="btn-revisiones" data-toggle='modal' title="Ctrl+I" 
+        								data-target='#modalRevisiones'>Rev<u>i</u>siones</button>
+        						</div>
+        						<div class="col-md-8 dependiente-proyecto" id="div-edita-revision"
+        							style="text-align: center;">
+        							<input type="checkbox" id="editaRevision" data-size="small" title="CTRL+V" />
+        						</div>
+        						<div class="col-md-3 dependiente-proyecto"
+        							style="text-align: right;" id="div-vistosYConsiderandos">
+        							<input type="checkbox" id="vistosYConsiderandos"
+        								data-size="small" title="Ctrl+C" />
+        						</div>
+        					</div>
+        					<div class="div-revision dependiente-proyecto" 
+        						 title="Alt+S: Visto - Alt+N: Considerando - Alt+T: Articulado" id="div-revision">
+        						<div class="row texto-revision" style="padding-top: 10px">
+        							<div class="col-md-12" style="background: #f8f8ff">
+        								<div class="form-group">
+        									<label id="vistosLabel" for="vistos">Visto:</label>
+        									<div id="vistos" style="padding-left: 15px"></div>
+        									<button type="button" class="btn btn-primary btn-xs"
+        										id="btn-editar-vistos-revision" style="margin-top: 5px">Editar</button>
+        								</div>
+        							</div>
+        						</div>
+        						<div class="row texto-revision" style="padding-top: 10px">
+        							<div class="col-md-12" style="background: #f8f8ff">
+        								<div class="form-group">
+        									<label id="considerandosLabel" for="considerandos">Considerando:</label>
+        									<div id="considerandos" style="padding-left: 15px"></div>
+        									<button type="button" class="btn btn-primary btn-xs"
+        										id="btn-editar-considerandos-revision" style="margin-top: 5px">Editar</button>
+        								</div>
+        							</div>
+        						</div>
+        						<div class="row" style="padding-top: 10px">
+        							<div class="col-md-12">
+        								<table class="table table-striped" id="articulos-revision">
+        									<tbody>
+        									</tbody>
+        								</table>
+        							</div>
+        						</div>
+        						<hr>
+        						<div class="row" style="padding-top: 5px;">
+        							<div class="col-md-12" style="text-align: left;">
+        								<button type="button" class="btn btn-primary btn-xs" title="Ctrl+A"
+        									id="btn-nuevo-articulo-revision">Nuevo <u>A</u>rtículo</button>
+        							</div>
+        						</div>
+        					</div>
+        				</div>
+        			</div>
+        		</div>
+        	</div>
+        </form>
+    		
+		<div id="modalArticulo" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
+		 	<div class="modal-dialog modal-xl">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Nuevo Artículo</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+			        	<input type="hidden" id="id" name="id">
+			        	<input type="hidden" id="tabla" name="tabla">
+			        	<div class="row">
+			        		<div class="col-md-12">
+			        			<div class="form-group">
+					        		<label for="articulo">Articu<u>l</u>o:</label>
+					        		<textarea class="form-control text-area text-area-corta" title="Alt+L (foco) - ESC (salir)"
+					        		id="articulo" name="articulo" placeholder="articulo"></textarea>
+					        	</div>
+					        </div>
+					    </div>
+					    <div class="row">
+			        		<div class="col-md-12">
+			        			<div class="row">
+			        				<div class="col-md-12">
+								        <label>Incisos:</label>
+								        <button type="button" id="btn-agregar-inciso" onClick="agregarInciso(null);"
+									        	class="btn btn-primary btn-sm pull-right">Agregar Inci<u>s</u>o</button>
+								    </div>
+								</div>
+								<div class="row" style="padding-top:5px">
+									<div class="col-md-12">
+								        <div class="div-incisos" id="div-incisos" title="Alt+I (inicio)">
+							        		<table class="table table-striped" id="incisos">
+							        			<tbody>
+								        		</tbody> 
+							        		</table> 	
+								        </div>
+								    </div>
+								</div>		
+					        </div> 
+					    </div>
+				        <hr>
+				        <div class="row">
+				        	<div class="col-md-12">
+				        		<div class="text-center">
+					    			<div class="btn-group">
+							        	<button type="button" class="btn btn-info" id="btn-cancelar-articulo" data-dismiss="modal">C<u>e</u>rrar</button>
+			       			 			<button type="submit" class="btn btn-primary" id="btn-agregar-articulo">Acept<u>a</u>r</button>
+							        </div>
+						        </div>
+						    </div>
+			    		</div>
+				     </div>
+			    </div>
+		  	</div>
+		</div>
+		
+		<div id="modalRevisiones" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false"> 
+		 	<div class="modal-dialog modal-lg">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Revisiones</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				  
+			        	<div class="row">
+			        		<div class="col-md-12">
+					        	<div class="form-group">
+					        		<table class="table " id="revisiones">
+					        			<thead>
+						                	<tr>
+						                		<th>id</th>
+								        		<th>Usar</th>
+						                		<th>N° Revisión</th>
+						                		<th>Vis. y Cons.</th>
+						                		<th>Fecha Creación</th>
+						                		<th>Usuario Creación</th>
+								                <th>Oficina</th>
+						                	</tr>
+						                </thead>
+						                <tbody>
+						                </tbody>
+						            </table>
+					        	</div>
+					        </div>
+					    </div>
+						
+					</div>
+					<div class="modal-footer" style="background-color:#ecf0f5">  	
+				        <hr>
+				        <div class="row">
+				        	<div class="col-md-12">
+				        		<div class="text-center">
+					    			<div class="btn-group">
+							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cerrar</button>
+							        </div>
+						        </div>
+						    </div>
+			    		</div>
+				     </div>
+			    </div>
+		  	</div>
+		</div>
+		
+		<div id="modalTexto" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
+			<div class="modal-dialog">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Edición Texto</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				    	<form role="form">
+				    		<input type="hidden" id="idTexto" name="idTexto">
+				    		<div class="row">
+				    			<div class="form-group col-md-12">
+    				    			<textarea class="form-control text-area text-area-larga" 
+								       		  id="edicion-texto" name="edicion-texto">
+								    </textarea>
+    							</div>
+                			</div>
+                			<hr>
+    				    	<div class="row">
+    				    		<div class="col-md-12">
+					        		<div class="text-center">
+						    			<div class="btn-group">
+								        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+				       			 			<button type="button" class="btn btn-primary" id="btn-cambio-texto">Aceptar</button>
+								        </div>
+							        </div>
+							    </div>
+    				    	</div>
+				    	</form>
+				    </div>
+				</div>
+			</div>
+		</div>
+	</section>
+{% endblock %}

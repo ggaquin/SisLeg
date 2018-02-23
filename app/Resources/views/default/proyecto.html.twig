@@ -103,7 +103,7 @@
     		var html;
     		if (event.clipboardData) {
     			html = event.clipboardData.getData('text/plain');
-    			html = html.replace(/\r?\n/g, '<br/>');
+    			html = html.replace(/\r?\n/g, '</p><p>');
                 html = html.replace(/\t/g, '');
     	  	}
     	  	return html;
