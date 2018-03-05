@@ -524,11 +524,12 @@
 				  
 				validacion+=((idTipoExpediente==3 && apellidosParticular.replace(/ |\n/g, '').length==0)
 						  	  ?'<li>Debe especificar un nombre para el demandante particular</li>':'');
-			  	 
-				validacion+=((idTipoExpediente==4 && idOrigen==0)
+
+			  	debugger;
+				validacion+=(((idTipoExpediente==4 || idTipoExpediente==9) && idOrigen==0)
 					  	  	  ?'<li>Debe especificar el origen del expediente</li>':'');
 		  	  	  
-				validacion+=((idTipoExpediente==4 && numeros.length==0)
+				validacion+=(((idTipoExpediente==4 || idTipoExpediente==9) && numeros.length==0)
 				  	  	  	  ?'<li>Debe especificar el/los numero/s de origen del expediente</li>':'');	
 	  	  	  	  		
 				validacion+=((caratula.replace(/ |\n/g, '').length==0)
