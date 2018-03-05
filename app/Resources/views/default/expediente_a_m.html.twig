@@ -206,7 +206,7 @@
 		wysihtml5.dom.getPastedHtml = function(event) {
     		var html;
     		if (event.clipboardData) {
-    			html = event.clipboardData.getData('text/plain');
+    			html = '<p>'+event.clipboardData.getData('text/plain')+'</p>';
     			html = html.replace(/\r?\n/g, '</p><p>');
                 html = html.replace(/\t/g, '');
 		  	}
@@ -320,6 +320,7 @@
 
 					var tipoExpediente=data.tipo_expediente;
 					$("#selTipoExpediente").val(tipoExpediente);
+					mostrarOrigen($("#selTipoExpediente").val());
 					$("#numeroExpediente").val(data.numero_expediente);
 					$("#caratula").data("wysihtml5").editor.setValue(data.caratula);
 					$("#folios").val(data.folios);
@@ -336,6 +337,7 @@
 						mostrarTiposPara("no-proyectos");
 					}
 
+					debugger;
 					if (tipoExpediente==3 && data.demandante_id!=0){
 						$("#documentoParticular").val(data.demandante_documento);
 						$("#apellidosParticular").val(data.demandante_apellidos);
@@ -373,7 +375,7 @@
 		                maxFileSize: 10240,
 		                
 		                initialCaption: "Archivos Expediente " + data.numero_expediente
-		                
+
 		            });	
 				    
 				},
@@ -708,8 +710,12 @@
 			$(".text-area-caratula").wysihtml5({
 				toolbar: {
 				    "image": false,
+				    "emphasis": true,
+				    "lists": false,
+				    "blockquote": false,
+				    "link": false,			    
 					"size": "xs",
-				},
+				},	
 			});
 
 			$('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {

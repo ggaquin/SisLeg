@@ -5904,6 +5904,7 @@ wysihtml5.dom.parse = function(elementOrHtml_current, config_current) {
     }
 
     if (isString) {
+      fragment.ownerDocument.activeElement.innerHTML="";
       element = wysihtml5.dom.getAsDom(elementOrHtml, context);
     } else {
       element = elementOrHtml;
@@ -8315,6 +8316,7 @@ wysihtml5.dom.query = function(elements, query) {
 **/
 wysihtml5.dom.getPastedHtml = function(event) {
   var html;
+  debugger;
   if (event.clipboardData) {
     if (wysihtml5.lang.array(event.clipboardData.types).contains('text/html')) {
       html = event.clipboardData.getData('text/html');
@@ -13400,7 +13402,7 @@ wysihtml5.views.View = Base.extend(
       var that = this,
           oldHtml,
           cleanHtml;
-
+      debugger;
       if (wysihtml5.browser.supportsModenPaste()) {
         this.on("paste:composer", function(event) {
           event.preventDefault();
@@ -13424,6 +13426,7 @@ wysihtml5.views.View = Base.extend(
     },
 
     _cleanAndPaste: function (oldHtml) {
+    	debugger;
       var cleanHtml = wysihtml5.quirks.cleanPastedHTML(oldHtml, {
         "referenceNode": this.composer.element,
         "rules": this.config.pasteParserRulesets || [{"set": this.config.parserRules}],
