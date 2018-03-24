@@ -674,10 +674,10 @@
     											            	  " class='btn btn-primary btn-xs btn-redactar-sancion'>"+
     											            	  "<span class='glyphicon glyphicon-plus'></span></button> ";
         											            	  
-    									            		if (row.dictamenes>0)
+    									            		/* if (row.dictamenes>0)
         									            			html+="<button type='button'title='Usar Dictamen' "+(($("#permiteEdicion").val()==0)?"disabled":"")+
         											            		  " class='btn btn-primary btn-xs btn-sancion-dictamen'>"+
-        											            		  "<span class='glyphicon glyphicon-paperclip'></span></button> ";
+        											            		  "<span class='glyphicon glyphicon-paperclip'></span></button> "; */
     										            }
     								            		else{
         								            			html+="<button type='button'title='Editar Sancion' "+(($("#permiteEdicion").val()==0)?"disabled":"")+
@@ -750,7 +750,15 @@
 		    //EVENTO REDACTAR Sancion DE LA GRILLA DE ORDEN DEL DIA	
 		    $('#registroOrdenDia tbody').on( 'click', '.btn-redactar-sancion', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
-		        abrirModalSancion(data['id_proyecto'],data['id_expediente'],0,0);
+		        debugger;
+		        var idSancion=data['id_sancion'];
+		        var idExpediente=data['id_expediente'];
+		        var idSesion='{{ idSesion }}';
+		        cargarMenuConParametros('/sancion_a_m',
+				        				{nombre:'idSancion', valor:idSancion},
+				        				{nombre:'idExpediente', valor:idExpediente},
+				        				{nombre:'idSesion',valor:idSesion});
+		       
 		    });
 
 		    //EVENTO USAR DICTAMEN DE LA GRILLA DE ORDEN DEL DIA	
@@ -766,7 +774,13 @@
 			//EVENTO EDITAR RESOLUCION DE LA GRILLA DE ORDEN DEL DIA
 		    $('#registroOrdenDia tbody').on( 'click', '.btn-editar-sancion', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
-		        abrirModalSancion(data['id_proyecto'],data['id_expediente'],data['id_dictamen'],data['id_sancion']);
+		        var idSancion=data['id_sancion'];
+		        var idExpediente=data['id_expediente'];
+		        var idSesion='{{ idSesion }}';
+		        cargarMenuConParametros('/sancion_a_m',
+                        				{nombre:'idSancion', valor:idSancion},
+                        				{nombre:'idExpediente', valor:idExpediente},
+                        				{nombre:'idSesion',valor:idSesion});
 		    });
 		   
 			//EVENTO MOSTRAR DEL MODAL DE SANCION

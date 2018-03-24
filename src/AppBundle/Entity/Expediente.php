@@ -995,6 +995,9 @@ class Expediente
     			$inicio+=100;
     		}
     	}
+    	
+    	if ($this->getProyecto()!=null)
+    		$retorno.=chr(10)."Autor: ".$this->getProyecto()->getConcejal()->getNombreCompleto();
         return $retorno;
     }
     
@@ -1008,60 +1011,64 @@ class Expediente
     public function getCaratulaMuestra()
     {
     	
-    	$retorno='';
     	//elimina los retornos de carro repetidos
-    	$caratula=preg_replace("/(<p><br><\/p>)\\1+/", "$1", $this->getCaratula());
-    	$largoTexto=strlen($caratula);
-    	$finPrimerParrafo=strpos($caratula,'</p>');
-    	$finSegundoParrafo=(($finPrimerParrafo!=false && strlen($caratula)>$finPrimerParrafo)
-    							?strpos(substr($caratula, $finPrimerParrafo+4,strlen($caratula)),'</p>')
-    							:false);
-    	//descarta el segundo parrafo sis es un retorno de linea
-    	$finSegundoParrafo=((substr($caratula, $finPrimerParrafo+$finSegundoParrafo,4)=='<br>')
-    			?$finPrimerParrafo:$finPrimerParrafo+4+$finSegundoParrafo);
-    	//si largo de texto es menor que 154 characteres
-    	if($largoTexto<=154){
-    		//el limite es o el largo de a cadena o el fin del segundo parrafo (si existe)
-    		$limite=(($finSegundoParrafo!=false && $finSegundoParrafo<$largoTexto)
-    					?$finSegundoParrafo:$largoTexto);
-    		$retorno=substr($caratula, 0,($limite-4)).'...</p>';	
-    	}
-    	else //el largo es mayor de 154 caracteres
-    	{	
-    		$posicionEnTramo=strpos(substr($caratula, 145,8),'</p>');
+    	$finPrimerParrafo=strpos($this->caratula,'</p>');
+    	$retorno=substr($this->caratula, 0, (($finPrimerParrafo>15)?15:$finPrimerParrafo));
+    	$retorno.='...	';
+//     	$retorno='';
+//     	//elimina los retornos de carro repetidos
+//     	$caratula=preg_replace("/(<p><br><\/p>)\\1+/", "$1", $this->getCaratula());
+//     	$largoTexto=strlen($caratula);
+//     	$finPrimerParrafo=strpos($caratula,'</p>');
+//     	$finSegundoParrafo=(($finPrimerParrafo!=false && strlen($caratula)>$finPrimerParrafo)
+//     							?strpos(substr($caratula, $finPrimerParrafo+4,strlen($caratula)),'</p>')
+//     							:false);
+//     	//descarta el segundo parrafo sis es un retorno de linea
+//     	$finSegundoParrafo=((substr($caratula, $finPrimerParrafo+$finSegundoParrafo,4)=='<br>')
+//     			?$finPrimerParrafo:$finPrimerParrafo+4+$finSegundoParrafo);
+//     	//si largo de texto es menor que 154 characteres
+//     	if($largoTexto<=154){
+//     		//el limite es o el largo de a cadena o el fin del segundo parrafo (si existe)
+//     		$limite=(($finSegundoParrafo!=false && $finSegundoParrafo<$largoTexto)
+//     					?$finSegundoParrafo:$largoTexto);
+//     		$retorno=substr($caratula, 0,($limite-4)).'...</p>';	
+//     	}
+//     	else //el largo es mayor de 154 caracteres
+//     	{	
+//     		$posicionEnTramo=strpos(substr($caratula, 145,8),'</p>');
     		
-    		//no hay parrafos en los alrededores del área de corte
-	    	if ($posicionEnTramo==false){
-	    		$caratula=substr($caratula,0,150);
+//     		//no hay parrafos en los alrededores del área de corte
+// 	    	if ($posicionEnTramo==false){
+// 	    		$caratula=substr($caratula,0,150);
 	    		
-	    		//ultimo cierre de parrafo en los primeros 150 caracteres
-	    		$posicionCorte=strpos($caratula, '</p>');
+// 	    		//ultimo cierre de parrafo en los primeros 150 caracteres
+// 	    		$posicionCorte=strpos($caratula, '</p>');
 	    		
-	    		//no hay parrafos entre los primero 150 caracteres
-		    	if ($posicionCorte==false){
-		    		$retorno=$caratula.'...</p>';
-		    	}
-		    	elseif ($posicionCorte<143){ //hay un cierre de parrafo entre los ultimos 143 caracteres
-		    		$limite=(($finSegundoParrafo!=false && $finSegundoParrafo<strlen($caratula))
-		    				?$finSegundoParrafo:strlen($caratula));
+// 	    		//no hay parrafos entre los primero 150 caracteres
+// 		    	if ($posicionCorte==false){
+// 		    		$retorno=$caratula.'...</p>';
+// 		    	}
+// 		    	elseif ($posicionCorte<143){ //hay un cierre de parrafo entre los ultimos 143 caracteres
+// 		    		$limite=(($finSegundoParrafo!=false && $finSegundoParrafo<strlen($caratula))
+// 		    				?$finSegundoParrafo:strlen($caratula));
 					
-		    		$retorno=substr($caratula, 0, $limite).'...</p>';
-		    	}
-		    	else {//hay un cierres de parrafo por encima los primero 143 caracteres
-		    		$limite=(($finSegundoParrafo!=false && $finSegundoParrafo<$posicionCorte)
-		    				?$finSegundoParrafo:$posicionCorte);
+// 		    		$retorno=substr($caratula, 0, $limite).'...</p>';
+// 		    	}
+// 		    	else {//hay un cierres de parrafo por encima los primero 143 caracteres
+// 		    		$limite=(($finSegundoParrafo!=false && $finSegundoParrafo<$posicionCorte)
+// 		    				?$finSegundoParrafo:$posicionCorte);
 		    		
-		    		$retorno=substr($caratula, 0, $limite).'...</p>';
-		    	}
-	    	}
-	    	else{
-	    		$limite=(($finSegundoParrafo!=false && $finSegundoParrafo<$posicionEnTramo+145)
-	    				?$finSegundoParrafo:$posicionEnTramo+145);
+// 		    		$retorno=substr($caratula, 0, $limite).'...</p>';
+// 		    	}
+// 	    	}
+// 	    	else{
+// 	    		$limite=(($finSegundoParrafo!=false && $finSegundoParrafo<$posicionEnTramo+145)
+// 	    				?$finSegundoParrafo:$posicionEnTramo+145);
 	    		
-	    		$retorno=substr($caratula, 0,$limite).'...</p>';
-	    	}
+// 	    		$retorno=substr($caratula, 0,$limite).'...</p>';
+// 	    	}
 	    	
-    	}
+//     	}
     	return  $retorno;
     }
 
@@ -1180,7 +1187,6 @@ class Expediente
 		return (!is_null($this->fechaArchivo)?$this->fechaArchivo->format('d/m/Y'):'');
 	}
 
-	
 	/**
 	 * Get nombreEstado
 	 * 
@@ -1189,11 +1195,50 @@ class Expediente
 	 */
 	public function getNombreEstado(){
 		
-		if(!is_null($this->sesion) && $this->sesion->getTieneOrdenDelDia())
+		if(!is_null($this->sesion) && $this->sesion->getTieneOrdenDelDia() &&
+		   $this->getComisionReserva()=="")
 			return 'Orden del Día';
 		else 
 			return $this->getEstadoExpediente()->getEstadoExpediente();
 	}
+	
+	/**
+	 * Get autor
+	 *
+	 * @return string
+	 * @VirtualProperty()
+	 */
+	public function getAutor(){
+		
+		$tipoExpediente=$this->getTipoExpediente()->getId();
+		$autor='';
+		switch ($tipoExpediente){
+			
+			case 1:
+			case 2:
+			case 6:
+			case 7:
+					$autor=$this->getProyecto()->getConcejal()->getNombreCompleto();
+					break;
+			case 3:
+					$autor=str_replace('-', '<br>',	
+									   $this->demandanteParticular->getDescripcionCorta());
+					break;
+			case 4:
+			case 9:
+					$nombre=$this->getTipoExpediente()->getTipoExpediente();
+					$autor=substr($nombre, 0, strlen($nombre)-2).'<br>'.
+							$this->getOrigenExterno()->getOficina()->getOficina();
+					break;
+			default:
+					$autor='N / D';
+					break;
+		};
+		
+		return strtoupper($autor);
+	}
+	
+	
 
     //----------------------------administracion de carga de archivos-------------------------------
 

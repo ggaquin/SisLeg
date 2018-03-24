@@ -27,15 +27,13 @@
               keycode = e.which;
           
           if (e.ctrlKey && keycode == 82) {
+              
               if (e.preventDefault)
               {
                   e.preventDefault();
                   e.stopPropagation();
-                  
               }
           }
-          
-        
         }
       
         function noImplementado(){
@@ -45,14 +43,24 @@
         function cargarMenu(url){
         	$("#contenidoUsuario").load('{{ app.request.getBaseURL() }}'+ url);
 		} 
-        function cargarMenuConParametro(url,parametroNombre, parametroValor){
-        	$("#contenidoUsuario").load('{{ app.request.getBaseURL() }}'+ url +'?'+parametroNombre+'='+parametroValor);
+
+        function cargarMenuConPaginado(url,pagina,registrosPagina){
+        	$("#contenidoUsuario").load('{{ app.request.getBaseURL() }}'
+                					   + url
+                					   + '?pagina='+pagina
+                					   + '&registrosPagina='+registrosPagina);
 		} 
-        function cargarMenuConDosParametros(url,parametro1Nombre, parametro1Valor,parametro2Nombre, parametro2Valor){
-        	$("#contenidoUsuario").load('{{ app.request.getBaseURL() }}'+ url +
-                						'?'+parametro1Nombre+'='+parametro1Valor+
-                						'&'+parametro2Nombre+'='+parametro2Valor);
+                		
+        function cargarMenuConParametros(urlBase, ...parametros){
+
+            var url='{{ app.request.getBaseURL() }}'+ urlBase;
+            $.each(parametros, function(i,parametro){
+				url+=((i==0)?'?':'&')+parametro.nombre+'='+parametro.valor;
+            });
+            
+        	$("#contenidoUsuario").load(url);
 		}
+		
         function obtenerRecurso(url) {
         	  var win = window.open(url, '_blank');
         	  win.focus();
@@ -334,7 +342,7 @@
                       	</li>
              
                       	<li class="menu-fired" tabindex="4" 
-                      		><a href="#" onclick="cargarMenu('/expedientesComisiones');">
+                      		><a href="#" onclick="cargarMenuConPaginado('/expedientesComisiones',0,10);">
                       		<i class="fa fa-minus"></i>Expedientes Girados</a>
                       	</li>
  
@@ -420,7 +428,7 @@
                       <li class="divider"></li>
                      
                       	<li class="menu-fired" tabindex="15" >
-                      		<a href="#" onclick="cargarMenu('/expedientes')">
+                      		<a href="#" onclick="cargarMenuConPaginado('/expedientes',0,10);">
                       		<i class="fa fa-minus"></i>Gestión de Expedientes</a>
                       	</li>
                       	

@@ -97,20 +97,12 @@
 	
 	</style>
 	<script type="text/javascript">
-
-	/*  window.addEventListener("keydown", function(e) {
-		 	
-			if (e.ctrlKey==true && e.which==17){
-				e.preventDefault();	
-				return false;
-			} 
-		},true); */
 	
 		/////////////////atajos de teclado/////////////
 
 		/************    atajo botones   *************/
 	
-    	$.Shortcuts.add({ //tipo de expediente
+    	$.Shortcuts.add({ //seleccion revisiones
     	    type: 'down',
     	    mask: 'Ctrl+I',
     	    enableInInput: true,
@@ -118,17 +110,6 @@
   
     			if ($("#link-tab-3").hasClass('tab-active'))
     				$("#btn-revisiones").click();
-    	    }
-    	});
-
-    	$.Shortcuts.add({ //tipo de expediente
-    	    type: 'down',
-    	    mask: 'Ctrl+N',
-    	    enableInInput: true,
-    	    handler: function(e) {
-        	    e.preventDefault;
-    	    	e.stopPropagation();
-    			alert("event stopped"); 
     	    }
     	});
     
@@ -208,7 +189,7 @@
     	    enableInInput: true,
     	    handler: function(e) {
         	    e.preventDefault();
-        	    if ($("#link-tab-3").hasClass('tab-active') && $('#modalArticulo').hasClass('in'))
+        	    if ($('#modalArticulo').hasClass('in'))
         				$("#btn-agregar-inciso").click();
     	    }
     	});
@@ -322,7 +303,7 @@
     	    handler: function() {
         	 	if ($("#link-tab-3").hasClass('tab-active')){
 				
-        	 		$("#div-revision").scrollToTop("#articulos-revision");
+        	 		$("#div-revision").scrollToTop("#label-articulos-revision");
         	 		$("#articulos-revision > tbody").find("tr:first")
         	 										.find("td:last")
         	 										.find("button:first").focus();
@@ -330,7 +311,7 @@
         	 	}
         	 	
         	 	if ($("#link-tab-2").hasClass('tab-active')){
-        	 		$("#div-revision").scrollToTop("#articulos");
+        	 		$("#div-articulos").scrollToTop("#label-articulos");
         	 		$("#articulos > tbody").find("tr:first")
         	 								   .find("td:last")
         	 								   .find("button:first").focus();
@@ -351,23 +332,13 @@
     	    }
     	});
 
-    	
-    	
-
-     	$.Shortcuts.start();
+    	$.Shortcuts.start();
 
 		///////////////fin atajos de teclado////////////	
 
     	$.fn.scrollToTop = function(elem, speed) { 
     	    $(this).animate({
     	        scrollTop:  $(this).scrollTop() - $(this).offset().top + $(elem).offset().top 
-    	    }, speed == undefined ? 1000 : speed); 
-    	    return this; 
-    	};
-
-    	$.fn.scrollToBottom = function(elem, speed) { 
-    	    $(this).animate({
-    	        scrollTop:  $(this).height() 
     	    }, speed == undefined ? 1000 : speed); 
     	    return this; 
     	};
@@ -402,7 +373,6 @@
 		};
 
 		Array.prototype.eliminar  = function(clave,valor){
-				debugger;	
 			    var array = $.map(this, function(v,i){
 			      	return v[clave] == valor ? null : v;
 			   });
@@ -466,8 +436,6 @@
 							   '<div class="btn-group pull-right">'+
 							   '<button type="button" class="btn btn-sm btn-primary btn-editar-articulo" title="Editar artículo">'+
 							   		'Editar</button>'+
-							   /* '<button type="button" class="btn btn-sm btn-warning" title="Cambiar orden" onClick="noImplementado();">'+
-							   		'Mover</button>'+ */
 							   '<button type="button" class="btn btn-sm btn-danger btn-eliminar-articulo" title="Eliminar artículo">'+
 							   		'Eliminar</button></div>'+
 							   '<div>'+articulo.texto+'<br><ul class="list-unstyled">';
@@ -496,8 +464,6 @@
 							   '<div class="btn-group pull-right">'+
 							   '<button type="button" class="btn btn-sm btn-primary btn-editar-articulo" title="Editar artículo">'+
 							   		'Editar</button>'+
-							   /* '<button type="button" class="btn btn-sm btn-warning" title="Cambiar orden" onClick="noImplementado();">'+
-							   		'Mover</button>'+ */
 							   '<button type="button" class="btn btn-sm btn-danger btn-eliminar-articulo" title="Eliminar artículo">'+
 							   		'Eliminar</button></div>'+
 							   '<div>'+articulo.texto+'<br><ul class="list-unstyled">';
@@ -557,16 +523,11 @@
 		}
 
 		function cargarInciso(nuevoInciso){
-			debugger;
 			var orden=nuevoInciso.orden.toLowerCase();
 			var inciso='<tr>'+
 	        		   '<td class="numero-fila">'+orden+') -</td>' +
 	        		   '<td><textarea class="form-control text-area text-area-mini" id="inciso-'+orden+'" '+
 	        		   'name="inciso-'+orden+'" placeholder="Inciso"></textarea></td>'+
-	        		   /* '<td class="herramienta-fila text-center"><div class="row text-center">'+
-	        		   '<button type="button" class="btn btn-sm btn-info" onClick="noImplementado();"><span class="glyphicon glyphicon-tasks"></button></div>'+
-	        		   '<div class="row text-center"><button type="button" class="btn btn-sm btn-danger btn-eliminar-inciso">'+
-	        		   '<span class="glyphicon glyphicon-remove"></button></div></td>'+ */
 	        		   '<td class="herramienta-fila text-center">'+
 	        		   '<button type="button" class="btn btn-sm btn-danger btn-eliminar-inciso" id="eliminar-inciso-'+orden+'">'+
 	        		   '<span class="glyphicon glyphicon-remove"></button></td>'+ 
@@ -578,9 +539,6 @@
 				    "image": false,
 					"size": "xs",
 				},
-				/*events: {
-					"load": registrarEventosParaWysihtml5(),
-				} */
 			});
 			$("#inciso-"+orden).data("wysihtml5").editor.setValue(nuevoInciso.texto);
 			$("#inciso-"+orden).data("wysihtml5").editor.on("load", registrarEventosParaWysihtml5);
@@ -595,10 +553,6 @@
 	        		   '<td class="numero-fila">'+letra+') -</td>' +
 	        		   '<td><textarea class="form-control text-area text-area-mini" id="inciso-'+letra+'" '+
 	        		   'name="inciso-'+letra+'" placeholder="Inciso"></textarea></td>'+
-	        		   /* '<td class="herramienta-fila"><div class="text-center">'+
-	        		   '<button type="button" class="btn btn-sm btn-info" onClick="noImplementado();"><span class="glyphicon glyphicon-tasks"></button></div>'+
-	        		   '<div class="row text-center"><button type="button" class="btn btn-sm btn-danger btn-eliminar-inciso">'+
-	        		   '<span class="glyphicon glyphicon-remove"></button></div></td>'+ */
 	        		   '<td class="herramienta-fila text-center">'+
 	        		   '<button type="button" class="btn btn-sm btn-danger btn-eliminar-inciso" id="eliminar-inciso-'+letra+'">'+
 	        		   '<span class="glyphicon glyphicon-remove"></button></td>'+
@@ -610,116 +564,143 @@
 				    "image": false,
 					"size": "xs",
 				},
-				/* events: {
-					"load": registrarEventosParaWysihtml5(),
-				} */
 			});
 			
 	        $("#inciso-"+letra).data("wysihtml5").editor.on("load", registrarEventosParaWysihtml5);
 	        $("#inciso-"+letra).data("wysihtml5").editor.on("focus", controlWysihtml5Focus);
 	        
-	        if(texto==null){
+	        if(texto==null)
 	        	$("#inciso-"+letra).data("wysihtml5").editor.focus();
-				//$("#div-incisos").animate({ scrollTop: $("#div-incisos")[0].scrollHeight}, 1000);
-	        }
 	        else 
 	        	 $("#inciso-"+letra).data("wysihtml5").editor.setValue(texto);
 		}
 
-		function InicializarPagina(){
-
-			debugger;
-			articulos=null;
-
-			htmlTipoRedaccion="<option value='basico' selected='selected'>Básico</option>" +
-						      "<option value='articulado'>Articulado</option>";	
-						     
-	        if ($("#idProyecto").val()!=0)
-		        htmlTipoRedaccion+="<option value='revision'>Revisión</option>";
-
-			$("#selTipoRedaccion").html(htmlTipoRedaccion);
-			
-	        var nombreComision=$("#nombreComision").val();
-	        var idComision=$("#idComision").val();
-	        var newOption = new Option(nombreComision, idComision, true, true);
-	        $("#selComisiones").empty().change();
-		   	$("#selComisiones").append(newOption).trigger('change');
-	        $("#selAgregados").empty().change();
-	        $("#articulos > tbody").html('');
-	        $("#articulos-revision > tbody").html('');
-		   	$("#editaRevision").bootstrapToggle('on');
-		   	$("#vistosYConsiderandos").bootstrapToggle('on');
-		   	$(".dependiente-proyecto").addClass("hidden");
-		   	
-		   	var idDictamen=$("#id").val();
-
-    		if (idDictamen!=0){
-
-    			$("#selComisiones").prop("disabled", true);
-        		
-    		   
-						
-    					//controles comunes a todos los dictamenes
-    					$("#selTipoRedaccion").val('{{ data.clase_dictamen }}');
-    					
-    					if ('{{ data.clase_dictamen }}'=="articulado")
-    						$("#selTipoDictamen").val('{{ data.id_tipo_dictamen }}');
-		
-    					$("#texto").data("wysihtml5").editor.setValue('{{ data.texto_libre | raw }}');
-
-    					var agregados={{ data.agregados | raw }};  	
-    					$.each(agregados,function(index,agregado){
-    						 var newOption = new Option(agregado.numeroCompleto, agregado.id, true, true);
-    						 $("#selAgregados").append(newOption).trigger('change');
-    					});
-
-    				 	//caso particular dictamen articulado
-						if ('{{ data.clase_dictamen }}'=="articulado"){
-    				 	
-        				    $.each({{ data.texto_articulado | raw }},function(index,articulo){
-        						agregarArticulo(articulo,'articulos',false);
-        					});
-    
-    				    	//articulos=data.texto_articulado; 
-    					} 
-
-						//caso particular dictamen por revision
-    					if ('{{ data.clase_dictamen }}'=="revision"){
-        					
-    					    $("#vistos").html('{{ data.vistos | raw }}');
-    				        $("#considerandos").html('{{ data.considerandos | raw}}');
-    				        
-    				        $.each({{ data.articulos | raw }},function(index,articulo){
-        						agregarArticulo(articulo,'articulos-revision',false);
-        					});
-    
-    				    	//articulos=data.articulos; 
-
-							if ({{ data.incluye_vistos_y_considerandos | raw }})
-								$("#vistosYConsiderandos").bootstrapToggle('on');
-							else
-								$("#vistosYConsiderandos").bootstrapToggle('off');
-
-    				    	$("#idRevision").val({{ data.revision_id }});  
-
-    				    	$("#selTipoRedaccion").change();
-
-        				}	
-    			
-			}
-	 	
-		}
 		
 		$(document).ready(function () {
 
+		/* Variables --------------------------------------------------------------------------------*/
+
+			var articulosDictamen=[];
+			var articulosRevision=[];
+			var tablaRevisiones;
+			
+		/* Funciones --------------------------------------------------------------------------------*/
+			
+			function InicializarPagina(){
+
+				articulosDictamen=[];
+				articulosRevision=[];
+
+				$("#idAsignacion").val('{{ idAsignacion }}'); 
+	        	$("#id").val('{{ idDictamen }}'); 
+	        	$("#idProyecto").val('{{ idProyecto }}');
+	        	$("#idExpediente").val('{{ idExpediente }}'); 
+	        	$("#idComision").val('{{ idComision }}');
+	        	$("#idDictaminantes").val('{{ dictaminantes }}'); 
+	        	$("#nombreComision").val('{{ nombreComision }}');
+
+				var htmlTipoRedaccion="<option value='basico' selected='selected'>Básico</option>" +
+							          "<option value='articulado'>Articulado</option>";	
+							     
+		        if ($("#idProyecto").val()!=0)
+			        htmlTipoRedaccion+="<option value='revision'>Revisión</option>";
+
+				$("#selTipoRedaccion").html(htmlTipoRedaccion);
+				
+		        var nombreComision=$("#nombreComision").val();
+		        var idComision=$("#idComision").val();
+		        var newOption = new Option(nombreComision, idComision, true, true);
+		        $("#selComisiones").empty().change();
+			   	$("#selComisiones").append(newOption).trigger('change');
+		        $("#selAgregados").empty().change();
+		        $("#articulos > tbody").html('');
+		        $("#articulos-revision > tbody").html('');
+			   	$("#editaRevision").bootstrapToggle('on');
+			   	$("#vistosYConsiderandos").bootstrapToggle('on');
+			   	$(".dependiente-proyecto").addClass("hidden");
+			   	$("#idRevision").val(-1);
+			   	
+			   	var idDictamen=$("#id").val();
+
+	    		if (idDictamen!=0){
+
+	    			$("#selComisiones").prop("disabled", true);
+	        		
+	    					//controles comunes a todos los dictamenes
+	    					$("#selTipoRedaccion").val('{{ data.clase_dictamen }}');
+	    					
+	    					if ('{{ data.clase_dictamen }}'=="articulado")
+	    						$("#selTipoDictamen").val('{{ data.id_tipo_dictamen }}');
+			
+	    					$("#texto").data("wysihtml5").editor.setValue('{{ data.texto_libre | raw }}');
+
+	    					var agregados={{ data.agregados | raw }};  	
+	    					$.each(agregados,function(index,agregado){
+	    						 var newOption = new Option(agregado.numeroCompleto, agregado.id, true, true);
+	    						 $("#selAgregados").append(newOption).trigger('change');
+	    					});
+
+	    				 	//caso particular dictamen articulado
+							if ('{{ data.clase_dictamen }}'=="articulado"){
+	    				 	
+	        				    $.each({{ data.texto_articulado | raw }},function(index,articulo){
+	        						agregarArticulo(articulo,'articulos',false);
+	        					});
+	    
+	        				    articulosDictamen={{ data.texto_articulado | raw }}; 
+	    					} 
+
+							//caso particular dictamen por revision
+	    					if ('{{ data.clase_dictamen }}'=="revision"){
+	        					
+	    					    $("#vistos").html('{{ data.vistos | raw }}');
+	    				        $("#considerandos").html('{{ data.considerandos | raw}}');
+	    				        
+	    				        $.each({{ data.articulos | raw }},function(index,articulo){
+	        						agregarArticulo(articulo,'articulos-revision',false);
+	        					});
+	    
+	    				        articulosRevision={{ data.articulos | raw }}; 
+
+								if ({{ data.incluye_vistos_y_considerandos | raw }})
+									$("#vistosYConsiderandos").bootstrapToggle('on');
+								else
+									$("#vistosYConsiderandos").bootstrapToggle('off');
+
+	    				    	$("#idRevision").val({{ data.revision_id }});  
+
+	    				    	$("#selTipoRedaccion").change();
+
+	        				}	
+				}
+			}
+
+		/* Eventos ----------------------------------------------------------------------------------*/
+			
 	  		$('[autofocus]', this).focus();
 
-			var articulosDictamen={{ data.texto_articulado | raw }};
-			var articulosRevision={{ data.articulos | raw }};
+	  		//EVENTO CLICK DEL BOTON CANCELAR DICTAMEN
+  		 	$("#btn-cancelar-dictamen").click(function(){
+				var idDictamen='{{ idDictamen }}';
+				var mensaje='';
+				if (idDictamen==0){
+					mensaje='Se canceló el alta del dictamen';
+					cargarMenuConPaginado('/comisiones',0,{{ registrosPagina }});
+				}
+				else{
+    					mensaje='Se canceló la edición del dictamen';
+    					cargarMenuConPaginado('/comisiones',{{paginaOrigen}},{{ registrosPagina }});
+				}
+				
+				toastr.warning(mensaje,'ATENCIÓN');
+			});
 
-			var tablaRevisiones;
+  			//EVENTO CLICK DEL BOTON DESHACER CAMBIOS DICTAMEN
+			$("#btn-deshacer-cambios").click(function(){
+				InicializarPagina();
+			});
 
-		    //GUARDAR DE DICTAMEN
+		    //EVENTO CLICK DEL BOTON GUARDAR DICTAMEN
 		    $("#btn-guardar-dictamen").click(function(){
 
 		    	$(this).prop("disabled",true);
@@ -813,7 +794,10 @@
 		                processData: false,
 	                success: function(data) {
 	                    toastr.success(data);
-	                    cargarMenu('/expedientesComisiones');
+	                    if (idDictamen==0)
+	                    	cargarMenuConPaginado('/comisiones'',0,{{ registrosPagina }});
+	                   	else
+	                   		cargarMenuConPaginado('/comisiones'',{{paginaOrigen}},{{ registrosPagina }});
 	                	},
 	                error: function(jqXHR,textStatus,errorThrown ){
 						toastr.error(JSON.parse(jqXHR.responseText));
@@ -823,10 +807,6 @@
 	            }  
 			});
 		    		    
-		  //---------------------------------------------------------------------------------------------------------------
-		  //----------------------------------------------ARTICULADO-------------------------------------------------------
-		  //---------------------------------------------------------------------------------------------------------------
-
 			//EVENTO CLICK DEL BOTON DE NUEVO ARTICULO EN EL MODAL DE DICTAMEN
 			$("#btn-nuevo-articulo-revision").click(function(){
 				$("#modalArticulo").find('input[name="id"]').val(0);
@@ -882,12 +862,12 @@
 				}				
 			});
 
-			////EVENTO OCULTAR DEL MODAL DEL MODAL DE ARTICULO
+			//EVENTO OCULTAR DEL MODAL DEL MODAL DE ARTICULO
 			$("#modalArticulo").on('hidden.bs.modal', function () {	
 				setTimeout(function() { $("#btn-nuevo-articulo").focus(); }, 100);
 			});
 
-			//EVENTO CLICK DEL BOTON ELIMINAR DE LAS FILAS EN LA TABLA DE ARTICULOS
+			//EVENTO CLICK DEL BOTON ELIMINAR DE LAS FILAS EN LA TABLA DE ARTICULOS DE DICTAMEN ARTICULADO
 			$("#articulos > tbody").on('click','.btn-eliminar-articulo',function(){
 				var numero=$(this).parents("tr").find('td:first').text();
 				var tabla = $("#modalArticulo").find('input[name="tabla"]').val();
@@ -899,6 +879,7 @@
     				});
 			});
 
+			//EVENTO CLICK DEL BOTON ELIMINAR DE LAS FILAS EN LA TABLA DE ARTICULOS DE DICTAMEN ARTICULADO
 			$("#articulos-revision > tbody").on('click','.btn-eliminar-articulo',function(){
 				var numero=$(this).parents("tr").find('td:first').text();
 				var tabla = $("#modalArticulo").find('input[name="tabla"]').val();
@@ -999,11 +980,7 @@
 				}
 			});
 
-			//------------------------------------------------------------------------------------------------------------
-			//--------------------------------------MODAL DE REVISIONES---------------------------------------------------
-			//------------------------------------------------------------------------------------------------------------
-			
-
+			//EVENTO MOSTRAR DEL MODAL DE REVISIONES
 			$('#modalRevisiones').on('show.bs.modal', function () {
 
 				var idProyecto=$("#idProyecto").val();
@@ -1096,10 +1073,12 @@
 
 			});
 
+			//EVENTO OCULTAR DEL MODAL DE REVISIONES
 			$('#modalRevisiones').on('hidden.bs.modal', function () {
 				tablaRevisiones.destroy();
 			});
-			
+
+			//EVENTO CLICK DEL BOTON USAR DE LA TABLA DE REVISIONES
 			$('#revisiones tbody').on( 'click', '.btn-usar', function () {
 		        var data = tablaRevisiones.row( $(this).parents('tr') ).data();
 		        $("#vistos").html(data[ "visto" ]);
@@ -1114,10 +1093,7 @@
 				$('#modalRevisiones').modal('hide');		       
 		    } );
 
-		    //------------------------------------------------------------------------------------------------------------
-			//--------------------------EDICION DE VISTOS Y CONSIDERANDOS DE LA REVISIÓN----------------------------------
-			//------------------------------------------------------------------------------------------------------------
-
+		    //EVENTO CLICK DEL BOTON DE EDICION DEL VISTO DE LA REVISION
 		    $("#btn-editar-vistos-revision").click(function(){
 
 		    	$("#modalTexto").find('input[name="idTexto"]').val("vistos");
@@ -1127,6 +1103,7 @@
 		   		$("#modalTexto").modal("show");
 			});
 
+		  	//EVENTO CLICK DEL BOTON DE EDICION DEL CONSIDERANDO DE LA REVISION
 		    $("#btn-editar-considerandos-revision").click(function(){
 
 		    	$("#modalTexto").find('input[name="idTexto"]').val("considerandos");
@@ -1137,6 +1114,7 @@
 		    	
 			});
 
+		  	//EVENTO CLICK DEL BOTON ACEPTAR EDICION DE TEXTO (VISTO O CONSIDERANDO)
 		    $("#btn-cambio-texto").click(function(){
 
 			   var divTexto=$("#modalTexto").find('input[name="idTexto"]').val(); 
@@ -1149,14 +1127,78 @@
 				
 		    });
 
-		    //------------------------------------------------------------------------------------------------------------
-			//---------------------------------INICIALIZACIÓN DE CONTROLES------------------------------------------------
-			//------------------------------------------------------------------------------------------------------------
-						
+		    //EVENTO FOCO DE LA PESTAÑA TEXTO LIBRE
+			$("#link-tab-1").focus(function(){
+				$("#texto").data("wysihtml5").editor.focus();
+			});
+
+			//EVENTO FOCO DE LA PESTAÑA ARTICULADO
+			$("#link-tab-2").focus(function(){
+				setTimeout(function() { $("#btn-nuevo-articulo").focus(); }, 100);
+			});
+
+			//EVENTO FOCO DE LA PESTAÑA REVISIONES
+			$("#link-tab-3").focus(function(){
+				setTimeout(function() { $("#btn-revisiones").focus(); }, 100);
+			});
+
+			//EVENTO CAMBIAR DEL BOTON DE INCLUSION DE VISTO Y CONSIDERANDO
+			$("#vistosYConsiderandos").change(function(){
+				 if (!$(this).is(":checked"))
+					 $(".texto-revision").addClass("hidden");
+				 else
+					 $(".texto-revision").removeClass("hidden");
+			});
+
+			//EVENTO CAMBIAR DEL BOTON DE EDICION DE REVISION			
+			$("#editaRevision").change(function(){
+				 if (!$(this).is(":checked")){
+					$("#div-revision").addClass("hidden");
+				 	$('#div-vistosYConsiderandos').addClass("hidden");
+				 }
+				 else{
+					 	$("#div-revision").removeClass("hidden");
+					 	$('#div-vistosYConsiderandos').removeClass("hidden");
+				 }
+			});
+
+			//EVENTO CAMBIAR DEL SELECTOR DE REDACCION		
+			$("#selTipoRedaccion").change(function(){
+
+				$(".dependiente-proyecto").addClass("hidden");
+				
+				if ($(this).val()=="basico"){
+					$("#group-tipoDictamen").addClass("hidden");
+					$("#link-tab-2").addClass("hidden");
+					$("#link-tab-3").addClass("hidden");
+				}
+				if ($(this).val()=="articulado") {
+					$("#group-tipoDictamen").removeClass("hidden");
+					$("#link-tab-3").addClass("hidden");
+					$("#link-tab-2").removeClass("hidden");
+					$("#selTipoDictamen").val(0);
+				}
+				if ($(this).val()=="revision") {
+					$("#group-tipoDictamen").addClass("hidden");
+					$("#link-tab-2").addClass("hidden");
+					$("#link-tab-3").removeClass("hidden");
+					if ($("#idRevision").val()!=-1)
+						$(".dependiente-proyecto").removeClass("hidden");
+				}
+
+				habilitar("tab-1");	
+			});
+
+		/* Inicialización ------------------------------------------------------------------------------*/
+		    
 			$(".text-area").wysihtml5({
 				toolbar: {
-				    "image": false,
-					"size": "xs",
+					"image": false,
+				    "emphasis": true,
+				    "lists": false,
+				    "blockquote": false,
+				    "link": false,			    
+					"size": "xs"
 				},
 			});
 
@@ -1269,90 +1311,15 @@
 			      height: "25px"
 			 });
 
-			 $("#vistosYConsiderandos").change(function(){
-				 if (!$(this).is(":checked"))
-					 $(".texto-revision").addClass("hidden");
-				 else
-					 $(".texto-revision").removeClass("hidden");
-			 });
-
-			 $("#editaRevision").change(function(){
-				 if (!$(this).is(":checked")){
-					$("#div-revision").addClass("hidden");
-				 	$('#div-vistosYConsiderandos').addClass("hidden");
-				 }
-				 else{
-					 	$("#div-revision").removeClass("hidden");
-					 	$('#div-vistosYConsiderandos').removeClass("hidden");
-				 }
-			 });
-
-			$("#selTipoRedaccion").change(function(){
-
-				$(".dependiente-proyecto").addClass("hidden");
-				
-				if ($(this).val()=="basico"){
-					$("#group-tipoDictamen").addClass("hidden");
-					$("#link-tab-2").addClass("hidden");
-					$("#link-tab-3").addClass("hidden");
-				}
-				if ($(this).val()=="articulado") {
-					$("#group-tipoDictamen").removeClass("hidden");
-					$("#link-tab-3").addClass("hidden");
-					$("#link-tab-2").removeClass("hidden");
-					$("#selTipoDictamen").val(0);
-				}
-				if ($(this).val()=="revision") {
-					$("#group-tipoDictamen").addClass("hidden");
-					$("#link-tab-2").addClass("hidden");
-					$("#link-tab-3").removeClass("hidden");
-					if ($("#idRevision").val()!=-1)
-						$(".dependiente-proyecto").removeClass("hidden");
-				}
-
-				habilitar("tab-1");	
-			});
-
 			$(".campo-fecha-futura").datetimepicker({
 		    	locale: 'es',
 		    	format:'DD/MM/YYYY',
 		    	minDate : 'now'
 		    });
 
-			$("#btn-cancelar-dictamen").click(function(){
-				var idDictamen='{{ idDictamen }}';
-				var mensaje='Se canceló '+(idDictamen==0?'el alta':'la edición')+' del dictamen';
-				toastr.warning(mensaje,'ATENCIÓN');
-				cargarMenu('/expedientesComisiones');
-			});
-			
-			$("#btn-deshacer-cambios").click(function(){
-				InicializarPagina();
-			});
-			
-			$("#link-tab-1").focus(function(){
-				$("#texto").data("wysihtml5").editor.focus();
-			});
-
-			$("#link-tab-2").focus(function(){
-				setTimeout(function() { $("#btn-nuevo-articulo").focus(); }, 100);
-			});
-
-			$("#link-tab-3").focus(function(){
-				setTimeout(function() { $("#btn-revisiones").focus(); }, 100);
-			});
-
 			registrarEventosParaWysihtml5();
 
 			InicializarPagina();
-			
-			/* $('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {
-				if (event.which==27){
-					debugger;
-					if($(this).data("id")=="articulo" || $(this).data("id").substring(0,7)=="inciso")
-						$("#btn-agregar-inciso").focus();
-				}
-		    }); */
 	});
 	</script>
 	<section class="content-header">
@@ -1385,13 +1352,13 @@
 	</section>
     <section class="content">
     	<form id="frm-dictamen">
-        	<input type="hidden" id="idAsignacion" name="idAsignacion" value="{{ idAsignacion }}"> 
-        	<input type="hidden" id="id" name="id" value="{{ idDictamen }}"> 
-        	<input type="hidden" id="idProyecto" name="idProyecto" value="{{ idProyecto }}"> 
-        	<input type="hidden" id="idExpediente" name="idExpediente" value="{{ idExpediente }}"> 
-        	<input type="hidden" id="idComision" name="idComision" value="{{ idComision }}"> 
-        	<input type="hidden" id="idDictaminantes" name="idDictaminantes" value="{{ dictaminantes }}"> 
-        	<input type="hidden" id="nombreComision" name="nombreComision" value="{{ nombreComision }}">
+        	<input type="hidden" id="idAsignacion" name="idAsignacion"> 
+        	<input type="hidden" id="id" name="id"> 
+        	<input type="hidden" id="idProyecto" name="idProyecto"> 
+        	<input type="hidden" id="idExpediente" name="idExpediente"> 
+        	<input type="hidden" id="idComision" name="idComision"> 
+        	<input type="hidden" id="idDictaminantes" name="idDictaminantes"> 
+        	<input type="hidden" id="nombreComision" name="nombreComision">
         	<div class="row">
         		<div class="col-md-3">
         			<div class="form-group">
@@ -1475,6 +1442,7 @@
         					<div class="row" style="padding-top: 5px">
         						<div class="col-md-12">
         							<div class="div-articulos" title="Alt+T: Para ir al inicio" id="div-articulos">
+        								<label id="label-articulos" for="articulos">Artículos:</label>
         								<table class="table table-striped" id="articulos">
         									<tbody>
         									</tbody>
@@ -1535,6 +1503,7 @@
         						</div>
         						<div class="row" style="padding-top: 10px">
         							<div class="col-md-12">
+        								<label id="label-articulos-revision" for="articulos-revision">Artículos:</label>
         								<table class="table table-striped" id="articulos-revision">
         									<tbody>
         									</tbody>

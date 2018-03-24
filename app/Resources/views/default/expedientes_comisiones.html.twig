@@ -471,6 +471,14 @@
 			            			},
 				            		
 							    },
+						  "initComplete": function(settings, json) {
+							 		
+							 		var api = this.api();
+    								var paginaInicio={{ paginaInicio }};
+    								var registrosPagina={{ registrosPagina }};
+    								api.page.len(registrosPagina);
+    								this.fnPageChange(paginaInicio,true);    								
+							     },
 						  "columnDefs": [
 								            {
 								                "targets": [ 0 ],
@@ -1002,22 +1010,33 @@
 		    $('#registroAsignaciones tbody').on( 'click', '.btn-nuevo-dictamen-mayoria', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        var numeroDictaminantes='{{ MAYORIA }}';
-		        //abrirAltaDictamen(data,numeroDictaminantes);
-		        cargarMenuConDosParametros('/dictamen_a_m','idAsignacion',data[ 'id' ],'numeroDictaminantes',numeroDictaminantes);
+		        cargarMenuConParametros('/dictamen_a_m',
+				        				{nombre:'idAsignacion', valor:data[ 'id' ]},
+				        				{nombre:'numeroDictaminantes', valor:numeroDictaminantes},
+				        				{nombre:'paginaActual', valor:0},
+                        				{nombre:'registrosPagina', valor: tabla.page.len()});
 		    } );
 
 		    $('#registroAsignaciones tbody').on( 'click', '.btn-nuevo-dictamen-primera-minoria', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        var numeroDictaminantes='{{ PRIMERA_MINORIA }}';
 		        //abrirAltaDictamen(data,numeroDictaminantes);
-		        cargarMenuConDosParametros('/dictamen_a_m','idAsignacion',data[ 'id' ],'numeroDictaminantes',numeroDictaminantes);
+		        cargarMenuConParametros('/dictamen_a_m',
+                        				{nombre:'idAsignacion', valor:data[ 'id' ]},
+                        				{nombre:'numeroDictaminantes', valor:numeroDictaminantes},
+                        				{nombre:'paginaActual', valor:0},
+                        				{nombre:'registrosPagina', valor: tabla.page.len()});
 		    });
 
 		    $('#registroAsignaciones tbody').on( 'click', '.btn-nuevo-dictamen-segunda-minoria', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        var numeroDictaminantes='{{ SEGUNDA_MINORIA }}';
 		        //abrirAltaDictamen(data,numeroDictaminantes,id);
-		        cargarMenuConDosParametros('/dictamen_a_m','idAsignacion',data[ 'id' ],'numeroDictaminantes',numeroDictaminantes);
+		        cargarMenuConParametros('/dictamen_a_m',
+                        				{nombre:'idAsignacion', valor:data[ 'id' ]},
+                        				{nombre:'numeroDictaminantes', valor:numeroDictaminantes},
+                        				{nombre:'paginaActual', valor:0},
+                        				{nombre:'registrosPagina', valor: tabla.page.len()});
 		    });
 		    
 			//EVENTO EDITAR DICTAMEN DE LA GRILLA DE ASIGNACIONES
@@ -1025,21 +1044,33 @@
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        var numeroDictaminantes='{{ MAYORIA }}';
 		        //abrirEdicionDictamen(data,numeroDictaminantes,e.currentTarget.id);
-		        cargarMenuConDosParametros('/dictamen_a_m','idAsignacion',data[ 'id' ],'numeroDictaminantes',numeroDictaminantes);
+		        cargarMenuConParametros('/dictamen_a_m',
+                        				{nombre:'idAsignacion', valor:data[ 'id' ]},
+                        				{nombre:'numeroDictaminantes', numeroDictaminantes},
+                        				{nombre:'paginaActual', valor:tabla.page()},
+										{nombre:'registrosPagina', valor: tabla.page.len()});
 		    });
 
 		    $('#registroAsignaciones tbody').on( 'click', '.btn-editar-dictamen-primera-minoria', function (e) {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        var numeroDictaminantes='{{ PRIMERA_MINORIA }}';
 		        //abrirEdicionDictamen(data,numeroDictaminantes,e.currentTarget.id);
-		        cargarMenuConDosParametros('/dictamen_a_m','idAsignacion',data[ 'id' ],'numeroDictaminantes',numeroDictaminantes);
+		        cargarMenuConParametros('/dictamen_a_m',
+                        				{nombre:'idAsignacion', valor:data[ 'id' ]},
+                        				{nombre:'numeroDictaminantes', numeroDictaminantes},
+                        				{nombre:'paginaActual', valor:tabla.page()},
+										{nombre:'registrosPagina', valor: tabla.page.len()});
 		    });
 
 		    $('#registroAsignaciones tbody').on( 'click', '.btn-editar-dictamen-segunda-minoria', function (e) {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        var numeroDictaminantes='{{ SEGUNDA_MINORIA }}';
 		        //abrirEdicionDictamen(data,numeroDictaminantes,e.currentTarget.id);
-		        cargarMenuConDosParametros('/dictamen_a_m','idAsignacion',data[ 'id' ],'numeroDictaminantes',numeroDictaminantes);
+		        cargarMenuConParametros('/dictamen_a_m',
+                        				{nombre:'idAsignacion', valor:data[ 'id' ]},
+                        				{nombre:'numeroDictaminantes', numeroDictaminantes},
+                        				{nombre:'paginaActual', valor:tabla.page()},
+										{nombre:'registrosPagina', valor: tabla.page.len()});
 		    });
 
 			//EVENTO MOSTRAR DEL MODAL DE DICTAMEN

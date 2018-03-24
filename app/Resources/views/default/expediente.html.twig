@@ -67,6 +67,21 @@
             width: 16.6%;
             float: left;
         }
+        
+        .popover {
+    		max-width: 500px;
+		}	
+		
+		.popover-content {
+            word-wrap: break-word;
+            background-color: #F8F0A0;
+        }
+        
+        .popover-title{
+            background-color:#666;
+            color:#FFF;
+            font-weight: bold;
+        }
               
 	</style>
 	<script type="text/javascript">
@@ -201,6 +216,14 @@
 			var tablaGiros;
 
 			var tablaInformes;
+
+			function establecerPaginaInicio(){
+
+				var paginaInicio={{ paginaInicio }};
+				if (paginaInicio!=0)
+					tabla.page(paginaInicio).draw();
+				
+			}
 			
 		    var tabla=$('#registroExpediente').DataTable({
 		    			  "language": {
@@ -235,6 +258,19 @@
 			            			    toastr.error(JSON.parse(xhr.responseText));
 			            			}
 							    },
+						"initComplete": function(settings, json) {
+							 		
+							 		var api = this.api();
+    								var paginaInicio={{ paginaInicio }};
+    								var registrosPagina={{ registrosPagina }};
+    								api.page.len(registrosPagina);
+    								this.fnPageChange(paginaInicio,true);
+    								//$('[data-toggle="popover"]').popover({ html : true, trigger: "hover" });
+    								
+							     },
+						 "drawCallback": function( settings ) {
+									$('[data-toggle="popover"]').popover({ html : true, trigger: "hover" });	
+							     },
 						  "columnDefs": [
 								            {
 								                "targets": [ 0 ],
@@ -285,10 +321,23 @@
 									            	return html;
 									            }
 									        },
+									        {
+								                "targets": [ 2 ],
+								                "visible": true,
+								                "searchable": true,
+								                "orderable":false
+								            },
+								            {
+								                "targets": [ 3 ],
+								                "visible": true,
+								                "searchable": true,
+								                "orderable":false
+								            },
 									       {
 									            "targets": [ 4 ],
 									            "data": "numero_sancion",
 									            "orderable":false,
+									            "searchable": true,
 									            "render": function(data, type, row){
 										            var html="<div class='text-center'>"+
 										            		 "<h4><span class='label label-success'>"+row.numero_sancion+"</span></h4>"+
@@ -299,7 +348,7 @@
 									        {
 									            "targets": [ 5 ],
 									            "data": "fecha_creacion_formateada",
-									            "orderable":true,
+									            "orderable":false,
 									            "render": function(data, type, row){
 										            var html="";
 										            if('{{ app.user.rol.rol}}'=="ROLE_ADMINISTRADOR" && 
@@ -314,19 +363,25 @@
 								            {
 									            "targets": [ 6 ],
 									            "data": 'oficina_actual',
-									            "orderable":true,
+									            "orderable":false,
+									            "searchable": true,
 									            "render": function(data, type, row){
 									            	var html="<div>";
+									          
 									            	if(data=="COMISIONES"){
-										            	if(row.lista_comisiones_asignadas.length>0)
-    											        	html+= "<span style='color:#367fa9' class='glyphicon glyphicon-info-sign' title='"
-    													              +row.lista_comisiones_asignadas
-    													              +"'></span>  "+data;
 
-    											       if(row.comision_reserva!="")
+									            		if(row.comision_reserva!="")
         											        html+= "<span style='color:#367fa9' class='glyphicon glyphicon-info-sign' title='"
         													           +row.comision_reserva
-        													           +"'></span>  "+data; 
+        													           +"'></span>  "+data;
+        												else {
+														
+        										            	if(row.lista_comisiones_asignadas.length>0)
+            											        	html+= "<span style='color:#367fa9' class='glyphicon glyphicon-info-sign' title='"
+            													              +row.lista_comisiones_asignadas
+            													              +"'></span>  "+data;
+        												}
+    											        
 
 									            	}
 													else{   
@@ -348,7 +403,14 @@
 									        {
 									            "targets": [ 7 ],
 									            "data": null,
-									            "orderable":true,
+									            "orderable":false,
+									            "searchable": true,
+									        },
+									        {
+									            "targets": [ 8 ],
+									            "data": null,
+									            "orderable":false,
+									            "searchable": false,
 									            "render": function(data, type, row){
 										            var html="";
 										  
@@ -362,13 +424,16 @@
 									            }
 									        },
 								            {
-									            "targets": [ 8 ],
+									            "targets": [ 9 ],
 									            "data": 'caratula_muestra',
-									            "orderable":true,
+									            "orderable":false,
+									            "searchable": false,
 									            "render": function(data, type, row){
-										            var html="";
-									            	html+="<span title='"+row.caratula_sin_html+"'>"+data+"</span>";
-									            	 if ('{{'EXP_DOWNLOAD' in  app.user.listaPermisos }}')
+										            var html="";	
+													
+										            html+="<div data-toggle='popover' data-placement='left' title='Expediente "+row.numero_completo+":' data-content='"+row.caratula+"'>"+data+"</div>";									 
+									            	//html+="<span title='"+row.caratula_sin_html+"'>"+data+"</span>";
+									            	if ('{{'EXP_DOWNLOAD' in  app.user.listaPermisos }}')
 												        	html+="<button type='button' title='Descargar Documento' class='btn btn-info btn-xs btn-descargar'><span class='glyphicon glyphicon-save-file'></span></button>";
 									            	return html;
 									            }
@@ -382,9 +447,11 @@
 					            { "data": "numero_sancion","width":"7%" },
 					            { "data": "fecha_creacion_formateada","width":"10%" },
 					            { "data": "oficina_actual","width":"23%" },
+					            { "data": "autor","width":"15%" },
 					            { "data": "null","width":"4%" },
-					            { "data": "caratula_muestra", "width": "26%"},
+					            { "data": "caratula_muestra", "width": "11%"},
 					        ],
+					      "order": [[ 0, 'desc' ]],
 					      "autoWidth":false,
 					      "paging": true,
 					      "lengthChange": true,
@@ -393,12 +460,28 @@
 					      "info": true,
 					      "autoWidth": false,
 				});
+
+		   
+		    
+		 	//BOTÓN AGREGAR EXPEDIENTE
+			$("#btn-agregar-expediente").click(function(){
+
+				cargarMenuConParametros('/expediente_a_m',
+                        				{nombre:'id', valor:0},
+                        				{nombre:'paginaActual', valor:0},
+                        				{nombre:'registrosPagina', valor: tabla.page.len()});
+				
+			});
 		    
 		  	//EVENTO BOTON EDITAR EXPEDIENTE EN GRILLA
 		    $('#registroExpediente tbody').on( 'click', '.btn-editar', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        //$("#modificacionExpediente").find('input[name="id"]').val(data[ "id" ]);
-		        cargarMenuConParametro('/expediente_a_m','id',data[ "id" ]);
+		        cargarMenuConParametros('/expediente_a_m',
+                        				{nombre:'id', valor:data[ 'id' ]},
+                        				{nombre:'paginaActual', valor:tabla.page()},
+										{nombre:'registrosPagina', valor: tabla.page.len()});
+		    
 		    } );
 
 			//EVENTO BOTÓN DESCARGAR EXPEDIENTE
@@ -507,7 +590,7 @@
 		    	$("#retornoExterno").find('input[name="fechaRetorno"]').val("");
 		    	$("#retornoExterno").find('input[name="numeroRemitoRetorno"]').val("");
 			});
-
+			
 			//BOTÓN GUARDAR RETORNO
 			$("#btn-retorno-hcd").click(function(){
 
@@ -1162,6 +1245,10 @@
 				if (event.which==111)
 					return false;			
 			})
+						
+			//debugger;
+
+			//establecerPaginaInicio();
 			
 	});
 	</script>
@@ -1263,7 +1350,8 @@
 	                		<th>
 	                			<div class="btn-group">
 	                				{% if 'EXP_NEW' in  app.user.listaPermisos %}
-    							    	<button type="button" title="Agregar expediente"class="btn btn-primary btn-xs" onclick="cargarMenu('/expediente_a_m')">
+    							    	<button type="button" title="Agregar expediente" class="btn btn-primary btn-xs" 
+    							    			id="btn-agregar-expediente" >
     							    			<span class="glyphicon glyphicon-plus"></span>
     							    	</button>
 							    	{% endif %}
@@ -1274,6 +1362,7 @@
 			                <th title='Numero de Sanción'>N° Sanc.</th>
 			                <th title='Fecha Ingreso'>F. Ing</th>
 			                <th>Estado / Oficina</th>
+			                <th>Autor</th>
 			                <th title='Ultimo Momento'>U</th>	
 			                <th>Caratula</th>
 	                	</tr>

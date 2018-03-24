@@ -136,7 +136,9 @@ class RestExpedienteController extends FOSRestController{
             					'comision_reserva'=>$expediente->getComisionReserva(),
             					'ultimo_momento'=>$expediente->getUltimoMomento(),
             					'sesion'=>(!is_null($expediente->getSesion())
-            								?$expediente->getSesion():'')
+            								?$expediente->getSesion():''),
+            					'caratula'=>$expediente->getCaratula(),
+            					'autor'=>$expediente->getAutor()
             					);
             	$resutado[]=$registro;
             	

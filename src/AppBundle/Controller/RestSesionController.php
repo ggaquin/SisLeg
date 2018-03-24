@@ -622,4 +622,21 @@ class RestSesionController extends FOSRestController{
     	
     }
     
+    /**
+     * @Rest\Get("/cargarDesdeOrigen/{tipoOrigen}/{id}/{idProyecto}")
+     */
+    public  function cargarDesdeOrigen(Request $request){
+    	
+    	$id=$request->get('id');
+    	$tipoOrigen=$request->get('tipoOrigen');
+    	$idProyecto=$request->get('idProyecto');
+    	
+    	$expedienteSesionRepository=$this->getDoctrine()->getRepository('AppBundle:ExpedienteSesion');
+    	
+    	$origen=$expedienteSesionRepository->findOrigenByTipoAndId($tipoOrigen, $id,$idProyecto);
+    	
+    	return $origen[0];
+    	
+    }
+    
 }

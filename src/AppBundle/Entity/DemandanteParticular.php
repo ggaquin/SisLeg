@@ -145,4 +145,17 @@ class DemandanteParticular
     	$descripcion .=" - Nombre :" .$this->getApellidos() .", ".$this->getNombres();
     	return $descripcion;
     }
+    
+    /**
+     * Get descripcionCorta
+     *
+     * @return string
+     *
+     * @VirtualProperty
+     */
+    public function getDescripcionCorta()
+    {   $descripcion =$this->getApellidos() .", ".$this->getNombres();
+    	$descripcion .= " - (Doc: " .$this->getDocumento().")";
+	    return $descripcion;
+    }
 }

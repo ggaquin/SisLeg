@@ -557,4 +557,5 @@ class ExpedienteRepository extends EntityRepository{
 			
 		return $qb->getQuery()->getOneOrNullResult();
 	}
+	
 }

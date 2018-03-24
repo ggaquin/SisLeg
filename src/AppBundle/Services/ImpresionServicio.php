@@ -612,19 +612,19 @@ class ImpresionServicio
     	$cell1->addText('Expediente N°:', array('name'=>'Times New Roman', 'size'=>12, 'color'=>'000000'),
     			   						  array('alignment'=>Jc::CENTER,'indentation'=> $this->getIdentation('none')));
     	
-    	$cell2=$row1->addCell(2000,$cellRowSpan);
+    	$cell2=$row1->addCell(2100,$cellRowSpan);
     	$cell2->addText($numero,array('name'=>'Times New Roman', 'size'=>18, 'color'=>'000000', 'bold'=>true),
     							array('alignment'=>Jc::CENTER, 'indentation' => -10));
     	
-    	$cell3=$row1->addCell(1500,$cellRowSpan);
+    	$cell3=$row1->addCell(1200,$cellRowSpan);
     	$cell3->addText('Letra:', array('name'=>'Times New Roman', 'size'=>12, 'color'=>'000000'),
     			array('alignment'=>Jc::CENTER, 'indentation' => -10));
     	
-    	$cell4=$row1->addCell(1000,$cellRowSpan);
+    	$cell4=$row1->addCell(800,$cellRowSpan);
     	$cell4->addText($letra,array('name'=>'Times New Roman', 'size'=>18, 'color'=>'000000', 'bold'=>true),
     			array('alignment'=>Jc::CENTER, 'indentation' => -10));
     	
-    	$cell5=$row1->addCell(1500,$cellRowSpan);
+    	$cell5=$row1->addCell(1200,$cellRowSpan);
     	$cell5->addText('Año:', array('name'=>'Times New Roman', 'size'=>12, 'color'=>'000000'),
     			array('alignment'=>Jc::CENTER, 'indentation' => -10));
     	
@@ -639,7 +639,7 @@ class ImpresionServicio
 					    			 );
     	
     	$row2=$table2->addRow(5000);
-    	$cell7=$row2->addCell(9500,array('bgColor'=>'F1EBEA'));
+    	$cell7=$row2->addCell(8800,array('bgColor'=>'F1EBEA'));
     	\PhpOffice\PhpWord\Shared\Html::addHtml($cell7,$caratula);
     	
     	//fecha, origen y observaciones
@@ -654,14 +654,14 @@ class ImpresionServicio
     	$cell8=$row3->addCell(2000,$cellRowSpan2);
     	$cell8->addText('Fecha Entrada:', array('name'=>'Times New Roman', 'size'=>13, 'color'=>'000000','bold'=>true),
     									  array('alignment'=>Jc::START, 'indentation'=> $this->getIdentation('none')));
-    	$cell9=$row3->addCell(7500,$cellRowSpan2);
+    	$cell9=$row3->addCell(6800,$cellRowSpan2);
     	$cell9->addText($fecha, array('name'=>'Times New Roman', 'size'=>12, 'color'=>'000000'),
     							array('alignment'=>Jc::START, 'indentation'=> $this->getIdentation('none')));
     	$row4=$table3->addRow();
     	$cell8=$row4->addCell(2000,$cellRowSpan2);
     	$cell8->addText('Origen:', array('name'=>'Times New Roman', 'size'=>13, 'color'=>'000000', 'bold'=>true),
     							   array('alignment'=>Jc::START, 'indentation'=> $this->getIdentation('none')));
-    	$cell9=$row4->addCell(7500,$cellRowSpan2);
+    	$cell9=$row4->addCell(6800,$cellRowSpan2);
     	$cell9->addText($origen, array('name'=>'Times New Roman', 'size'=>12, 'color'=>'000000'),
     							 array('alignment'=>Jc::START, 'indentation'=> $this->getIdentation('none')));
     	
@@ -680,15 +680,15 @@ class ImpresionServicio
     	$cell10->addText('Observaciones:', array('name'=>'Times New Roman', 'size'=>13, 'color'=>'000000', 'bold'=>true),
     									   array('alignment'=>Jc::START, 'indentation'=> $this->getIdentation('none')));
     	
-    	$cell11=$row5->addCell(7500,$cellRowSpan4);
+    	$cell11=$row5->addCell(6800,$cellRowSpan4);
     	$html='<p></p>'.
-      		  '<p>_________________________________________________________</p>'.
-      		  '<p>_________________________________________________________</p>'.
-      		  '<p>_________________________________________________________</p>'.
-      		  '<p>_________________________________________________________</p>'.
-      		  '<p>_________________________________________________________</p>'.
-      		  '<p>_________________________________________________________</p>'.
-      		  '<p>_________________________________________________________</p>';
+      		  '<p>____________________________________________________</p>'.
+      		  '<p>____________________________________________________</p>'.
+      		  '<p>____________________________________________________</p>'.
+      		  '<p>____________________________________________________</p>'.
+      		  '<p>____________________________________________________</p>'.
+      		  '<p>____________________________________________________</p>'.
+      		  '<p>____________________________________________________</p>';
     	
     	\PhpOffice\PhpWord\Shared\Html::addHtml($cell11,$html);
     	

@@ -378,5 +378,32 @@ class ExpedienteComisionRepository extends EntityRepository{
 	 	
 	 	return $query->getResult();
 	 }
+	 
+	 public function countDictamenesBySesionAndExpediente($idSesion,$idExpediente)
+	 {
+	 	$rsm = new ResultSetMapping();
+	 	$rsm->addScalarResult('cuentaDictamenes', 'dictamenes');
+	 	
+	 	$sql="Select sum(if(dmd.idDictamen is not null,1,0) +".
+	 	 	"if(dpmd.idDictamen is not null,1,0) +".
+	 	 	"if(dsmd.idDictamen is not null,1,0) ".
+	 	 	") as cuentaDictamenes ".
+	 	 	"from 		expedienteComision ec ".
+	 	 	"left join	dictamen dmd ".
+	 	 	"on			ec.idDictamenMayoria=dmd.idDictamen ".
+	 	 	"left join	dictamen dpmd ".
+	 	 	"on			ec.idDictamenPrimeraMinoria=dpmd.idDictamen ".
+	 	 	"left join	dictamen dsmd ".
+	 	 	"on			ec.idDictamenSegundaMinoria=dsmd.idDictamen ".
+	 	 	"where 		ec.idSesion=:idSesion and ec.idExpediente=:idExpediente";
+	 	
+	 	$query = $this -> getEntityManager()
+	 	-> createNativeQuery($sql,$rsm)
+	 	-> setParameter('idSesion',$idSesion)
+	 	-> setParameter('idExpediente',$idExpediente);
+	 	
+	 	return $query->getSingleResult();
+	 	
+	 }
 	
 }

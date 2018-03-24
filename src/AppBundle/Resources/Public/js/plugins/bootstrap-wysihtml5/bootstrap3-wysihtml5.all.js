@@ -8316,7 +8316,7 @@ wysihtml5.dom.query = function(elements, query) {
 **/
 wysihtml5.dom.getPastedHtml = function(event) {
   var html;
-  debugger;
+
   if (event.clipboardData) {
     if (wysihtml5.lang.array(event.clipboardData.types).contains('text/html')) {
       html = event.clipboardData.getData('text/html');
@@ -13402,7 +13402,7 @@ wysihtml5.views.View = Base.extend(
       var that = this,
           oldHtml,
           cleanHtml;
-      debugger;
+
       if (wysihtml5.browser.supportsModenPaste()) {
         this.on("paste:composer", function(event) {
           event.preventDefault();

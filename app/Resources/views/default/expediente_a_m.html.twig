@@ -474,12 +474,12 @@
 
 			
 			//GUARDAR ALTA EXPEDIENTE
-			$("#frm-expediente").on('submit',function(e){
+			$("#btn-guardar-expediente").click(function(e){
 				
 				e.preventDefault();
 				$("#btn-guardar-expediente").prop("disabled",true);
-				
-             	var form=$(e.target);
+				debugger;
+             	/* var form=$(e.target); */
               	var formData=new FormData();
               	var idExpediente=$("#idExpediente").val();
                 var idProyecto=$("#idProyecto").val();
@@ -504,7 +504,7 @@
                 	 numeros.push(numero);
                 });
                 var caratula=$("#caratula").val();
-                var archivos=$(form).find('[name="input-file"]')[0].files;
+                var archivos=$("#frm-expediente").find('[name="input-file"]')[0].files;
 
                 var validacion='';
 
@@ -525,7 +525,6 @@
 				validacion+=((idTipoExpediente==3 && apellidosParticular.replace(/ |\n/g, '').length==0)
 						  	  ?'<li>Debe especificar un nombre para el demandante particular</li>':'');
 
-			  	debugger;
 				validacion+=(((idTipoExpediente==4 || idTipoExpediente==9) && idOrigen==0)
 					  	  	  ?'<li>Debe especificar el origen del expediente</li>':'');
 		  	  	  
@@ -572,15 +571,18 @@
 	              	
 	            	$.ajax({
 		                async: true,
-		                url: $(form).attr('action'),
+		                url: '{{ app.request.getBaseURL() }}'+'/api/expediente/save',
 		                data: formData,
 		                cache: false,
 		                contentType: false,
 		                processData: false,
-		                type: $(form).attr('method'),
+		                type: 'POST',
 	                success: function(data) {
 	                    toastr.success(data);
-	                    cargarMenu('/expedientes');
+	                   	if (idExpediente==0)
+	                    	cargarMenuConPaginado('/expedientes',0,{{ registrosPagina }});
+	                   	else
+	                   		cargarMenuConPaginado('/expedientes',{{paginaOrigen}},{{ registrosPagina }});
 	                },
 	                error: function(jqXHR,textStatus,errorThrown ){
 	                	$('#btn-guardar-expediente').prop("disabled", false);
@@ -689,9 +691,19 @@
 		
 			$('#btn-cancelar-expediente').click(function(){
 				var idExpediente='{{ idExpediente }}';
-				var mensaje='Se canceló '+(idExpediente==0?'el alta':'la edición')+' del expediente';
+				var mensaje='';
+				
+				if (idExpediente==0){
+					mensaje='Se canceló el alta del expediente';
+					cargarMenuConPaginado('/expedientes',0,{{ registrosPagina }});
+				}
+				else{
+    					mensaje='Se canceló la edición del expediente';
+    					cargarMenuConPaginado('/expedientes',{{paginaOrigen}},{{ registrosPagina }});
+				}
+				
 				toastr.warning(mensaje,'ATENCIÓN');
-				cargarMenu('/expedientes');
+				
 			});
 			
 			$("#selTipoExpediente").change(function(){
@@ -787,7 +799,7 @@
         	{% endif %}
         {% endif %}
         	
-    	<form id="frm-expediente" action="api/expediente/save" method="POST">
+    	<form id="frm-expediente">{# action="api/expediente/save" method="POST">#}
     		<input type="hidden" id="idProyecto" name="idProyecto">
     		<input type="hidden" id="idTipoExpediente" name="idTipoExpediente">
     		<input type="hidden" id="idExpediente" name="idExpediente" value="{{ idExpediente }}">
@@ -941,7 +953,7 @@
     					<div class="btn-group">
     						<button type="button" class="btn btn-info" title="Ctrl+E (Enfocar)"
     								id="btn-cancelar-expediente" >Canc<u>e</u>lar</button>
-    						<button type="submit" class="btn btn-primary" title="Ctrl+G (Enfocar)"
+    						<button type="button" class="btn btn-primary" title="Ctrl+G (Enfocar)"
     								id="btn-guardar-expediente"><u>G</u>uardar</button>
     					</div>
     				</div>

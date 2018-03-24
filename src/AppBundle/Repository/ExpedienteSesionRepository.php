@@ -28,6 +28,30 @@ class ExpedienteSesionRepository extends EntityRepository{
 		return  $resultado;
 	}
 	
+	public function findOrigenByTipoAndId($tipoOrigen, $id, $idProyecto){
+		
+		$rsm = new ResultSetMapping();
+		$rsm->addScalarResult('idDictamen', 'id_dictamen');
+		$rsm->addScalarResult('idRevision', 'id_revision');
+		$rsm->addScalarResult('redaccion', 'redaccion');
+		$rsm->addScalarResult('visto', 'visto','text');
+		$rsm->addScalarResult('considerando', 'considerando','text');
+		$rsm->addScalarResult('articulado', 'articulado','json_array');
+		$rsm->addScalarResult('textoLibre', 'texto_libre','text');
+		$rsm->addScalarResult('incluyeVistosYConsiderandos', 'incluye_vistos_y_considerandos');
+		$rsm->addScalarResult('tipoSancion', 'tipo_sancion');
+		
+		$query = $this->getEntityManager()
+		->createNativeQuery('call incluirDesdeOrigen(:tipoOrigen,:id, :idProyecto)', $rsm);
+		$query -> setParameter('tipoOrigen', $tipoOrigen);
+		$query -> setParameter('id', $id);
+		$query -> setParameter('idProyecto', $idProyecto);
+		
+		$resultado = $query->getResult();
+		
+		return  $resultado;
+	}
+	
 	public function findDistinctBySesion_Id($idSesion){
 		
 		$rsm = new ResultSetMapping();
