@@ -1,0 +1,2503 @@
+{% extends 'layout.html.twig' %}
+
+
+
+{% block stylesheets %}
+	{# parent() }#}
+  	{% stylesheets '@css_datatables' %}
+      	<link rel="stylesheet" href="{{ asset_url }}" /></link>
+  	{% endstylesheets %}
+{% endblock %}
+
+{% block javascripts %}
+	{# parent() #}
+    {% javascripts '@js_datatables'%}
+        <script src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+{% endblock %}
+
+{% block body %}
+	<style type="text/css">
+		@media (min-width: 768px) {
+		  .modal-xl {
+		    width: 95%;
+		    max-width:1600px;
+		  }
+		}
+		
+		.select2-selection--multiple { max-height: 10rem; overflow-y: auto }
+			
+		.text-area-libre{
+			height: 510px!important;
+		}
+		
+		.text-area-larga{
+			height: 467px!important;
+		}
+		
+		.text-area-corta{
+			height: 200px!important;
+		}
+		
+		.text-area-mini{
+			height: 80px!important;
+		}
+		
+		.text-area-speech{
+			height: 370px!important;
+			max-height: 370px;
+			overflow-y: auto;
+			background-color: #eeeeee!important; 
+		}
+		
+		.numero-fila{
+			font-size: 150%;
+			font-weight: bold;
+			vertical-align: middle!important;
+		}
+		.herramienta-fila{
+			vertical-align: middle!important;
+		}
+		
+		.div-articulos{
+			max-height: 466px;
+			overflow-y:auto;
+			overflow-x: hidden; 
+		}
+		
+		.div-detalle-plantilla{
+			max-height: 449px;
+			overflow-y:auto;
+		}
+		
+		.div-incisos{
+			height: 250px;
+			max-height: 260px;
+			overflow-y: auto;
+			overflow-x: hidden; 
+		}
+		
+		.tab{
+			height: 502px;
+			max-height:503px;
+		}
+		
+		.div-revision{
+			height: 466px;
+			max-height:467px;
+			overflow-y: auto;
+			overflow-x: hidden;
+		}
+			
+		.tab-active{
+			background-color: #f8f8ff;
+		}
+			
+		.toggle-on.btn{
+			line-height: 22.5px!important;
+		}
+		.toggle-off.btn{
+			line-height: 22.5px!important;
+		}
+	
+        #selOficinasDestino .select2.select2-container.select2-container--bootstrap.select2-container--below.select2-container--focus, .select2-selection.select2-selection--multiple{
+			height: 95px;
+		    max-height: 95px;
+		    overflow-y: auto;
+		}
+		
+		.bootstrap-primary-background{
+			background: #3c8dbc!important;
+		} 
+		    
+	</style>
+	<script type="text/javascript">
+
+	/////////////////atajos de teclado/////////////
+	
+	/************    atajo botones   *************/
+
+	$.Shortcuts.add({ //aceptar nuevo articulo / nuevo articulo articulado / nuevo articulo revision - ok
+	    type: 'down',
+	    mask: 'Ctrl+A',
+	    enableInInput: true,
+	    handler: function() {
+
+	    	if ($('#modalArticulo').hasClass('in'))
+    	    	$("#btn-agregar-articulo").focus();
+	    	else{
+				if ($("#link-tab-2").hasClass('tab-active'))
+    	    		$("#btn-nuevo-articulo").click();
+	    		
+				if ($("#link-tab-3").hasClass('tab-active') && !$("#div-revision").hasClass("hidden"))
+    	    		$("#btn-nuevo-articulo-revision").click();
+	    	}
+	    }
+	});
+	
+	$.Shortcuts.add({ //boton incluir vistos y considerandos - ok
+	    type: 'down',
+	    mask: 'Ctrl+C',
+	    enableInInput: true,
+	    handler: function() {
+	    	if ($("#link-tab-3").hasClass('tab-active') && !$("#div-vistosYConsiderandos").hasClass("hidden")){
+    	    	if ($("#vistosYConsiderandos").is(":checked"))
+    	    		$("#vistosYConsiderandos").bootstrapToggle('off');
+    	    	else
+    	    		$("#vistosYConsiderandos").bootstrapToggle('on');	 
+	    	}
+	    }
+	});
+
+	$.Shortcuts.add({ //deshacer cambios sancion - ok
+	    type: 'down',
+	    mask: 'Ctrl+D',
+	    enableInInput: true,
+	    handler: function(e) {
+    	    e.preventDefault();
+    	    if ($("#idSancion").val()!=0)
+	    		$("#btn-deshacer-cambios").focus();
+	    }
+	});
+	
+	$.Shortcuts.add({ //cancelar alta/edicion de dictamen - ok
+	    type: 'down',
+	    mask: 'Ctrl+E',
+	    enableInInput: true,
+	    handler: function() {
+	    	if ($('#modalArticulo').hasClass('in'))
+    	    	$("#btn-cancelar-articulo").focus();
+	    	else
+    	    	$("#btn-cancelar-sancion").focus();
+	    }
+	});
+
+	$.Shortcuts.add({ // habilita notificacion - ok
+	    type: 'down',
+	    mask: 'Ctrl+F',
+	    enableInInput: true,
+	    handler: function(e) {
+    	    	if ($("#aplicaNotificacion").is(':checked'))
+    				$("#aplicaNotificacion").bootstrapToggle('off');
+    	    	else{
+    	    			$("#aplicaNotificacion").bootstrapToggle('on');
+    	    			setTimeout(function(){
+    	    				$("#selOficinasDestino").focus();
+    					},10);	
+    	    	}
+	    }
+	});
+
+	$.Shortcuts.add({ //guardar Sancion- ok
+	    type: 'down',
+	    mask: 'Ctrl+G',
+	    enableInInput: true,
+	    handler: function(e) {
+    	    	$("#btn-guardar-sancion").focus();
+	    }
+	});
+	
+	$.Shortcuts.add({ //seleccion revisiones - ok
+	    type: 'down',
+	    mask: 'Ctrl+I',
+	    enableInInput: true,
+	    handler: function() {
+			if ($("#link-tab-3").hasClass('tab-active'))
+				$("#btn-revisiones").click();
+			
+			if ($("#link-tab-0").hasClass('tab-active'))
+				if ($("#agregaSpeech").is(":checked"))
+					$("#agregaSpeech").bootstrapToggle('off');
+				else {	
+						$("#agregaSpeech").bootstrapToggle('on');
+						setTimeout(function(){
+    	    				$("#selSpeech").focus();
+    					},10);	
+				}
+	    }
+	});
+
+	$.Shortcuts.add({ //copiar de dictamen - ok
+	    type: 'down',
+	    mask: 'Ctrl+M',
+	    enableInInput: true,
+	    handler: function(e) {
+    	    	$("#btn-modo-dictamen").click();
+	    }
+	});
+
+	$.Shortcuts.add({ // firma presidente - ok
+	    type: 'down',
+	    mask: 'Ctrl+P',
+	    enableInInput: true,
+	    handler: function(e) {
+    	    e.preventDefault();
+    	    e.stopPropagation();
+ 			if ($("#link-tab-0").hasClass('tab-active'))
+        	    
+    	    	if ($("#firmaPresidente").is(':checked'))
+					$("#firmaPresidente").bootstrapToggle('off');
+	    		else
+	    			$("#firmaPresidente").bootstrapToggle('on');;
+	    }
+	});
+
+	$.Shortcuts.add({ //numero sancion - ok
+	    type: 'down',
+	    mask: 'Ctrl+R',
+	    enableInInput: true,
+	    handler: function(e) {
+    	    	if ($("#poseeSancion").is(':checked'))
+    					$("#poseeSancion").bootstrapToggle('off');
+    	    	else{
+    	    			$("#poseeSancion").bootstrapToggle('on');
+    	    			$("#numeroSancion").focus();
+    	    	}
+	    }
+	});
+
+	$.Shortcuts.add({ //nuevo inciso / firma secretario - ok
+	    type: 'down',
+	    mask: 'Ctrl+S',
+	    enableInInput: true,
+	    handler: function(e) {
+    	    e.preventDefault();
+    	    e.stopPropagation();
+    	    if ($('#modalArticulo').hasClass('in'))
+    				$("#btn-agregar-inciso").click();
+		
+    	    if ($("#link-tab-0").hasClass('tab-active'))
+        	    
+    	    	if ($("#firmaSecretario").is(':checked'))
+					$("#firmaSecretario").bootstrapToggle('off');
+	    		else
+	    			$("#firmaSecretario").bootstrapToggle('on');
+	    }
+	});
+
+	$.Shortcuts.add({ //nueva redaccion - ok
+	    type: 'down',
+	    mask: 'Ctrl+U',
+	    enableInInput: true,
+	    handler: function(e) {
+    	    	$("#btn-modo-redaccion").click();
+	    }
+	});
+	
+	$.Shortcuts.add({ //boton edita revision - ok
+	    type: 'down',
+	    mask: 'Ctrl+V',
+	    enableInInput: true,
+	    handler: function(e) {
+    	    e.stopPropagation();
+	    	if ($("#link-tab-3").hasClass('tab-active') && !$("#div-edita-revision").hasClass("hidden")){
+    	    	if ($("#editaRevision").is(":checked"))
+    	    		$("#editaRevision").bootstrapToggle('off');
+    	    	else
+    	    		$("#editaRevision").bootstrapToggle('on');
+    	 	 
+	    	}
+
+	    	if ($("#link-tab-0").hasClass('tab-active') && $("#agregaSpeech").is(":checked"))
+	    		$("#btn-agregar-speech").click();
+    	    	
+	    }
+	});
+	
+	/************    atajo controles   *************/
+		
+	$.Shortcuts.add({ //selector de pestaña de articulado - ok
+	    type: 'down',
+	    mask: 'Alt+A',
+	    enableInInput: true,
+	    handler: function() {
+    	    if ($("#selTipoRedaccion").val()=='articulado'){
+    	    	habilitar('tab-2')
+    	    	$("#link-tab-2").focus();
+    	    }
+	    }
+	});
+	
+	$.Shortcuts.add({ //selector de comision reserva 
+	    type: 'down',
+	    mask: 'Alt+C',
+	    enableInInput: true,
+	    handler: function() {
+	    	$("#selComisionReserva").focus();
+	    }
+	});
+
+	$.Shortcuts.add({ //selector de expedientes agregados
+	    type: 'down',
+	    mask: 'Alt+D',
+	    enableInInput: true,
+	    handler: function() {
+	    	$("#div-revision").scrollToTop("#considerandosLabel");
+    	 	$("#btn-editar-considerandos-revision").focus();
+	    }
+	});
+
+	$.Shortcuts.add({ //seleccion de busqueda de Speech - ok
+	    type: 'down',
+	    mask: 'Alt+E',
+	    enableInInput: true,
+	    handler: function() {
+	    	$("#selSpeech").focus();
+	    }
+	});
+
+	$.Shortcuts.add({ //seleccion de pestaña de speech - ok
+	    type: 'down',
+	    mask: 'Alt+H',
+	    enableInInput: true,
+	    handler: function() {
+	    	habilitar('tab-0');
+	    	$("#link-tab-0").focus();
+	    }
+	});
+
+	$.Shortcuts.add({ //posicionamiento en primer inciso
+	    type: 'down',
+	    mask: 'Alt+I',
+	    enableInInput: true,
+	    handler: function(e) {
+	    	if($("#modalArticulo").hasClass("in")){
+				
+				if ($('#incisos > tbody > tr').length>0)
+					$("#inciso-a").data("wysihtml5").editor.focus();
+			}
+	    }
+	});
+		
+	$.Shortcuts.add({ //editor de texto de nuevo articulo - ok
+	    type: 'down',
+	    mask: 'Alt+L',
+	    enableInInput: true,
+	    handler: function() {
+			if ($('#modalArticulo').hasClass('in'))
+				$("#articulo").data("wysihtml5").editor.focus();
+	    }
+	});
+
+	$.Shortcuts.add({ //posicionamiento de considerandos en revision - ok
+	    type: 'down',
+	    mask: 'Alt+N',
+	    enableInInput: true,
+	    handler: function() {
+    	 	$("#numeroSancion").focus();
+	    }
+	});
+	
+	$.Shortcuts.add({ //selector de comision reserva 
+	    type: 'down',
+	    mask: 'Alt+O',
+	    enableInInput: true,
+	    handler: function() {
+				$("#selOficinasDestino").focus();
+	    }
+	});
+	
+	$.Shortcuts.add({ //tipo de sancion - ok
+	    type: 'down',
+	    mask: 'Alt+P',
+	    enableInInput: true,
+	    handler: function() {
+	    	$("#selTipoSancion").focus();
+	    }
+	});
+
+	$.Shortcuts.add({ //tipo de redaccion - ok
+	    type: 'down',
+	    mask: 'Alt+R',
+	    enableInInput: true,
+	    handler: function() {
+	    	$("#selTipoRedaccion").focus();
+	    }
+	});
+
+	$.Shortcuts.add({ //posicionamiento de vistos en revision - ok
+	    type: 'down',
+	    mask: 'Alt+S',
+	    enableInInput: true,
+	    handler: function() {
+    	 	$("#div-revision").scrollToTop("#vistosLabel");
+    	 	$("#btn-editar-vistos-revision").focus();
+	    }
+	});
+
+	$.Shortcuts.add({ //posicionamiento de articulos en articulado/revision - ok
+	    type: 'down',
+	    mask: 'Alt+T',
+	    enableInInput: true,
+	    handler: function() {
+    	 	if ($("#link-tab-3").hasClass('tab-active')){
+			
+    	 		$("#div-revision").scrollToTop("#label-articulos-revision");
+    	 		$("#articulos-revision > tbody").find("tr:first")
+    	 										.find("td:last")
+    	 										.find("button:first").focus();
+
+    	 	}
+    	 	
+    	 	if ($("#link-tab-2").hasClass('tab-active')){
+    	 		$("#div-articulos").scrollToTop("#articulos");
+    	 		$("#articulos > tbody").find("tr:first")
+    	 								   .find("td:last")
+    	 								   .find("button:first").focus();
+    	 	}
+	    }
+	});
+		
+	$.Shortcuts.add({ //seleccion de pestaña de texto - ok
+	    type: 'down',
+	    mask: 'Alt+X',
+	    enableInInput: true,
+	    handler: function() {
+	    	 if ($("#selTipoRedaccion").val()=="basico"){
+        	    	habilitar('tab-1');
+        	    	$("#link-tab-1").focus();
+	    	 }
+	    }
+	});
+
+	$.Shortcuts.add({ //selector de pestaña de revision - ok
+	    type: 'down',
+	    mask: 'Alt+Y',
+	    enableInInput: true,
+	    handler: function() {
+	    	 if ($("#selTipoRedaccion").val()=='revision'){
+    	    	habilitar('tab-3')
+    	    	$("#link-tab-3").focus();
+	    	 }
+	    }
+	});
+
+	$.Shortcuts.start();
+
+	///////////////fin atajos de teclado////////////
+	
+    	$.fn.scrollToTop = function(elem, speed) { 
+    	    $(this).animate({
+    	        scrollTop:  $(this).scrollTop() - $(this).offset().top + $(elem).offset().top 
+    	    }, speed == undefined ? 1000 : speed); 
+    	    return this; 
+    	};
+
+    	wysihtml5.dom.getPastedHtml = function(event) {
+     		var html;
+     		if (event.clipboardData) {
+     			html = '<p>'+event.clipboardData.getData('text/plain')+'</p>';
+     			html = html.replace(/\r?\n/g, '</p><p>');
+                 html = html.replace(/\t/g, '');
+ 		  	}
+ 		  	return html;
+ 		};
+
+		Array.prototype.reemplazar  = function(objeto, clave){
+			   var array = $.map(this, function(v,i){
+			      	return v[clave] == objeto[clave] ? objeto : v;
+			   });
+			   this.length = 0;
+			   this.push.apply(this, array);
+		};
+
+		Array.prototype.renumerar  = function(clave,numeracion){
+			   var semilla=(numeracion=='digito')?0:64;
+			   var array = $.map(this, function(v,i){
+			   		v[clave]=((numeracion=='digito')?(semilla+1):String.fromCharCode(semilla+1));
+			   		semilla++;
+			      	return v;
+			   });
+			   this.length = 0;
+			   this.push.apply(this, array);
+		};
+
+		Array.prototype.eliminar  = function(clave,valor){
+			    var array = $.map(this, function(v,i){
+			      	return v[clave] == valor ? null : v;
+			   });
+			   this.length = 0;
+			   this.push.apply(this, array);
+		};
+
+		function registrarEventosParaWysihtml5(){
+			$('.wysihtml5-sandbox').contents().find('body').on("keydown",function(event) {
+				if (event.which==27){//ESC
+					if($(this).data("id").substring(0,6)=="inciso")
+						$("#eliminar-inciso-"+$(this).data("id").substring(7)).focus();
+
+					if($(this).data("id")=="texto"){
+						if($("#selTipoRedaccion").val()=="basico")
+							$("#btn-guardar-sancion").focus();
+						if($("#selTipoRedaccion").val()=="articulado")
+							$("#link-tab-2").click();
+						if($("#selTipoRedaccion").val()=="revision")
+							$("#link-tab-3").click();						
+					}
+
+					if($(this).data("id")=="articulo")
+						$("#btn-agregar-inciso") .focus();
+				}
+				
+		    });
+		}
+
+		function controlWysihtml5Focus(event){
+			var control=event.currentTarget;
+			var desplazamiento=0;
+			var letra=$(control).data("id").substring(7);
+			var rowHeight=$("#incisos > tbody").find("tr:first").height();
+			var divHeight=$("#div-incisos").height();
+			if(letra.charCodeAt(0)>98)
+				desplazamiento=rowHeight*(letra.charCodeAt(0)-98)
+			$("#div-incisos").animate({ scrollTop: desplazamiento}, 500);
+		}
+
+		function habilitar(nombre){
+			$(".tab").addClass("hidden");
+			$(".selectable").removeClass("tab-active");
+			
+			$("#"+nombre).removeClass("hidden");
+			$("#link-"+nombre).addClass("tab-active");
+			$("#link-"+nombre).blur();
+			
+			if (nombre=="tab-3")
+				$("#div-btn-revision").removeClass("hidden");
+			else
+				$("#div-btn-revision").addClass("hidden");
+		}
+
+		function addClasssToSelect2(div,clase){
+			$("#"+div).find('span[class="select2-selection select2-selection--multiple"]').addClass(clase);
+		}
+
+		function traerArticuloPorNumero(numero,articulos){
+			var articuloBuscado;
+			$.each(articulos,function(index,articulo){
+				if(articulo.numero==numero) articuloBuscado=articulo;
+			});
+			return articuloBuscado;
+		}
+		
+		function actualizarArticulo(articulo,tabla){
+
+			numero=articulo.numero;
+			var cuerpoArticulo='<div class="well well-sm">' +
+							   '<div class="btn-group pull-right">'+
+							   '<button type="button" class="btn btn-sm btn-primary btn-editar-articulo" title="Editar artículo">'+
+							   		'Editar</button>'+
+							   '<button type="button" class="btn btn-sm btn-danger btn-eliminar-articulo" title="Eliminar artículo">'+
+							   		'Eliminar</button></div>'+
+							   '<div>'+articulo.texto+'<br><ul class="list-unstyled">';
+							   
+			$.each(articulo.incisos,function(index,inciso){
+				texto=inciso.texto.replace(/<p>/g,'').replace(/<\/p>/g,'<br>');
+				cuerpoArticulo+='<li style="padding-left:30px">'+inciso.orden+') - '+texto+'</li>';
+			});
+
+			cuerpoArticulo+='</ul></div>';
+
+			var nuevoContenido='<td class="numero-fila">'+numero+'</td>'+
+	        			 	   '<td>'+cuerpoArticulo+'</td>';
+
+			$("#"+tabla+" > tbody > tr").each(function(){
+
+				if($(this).find('td:first').html()==numero)
+					$(this).html(nuevoContenido);
+			});
+
+		}
+		
+		function agregarArticulo(articulo,tabla,scrollBottom){
+			var numero=((articulo.hasOwnProperty('numero'))?articulo.numero:$("#"+tabla+"> tbody > tr").length+1);
+			var cuerpoArticulo='<div class="well well-sm">' +
+							   '<div class="btn-group pull-right">'+
+							   '<button type="button" class="btn btn-sm btn-primary btn-editar-articulo" title="Editar artículo">'+
+							   		'Editar</button>'+
+							   '<button type="button" class="btn btn-sm btn-danger btn-eliminar-articulo" title="Eliminar artículo">'+
+							   		'Eliminar</button></div>'+
+							   '<div>'+articulo.texto+'<br><ul class="list-unstyled">';
+							   
+			$.each(articulo.incisos,function(index,inciso){
+				texto=inciso.texto.replace(/<p>/g,'').replace(/<\/p>/g,'<br>');
+				cuerpoArticulo+='<li style="padding-left:30px">'+inciso.orden+') - '+texto+'</li>';
+			});
+		
+			cuerpoArticulo+='</ul></div>';
+
+			var nuevoArticulo='<tr>'+
+	        			 	  '<td class="numero-fila">'+numero+'</td>' +
+	        			 	  '<td>'+cuerpoArticulo+'</td>'+
+	        			 	  '</tr>';
+
+	        var divContenedor=((tabla=='articulos')?'div-articulos':'div-revision');	 	  		
+	        $("#"+tabla+" > tbody").append(nuevoArticulo);
+	        if (scrollBottom)
+	        	$("#"+divContenedor).animate({ scrollTop: $("#"+divContenedor)[0].scrollHeight}, 1000);
+	        articulo.numero=numero;
+	        return articulo;
+	        
+		}
+				
+		function cargarInciso(nuevoInciso){
+
+			var orden=nuevoInciso.orden.toLowerCase();
+			var inciso='<tr>'+
+	        		   '<td class="numero-fila">'+orden+') -</td>' +
+	        		   '<td><textarea class="form-control text-area text-area-mini" id="inciso-'+orden+'" '+
+	        		   'name="inciso-'+orden+'" placeholder="Inciso"></textarea></td>'+
+	        		   '<td class="herramienta-fila text-center">'+
+	        		   '<button type="button" class="btn btn-sm btn-danger btn-eliminar-inciso" id="eliminar-inciso-'+orden+'">'+
+	        		   '<span class="glyphicon glyphicon-remove"></button></td>'+ 
+	        		   '</tr>';
+
+	        $("#incisos > tbody").append(inciso);
+	        $("#inciso-"+orden).wysihtml5({
+				toolbar: {
+				    "image": false,
+					"size": "xs",
+				},
+			});
+			$("#inciso-"+orden).data("wysihtml5").editor.setValue(nuevoInciso.texto);
+			$("#inciso-"+orden).data("wysihtml5").editor.on("load", registrarEventosParaWysihtml5);
+			$("#inciso-"+orden).data("wysihtml5").editor.on("focus", controlWysihtml5Focus);
+			$("#inciso-"+orden).data("wysihtml5").editor.focus();
+		}
+		
+		
+		function agregarInciso(texto){
+			var letra=String.fromCharCode($("#incisos > tbody").find('tr').length+65).toLowerCase();
+			var inciso='<tr>'+
+	        		   '<td class="numero-fila">'+letra+') -</td>' +
+	        		   '<td><textarea class="form-control text-area text-area-mini" id="inciso-'+letra+'" '+
+	        		   'name="inciso-'+letra+'" placeholder="Inciso"></textarea></td>'+
+	        		   '<td class="herramienta-fila text-center">'+
+	        		   '<button type="button" class="btn btn-sm btn-danger btn-eliminar-inciso" id="eliminar-inciso-'+letra+'">'+
+	        		   '<span class="glyphicon glyphicon-remove"></button></td>'+
+	        		   '</tr>';
+
+	        $("#incisos > tbody").append(inciso);
+	        $("#inciso-"+letra).wysihtml5({
+				toolbar: {
+				    "image": false,
+					"size": "xs",
+				},
+			});
+			
+	        $("#inciso-"+letra).data("wysihtml5").editor.on("load", registrarEventosParaWysihtml5);
+	        $("#inciso-"+letra).data("wysihtml5").editor.on("focus", controlWysihtml5Focus);
+	        
+	        if(texto==null)
+	        	$("#inciso-"+letra).data("wysihtml5").editor.focus();
+	        else 
+	        	 $("#inciso-"+letra).data("wysihtml5").editor.setValue(texto);
+		}
+
+		function limpiarFormularioSancion(){
+			
+			$("#idRevision").val(-1);
+			$("#idDictamen").val(0);
+	        $("#selTipoSancion").val(0);
+	        $("#numeroSancion").val("");
+	        $("#editaRevision").bootstrapToggle('on');
+		   	$("#vistosYConsiderandos").bootstrapToggle('on');
+		   	$("#poseeSancion").bootstrapToggle('off');
+		   	$("#aplicaNotificacion").bootstrapToggle('off');
+	        $("#texto").data("wysihtml5").editor.setValue('');
+	        $("#articulos > tbody").html('');
+	        $("#vistos").html('');
+	        $("#considerandos").html('');
+	        $("#articulos-revision > tbody").html('');
+			$("#textoSpeech").data("wysihtml5").editor.composer.element.setAttribute('contenteditable', false);
+			$("#agregaSpeech").bootstrapToggle('off');
+			$("#firmaPresidente").bootstrapToggle('off');
+			$("#firmaSecretario").bootstrapToggle('off');
+	        
+		}
+
+		function habilitarControlRedaccion(){
+
+			var idSancion = $("#idSancion").val();
+			var idDictamen = $("#idDictamen").val();
+
+			if (idSancion==0 && idDictamen!=0) //Alta por dictamen
+				$("#selTipoRedaccion").attr("disabled",true);
+
+			if (idSancion==0 && idDictamen==0)//Alta por redaccion
+				$("#selTipoRedaccion").attr("disabled",false);
+
+			if (idSancion!=0 && idDictamen!=0)//Edicion de sancion basada en dictamen
+				$("#selTipoRedaccion").attr("disabled",true);
+
+			if(idSancion!=0 && idDictamen==0)//Edicion de sancion basada en redaccion
+				$("#selTipoRedaccion").attr("disabled",false);
+		}
+		
+		function validarNumeroSancion(control){
+			
+			var valorControl=$(control).val();
+			var idControl=$(control).attr("id");
+			if (valorControl!="" && !(/^[0-9/]+$/g.test(valorControl))){
+				toastr.error("El contenido ingresado no es numérico");
+				setTimeout(function(){
+					   $("#"+idControl).select();
+				},10);
+			}
+		}
+
+		function actualizarSpeech(idSeleccion,control){
+
+			$.ajax({
+				async:false,
+				type:'Get',
+				dataType: 'json	',
+				url:'{{ app.request.getBaseURL() }}'+ '/api/speech/getOne/'+idSeleccion,
+				success: function(data){
+					$(control).data("wysihtml5").editor.setValue(data.texto_speech);
+				},
+				error: function(jqXHR,textStatus,errorThrown ){
+					toastr.error(jJSON.parse(jqXHR.responseText));
+				}
+	      	});	      	
+		}
+
+		function cargarDetalle(tipo){
+
+			/*
+			 	TODO: actualizar para que tome la plantilla sin tipo
+			 */
+
+			$.ajax({
+				async:false,
+				type:'Get',
+				dataType: 'json	',
+				url:'{{ app.request.getBaseURL() }}'+ '/api/plantilla/getByType/'+tipo,
+				success: function(data){
+					var html="<table width='100%' class='table table-striped'><tbody>";
+					$.each(data,function(index,dato){
+						html+="<tr><td width='10%'><h3>"+dato.id+"</h3></td><td width='90%'>"+dato.plantilla_texto+"</td></tr>";
+					});
+					
+					html+="</tbody></table>";
+					$("#detalle-plantilla").html(html);
+
+					$("#titulo-modal-detalle-plantillas").html("DETALLE PLANTILLAS DE "+tipo.toUpperCase());
+				},
+				error: function(jqXHR,textStatus,errorThrown ){
+					toastr.error(JSON.parse(jqXHR.responseText));
+				}
+	      	});
+			
+			$("#modalDetallePlantillas").modal('show');
+		}
+					
+	$(document).ready(function () {
+	
+		/* Variables ------------------------------------------------------------------------------------*/
+			
+			var articulosSancion=[];
+			var articulosRevision=[];
+			var tablaRevisiones;
+			var tablaDictamenes;	 
+
+		/* Funciones ------------------------------------------------------------------------------------*/
+		
+			function cargarDesdeOrigen(tipo,identificador){
+
+				var idProyecto;
+				if(tipo=='revision' && identificador==0)
+					idProyecto=$("#idProyecto").val();
+				else
+					idProyecto=0;
+				
+				$.ajax({
+					async:false,
+					type:'Get',
+					dataType: 'json	',
+					url:'{{ app.request.getBaseURL() }}'+'/api/sesion/cargarDesdeOrigen/'+
+														  tipo+'/'+identificador+'/'+idProyecto,
+					success: function(data){
+						
+						limpiarFormularioSancion();
+						
+						//controles comunes a todos las sanciones
+						$("#selTipoRedaccion").val(data.redaccion);
+						
+	    				//caso particular sancion basica
+	    				if (tipo=='dictamen' && data.redaccion=="basico")
+							$("#texto").data("wysihtml5").editor.setValue(data.texto_libre);	
+
+						//caso particular sancion articulado
+						if (tipo=='dictamen' && data.redaccion=="articulado"){
+
+							$("#selTipoSancion").val(data.tipo_sancion);
+	    				    $.each(data.articulado,function(index,articulo){
+	    						agregarArticulo(articulo,'articulos',false);
+	    					});
+
+	    				    articulosSancion=data.articulado; 
+						} 
+
+						//caso particular sancion por revision
+						if (data.redaccion=="revision"){
+							
+						    $("#vistos").html(data.visto);
+					        $("#considerandos").html(data.considerando);
+					        
+					        $.each(data.articulado,function(index,articulo){
+	    						agregarArticulo(articulo,'articulos-revision',false);
+	    					});
+
+					        articulosRevision=data.articulado; 
+
+							if (data.incluye_vistos_y_considerandos)
+								$("#vistosYConsiderandos").bootstrapToggle('on');
+							else
+								$("#vistosYConsiderandos").bootstrapToggle('off');						   	
+	    				} 
+
+						$("#idRevision").val(data.id_revision);
+		    			$("#idDictamen").val(data.id_dictamen);
+	    				$("#selTipoRedaccion").change();
+	    				habilitarControlRedaccion();
+						
+					},
+					error: function(jqXHR,textStatus,errorThrown ){
+						toastr.error(JSON.parse(jqXHR.responseText));
+					}
+		      	});
+
+			}
+			
+			function InicializarPagina(){
+
+				limpiarFormularioSancion();
+
+    			var clase_redaccion='{{ data.clase_redaccion }}';
+    			
+    			articulosSancion=[];
+    			articulosRevision=[];
+
+				$("#textoSpeech").attr("disabled",true);
+    			$("#idSancion").val('{{ idSancion }}');
+    			$("#idDictamen").val('{{ idDictamen }}');
+    			$("#idExpediente").val('{{ idExpediente }}');
+    			$("#idProyecto").val('{{ idProyecto }}');
+    			$("#idSesion").val('{{ idSesion }}');
+    			
+    			var htmlTipoRedaccion="<option value='basico' selected='selected'>Básico</option>" +
+		          					  "<option value='articulado'>Articulado</option>";	
+		     
+                if ($("#idProyecto").val()!=0)
+                	htmlTipoRedaccion+="<option value='revision'>Revisión</option>";
+
+                $("#selTipoRedaccion").html(htmlTipoRedaccion);
+
+    			if ($("#idSancion").val()!=0){
+    
+    				//controles comunes a todos las sanciones
+    				$("#selTipoRedaccion").val(clase_redaccion);
+    				
+					 var speech={{ data.speech | raw }}; 
+					
+					 if (speech!=null){
+						 $("#agregaSpeech").bootstrapToggle('on');
+						 var newOption = new Option(speech.titulo_speech, speech.id, true, true);
+						 $("#selSpeech").append(newOption).trigger('change');
+					 }
+    				
+    				//caso particular sancion basica
+    				if (clase_redaccion=="basico")
+    					$("#texto").data("wysihtml5").editor.setValue('{{ data.texto_libre | raw }}');	
+    
+    				//caso particular sancion articulado
+    				if (clase_redaccion=="articulado"){
+    
+    					$("#selTipoSancion").val({{ data.id_tipo_sancion }});
+    				    $.each({{ data.texto_articulado | raw }},function(index,articulo){
+    						agregarArticulo(articulo,'articulos',false);
+    					});
+    
+    				    articulosSancion={{ data.texto_articulado | raw }}; 
+    				} 
+    
+    				//caso particular sancion por revision
+    				if (clase_redaccion=="revision"){
+    					
+    				    $("#vistos").html('{{ data.vistos | raw }}');
+    			        $("#considerandos").html('{{ data.considerandos | raw }}');
+    			        
+    			        $.each({{ data.articulos | raw }},function(index,articulo){
+    						agregarArticulo(articulo,'articulos-revision',false);
+    					});
+    
+    			        articulosRevision={{ data.articulos | raw }}; 
+    
+    					if ({{ data.incluye_vistos_y_considerandos | raw }})
+    						$("#vistosYConsiderandos").bootstrapToggle('on');
+    					else
+    						$("#vistosYConsiderandos").bootstrapToggle('off');
+    
+    			    	$("#idRevision").val({{ data.revision_id }});					   	
+    				} 
+    
+    				if ('{{ data.numero_sancion }}'!="")
+    					$("#poseeSancion").bootstrapToggle('on');
+    				else 
+    					$("#poseeSancion").bootstrapToggle('off');
+					
+					$("#numeroSancion").val('{{ data.numero_sancion }}');
+					
+				    $("#selComisionReserva").val({{ data.comision_reserva }});
+
+				    var notificaciones={{ data.notificaciones | raw }};
+				    
+				    if (notificaciones.length>0 && {{ data.comision_reserva }}!=0)
+				    	$("#aplicaNotificacion").bootstrapToggle('on');
+				    else
+				    	$("#aplicaNotificacion").bootstrapToggle('off');
+
+					$.each(notificaciones,function(i,notificacion){
+						 var newOption = new Option(notificacion.nombre, notificacion.id, true, true);
+						 $("#selOficinasDestino").append(newOption).trigger('change');
+					});
+    
+    				if ({{ data.firma_secretario }}==true)
+    					$("#firmaSecretario").bootstrapToggle('on');
+    				
+    				if ({{  data.firma_presidente }}==true)
+    					$("#firmaPresidente").bootstrapToggle('on');
+     
+    				//$("#selSpeech").change();
+    			}
+    			
+    			$("#selTipoRedaccion").change();
+    			habilitarControlRedaccion();	 
+			}
+
+		/* Eventos ----------------------------------------------------------------------------------*/
+			
+			
+		    // EVENTO CLICK BOTON GUARDAR DE SANCION
+		    $("#btn-guardar-sancion").click(function(){
+			
+		    	$(this).prop("disabled",true);
+		    	
+		    	var idSancion=$("#idSancion").val();
+				var idDictamen=$("#idDictamen").val();
+				var idProyecto=$("#idProyecto").val();
+				var idExpediente=$("#idExpediente").val();
+				
+				var tipoRedaccion= $("#selTipoRedaccion").val();
+				var tipoSancion=$("#selTipoSancion").val();
+				var idSpeech=$("#selSpeech").val();
+				var poseeSancion=$("#poseeSancion").is(":checked");
+				var numeroSancion=$("#numeroSancion").val();
+				var aplicaNotificacion=$("#aplicaNotificacion").is(":checked");
+				var destinosNotificacion=$("#selOficinasDestino").val();
+				var comisionReserva=$("#selComisionReserva").val();
+			       
+		        var texto=$("#texto").val();
+		        var articulos=null;
+		        if (tipoRedaccion!="basico")
+		        	articulos=((tipoRedaccion=="articulado")?articulosSancion:articulosRevision);
+	        	var vistosYConsiderandos= $("#vistosYConsiderandos").is(":checked");
+	        	var editaRevision=$("#editaRevision").is(":checked");
+	        	var idRevision=$("#idRevision").val();
+		        var vistos=$("#vistos").html();
+		        var considerandos=$("#considerandos").html();
+		        var idSesion=$("#idSesion").val();
+		        var firmaPresidente=$("#firmaPresidente").is(":checked");
+		        var firmaSecretario=$("#firmaSecretario").is(":checked");
+
+		        var validacion='';
+				var formData=new FormData();
+
+				if (tipoRedaccion=="basico")
+    				validacion+=((texto.replace(/ /g, '').length==0)
+    						 	 ?'<li>Debe poveer un texto para la sanción</li>':'');
+			 	 
+				validacion+=((tipoSancion==0 && tipoRedaccion=="articulado")
+							 ?'<li>Debe especificar el tipo de sanción</li>':'');
+
+				if (tipoRedaccion=="articulado")					
+					validacion+=((articulos.length==0)
+							      ? '<li>Debe poveer los articulos para la sanción articulada</li>':'') ;
+				
+				if (tipoRedaccion=="revision" && editaRevision){
+					
+					if(idRevision==-1)
+						validacion+='<li>No se seleccionó ninguna revision del proyecto</li>';
+					else {
+
+    					validacion+=((articulos.length==0)?'<li>Debe poveer los articulos la sanción</li>':'');
+    			           
+    					validacion+=((vistos.replace(/ /g,'').length==0 && vistosYConsiderandos)
+    					           ?'<li>Debe poveer un texto para los vistos de la revision</li>':'');
+    					
+    					validacion+=((considerandos.replace(/ /g,'').length==0 && vistosYConsiderandos)
+    					              ?'<li>Debe poveer un texto para los considerandos de la revision</li>':'');
+					}
+				}
+
+				validacion+=((numeroSancion=="" && poseeSancion==true)
+								?'<li>Debe poveer el número de sanción</li>':'');
+				validacion+=((aplicaNotificacion==true && (destinosNotificacion==0 || comisionReserva==0))
+						 		?'<li>Debe poveer tanto un destino como una comisión de reserva para la notificación</li>':'');
+				
+				if (validacion.length>0) 
+				{
+					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+								validacion+'</ul>':'');
+					$(this).prop("disabled",false);
+					toastr.error(validacion);
+					return false;
+				}
+				else{
+
+					formData.append('idSesion',idSesion);
+					formData.append('idSancion',idSancion);
+					formData.append('idDictamen',idDictamen);
+					formData.append('idExpediente',idExpediente);
+					formData.append('idProyecto',idProyecto);
+					formData.append('tipoRedaccion',tipoRedaccion);
+					formData.append('tipoSancion',tipoSancion);
+					formData.append('idSpeech',idSpeech);
+					formData.append('firmaPresidente',firmaPresidente);
+					formData.append('firmaSecretario',firmaSecretario);
+					formData.append('numeroSancion',numeroSancion);
+					formData.append('aplicaNotificacion',aplicaNotificacion);
+					formData.append('destinosNotificacion',destinosNotificacion);
+					formData.append('comisionReserva',comisionReserva);
+					formData.append('texto',texto);
+					formData.append('idRevision',idRevision);
+					formData.append('editaRevision',editaRevision);
+					formData.append('vistosYConsiderandos',vistosYConsiderandos);
+					formData.append('vistos',vistos);
+					formData.append('considerandos',considerandos);
+					formData.append('articulos',JSON.stringify(articulos));
+
+	            	$.ajax({
+		                async: true,
+		                url: '{{ app.request.getBaseURL() }}'+ '/api/sesion/saveSancion',
+		                data: formData,
+		                type: 'post',
+		                cache: false,
+		                contentType: false,
+		                processData: false,
+	                success: function(data) {
+	                    toastr.success(data);
+	                    cargarMenuConParametros('/expedientesOrdenDia',
+												{nombre:'idSesion', valor:idSesion});
+	                	},
+	                complete: function(){
+	                	$("#btn-guardar-sancion").prop("disabled",false);
+	                	},
+	                error: function(jqXHR,textStatus,errorThrown ){
+						toastr.error(JSON.parse(jqXHR.responseText));
+						}
+	            	});
+	            }  
+			});
+
+		  //EVENTO CLICK DEL BOTON DESHACER CAMBIOS DICTAMEN
+			$("#btn-deshacer-cambios").click(function(){
+				InicializarPagina();
+			});
+			
+			//EVENTO CLICK DEL BOTON CANCELAR DICTAMEN
+  		 	$("#btn-cancelar-sancion").click(function(){
+				var idSancion='{{ idSancion }}';
+				var idSesion='{{ idSesion }}';
+				var mensaje='Se canceló '+(idSancion==0?'el alta':'la edición')+' de la sanción';
+				toastr.warning(mensaje,'ATENCIÓN');
+				cargarMenuConParametros('/expedientesOrdenDia',
+										{nombre:'idSesion', valor:idSesion});
+			});
+		    
+			//EVENTO CLICK DEL BOTON DE NUEVO ARTICULO EN EL MODAL DE DICTAMEN
+			$("#btn-nuevo-articulo-revision").click(function(){
+				$("#modalArticulo").find('input[name="id"]').val(0);
+				$("#modalArticulo").find('input[name="tabla"]').val("articulos-revision");
+				$("#modalArticulo").modal('show');	
+			});
+			
+			//EVENTO CLICK DEL BOTON DE NUEVO ARTICULO EN EL MODAL DE DICTAMEN
+			$("#btn-nuevo-articulo").click(function(){
+				$("#modalArticulo").find('input[name="id"]').val(0);
+				$("#modalArticulo").find('input[name="tabla"]').val("articulos");
+				$("#modalArticulo").modal('show');	
+			});		  	
+		  
+			//EVENTO CLICK DEL BOTON EDITAR DE LAS FILAS EN LA TABLA DE ARTICULOS 
+			//DEL DICTAMEN ARTICULADO
+			$("#articulos > tbody").on('click','.btn-editar-articulo',function(){
+				var numero=$(this).parents("tr").find('td:first').text();
+				$("#modalArticulo").find('input[name="id"]').val(numero);
+				$("#modalArticulo").find('input[name="tabla"]').val("articulos");
+				$("#modalArticulo").modal('show');	
+			});
+
+			//EVENTO CLICK DEL BOTON EDITAR DE LAS FILAS EN LA TABLA DE ARTICULOS 
+			//DEL DICTAMEN DE REVISION
+			$("#articulos-revision > tbody").on('click','.btn-editar-articulo',function(){
+				var numero=$(this).parents("tr").find('td:first').text();
+				$("#modalArticulo").find('input[name="id"]').val(numero);
+				$("#modalArticulo").find('input[name="tabla"]').val("articulos-revision");
+				$("#modalArticulo").modal('show');	
+			});
+
+			//EVENTO MOSTRAR DEL MODAL DEL MODAL DE ARTICULO
+			$("#modalArticulo").on('show.bs.modal', function () {
+				var numeroArticulo= $("#modalArticulo").find('input[name="id"]').val();
+				var tabla = $("#modalArticulo").find('input[name="tabla"]').val();
+				$("#articulo").data("wysihtml5").editor.setValue('');
+				$("#incisos > tbody").html('');
+				if (numeroArticulo!=0){
+					
+					var articulo;
+					
+					if (tabla=="articulos")
+    					articulo=traerArticuloPorNumero(numeroArticulo,articulosSancion);
+					else
+						articulo=traerArticuloPorNumero(numeroArticulo,articulosRevision);
+					
+    				$("#articulo").data("wysihtml5").editor.setValue(articulo.texto);
+    				
+    				$.each(articulo.incisos,function(index,inciso){
+    					cargarInciso(inciso);
+    				});
+				}
+			});
+
+			//EVENTO CLICK DEL BOTON ELIMINAR DE LAS FILAS EN LA TABLA DE ARTICULOS DE SANCION ARTICULADA
+			$("#articulos > tbody").on('click','.btn-eliminar-articulo',function(){
+				var numero=$(this).parents("tr").find('td:first').text();
+				var tabla = $("#modalArticulo").find('input[name="tabla"]').val();
+				articulosSancion.eliminar('numero',numero);
+				articulosSancion.renumerar('numero','digito');
+				$("#articulos > tbody").html('');
+    				$.each(articulosSancion,function(i,articulo){
+    					agregarArticulo(articulo,'articulos',false);
+    				});
+			});
+
+			//EVENTO CLICK DEL BOTON ELIMINAR DE LAS FILAS EN LA TABLA DE ARTICULOS DE SANCION POR REVISION
+			$("#articulos-revision > tbody").on('click','.btn-eliminar-articulo',function(){
+				var numero=$(this).parents("tr").find('td:first').text();
+				var tabla = $("#modalArticulo").find('input[name="tabla"]').val();
+				articulosRevision.eliminar('numero',numero);
+				articulosRevision.renumerar('numero','digito');
+				$("#articulos-revision > tbody").html('');
+				$.each(articulosRevision,function(i,articulo){
+					agregarArticulo(articulo,'articulos-revision',false);
+				});
+			});
+			
+			//EVENTO CLICK DEL BOTON ELIMINAR DE LAS FILAS EN LA TABLA DE INCISOS
+			$("#incisos > tbody").on('click','.btn-eliminar-inciso',function(){
+				$(this).parents("tr").remove();
+				var incisos=[];
+				$("#incisos > tbody > tr").each(function(i,row){
+					var textarea=$(row).find("textarea");
+					incisos.push($(textarea).val());
+				})
+				$("#incisos > tbody").html('');
+				$.each(incisos,function(i,inciso){
+					agregarInciso(inciso);
+				})
+			});
+			
+			//EVENTO ACEPTAR DEL MODAL DE ARTICULOS
+			$("#btn-agregar-articulo").click(function(){
+				
+				var validacion='';
+				var incisos=[];
+				var tabla = $("#modalArticulo").find('input[name="tabla"]').val();
+	
+				$("#incisos").find('tr').each(function(i,row){
+					var textarea=$(row).find("textarea");
+					var	orden=$(row).find("td:first").text().replace(/ |\)|-/g,'');
+					var texto=$(textarea).val();
+
+					if(texto.length==0)
+						validacion+='<li>El inciso '+ orden +' no posee texto</li>';
+
+					if (validacion.length==0){
+						inciso={
+							orden: orden,
+							texto: texto
+						}
+						incisos.push(inciso);
+					}
+					else{
+						if (incisos.length>0)
+							incisos=[];
+					}
+				});
+
+				if($("#articulo").val().length==0){
+					validacion='<li>El artículo no posee texto</li>'+validacion;
+
+				}
+
+				if (validacion.length>0) 
+				{
+					Validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+								validacion+'</ul>':'');
+					toastr.error(validacion);
+					return false;
+				}
+				else{
+					
+ 					var numero=$("#modalArticulo").find('input[name="id"]').val();	
+					var texto=$("#articulo").val();
+
+					if(numero==0){
+						var articuloActual={
+            								texto: texto,
+            								incisos:incisos
+                							}
+
+						articuloActual=agregarArticulo(articuloActual,tabla,true);
+						if (tabla=="articulos")
+							articulosSancion.push(articuloActual);
+						else
+							articulosRevision.push(articuloActual);
+					}
+					else{
+							var articuloActual={
+                								numero: numero,
+                								texto: texto,
+                								incisos:incisos
+                    							}
+							
+							actualizarArticulo(articuloActual,tabla);
+							if (tabla=="articulos")
+								articulosSancion.reemplazar(articuloActual,'numero'); 
+							else
+								articulosRevision.reemplazar(articuloActual,'numero'); 
+						}
+					
+					$('#modalArticulo').modal('hide');
+				}
+			});
+
+			//EVENTO MOSTRAR DEL MODAL DE REVISIONES
+			$('#modalRevisiones').on('show.bs.modal', function () {
+
+				var idProyecto=$("#idProyecto").val();
+
+				tablaRevisiones=$('#revisiones').DataTable({
+					    			  "language": {
+							              "infoEmpty": "Sin registros para mostrar",
+							              "paginate": {
+									          	"last": "Ultima Página",
+									          	"first": "Primer página",
+									          	"next": "Siguiente",
+									          	"previous": "Anterior"
+									       },
+									       "search":"Búsqueda rápida",
+									       "emptyTable": "Sin Datos",
+									       "lengthMenu": 'Registros Listados <select class="form-control input-sm">'+
+											             '<option value="10">10</option>'+
+											             '<option value="20">20</option>'+
+											             '<option value="30">30</option>'+
+											             '<option value="40">40</option>'+
+											             '<option value="50">50</option>'+
+											             '<option value="-1">Todos</option>'+
+											             '</select>',
+											"loadingRecords": "Espere...cargando datos",
+											"processing": "Procesando...",
+											"sInfo": "Mostrando  _START_ a _END_ de _TOTAL_ registros",
+
+						          	  },
+								      "processing": false,
+								      "ajax": {
+										        "url": "api/proyecto/getRevisiones/"+idProyecto,
+						            			"dataSrc": '',
+										    },
+									  "columnDefs": [
+											            {
+											                "targets": [ 0 ],
+											                "visible": false,
+											                "searchable": false
+											            },
+											            {
+											            	"targets": [ 1 ],
+												            "data": null,
+												            "orderable":false,
+												            "render": function(data, type, row){
+												            	return "<button type='button' class='btn btn-primary btn-xs btn-usar'><span class='glyphicon glyphicon-check'></span></button>";
+												            }
+											            },
+											            {
+												            "targets": [ 2 ],
+												            "data": null,
+												            "orderable":false,
+												            "render": function(data, type, row){
+												            	return ((row.id==0)?"(original)":row.id);
+												            }
+												        },
+											            {
+												            "targets": [ 3 ],
+												            "data": null,
+												            "orderable":false,
+												            "render": function(data, type, row){
+												            	return ((data==true)?"SI":"NO");
+												            }
+												        },
+											            {
+												            "targets": [ 6 ],
+												            "data": "oficina",
+												            "orderable":false,
+												            "render": function(data, type, row){
+												            	return ((data!=null)?data["oficina"]:"---");
+												            }
+												        }
+												       
+									  ],
+								      "columns": [
+								      		{ "data": "id" },
+								      		{ "data": "null","width":"10%"},
+								      		{ "data": "null","width":"18%" },
+								      		{ "data": "incluye_vistos_y_considerandos","width":"16%" },
+								      		{ "data": "fecha_creacion_formateada","width":"18%"},
+								      		{ "data": "usuario_creacion","width":"20%"},
+								            { "data": "null","width":"18%" },
+								        ],
+								      "autoWidth":false,
+								      "paging": true,
+								      "lengthChange": true,
+								      "searching": true,
+								      "ordering": true,
+								      "info": true,
+							});
+
+			});
+
+			//EVENTO OCULTAR DEL MODAL DE REVISIONES
+			$('#modalRevisiones').on('hidden.bs.modal', function () {
+				tablaRevisiones.destroy();
+			});
+
+			//EVENTO CLICK BOTON USAR DEL MODAL DE REVISIONES
+			$('#revisiones tbody').on( 'click', '.btn-usar', function () {
+				
+		        var data = tablaRevisiones.row( $(this).parents('tr') ).data();
+		        var idRevision=data['id'];
+		        
+		        limpiarFormularioSancion();
+		        cargarDesdeOrigen('revision',idRevision);
+				$('#modalRevisiones').modal('hide');
+		       
+		    });
+		    
+			//EVENTO MOSTRAR DEL MODAL DE DICTAMENES
+			$('#modalDictamenes').on('show.bs.modal', function () {
+
+				var idExpediente=$("#idExpediente").val();
+				var idSesion=$("#idSesion").val();
+
+				tablaDictamenes=$('#dictamenes').DataTable({
+					    			  "language": {
+							              "infoEmpty": "Sin registros para mostrar",
+							              "paginate": {
+									          	"last": "Ultima Página",
+									          	"first": "Primer página",
+									          	"next": "Siguiente",
+									          	"previous": "Anterior"
+									       },
+									       "search":"Búsqueda rápida",
+									       "emptyTable": "Sin Datos",
+									       "lengthMenu": 'Registros Listados <select class="form-control input-sm">'+
+											             '<option value="10">10</option>'+
+											             '<option value="20">20</option>'+
+											             '<option value="30">30</option>'+
+											             '<option value="40">40</option>'+
+											             '<option value="50">50</option>'+
+											             '<option value="-1">Todos</option>'+
+											             '</select>',
+											"loadingRecords": "Espere...cargando datos",
+											"processing": "Procesando...",
+											"sInfo": "Mostrando  _START_ a _END_ de _TOTAL_ registros",
+
+						          	  },
+								      "processing": false,
+								      "ajax": {
+										        "url": "api/sesion/getDictamenesByExpediente/"+idExpediente+"/"+idSesion,
+						            			"dataSrc": '',
+										    },
+									  "columnDefs": [
+											            {
+											                "targets": [ 0 ],
+											                "visible": false,
+											                "searchable": false
+											            },
+											            {
+											            	"targets": [ 1 ],
+												            "data": null,
+												            "orderable":false,
+												            "render": function(data, type, row){
+												            	return "<button type='button' class='btn btn-primary btn-xs btn-usar-dictamen'><span class='glyphicon glyphicon-check'></span></button>";
+												            }
+											            }
+												       
+									  ],
+								      "columns": [
+								      		{ "data": "id" },
+								      		{ "data": "null","width":"10%"},
+								      		{ "data": "comisiones","width":"28%" },
+								      		{ "data": "redaccion","width":"16%" },
+								      		{ "data": "resuelve_por","width":"16%" },
+								      		{ "data": "fecha_creacion","width":"10%"},
+								      		{ "data": "usuario_creacion","width":"20%"},
+								        ],
+
+							
+								      "autoWidth":false,
+								      "paging": true,
+								      "lengthChange": true,
+								      "searching": true,
+								      "ordering": true,
+								      "info": true,
+							});
+
+			});
+
+			$('#modalDictamenes').on('hidden.bs.modal', function () {
+				tablaDictamenes.destroy();
+			});
+			
+			$('#dictamenes tbody').on( 'click', '.btn-usar-dictamen', function () {
+				
+		        var data = tablaDictamenes.row( $(this).parents('tr') ).data();
+		        var idDictamen=data['id'];
+		        
+		        limpiarFormularioSancion();
+		        cargarDesdeOrigen('dictamen',idDictamen)
+		        $('#modalDictamenes').modal('hide');
+		       
+		    });
+			
+			//EVENTO CLICK DEL BOTON DE EDICION DEL VISTO DE LA REVISION
+		    $("#btn-editar-vistos-revision").click(function(){
+
+		    	$("#modalTexto").find('input[name="idTexto"]').val("vistos");
+		    	var htmlEdicion=$("#vistos").html();
+		    	$("#edicion-texto").data("wysihtml5").editor.setValue(htmlEdicion)
+		   		$("#modalTexto").modal("show");
+			});
+
+		  	//EVENTO CLICK DEL BOTON DE EDICION DEL CONSIDERANDO DE LA REVISION
+		    $("#btn-editar-considerandos-revision").click(function(){
+
+		    	$("#modalTexto").find('input[name="idTexto"]').val("considerandos");
+		    	var htmlEdicion=$("#considerandos").html();
+		    	$("#edicion-texto").data("wysihtml5").editor.setValue(htmlEdicion)
+		   		$("#modalTexto").modal("show");
+			});
+
+		  	//EVENTO CLICK DEL BOTON ACEPTAR EDICION DE TEXTO (VISTO O CONSIDERANDO)
+		    $("#btn-cambio-texto").click(function(){
+
+			   var divTexto=$("#modalTexto").find('input[name="idTexto"]').val(); 
+			   if (divTexto=="vistos")
+				   $("#vistos").html($("#edicion-texto").val());
+			   else
+				   $("#considerandos").html($("#edicion-texto").val());
+
+			   $("#modalTexto").modal("hide");
+				
+		    });
+
+		 	//EVENTO CLICK DEL BOTON AGREGAR SPEECH	
+		    $("#btn-agregar-speech").click(function(){
+				$("#modalSpeech").find('input[name="tipoPlantilla"]').val('encabezado');
+				$("#textoSuperior").data("wysihtml5").editor.setValue('');
+				$("#textoInferior").data("wysihtml5").editor.setValue('');
+				$("#tituloSpeech").val('');
+				$("#incluirSancion").bootstrapToggle('off');
+			});
+
+		  	//EVENTO CLICK DEL BOTON ACEPTAR ALTA SPEECH	
+			$("#btn-alta-speech").click(function(){
+
+				$("#btn-alta-speech").prop("disabled",true);
+				
+				var textoSuperior = $("#modalSpeech").find('textarea[name="textoSuperior"]').val();
+				var textoInferior= $("#modalSpeech").find('textarea[name="textoInferior"]').val();
+				var tituloSpeech= $("#modalSpeech").find('input[name="tituloSpeech"]').val();
+				var validacion="";
+
+				validacion+=((tituloSpeech.replace(/ /g,'').length==0)
+						  ?'<li>Debe indicar un título para el speech</li>':'');
+
+				validacion+=(((textoSuperior.replace(/ /g,'').length==0 &&
+							  textoInferior.replace(/ /g,'').length==0))
+							  ?'<li>Debe indicar al menos uno de los textos (superior o inferior) del speech</li>':'');
+
+				validacion+=((textoSuperior.length>1000)
+						 	 ?'<li>El texto superior del speech puede tener como máximo 1000 símbolos incluidos espacios y retornos de línea y formatos</li>':'');
+
+				validacion+=((textoInferior.length>1000)
+					 	 	?'<li>El texto inferior del speech puede tener como máximo 1000 símbolos incluidos espacios y retornos de línea y formatos</li>':'');
+			
+					
+				if (validacion.length>0) 
+				{
+					Validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
+								validacion+'</ul>':'');
+					toastr.error(validacion);
+					$("#btn-alta-speech").prop("disabled",false);
+					return false;
+				}
+				else{
+
+					var formData=new FormData();
+    				formData.append('textoSuperior',textoSuperior);
+    				formData.append('textoInferior',textoInferior);
+    				formData.append('tituloSpeech',tituloSpeech);
+    				formData.append('incluirSancion',$("#incluirSancion").is(":checked"));
+    
+                	$.ajax({
+    	                async: true,
+    	                url: '{{ app.request.getBaseURL() }}'+ '/api/speech/save',
+    	                data: formData,
+    	                type: 'post',
+    	                cache: false,
+    	                contentType: false,
+    	                processData: false,
+                        success: function(data) {
+
+                        		var newOption = new Option(data.titulo, data.id, true, true);
+   						 		$("#selSpeech").append(newOption).trigger('change');
+            					$('#modalSpeech').modal('hide');
+            					toastr.success(data.mensaje);
+                        	},
+                        complete: function(){
+                        	$("#btn-alta-speech").prop("disabled",false);
+                        	},
+                        error: function(jqXHR,textStatus,errorThrown ){
+        					toastr.error(JSON.parse(jqXHR.responseText));
+        					}
+                    	});
+            	}  
+			});
+		  	
+			//EVENTO FOCO DE LA PESTAÑA TEXTO LIBRE
+			$("#link-tab-1").focus(function(){
+				$("#texto").data("wysihtml5").editor.focus();
+			});
+
+			//EVENTO FOCO DE LA PESTAÑA ARTICULADO
+			$("#link-tab-2").focus(function(){
+				setTimeout(function() { $("#btn-nuevo-articulo").focus(); }, 100);
+			});
+
+			//EVENTO FOCO DE LA PESTAÑA REVISIONES
+			$("#link-tab-3").focus(function(){
+				setTimeout(function() { $("#btn-revisiones").focus(); }, 100);
+			});
+			
+
+			//EVENTO CAMBIAR DEL BOTON DE INCLUSION DE VISTO Y CONSIDERANDO
+			$("#vistosYConsiderandos").change(function(){
+				 if (!$(this).is(":checked"))
+					 $(".texto-revision").addClass("hidden");
+				 else
+					 $(".texto-revision").removeClass("hidden");
+			 });
+
+			 //EVENTO CAMBIAR DEL BOTON DE EDICION DE REVISION
+			 $("#editaRevision").change(function(){
+				 if (!$(this).is(":checked")){
+					$("#div-revision").addClass("hidden");
+				 	$('#div-vistosYConsiderandos').addClass("hidden");
+				 }
+				 else{
+					 	$("#div-revision").removeClass("hidden");
+					 	$('#div-vistosYConsiderandos').removeClass("hidden");
+				 }
+			 });
+
+			 //EVENTO CAMBIAR DEL SELECTOR DE REDACCION
+			 $("#selTipoRedaccion").change(function(){
+
+				$("#sancion-panel").removeClass("hidden");
+				$("#notificacion-panel").removeClass("hidden");
+				$(".dependiente-revision").addClass("hidden");
+
+				if ($(this).val()=="basico"){
+					$("#group-tipoDictamen").addClass("hidden");
+					$("#link-tab-1").removeClass("hidden");
+					$("#link-tab-2").addClass("hidden");
+					$("#link-tab-3").addClass("hidden");
+					$("#sancion-panel").addClass("hidden");
+					$("#notificacion-panel").addClass("hidden");
+				}
+				if ($(this).val()=="articulado") {
+					$("#group-tipoDictamen").removeClass("hidden");
+					$("#link-tab-1").addClass("hidden");
+					$("#link-tab-3").addClass("hidden");
+					$("#link-tab-2").removeClass("hidden");
+					$("#selTipoDictamen").val(0);
+				}
+				if ($(this).val()=="revision") {
+					$("#group-tipoDictamen").addClass("hidden");
+					$("#link-tab-1").addClass("hidden");
+					$("#link-tab-2").addClass("hidden");
+					$("#link-tab-3").removeClass("hidden");
+					if ($("#idRevision").val()!=-1)
+						$(".dependiente-revision").removeClass("hidden");
+				}
+				
+				habilitar("tab-0");	
+			});
+
+			//EVENTO CLICK DEL BOTON APLICAR NOTIFICACION
+ 			$("#aplicaNotificacion").change(function(){
+				 
+				 if ($(this).is(":checked")){
+					 
+					 $("#selComisionReserva").attr("disabled",false);
+					 $("#selOficinasDestino").prop("disabled", false);
+					 $(".select2-selection__choice").removeClass("bootstrap-primary-background");
+				 }
+				 else{
+					 $("#selComisionReserva").attr("disabled",true);
+					 $("#selOficinasDestino").empty().change();
+					 $("#selOficinasDestino").prop("disabled", true);
+					 $(".select2-selection__choice").addClass("bootstrap-primary-background");
+				     $("#selComisionReserva").val(0);
+				 }
+			 });
+			 
+ 			 //EVENTO CLICK DEL BOTON APLICAR NUMERO SANCION
+			 $("#poseeSancion").change(function(){
+				 if ($(this).is(":checked"))
+					 $("#numeroSancion").attr("disabled",false);
+				 else{
+					 $("#numeroSancion").attr("disabled",true);
+					 $("#numeroSancion").val("");
+				 }
+			 });
+
+			 //EVENTO CLICK DEL BOTON REDACTAR NUEVAMENTE
+			 $("#btn-modo-redaccion").click(function(){
+				limpiarFormularioSancion();
+				$("#selTipoRedaccion").prop("disabled",false);
+				$("#selTipoRedaccion").val("basico");
+				$("#selTipoRedaccion").change();
+			 });
+
+			 //EVENTO CLICK DEL BOTON COPIAR CONTENIDO DICTAMEN
+			 $("#btn-modo-dictamen").click(function(){
+			 	$("#modalDictamenes").modal("show");
+			 });
+
+			//EVENTO CAMBIAR DEL SELECTOR DE SPEECHS
+			$("#selSpeech").change(function(){
+
+				var id = $(this).val();				
+				if(id!=null) actualizarSpeech(id,"#textoSpeech");
+				else $("#textoSpeech").data("wysihtml5").editor.setValue('');
+				
+			});
+
+			//EVENTO CAMBIAR DEL SELECTOR DE IMPRESION DE SPEECHS
+			$("#agregaSpeech").change(function(){
+				if ($(this).is(":checked"))
+					$(".speech").prop("disabled",false);
+				else{
+					$("#selSpeech").empty().change();
+					$("#textoSpeech").data("wysihtml5").editor.setValue('');
+					$(".speech").prop("disabled",true);
+				}
+			});
+			
+		/* Inicialización ------------------------------------------------------------------------------*/
+		
+			$(".oficinaDestino").select2({
+				ajax: {
+			    url: '{{ app.request.getBaseURL() }}'+"/api/oficina/getAllByTipo",
+			    dataType: 'json',
+			    delay: 250,
+			    cache: false,
+			    data: function (params) {
+			      return {
+			        q: params.term, // search term
+			        r: true,
+			        page: params.page
+			      };
+			    },
+			    processResults: function (data) {
+			       var dato=data;
+		           return {
+				        results: $.map(dato, function(item) {
+				            	return { id: item.id, text: item.oficina };
+				        })
+				    };
+		        },
+			  },
+			  language: "es",
+			  minimumInputLength: 3,
+			  theme: "bootstrap",
+			});
+
+			$("#selSpeech").select2({
+				ajax: {
+			    url: '{{ app.request.getBaseURL() }}'+"/api/speech/getByTitulo",
+			    dataType: 'json',
+			    delay: 250,
+			    cache: false,
+			    data: function (params) {
+			      return {
+			        q: params.term, // search term
+			        page: params.page
+			      };
+			    },
+			    processResults: function (data) {
+			       var dato=data;
+		           return {
+				        results: $.map(dato, function(item) {
+				            	return { id: item.id, text: item.titulo_speech };
+				        })
+				    };
+		        },
+			  },
+			  language: "es",
+			  minimumInputLength: 3,
+			  theme: "bootstrap",
+			});
+						
+			$(".text-area").wysihtml5({
+				toolbar: {
+					"image": false,
+				    "emphasis": true,
+				    "lists": false,
+				    "blockquote": false,
+				    "link": false,			    
+					"size": "xs"
+				}
+			});
+
+			$(".text-area-speech").wysihtml5({
+				 toolbar: {
+				    "font-styles": false, // Font styling, e.g. h1, h2, etc.
+				    "emphasis": false, // Italics, bold, etc.
+				    "lists": false, // (Un)ordered lists, e.g. Bullets, Numbers.
+				    "html": false, // Button which allows you to edit the generated HTML.
+				    "link": false, // Button to insert a link.
+				    "image": false, // Button to insert an image.
+				    "color": false, // Button to change color of font
+				    "blockquote": false, // Blockquote
+				    "size": "xs" // options are xs, sm, lg
+				 },
+			});
+
+			$(".check-si-no").bootstrapToggle({
+			      on:  'SI',
+			      off: 'NO',
+			      offstyle: 'danger',
+			      onstyle: 'success',
+			      width: "80px",
+			      height: "30px"
+			});
+
+			$("#aplicaNotificacion").bootstrapToggle({
+			      on:  'Noti<u>f</u>icar',
+			      off: 'No Noti<u>f</u>icar',
+			      offstyle: 'danger',
+			      onstyle: 'success',
+			      width: "153px",
+			      height: "25px"
+			});
+			
+			$("#poseeSancion").bootstrapToggle({
+			      on:  'Nume<u>r</u>ar Sanción',
+			      off: 'No Nume<u>r</u>ar Sanción',
+			      offstyle: 'danger',
+			      onstyle: 'success',
+			      width: "153px",
+			      height: "25px"
+			 });
+
+			$("#poseeSancion").bootstrapToggle().attr("data-tooltip","Ctrl+R")
+
+			$('#vistosYConsiderandos').bootstrapToggle({
+			      on:  'In<u>c</u>luye Vistos y Considerandos',
+			      off: 'No In<u>c</u>luye Vistos y Considerandos',
+			      offstyle: 'danger',
+			      onstyle: 'success',
+			      width: "250px",
+			      height: "25px"
+			 });
+
+			$('#editaRevision').bootstrapToggle({
+			      on:  'Editar Re<u>v</u>ision',
+			      off: 'Reu<u>v</u>isión Sin Cambios',
+			      offstyle: 'danger',
+			      onstyle: 'success',
+			      width: "200px",
+			      height: "25px"
+			});
+
+			//adhiere título a elementos bootstrapToggle
+			$('.toggle').each(function(i, obj) {
+			    var check=$(this).find('input[type="checkbox"]');
+			    var	toggleGroup=$(this).find('div[class="toggle-group"]');
+			    $("label",$(toggleGroup)).each(function(i,label){
+					$(label).attr("title",$(check).attr("title"));
+				 });
+			});
+			
+			registrarEventosParaWysihtml5();
+
+			InicializarPagina();
+			
+	});
+	</script>
+	<section class="content-header">
+		<div class="row pull-right">
+			<ol class="breadcrumb">
+		        <li><a href="#"><i class="fa fa-dashboard"></i> Principal</a></li>
+		        <li>Despacho</li>
+		        <li class="active">Expedientes Orden del Día</li>
+		        <li class="active">
+				    {% if idSancion==0 %}
+			        	Alta
+			        {% else %}
+			        	Edición
+			        {% endif %}
+				</li>
+		    </ol>
+		</div>
+		<div class="row">
+			<div class="col-md-3">
+				<h2>
+			         {% if idSancion==0 %}
+			        	Alta de Sanción
+			        {% else %}
+			        	Edición de Sanción
+			        {% endif %}
+			    </h2>
+			</div>
+		</div>
+	</section>
+	<section class="content">
+		<div class="col-md-12">
+			
+        	<form id="frm-sancion">
+        		<input type="hidden" id="idExpedienteSesion" name="idExpedienteSesion">
+        		<input type="hidden" id="idDictamen" name="idDictamen"> 
+        		<input type="hidden" id="idProyecto" name="idProyecto">
+        		<input type="hidden" id="idExpediente" name="idExpediente"> 
+        		<input type="hidden" id="idSancion" name="idSancion">
+        		<input type="hidden" id="idSesion" name="idSesion">
+        		<div class="row">
+        			<div class="col-md-3">
+        				<div class="row">
+        					<div class="col-md-12">
+        						<div class="form-group">
+        							<label for="selTipoRedaccion">Tipo <u>R</u>edacción</label> 
+        							<select class="form-control" id="selTipoRedaccion" title="Alt+R"
+        									name="selTipoRedaccion" autofocus="autofocus">
+        							</select>
+        						</div>
+        					</div>
+        				</div>
+        				<div class="row">
+        					<div class="col-md-12" style="min-height: 466.77px">
+        						<div style="min-height: 68.78px">
+        							<div class="form-group hidden"
+        								style="margin-bottom: 0px !important" id="group-tipoDictamen">
+        								<label for="selTipoSancion">Ti<u>p</u>o Sanción</label> 
+        								<select class="form-control" id="selTipoSancion" title="Alt+P"
+        										name="selTipoSancion">
+        									<option value="0">Seleccione Tipo Sanción</option>
+        									{% for tipo in tipoProyectos %}
+        									<option value="{{ tipo.id }}">{{ tipo.tipoProyecto }}</option>
+        									{% endfor %}
+        								</select>
+        							</div>
+        						</div>
+        						<hr>
+                				<div class="panel panel-primary" id="sancion-panel"><!-- Numeracion Sancion -->
+                					<!-- <div class="panel-heading text-center">
+                						<strong>Número Sancion</strong>
+                					</div> -->
+                					<div class="panel-body">
+                						<div class="row">
+                							<div class="col-md-6">
+                								<div class="text-center">
+                									<!-- Habilitacion de Numero de Sancion -->
+                									<div class="form-group">
+                										<input type="checkbox" id="poseeSancion" title="Ctrl+R"
+                												name="poseeSancion" data-size="small" />
+                									</div>
+                								</div>
+                							</div>
+                							<div class="col-md-6">
+                								<div class="text-center">
+                									<!-- Numero de Sancion -->
+                									<div class="form-group">
+                										<input type="text" class="form-control text-center" title="Alt+R"
+                											placeholder="Número Sancion" id="numeroSancion"
+                											name="numeroSancion" onblur="validarNumeroSancion(this);">
+                									</div>
+                								</div>
+                							</div>
+                						</div>
+                					</div>
+                				</div>
+                				<div class="panel panel-primary" id="notificacion-panel"><!-- Notificacion -->
+                					<!-- <div class="panel-heading text-center">
+                						<strong>Notificación</strong>
+                					</div> -->
+                					<div class="panel-body">
+                						<div class="row">
+                							<div class="col-md-12">
+                								<div class="text-center">
+                									<!-- Habilitacion de Notificacion -->
+                									<div class="form-group">
+                										<input type="checkbox" id="aplicaNotificacion" title="Ctrl+F"
+                											name="aplicaNotificacion" data-size="small" />
+                									</div>
+                									<!-- Destino -->
+                									<div class="form-group">
+                										<select class="form-control oficinaDestino" data-width="100%"
+                											multiple="multiple" id="selOficinasDestino" title="Alt+O"
+                											name="selOficinasDestino"></select>
+                									</div>
+                									<!-- Comision Reserva -->
+                									<div class="form-group">
+                										<select class="form-control" id="selComisionReserva"
+                											name="selComisionReserva" title="Alt+C">
+                											<option value="0">Seleccione Comisión Reserva</option>
+                											{% for comision in comisiones %}
+                											<option value="{{ comision.id }}">{{ comision.comision }}</option>
+                											{% endfor %}
+                										</select>
+                									</div>
+                								</div>
+                							</div>
+                						</div>
+                					</div>
+                				</div>
+                			</div>
+            			</div>
+            			<hr>
+                 		<div class="row">
+                 			<div class="col-md-12">
+                 				<div class="text-center">
+                 					<div class="btn-group">
+                 						<button type="button" class="btn btn-info" title="Ctrl+E (Solo foco)" id="btn-cancelar-sancion">Canc<u>e</u>lar</button>
+                 						{% if idSancion!=0 %}
+                        					<button type="button" class="btn btn-info" title="Ctrl+D (Solo foco)"
+                        							id="btn-deshacer-cambios"><u>D</u>eshacer</button>
+                        				{% endif %}
+                 						<button type="button" class="btn btn-primary" title="Ctrl+G (Solo foco)" id="btn-guardar-sancion"><u>G</u>uardar</button>
+                 					</div>
+                 				</div>
+                 			</div>
+                 		</div>
+        			</div>
+        			<div class="col-md-9">
+        				<div class="row" style="padding-top: 5px;"><!--  Selectores de Pestañas y Modo Edicion-->
+        					<!-- Selectores de Pestañas -->
+        					<div class="col-md-6">
+        						<nav> 
+        							<ul class="nav nav-pills">
+        								<li role="presentation" title="Alt+H" ><a href="#" id="link-tab-0"
+        									class="selectable" onclick="habilitar('tab-0')"><h4>Speec<u>h</u>
+        											/ Firmas</h4>
+        										</h4></a></li>
+        								<li role="presentation" title="Alt+X"><a href="#" id="link-tab-1"
+        									class="selectable" onclick="habilitar('tab-1')"><h4>Te<u>x</u>to</h4>
+        										</h4></a></li>
+        								<li role="presentation" title="Alt+A"><a href="#" id="link-tab-2"
+        									class="selectable hidden" onclick="habilitar('tab-2')"><h4><u>A</u>rtículos</h4></a></li>
+        								<li role="presentation" title="Alt+Y"><a href="#" id="link-tab-3"
+        									class="selectable hidden" onclick="habilitar('tab-3')"><h4>Revision
+        											Pro<u>y</u>ecto</h4></a></li>
+        							</ul>
+        						</nav>
+        					</div>
+        					<div class="col-md-6" style="margin-top: 25px;">
+        					<!-- Botones Redactar Nuevamente y Copiar de Dictamen-->
+                    			<div class="btn-group pull-right">
+                    				<button type="button" class="btn btn-sm btn-warning" title="Ctrl+U"
+                    						id="btn-modo-redaccion">Redactar N<u>u</u>evamente</button>
+                    				<!-- Solo si tiene dictamene en esta sesion -->
+                    			    {% if dictamenes > 0 %}
+                        				<button type="button" class="btn btn-sm btn-warning" title="Ctrl+M"
+                        						id="btn-modo-dictamen">Copiar Contenido de Dicta<u>m</u>en</button>
+                    				{% endif %}
+                    			</div>
+        					</div>
+        				</div>
+        				<br>
+        				<div class="row tab" id="tab-0"><!-- Pestaña  de Speech / Firmas -->
+        					<div class="col-md-12">
+        						<div class="row">
+        							<!-- Habilitacion de Speech -->
+        							<div class="col-md-12">
+        								<div class="form-group">
+        									<label for="agregaSpeech"><u>I</u>mprimir Speech</label> 
+        									<input type="checkbox" class="check-si-no" id="agregaSpeech"
+        											name="agregaSpeech" data-size="small" title="Ctrl+I"/>
+        								</div>
+        							</div>
+        							<!-- Busqueda y edicion de Speech -->
+        							<div class="col-md-12">
+        								<div class="input-group">
+        									<span class="input-group-addon"> <a
+        										href="javascript:void(0);" class="speech"
+        										onclick="cargarDetalle();" style="cursor: help">Titulo
+        											Speech</a>
+        									</span> <select class="form-control speech" data-width="100%"
+        										id="selSpeech" name="selSpeech" title="Alt+E"></select> <span
+        										class="input-group-btn">
+        										<button type="button" class="btn btn-primary speech"
+        											id="btn-agregar-speech" data-toggle='modal' title="Ctrl+V"
+        											data-target='#modalSpeech'>Nue<u>v</u>o</button>
+        									</span>
+        								</div>
+        							</div>
+        						</div>
+        						<!-- Texto Speech Seleccionado -->
+        						<div class="row" style="padding-top: 5px;">
+        							<div class="col-md-12">
+        								<textarea class="form-control text-area-speech" id="textoSpeech"
+        									name="textoSpeech"></textarea>
+        							</div>
+        						</div>
+        						<hr>
+        						<!-- Firmas -->
+        						<div class="row">
+        							<div class="col-md-4">
+        								<div class="form-group">
+        									<label for="firmaPresidente">Firma <u>P</u>residente</label> <input
+        										type="checkbox" class="check-si-no" id="firmaPresidente"
+        										name="firmaPresidente" data-size="small" title="Ctrl+P"/>
+        								</div>
+        							</div>
+        							<div class="col-md-4 col-md-offset-4">
+        								<div class="form-group">
+        									<label for="firmaSecretario">Firma <u>S</u>ecretario</label> <input
+        										type="checkbox" class="check-si-no" id="firmaSecretario"
+        										name="firmaSecretario" data-size="small" title="Ctrl+S"/>
+        								</div>
+        							</div>
+        						</div>
+        					</div>
+        				</div>
+        				<div class="row tab" id="tab-1"><!-- Pestaña de Texto Libre -->
+        					<div class="col-md-12">
+        						<div class="row">
+        							<div class="col-md-12">
+        								<textarea class="form-control text-area text-area-libre"
+        									id="texto" name="texto" placeholder="Texto Libre" title="Esc (salir)"></textarea>
+        							</div>
+        						</div>
+        					</div>
+        				</div>
+        				<div class="row tab hidden" id="tab-2"><!-- Pestaña de Articulado -->
+        					<div class="col-md-12">
+        						<!-- Contenido Articulado -->
+        						<div class="row" style="padding-top: 5px">
+        							<div class="col-md-12">
+        								<div class="div-articulos" id="div-articulos">
+        									<table class="table table-striped" id="articulos">
+        										<tbody>
+        										</tbody>
+        									</table>
+        								</div>
+        							</div>
+        						</div>
+        						<hr>
+        						<!-- Boton Nuevo Articulo -->
+        						<div class="row" style="padding-top: 15px;">
+        							<div class="col-md-12">
+        								<button type="button" class="btn btn-primary btn-sm" title="Ctrl+A"
+        									id="btn-nuevo-articulo" style="margin-left: 15px">Nuevo
+        									<u>A</u>rtículo</button>
+        							</div>
+        						</div>
+        					</div>
+        				</div>
+        				<div class="row tab hidden" id="tab-3"><!-- Pestaña de Revisiones -->
+        					<div class="col-md-12">
+        						<!-- Input idRevision -->
+        						<input type="hidden" id="idRevision">
+        						<!-- Botones de Revision busqueda, edición, vistos y considerandos -->
+        						<div class="row" style="margin-bottom: 5px">
+        							<div class="col-md-1" style="text-align: left;">
+        								<button type="button" class="btn btn-warning btn-sm"
+        										id="btn-revisiones" data-toggle='modal' title="Ctrl+I"
+        									data-target='#modalRevisiones'>Rev<u>i</u>siones</button>
+        							</div>
+        							<div class="col-md-8 dependiente-revision"
+        								style="text-align: center;">
+        								<input type="checkbox" id="editaRevision" data-size="small" 
+        									   title="Ctrl+V" />
+        							</div>
+        							<div class="col-md-3 dependiente-revision"
+        								style="text-align: right;" id="div-vistosYConsiderandos">
+        								<input type="checkbox" id="vistosYConsiderandos"
+        									data-size="small" title="Ctrl+C" />
+        							</div>
+        						</div>
+        						<!-- Revision -->
+        						<div class="div-revision dependiente-revision" id="div-revision"
+        							title="Alt+S: Visto - Alt+D: Considerando - Alt+T: Articulado">
+        							<!-- Visto -->
+        							<div class="row texto-revision" style="padding-top: 10px">
+        								<div class="col-md-12" style="background: #f8f8ff">
+        									<div class="form-group">
+        										<label for="vistos" id="vistosLabel">Vi<u>s</u>tos:</label>
+        										<div id="vistos" style="padding-left: 15px"></div>
+        										<button type="button" class="btn btn-primary btn-xs"
+        											id="btn-editar-vistos-revision" style="margin-top: 5px">Editar</button>
+        									</div>
+        								</div>
+        							</div>
+        							<!-- Considerando -->
+        							<div class="row texto-revision" style="padding-top: 10px">
+        								<div class="col-md-12" style="background: #f8f8ff">
+        									<div class="form-group">
+        										<label for="considerandos" id="considerandosLabel">Consi<u>d</u>erandos:</label>
+        										<div id="considerandos" style="padding-left: 15px"></div>
+        										<button type="button" class="btn btn-primary btn-xs"
+        											id="btn-editar-considerandos-revision"
+        											style="margin-top: 5px">Editar</button>
+        									</div>
+        								</div>
+        							</div>
+        							<!-- Articulos Revision-->
+        							<div class="row" style="padding-top: 10px">
+        								<div class="col-md-12">
+        									<label id="label-articulos-revision" for="articulos-revision">Ar<u>t</u>ículos:</label>	
+        									<table class="table table-striped" id="articulos-revision">
+        										<tbody>
+        										</tbody>
+        									</table>
+        								</div>
+        							</div>
+        							<hr>
+        							<!-- Nuevo Articulo Revision-->
+        							<div class="row" style="padding-top: 5px;">
+        								<div class="col-md-12" style="text-align: left;">
+        									<button type="button" class="btn btn-primary btn-sm" title="Ctrl+A"
+        										id="btn-nuevo-articulo-revision">Nuevo <u>A</u>rtículo</button>
+        								</div>
+        							</div>
+        						</div>
+        					</div>
+        				</div>
+        			</div>
+        		</div>
+{#         		<hr>#}
+{#         		<div class="row">#}
+{#         			<div class="col-md-12">#}
+{#         				<div class="text-center">#}
+{#         					<div class="btn-group">#}
+{#         						<button type="button" class="btn btn-info" title="Ctrl+E (Solo foco)" id="btn-cancelar-sancion">Canc<u>e</u>lar</button>#}
+{#         						<button type="button" class="btn btn-primary" title="Ctrl+G (Solo foco)" id="btn-guardar-sancion"><u>G</u>uardar</button>#}
+{#         					</div>#}
+{#         				</div>#}
+{#         			</div>#}
+{#         		</div>#}
+        	</form>
+            	
+        </div>	
+
+		<div id="modalArticulo" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
+		 	<div class="modal-dialog modal-xl">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Nuevo Artículo</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+			        	<input type="hidden" id="id" name="id">
+			        	<input type="hidden" id="tabla" name="tabla">
+			        	<div class="row">
+			        		<div class="col-md-12">
+			        			<div class="form-group">
+					        		<label for="articulo">Artícu<u>l</u>o:</label>
+					        		<textarea class="form-control text-area text-area-corta" 
+					        		id="articulo" name="articulo" placeholder="articulo"></textarea>
+					        	</div>
+					        </div>
+					    </div>
+					    <div class="row">
+			        		<div class="col-md-12">
+			        			<div class="row">
+			        				<div class="col-md-12">
+								        <label>Incisos:</label>
+								        <button type="button" onClick="agregarInciso(null);" 
+								        		id="btn-agregar-inciso" class="btn btn-primary btn-sm pull-right">Agregar Inci<u>s</u>o</button>
+								    </div>
+								</div>
+								<div class="row" style="padding-top:5px">
+									<div class="col-md-12">
+								        <div class="div-incisos" id="div-incisos">
+							        		<table class="table table-striped" id="incisos">
+							        			<tbody>
+								        		</tbody> 
+							        		</table> 	
+								        </div>
+								    </div>
+								</div>		
+					        </div> 
+					    </div>
+				        <hr>
+				        <div class="row">
+				        	<div class="col-md-12">
+				        		<div class="text-center">
+					    			<div class="btn-group">
+							        	<button type="button" class="btn btn-info" id="btn-cancelar-articulo" data-dismiss="modal">Canc<u>e</u>lar</button>
+			       			 			<button type="submit" class="btn btn-primary" id="btn-agregar-articulo"><u>A</u>ceptar</button>
+							        </div>
+						        </div>
+						    </div>
+			    		</div>
+				     </div>
+			    </div>
+		  	</div>
+		</div>
+		 <div id="modalRevisiones" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false"> 
+		 	<div class="modal-dialog modal-lg">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Revisiones</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				  
+			        	<div class="row">
+			        		<div class="col-md-12">
+					        	<div class="form-group">
+					        		<table class="table " id="revisiones">
+					        			<thead>
+						                	<tr>
+						                		<th>id</th>
+								        		<th>Usar</th>
+						                		<th>N° Revisión</th>
+						                		<th>Vis. y Cons.</th>
+						                		<th>Fecha Creación</th>
+						                		<th>Usuario Creación</th>
+								                <th>Oficina</th>
+						                	</tr>
+						                </thead>
+						                <tbody>
+						                </tbody>
+						            </table>
+					        	</div>
+					        </div>
+					    </div>
+						
+					</div>
+					<div class="modal-footer" style="background-color:#ecf0f5">  	
+				        <hr>
+				        <div class="row">
+				        	<div class="col-md-12">
+				        		<div class="text-center">
+					    			<div class="btn-group">
+							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cerrar</button>
+							        </div>
+						        </div>
+						    </div>
+			    		</div>
+				     </div>
+			    </div>
+		  	</div>
+		</div>
+		<div id="modalTexto" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
+			<div class="modal-dialog">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Edición Texto</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				    	<form role="form">
+				    		<input type="hidden" id="idTexto" name="idTexto">
+				    		<div class="row">
+				    			<div class="form-group col-md-12">
+    				    			<textarea class="form-control text-area text-area-larga" 
+								       		  id="edicion-texto" name="edicion-texto">
+								    </textarea>
+    							</div>
+                			</div>
+                			<hr>
+    				    	<div class="row">
+    				    		<div class="col-md-12">
+					        		<div class="text-center">
+						    			<div class="btn-group">
+								        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+				       			 			<button type="button" class="btn btn-primary" id="btn-cambio-texto">Aceptar</button>
+								        </div>
+							        </div>
+							    </div>
+    				    	</div>
+				    	</form>
+				    </div>
+				</div>
+			</div>
+		</div>
+		<div id="modalSpeech" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
+			<div class="modal-dialog modal-lg">
+			    <!-- Modal content-->
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666	;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Alta Speech</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				    	<form role="form">
+				    		<input type="hidden" id="tipoPlantilla" name="tipoPlantilla">
+				    		<div class="row">
+				    			<div class="col-md-10">
+    				    			<div class="form-group">
+    				    				<label for="tituloSpeech">Titulo</label>
+    				    				<input type="text" class="form-control" name="tituloSpeech" id="tituloSpeech" maxlength="30"
+    				    					   placeholder="obligatorio max. 30 letras">
+    				    			</div>
+    							</div>
+    							<div class="col-md-2">
+    								<div class="form-group">
+        								<label for="incluirSancion">Incluye Sanción</label>
+        								<input type="checkbox" class="form-control check-si-no" id="incluirSancion" name="incluirSancion" 
+                    					       data-size="small"/>
+                    				</div>
+    							</div>
+                			</div>
+				    		<div class="row">
+				    			<div class="col-md-6">
+				    				<div class="form-group">
+    				    				<label for="textoSuperior">Texto Superior</label>
+        				    			<textarea class="form-control text-area text-area-larga" 
+    								       		  id="textoSuperior" name="textoSuperior">
+    								    </textarea>
+    								 </div>
+    							</div>
+    							<div class="col-md-6">
+    								<div class="form-group">
+    				    				<label for="textoSuperior">Texto Inferior</label>
+        				    			<textarea class="form-control text-area text-area-larga" 
+    								       		  id="textoInferior" name="textoInferior">
+    								    </textarea>
+    								</div>
+    							</div>
+                			</div>
+                			<hr>
+    				    	<div class="row">
+    				    		<div class="col-md-12">
+					        		<div class="text-center">
+						    			<div class="btn-group">
+								        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
+				       			 			<button type="button" class="btn btn-primary" id="btn-alta-speech">Aceptar</button>
+								        </div>
+							        </div>
+							    </div>
+    				    	</div>
+				    	</form>
+				    </div>
+				</div>
+			</div>
+		</div>
+		<div id="modalDictamenes" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
+			<div class="modal-dialog modal-lg">
+			    <div class="modal-content">
+				    <div class="modal-header" style="background-color:#666;color:#FFF">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title">Dictamenes</h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#ecf0f5">
+				    	<input type="hidden" name="idProyecto" id="idProyecto">
+				  		<input type="hidden" name="idExpediente" id="idExpediente"> 
+				  		<input type="hidden" name="idSancion" id="idSancion">
+				  		<input type="hidden" name="modo" id="modo">
+			        	<div class="row">
+			        		<div class="col-md-12">
+					        	<div class="form-group">
+					        		<table class="table " id="dictamenes">
+					        			<thead>
+						                	<tr>
+						                		<th>id</th>
+						                		<th>Usar</th>
+								        		<th>Comision/es</th>
+						                		<th>Redacción</th>
+						                		<th>Resuelve Por</th>
+						                		<th>Fecha Creación</th>
+						                		<th>Usuario Creación</th>
+						                	</tr>
+						                </thead>
+						                <tbody>
+						                </tbody>
+						            </table>
+					        	</div>
+					        </div>
+					    </div>
+						
+					</div>
+					<div class="modal-footer" style="background-color:#ecf0f5">  	
+				        <hr>
+				        <div class="row">
+				        	<div class="col-md-12">
+				        		<div class="text-center">
+					    			<div class="btn-group">
+							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cerrar</button>
+							        </div>
+						        </div>
+						    </div>
+			    		</div>
+				    </div>
+			    </div>
+			</div>
+		</div>
+		<div id="modalDetallePlantillas" class="modal fade custom-modal" role="dialog">
+		 	<div class="modal-dialog modal-xl" style="padding-top: 125px">
+			    <!-- Modal content-->
+			    <div class="modal-content" style="border-top-left-radius: 2em;border-top-right-radius: 2em;
+			    								  border-bottom-left-radius: 2em;border-bottom-right-radius: 2em">
+				    <div class="modal-header" style="background-color:#FFF;color:#000;
+				    								 border-top-left-radius: 2em;border-top-right-radius: 2em;">
+		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		    			<h4 class="modal-title text-center" id="titulo-modal-detalle-plantillas"></h4>
+				    </div>
+				    <div class="modal-body" style="background-color:#FFF;">
+				    	 <div class="row">
+				        	<div class="col-md-12">
+				        		<table width='100%' class='table' style="">
+				        			<thead><tr><th width='10%'><h3>COD.</h3></th><th width='90%'><h3>TEXTO</h3></th></tr></thead>
+				        		</table>
+        				    	<div class="div-detalle-plantilla" id="detalle-plantilla">
+        				    		
+        				    	</div>
+        				    </div>
+        				 </div>
+				    </div>
+				    <div class="modal-footer" style="background-color:#FFF;
+				    							     border-bottom-left-radius: 2em;border-bottom-right-radius: 2em">  	
+				        <div class="row">
+				        	<div class="col-md-12">
+				        		<div class="text-center">
+					    			<div class="btn-group">
+							        	<button type="button" class="btn btn-primary" data-dismiss="modal">Cerrar</button>
+							        </div>
+						        </div>
+						    </div>
+			    		</div>
+				    </div>
+				</div>
+			</div>
+		</div>
+	</section>
+{% endblock %}
