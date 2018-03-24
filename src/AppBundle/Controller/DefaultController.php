@@ -181,14 +181,18 @@ class DefaultController extends Controller
     	return $this->render('default/autoridades.html.twig', 
     						 array(
     								'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
-    						 		'id_presidente'=>$autoridadPresidente->getPerfil()
-    						 											 ->getId(),
-    						 		'nombre_presidente'=>$autoridadPresidente->getPerfil()
-    						 												 ->getNombreCompleto(),
-    						 		'id_secretario'=>$autoridadSecretario->getPerfil()
-    						 											 ->getId(),
-	    						 		'nombre_secretario'=>$autoridadSecretario->getPerfil()
-	    						 												 ->getNombreCompleto(),
+    						 		'id_presidente'=>(!is_null($autoridadPresidente)
+    						 							?$autoridadPresidente->getPerfil()
+    						 											 	 ->getId():0),
+    						 		'nombre_presidente'=>(!is_null($autoridadPresidente)
+    						 								?$autoridadPresidente->getPerfil()
+    						 												 	 ->getNombreCompleto():''),
+    						 		'id_secretario'=>(!is_null($autoridadSecretario)
+    						 							?$autoridadSecretario->getPerfil()
+    						 											 	 ->getId():0),
+    						 		'nombre_secretario'=>(!is_null($autoridadSecretario)
+    						 								?$autoridadSecretario->getPerfil()
+	    						 												 ->getNombreCompleto():''),
     						 ));	
     }
 

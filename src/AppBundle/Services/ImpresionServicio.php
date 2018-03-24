@@ -594,7 +594,7 @@ class ImpresionServicio
     {
     	
     	//encabezado
-    	$html='<p></p><h3><strong>CONSEJO DELIBERANTE</strong></h3>'.
+    	$html='<h3><strong>CONCEJO DELIBERANTE</strong></h3>'.
     		  '<h5>DE</h5><h5>LOMAS DE ZAMORA</h5>'.
     		  '<p></p>';
     	
