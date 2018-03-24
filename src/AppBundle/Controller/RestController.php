@@ -191,13 +191,15 @@ class RestController extends FOSRestController{
     		$tipoAutoridad=$tipoAutoridadRepository->find(1);
     		$presidenteActual=$autoridadRepository->findAutoridadByTipo(1);
     		$perfilAutoridad=$perfilRepository->find($idPresidente);
-    		$presidenteActual->setActivo(false);
+    		if(!is_null($presidenteActual)){
+    			$presidenteActual->setActivo(false);
+    			$em->persist($presidenteActual);
+    		}
     		$nuevoPresidente=new Autoridad();
     		$nuevoPresidente->setFechaAlta(new \DateTime());
     		$nuevoPresidente->setUsuarioAlta($usuarioSesion->getUsername());
     		$nuevoPresidente->setPerfil($perfilAutoridad);
     		$nuevoPresidente->setTipoAutoridad($tipoAutoridad);
-    		$em->persist($presidenteActual);
     		$em->persist($nuevoPresidente);
     	}
 
@@ -206,13 +208,15 @@ class RestController extends FOSRestController{
     		$tipoAutoridad=$tipoAutoridadRepository->find(2);
     		$secretarioActual=$autoridadRepository->findAutoridadByTipo(2);
     		$perfilAutoridad=$perfilRepository->find($idSecretario);
-    		$secretarioActual->setActivo(false);
+    		if(!is_null($secretarioActual)){
+    			$secretarioActual->setActivo(false);
+    			$em->persist($secretarioActual);
+    		}
     		$nuevoSecretario=new Autoridad();
     		$nuevoSecretario->setFechaAlta(new \DateTime());
     		$nuevoSecretario->setUsuarioAlta($usuarioSesion->getUsername());
     		$nuevoSecretario->setPerfil($perfilAutoridad);
     		$nuevoSecretario->setTipoAutoridad($tipoAutoridad);
-    		$em->persist($secretarioActual);
     		$em->persist($nuevoSecretario);
     	}
     	
