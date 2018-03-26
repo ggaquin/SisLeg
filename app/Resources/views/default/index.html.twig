@@ -40,6 +40,17 @@
           toastr.warning("NO IMPLEMENTADO EN ESTA VERSIÓN");
         }
 
+       /*  function dropDown(control){
+            debugger;
+        	$(".dropdown-toggle").dropdown("toggle");
+        } */
+
+        function salirDropDownHacia(url){
+        	/* $(".dropdown-toggle").dropdown("toggle"); */
+        	setTimeout(function() { cargarMenu(url); }, 100);
+        	
+        }
+
         function cargarMenu(url){
         	$("#contenidoUsuario").load('{{ app.request.getBaseURL() }}'+ url);
 		} 
@@ -79,12 +90,12 @@
 
        
        
-        $(document).on('keyup','.menu-fired',function(e){
+       /*  $(document).on('keyup','.menu-fired',function(e){
             if (event.which==32){
     			var control=e.currentTarget;
     			$(control).find('a:first').click();
         	}
-        });
+        }); */
         
         $(document).on('keyup','.treeview',function(e){
             if (event.which==13){
@@ -265,12 +276,12 @@
                   	<div class="row">
                   		<div class="col-md-4">
                   			<div class="pull-left">
-                              <a href="#" class="btn btn-info">Perfil</a>
+                              <a href="#" class="btn btn-info" onclick="salirDropDownHacia('/perfil');">Editar Perfil</a>
                             </div>
                   		</div>
                       	<div class="col-md-4">
                             <div class="text-center">
-                              <a href="javascript:void(0);" onclick="cargarMenu('/cambioClave');" class="btn btn-info">Cambiar Clave</a>
+                              <a href="javascript:void(0);" onclick="salirDropDownHacia('/cambioClave');" class="btn btn-info">Cambiar Clave</a>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -590,7 +601,6 @@
           </section>
           <!-- /.sidebar -->
         </aside>
-
         <div class="content-wrapper" style="padding-top:5%">
         
         	<div id="contenidoUsuario">

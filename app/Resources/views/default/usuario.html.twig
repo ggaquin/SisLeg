@@ -1,4 +1,3 @@
-{%  extends 'layout.html.twig' %}
 
 {% block stylesheets %}
 	{# parent() #}
@@ -13,8 +12,6 @@
         <script src="{{ asset_url }}"></script>
     {% endjavascripts %}
 {% endblock %}
-
-{%  block body %}
 
 	<style type="text/css">
 		@media all and (max-width: 479px) {
@@ -1200,11 +1197,11 @@
                 									</div>
                 									<div class="form-group div-legislador hidden">
                 										<label for="oficinaMod">Oficina</label>
-                										<input type= "text" class="form-control input-sm" id="oficina" name="oficina" placeholder="oficina / despacho" readonly>
+                										<input type= "text" class="form-control input-sm" id="oficinaMod" name="oficinaMod" placeholder="oficina / despacho" readonly>
                 									</div>
                 								    <div class="form-group div-legislador hidden">
                 						        		<label for="bloqueMod">Bloque</label>
-                						        		<input type= "text" class="form-control input-sm" id="bloqueMod" name="bloque" placeholder="bloqueMod" readonly>
+                						        		<input type= "text" class="form-control input-sm" id="bloqueMod" name="bloqueMod" placeholder="bloque" readonly>
                 						        	</div>
                 						        	<div class="form-group div-publico hidden">
                 										<label for="documentoMod">Documento</label>
@@ -1253,5 +1250,3 @@
 		  	</div>
 		</div>
 	</section>
-	
-{% endblock %}

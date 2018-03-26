@@ -1,0 +1,226 @@
+
+	
+	<style type="text/css">
+	
+    	.image-container{
+                			padding-top: 30px;
+                			min-height: 343px;
+                			width:350px;
+                			padding-left: 40px;
+                		}
+  
+	</style>
+
+	<script type="text/javascript">
+
+		$(document).ready(function(){
+
+			function inicializarPagina(){
+
+				$("#idPerfil").val('{{ idPerfil }}');
+				$("#apellidos").val('{{ apellidos }}');
+			    $("#nombres").val('{{ nombres }}');
+			    $("#eMail").val('{{ correo_electronico }}');
+			    $("#telefono").val('{{ telefono }}');
+			    $("#oficina").val('{{ oficina }}' );
+			    $("#selBloque").val({{ id_bloque }});
+
+				var rutaImagen=(('{{ ruta_web_imagen }}'=='')?'user.jpg':'{{ ruta_web_imagen }}');
+				var keyImagen=(('{{ ruta_web_imagen }}'=='')?'no-unlink-preview':'{{ ruta_web_imagen }}');
+				debugger;
+			    $("#input-file").fileinput({
+		    		language: "es",
+		    		initialPreviewAsData: true,
+		    		initialPreview: [ rutaImagen ],
+	                initialPreviewConfig: [ {type: "image", caption: "", height: "220", width:"155px", key:keyImagen } ],
+	                showUpload: false,
+	                showCaption: false,               
+	                overwriteInitial: true,
+	                previewSettings:{image: {height: "220", width:"155px"}},
+	                deleteUrl:'{{ app.request.getBaseURL() }}'+'/api/usuario/removeImagenPerfil',
+	                maxFileSize: 10240,                
+        		});
+
+			}
+
+			$("#btn-cancelar-perfil").click(function(){
+				location.reload()
+			});
+
+			$("#btn-guardar-perfil").click(function(){
+
+				$("#btn-guardar-perfil").prop("disabled",true);
+				
+              	var formData=new FormData();
+              	var archivos=$("#input-file")[0].files;
+
+              	$.each(archivos, function(i, archivo) {
+                	formData.append('uploadedFiles-' + i, archivo);
+            	});
+
+              	var validacion='';
+              	
+        		var apellidos=$("#apellidos").val();
+                validacion+=((apellidos.replace(/ /g, '').length==0)
+                        		?'<li>Debe ingresar un apellido</li>':'');
+
+        		var nombres=$("#nombres").val();
+                validacion+=((nombres.replace(/ /g, '').length==0)?
+                				'<li>Debe ingresar un nombre</li>':'');
+
+				var eMail=$("#eMail").val();
+                validacion+=((eMail.indexOf(' ')!=-1)
+                        		?'<li>El correo electrónico posee espacios blancos</li>':'');
+                validacion+=((eMail.replace(/ /g, '').length>0 && eMail.indexOf('@')==-1)
+                        		?'<li>El correo electrónico no contiene @</li>':'');				
+				debugger;
+                if ("{{ app.user.rol.rol }}"=="ROLE_LEGISLADOR"){ 
+                	var oficina=$("#oficina").val();
+                	validacion+=((oficina.replace(/ /g, '').length==0)
+                        			?'<li>Debe especificar ubicacion de la oficinar</li>':'');
+        			
+        			var idBloque=$("#selBloque").val();
+                	validacion+=((selBloque==0)?'<li>Debe especificar el bloque al que pertenece</li>':'');
+                }
+                
+	            if (validacion.length>0) 
+				{
+					validacion=((validacion.length>0)?'<strong><u>Validación de Datos</u></strong><br><ul>'+
+								validacion+'</ul>':'');
+					toastr.error(validacion).attr('style', 'width: 500px !important');;
+					return false;
+				}
+				else{
+					
+	              	formData.append("apellidos",apellidos);
+	              	formData.append("nombres",nombres);
+	              	formData.append("eMail",eMail);
+	              	formData.append("oficina",oficina);
+	              	formData.append("idBloque",idBloque);
+
+	            	$.ajax({
+		                async: true,
+		                url: '{{ app.request.getBaseURL() }}'+'/api/usuario/updatePerfilByUsuer',
+		                data: formData,
+		                cache: false,
+		                contentType: false,
+		                processData: false,
+		                type: 'POST',
+	                success: function(data) {
+	                    toastr.success('Recargando página 5seg. ...',data,{timeOut: 5000});
+	                    setTimeout(function(){location.reload();},5000);
+	                	},
+	                complete: function(){
+	                	$("#btn-guardar-perfil").prop("disabled",false);
+		                },
+	                error: function(jqXHR,textStatus,errorThrown ){
+						toastr.error(JSON.parse(jqXHR.responseText));
+						}
+	            	});
+	            }
+
+			});
+
+			inicializarPagina();
+		});
+		
+	</script>
+	
+	<section class="content-header">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="well well-sm" style="font-size: x-large;color: #3c8dbc; font-style: oblique;">
+<!--     				<h3> -->
+    			       <u>Editar Perfil</u>
+    			    <!-- </h3> -->
+			    </div>
+			</div>
+	    </div>  
+	</section>
+	<section class="content">
+  		<div class="row">
+  			<div class="col-md-6 col-md-offset-3">
+        		<form role="form" id="perfil">	
+		        	<div class="row">
+		        		<div class="col-md-6">	
+				        	<div class="form-group">
+				        		<label for="apellidos">Apellidos</label>
+				        		<input type= "text" class="form-control input-sm" 
+				        			   name="apellidos" id="apellidos" placeholder="apellido del usuario">
+				        	</div>
+				        	<div class="form-group">
+				        		<label class="es-nombre" for="nombres">Nombres</label>
+				        		<input type= "text" class="form-control input-sm" 
+				        			   id="nombres" name="nombres" placeholder="nombre del usuario">
+				        	</div>
+				        	<div class="form-group">
+				        		<label for="eMail">Correo Electrónico</label>
+				        		<input type= "text" class="form-control input-sm" 
+				        			   id="eMail" name="eMai" autocomplete="off" placeholder="dirección de correo electrónico">
+				        	</div>
+				        	<div class="form-group">
+								<label for="telefono">Telefono</label>
+								<input type= "text" class="form-control input-sm" 
+									   id="telefono" name="telefono" placeholder="número de teléfono">
+							</div>
+							{% if app.user.rol.rol=="ROLE_LEGISLADOR" %}
+    							<div>
+    						{% else %}
+    							<div class="hidden">
+    						{% endif %}
+    							
+    							<div class="form-group">
+    								<label for="oficina">Oficina</label>
+    								<input type= "text" class="form-control input-sm" 
+    									   id="oficina" name="oficina" placeholder="oficina / despacho">
+    							</div>
+    						    <div class="form-group">
+    				        		<label for="selBloque">Bloque</label>
+    				        		<select class="form-control input-sm" 
+    				        			   id="selBloque" name="selBloque" placeholder="bloque">
+    				        			   {% for bloque in bloques %}
+                				                <option value="{{ bloque.id }}">{{ bloque.bloque }}</option>
+                				           {% endfor %}
+                				    </select>
+    				        	</div>
+    				        </div>
+    				        
+    				        <!-- PARA EL ROL PÚBLICO UNICAMENTE -->
+				        	<!-- <div class="form-group div-publico hidden">
+								<label for="documentoMod">Documento</label>
+								<input type= "text" class="form-control input-sm" id="documentoMod" name="documentoMod" placeholder="número de documento del usuario">
+							</div>
+							<div class="form-group div-publico hidden">
+								<label for="domicilioMod">Domicilio</label>
+								<input type= "text" class="form-control input-sm" id="domicilioMod" name="domicilioMod" placeholder="domicilio del usuario">
+							</div> -->
+				        </div>
+						<div class="col-md-6">
+		        			<div class="row"> 	
+			        			<div class="image-container" id="file-container">
+						        	<div class="form-group">
+							        	<input id="input-file" accept="image/*" name="input-file" 
+							        		   type="file" class="file-loading">
+						        	</div>
+					        	</div>
+					        </div>
+					        <div class="row text-center">
+					        	<label for="input-file">Imagen de Perfil</label>
+					        </div>
+		        		</div> 
+        			</div>
+			        <hr>
+			        <div class="row">
+			        	<div class="text-center">
+					        <div class="btn-group">
+					        	<button type="button" class="btn btn-info" id="btn-cancelar-perfil">Cancelar</button>
+				       			 <button type="button" class="btn btn-primary" id="btn-guardar-perfil">Guardar</button>
+
+				        	</div>
+				        </div>
+			        </div>		
+		        </form>
+           	</div>
+       	</div>
+	</section>
+	

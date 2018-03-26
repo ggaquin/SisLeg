@@ -216,7 +216,7 @@ class RestUserController extends FOSRestController{
                 $clave=$request->request->get('claveMod');
                 $eMail=$request->request->get('eMailMod');
                 $telefono=$request->request->get('telefonoMod');
-                $domicilio=$request->request->get('domicilioMOd');
+                $domicilio=$request->request->get('domicilioMod');
                 $documento=$request->request->get('documentoMod');
                 $permisos=json_decode($request->request->get('permisos'));
                 $archivos=$request->files->all();
@@ -275,6 +275,63 @@ class RestUserController extends FOSRestController{
             catch(\Exception $e){
                 return $this->view($e->getMessage());
             }
+    }
+    
+    /**
+     *  @Rest\Post("/updatePerfilByUsuer")
+     */
+    public function actualizarPerfilPorUsuarioAction(Request $request)
+    {
+    	try {
+ 
+    		$apellidos=$request->request->get('apellidos');
+    		$nombres=$request->request->get('nombres');
+    		$eMail=$request->request->get('eMail');
+    		$telefono=$request->request->get('telefono');
+    		$oficina=$request->request->get('oficina');
+    		$idBloque=$request->request->get('idBloque');
+    		$archivos=$request->files->all();
+    		$usuarioSesion=$this->getUser();
+    		
+    		$em = $this->getDoctrine()->getManager();
+    		
+    		$usuarioRepository=$this->getDoctrine()->getRepository('AppBundle:Usuario');
+    		$bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
+    		$usuario=$usuarioRepository->find($usuarioSesion->getId());
+        		
+    		$perfil=$usuario->getPerfil();
+    		
+    		$perfil->setApellidos($apellidos);
+    		$perfil->setNombres($nombres);
+    		$perfil->setTelefono($telefono);
+    		$perfil->setCorreoElectronico($eMail);
+    		$perfil->setUsuarioModificacion($usuarioSesion->getUsername());
+    		$perfil->setFechaModificacion(new \DateTime("now"));
+    		
+    		if(count($archivos)>0){
+    			$perfil->setArchivo($archivos["uploadedFiles-0"]);
+    			$perfil->setPrefijo($usuarioSesion->getUsername());
+    		}
+    		    		
+    		if($perfil instanceof \AppBundle\Entity\PerfilLegislador){
+    			$bloque=$bloqueRepository->find($idBloque);
+    			$perfil->setBloque($bloque);
+    			$perfil->setOficina($oficina);
+    		}
+    	
+    		$usuario->setPerfil($perfil);
+    		$usuario->setUsuarioModificacion($usuarioSesion->getUsername());
+    		$usuario->setFechaModificacion(new \DateTime("now"));
+    		
+    		$em = $this->getDoctrine()->getManager();
+    		$em->persist($usuario);
+    		$em->flush();
+    		
+    		return $this->view('La modificacion del perfil se realizó con éxito',200);
+    	}
+    	catch(\Exception $e){
+    		return $this->view($e->getMessage());
+    	}
     }
 
     /**

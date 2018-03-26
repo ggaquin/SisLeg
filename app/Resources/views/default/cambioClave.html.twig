@@ -1,9 +1,4 @@
-{% extends 'layout.html.twig' %}
 
-
-
-{% block body %}
-	
 	<style type="text/css">
 	
     	#cambioClave{
@@ -91,13 +86,21 @@
 	</script>
 	
 	<section class="content-header">
-	
+	<div class="row">
+			<div class="col-md-12">
+				<div class="well well-sm" style="font-size: x-large;color: #3c8dbc; font-style: oblique;">
+<!--     				<h3> -->
+    			       <u>Cambiar Clave</u> 
+    			    <!-- </h3> -->
+			    </div>
+			</div>
+	    </div> 
 	</section>
 	<section class="content">
 	  	<div class="row" id="CambioClave">
      		<div class="col-md-12">
      			<form class="form-signin" role="form" id="cambioClave">
-     				<h3 class="form-signin-heading">Cambio de Clave</h3>
+     				<!-- <h3 class="form-signin-heading">Cambio de Clave</h3> -->
      				<div class="form-group">
          				<label for="claveActual">Clave Actual</label>
          				<input type="password" class="form-control input-sm text-center" 
@@ -120,4 +123,3 @@
      	</div>   
 	</section>
 	
-{% endblock %}

@@ -20,6 +20,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use AppBundle\Entity\ExpedienteSesion;
 use AppBundle\Entity\Sancion;
 use JMS\Serializer\SerializationContext;
+use AppBundle\Entity\Perfil;
 
 
 class DefaultController extends Controller
@@ -839,6 +840,34 @@ class DefaultController extends Controller
     			'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
     			'tiposSesion' => $tiposSesion
     	));
+    }
+    
+    /**
+     * @Route("/perfil", name="perfil")
+     */
+    public function perfilAction(Request $request){
+    	
+    	$usuarioSesion=$this->getUser();
+    	$idPerfil=$usuarioSesion->getPerfil()->getId();
+    	$perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
+    	$bloqueRepository=$this->getDoctrine()->getRepository('AppBundle:Bloque');
+    	$perfil=$perfilRepository->find($idPerfil);
+    	
+    	$array = [];
+    	$array['idPerfil']=$perfil->getId();
+    	$array['apellidos']=$perfil->getApellidos();
+    	$array['nombres']=$perfil->getNombres();
+    	$array['correo_electronico']=$perfil->getCorreoElectronico();
+    	$array['telefono']=$perfil->getTelefono();
+    	$array['oficina']=(($perfil instanceof \AppBundle\Entity\PerfilLegislador)
+    							?$perfil->getOficina():'');
+    	$array['id_bloque']=(($perfil instanceof \AppBundle\Entity\PerfilLegislador)
+    							?$perfil->getBloque()->getId():0);
+    	$array['ruta_web_imagen']=$perfil->getRutaWebImagen();
+    	$array['bloques']=$bloqueRepository->findAll();
+    	$array['base_dir']=realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR;
+    	
+    	return $this->render('default/edicion_perfil.html.twig', $array);
     }
         
     /**

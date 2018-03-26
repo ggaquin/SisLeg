@@ -1216,7 +1216,7 @@ class RestExpedienteController extends FOSRestController{
     		$expediente->setDemandanteParticular($demandanteParticular);
     					
     		$origenExterno=null;
-    		if ($idTipoExpediente==4){
+    		if ($idTipoExpediente==4  || $idTipoExpediente==9){
     			$origenExterno= new OrigenExterno();
     			$origenExterno->setNumeracionOrigen($numeros);
     			$oficinaOrigen = $oficinaRepository->find($idOrigen);
