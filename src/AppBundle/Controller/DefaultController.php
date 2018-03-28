@@ -383,6 +383,7 @@ class DefaultController extends Controller
     	$visto='';
     	$considerando='';
  		$claseDictamen='basico';
+ 		$textoLibre='';
     	
     	if (!is_null($dictamen)){
     		
@@ -412,12 +413,13 @@ class DefaultController extends Controller
 	    	
 	    	$claseDictamen=$dictamen->getClaseDictamen();
 	    	$agregados=$this->container->get('serializer')->serialize($dictamen->getListaAgregados(), 'json');
+	    	$textoLibre=$dictamen->getTextoLibre();
     	}
     	
     	$data=array(
     				'clase_dictamen'=>$claseDictamen,
     				'id_tipo_dictamen'=>$idTipoDictamen,
-    				'texto_libre'=>$dictamen->getTextoLibre(),
+    				'texto_libre'=>$textoLibre,
     				'texto_articulado'=>$textoArticulado,
     				'vistos'=>$visto,
     				'considerandos'=>$considerando,

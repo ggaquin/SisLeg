@@ -19,61 +19,8 @@
 		    width: 95%;
 		    max-width:1600px;
 		  }
-		}
-		.custom-modal{
-			height: 2000%!important;
-		}
-				
-		.text-area-larga{
-			height: 467px!important;
-		}
-		
-		.text-area-corta{
-			height: 200px!important;
-		}
-		
-		.text-area-mini{
-			height: 80px!important;
-		}
-		
-		.numero-fila{
-			font-size: 150%;
-			font-weight: bold;
-			vertical-align: middle!important;
-		}
-		.herramienta-fila{
-			vertical-align: middle!important;
-		}
-		
-		.div-articulos{
-			max-height: 449px;
-			overflow-y:auto;
-			overflow-x: hidden; 
-		}
-		
-		.div-incisos{
-			height: 250px;
-			max-height: 260px;
-			overflow-y: auto;
-			overflow-x: hidden; 
-		}
-		
-		.tab{
-			height: 502px;
-			max-height:503px;
-		}
-		
-		.div-revision{
-			height: 466px;
-			max-height:467px;
-			overflow-y: auto;
-			overflow-x: hidden;
-		}
-			
-		.tab-active{
-			background-color: #f8f8ff;
-		}
-			
+		}		
+					
 		.toggle-on.btn{
 			line-height: 22.5px!important;
 		}
@@ -81,11 +28,7 @@
 			line-height: 22.5px!important;
 		}
 					    
-        .col-nopadding {
-           padding: 0 !important;
-           margin: 0 !important;
-        }
-           
+                  
         .selConcejales{
 			height: 182px!important;
 		    max-height: 183px!important;
@@ -96,59 +39,9 @@
 		    max-height: 121px!important;
 		    overflow-y: auto!important;
 		} 
-		
-		.selAgregados{
-		    min-height: 120px!important;
-		    max-height: 121px!important;
-		    overflow-y: auto!important;
-		} 
-		.bootstrap-primary-background{
-			background: #3c8dbc!important;
-		}  
-	
+
 	</style>
 	<script type="text/javascript">
-	
-    	wysihtml5.dom.getPastedHtml = function(event) {
-    		var html;
-    		if (event.clipboardData) {
-    			html = '<p>'+event.clipboardData.getData('text/plain')+'</p>';
-    			html = html.replace(/\r?\n/g, '</p><p>');
-                html = html.replace(/\t/g, '');
-    	  	}
-    	  	return html;
-    	  	
-    	};
-		Array.prototype.reemplazar  = function(objeto, clave){
-			   var array = $.map(this, function(v,i){
-			      	return v[clave] == objeto[clave] ? objeto : v;
-			   });
-			   this.length = 0;
-			   this.push.apply(this, array);
-		};
-
-		Array.prototype.renumerar  = function(clave,numeracion){
-			   var semilla=(numeracion=='digito')?0:64;
-			   var array = $.map(this, function(v,i){
-			   		v[clave]=((numeracion=='digito')?(semilla+1):String.fromCharCode(semilla+1));
-			   		semilla++;
-			      	return v;
-			   });
-			   this.length = 0;
-			   this.push.apply(this, array);
-		};
-
-		Array.prototype.eliminar  = function(clave,valor){
-			    var array = $.map(this, function(v,i){
-			      	return v[clave] == valor ? null : v;
-			   });
-			   this.length = 0;
-			   this.push.apply(this, array);
-		};
-
-		function select2FormatAjaxErrorCustom(jqXHR, textStatus, errorThrown){
-			return JSON.parse(jqXHR.responseText);
-		}
 		
 		function select2MatchCustom(params, data) {
 		    // If there are no search terms, return all of the data
@@ -193,196 +86,10 @@
 		function tipoCriterio(){
 			return $("#selBusqueda").val();
 		}
-		
-		function habilitar(nombre){
-			$(".tab").addClass("hidden");
-			$(".selectable").removeClass("tab-active");
 			
-			$("#"+nombre).removeClass("hidden");
-			$("#link-"+nombre).addClass("tab-active");
-			$("#link-"+nombre).blur();
-			
-			if (nombre=="tab-3")
-				$("#div-btn-revision").removeClass("hidden");
-			else
-				$("#div-btn-revision").addClass("hidden");
-		}
-	
 		function addClasssToSelect2(div,clase){
 			$("#"+div).find('span[class="select2-selection select2-selection--multiple"]').addClass(clase);
 		}
-
-		function traerArticuloPorNumero(numero,articulos){
-			var articuloBuscado;
-			$.each(articulos,function(index,articulo){
-				if(articulo.numero==numero) articuloBuscado=articulo;
-			});
-			return articuloBuscado;
-		}
-
-		function actualizarArticulo(articulo,tabla){
-
-			numero=articulo.numero;
-			var cuerpoArticulo='<div class="well well-sm">' +
-							   '<div class="btn-group pull-right">'+
-							   '<button type="button" class="btn btn-sm btn-primary btn-editar-articulo" title="Editar artículo">'+
-							   		'Editar</button>'+
-							   '<button type="button" class="btn btn-sm btn-warning" title="Cambiar orden" onClick="noImplementado();">'+
-							   		'Mover</button>'+
-							   '<button type="button" class="btn btn-sm btn-danger btn-eliminar-articulo" title="Eliminar artículo">'+
-							   		'Eliminar</button></div>'+
-							   '<div>'+articulo.texto+'<br><ul class="list-unstyled">';
-							   
-			$.each(articulo.incisos,function(index,inciso){
-				texto=inciso.texto.replace(/<p>/g,'').replace(/<\/p>/g,'<br>');
-				cuerpoArticulo+='<li style="padding-left:30px">'+inciso.orden+') - '+texto+'</li>';
-			});
-
-			cuerpoArticulo+='</ul></div>';
-
-			var nuevoContenido='<td class="numero-fila">'+numero+'</td>'+
-	        			 	   '<td>'+cuerpoArticulo+'</td>';
-
-			$("#"+tabla+" > tbody > tr").each(function(){
-
-				if($(this).find('td:first').html()==numero)
-					$(this).html(nuevoContenido);
-			});
-
-		}
-		
-		function agregarArticulo(articulo,tabla){
-			var numero=((articulo.hasOwnProperty('numero'))?articulo.numero:$("#"+tabla+"> tbody > tr").length+1);
-			var cuerpoArticulo='<div class="well well-sm">' +
-							   '<div class="btn-group pull-right">'+
-							   '<button type="button" class="btn btn-sm btn-primary btn-editar-articulo" title="Editar artículo">'+
-							   		'Editar</button>'+
-							   '<button type="button" class="btn btn-sm btn-warning" title="Cambiar orden" onClick="noImplementado();">'+
-							   		'Mover</button>'+
-							   '<button type="button" class="btn btn-sm btn-danger btn-eliminar-articulo" title="Eliminar artículo">'+
-							   		'Eliminar</button></div>'+
-							   '<div>'+articulo.texto+'<br><ul class="list-unstyled">';
-							   
-			$.each(articulo.incisos,function(index,inciso){
-				texto=inciso.texto.replace(/<p>/g,'').replace(/<\/p>/g,'<br>');
-				cuerpoArticulo+='<li style="padding-left:30px">'+inciso.orden+') - '+texto+'</li>';
-			});
-		
-			cuerpoArticulo+='</ul></div>';
-
-			var nuevoArticulo='<tr>'+
-	        			 	  '<td class="numero-fila">'+numero+'</td>' +
-	        			 	  '<td>'+cuerpoArticulo+'</td>'+
-	        			 	  '</tr>';
-
-	        var divContenedor=	((tabla=='div-articulos')?tabla:'div-revision');	 	  		
-	        $("#"+tabla+" > tbody").append(nuevoArticulo);
-	        $("#"+divContenedor).animate({ scrollTop: $("#"+divContenedor)[0].scrollHeight}, 1000);
-	        articulo.numero=numero;
-	        return articulo;
-	        
-		}
-
-		function cargarInciso(nuevoInciso){
-			var orden=nuevoInciso.orden;
-			var inciso='<tr>'+
-	        		   '<td class="numero-fila">'+orden+') -</td>' +
-	        		   '<td><textarea class="form-control text-area text-area-mini" id="inciso-'+orden+'" '+
-	        		   'name="inciso" placeholder="Inciso"></textarea></td>'+
-	        		   '<td class="herramienta-fila"><div class="row text-center">'+
-	        		   '<button type="button" class="btn btn-sm btn-info" onClick="noImplementado();"><span class="glyphicon glyphicon-tasks"></button>'+
-	        		   '</div><div class="row text-center"><button type="button" class="btn btn-sm btn-danger btn-eliminar-inciso">'+
-	        		   '<span class="glyphicon glyphicon-remove"></button></div></td>'+
-	        		   '</tr>';
-
-	        $("#incisos > tbody").append(inciso);
-	        $("#inciso-"+orden).wysihtml5({
-				toolbar: {
-				    "image": false,
-					"size": "xs",
-				},
-			});
-			$("#inciso-"+orden).data("wysihtml5").editor.setValue(nuevoInciso.texto);
-		}
-		
-		
-		function agregarInciso(){
-			debugger;
-			var letra=String.fromCharCode($("#incisos").find('tr').length+65);
-			var inciso='<tr>'+
-	        		   '<td class="numero-fila">'+letra.toLowerCase()+') -</td>' +
-	        		   '<td><textarea class="form-control text-area text-area-mini" id="inciso-'+letra+'" '+
-	        		   'name="inciso" placeholder="Inciso"></textarea></td>'+
-	        		   '<td class="herramienta-fila"><div class="text-center">'+
-	        		   '<button type="button" class="btn btn-sm btn-info" onClick="noImplementado();"><span class="glyphicon glyphicon-tasks"></button>'+
-	        		   '</div><div class="row text-center"><button type="button" class="btn btn-sm btn-danger btn-eliminar-inciso">'+
-	        		   '<span class="glyphicon glyphicon-remove"></button></div></td>'+
-	        		   '</tr>';
-
-	        $("#incisos > tbody").append(inciso);
-	        $("#inciso-"+letra).wysihtml5({
-				toolbar: {
-				    "image": false,
-					"size": "xs",
-				},
-			});
-			$("#div-incisos").animate({ scrollTop: $("#div-incisos")[0].scrollHeight}, 1000);
-		}
-
-		function abrirAltaDictamen(data,numeroDictaminantes){
-
-			var idAsignacion=data[ "id" ];
-			var idProyecto=data[ "id_proyecto" ];
-			htmlTipoRedaccion="<option value='basico' selected='selected'>Básico</option>" +
-						      "<option value='articulado'>Articulado</option>";	
-	        if (idProyecto!=0)
-		        htmlTipoRedaccion+="<option value='revision'>Revisión</option>";
-
-			$("#selTipoRedaccion").html(htmlTipoRedaccion);
-
-			var idExpediente=data[ "id_expediente" ];
-			$("#modalDictamen").find('input[name="idExpediente"]').val(idExpediente);
-	        $("#modalDictamen").find('input[name="idProyecto"]').val(idProyecto);
-	        $("#modalDictamen").find('input[name="idDictaminantes"]').val(numeroDictaminantes);
-	       	$("#modalDictamen").find('input[name="id"]').val(0);
-	        var nombreComision=data[ "comision_nombre" ];
-	        var idComision=data[ "comision_id" ];
-	        $("#modalDictamen").find('input[name="idComision"]').val(idComision);
-	        $("#selComisiones").empty().change();
-	        $("#selAgregados").empty().change();
-	        var newOption = new Option(nombreComision, idComision, true, true);
-		   	$("#selComisiones").append(newOption).trigger('change');
-		   	$("#editaRevision").bootstrapToggle('on');
-		   	$("#vistosYConsiderandos").bootstrapToggle('on');	
-		    $("#modalDictamen").modal('show');
-
-		}
-
-		function abrirEdicionDictamen(data,numeroDictaminantes,id){
-			
-			var idProyecto=data[ "id_proyecto"];
-	   		htmlTipoRedaccion="<option value='basico'>Básico</option>" +
-						      "<option value='articulado'>Articulado</option>";	
-	        if (idProyecto!=0)
-		        htmlTipoRedaccion+="<option value='revision'>Revisión</option>";
-
-			$("#selTipoRedaccion").html(htmlTipoRedaccion);
-			
-			var idExpediente=data[ "id_expediente" ];
-			$("#modalDictamen").find('input[name="idExpediente"]').val(idExpediente);
-	        $("#modalDictamen").find('input[name="idProyecto"]').val(idProyecto);
-	        $("#modalDictamen").find('input[name="idDictaminantes"]').val(numeroDictaminantes);
-	        $("#modalDictamen").find('input[name="id"]').val(id);
-	        	        
-	        var nombreComision=data[ "comision_nombre"];
-	        var idComision=data[ "comision_id" ];
-	        $("#modalDictamen").find('input[name="idComision"]').val(idComision);
-	        $("#selComisiones").empty().change();
-	        var newOption = new Option(nombreComision, idComision, true, true);
-		   	$("#selComisiones").append(newOption).trigger('change');
-		   	$("#editaRevision").bootstrapToggle('on');
-	    }
-
 		
 		function actualizarSesiones(control,valorSeleccionado,sesionPersistida){
 
@@ -425,13 +132,6 @@
 		$(document).ready(function () {
 
 	  		$('[autofocus]', this).focus();
-
-			var articulosDictamen=[];
-			var articulosRevision=[];
-
-			var tablaRevisiones;
-
-			var tablaDictamenes;
 			
 		    var tabla=$('#registroAsignaciones').DataTable({
 		    			  "language": {
@@ -752,7 +452,7 @@
 					      "ordering": true,
 					      "info": true,
 					      "autoWidth": false,
-				});
+			});
 		    
 		    $('#registroAsignaciones tbody').on( 'click', '.btn-descargar-dictamen', function (e) {
 		        window.location.href='{{ app.request.getBaseURL() }}'+
@@ -766,13 +466,12 @@
 		        var id=e.currentTarget.id;
 		        		        
 		        $.ajax({
-
-					type:'PATCH',
+					type:'POST',
 					dataType: 'json	',
 					url:'{{ app.request.getBaseURL() }}/api/comisionAsignacion/editUltimoMomento/'+id,
 					success: function(data){
 						toastr.success(data);
-						tabla.ajax.reload();;
+						tabla.ajax.reload(null,false);
 					},
 					error: function(jqXHR,textStatus,errorThrown ){
 						toastr.error(JSON.parse(jqXHR.responseText));
@@ -786,7 +485,6 @@
 		        var id=e.currentTarget.id;
 		        $("#modalFirmas").find('input[name="idDictamen"]').val(id);
 		        $("#modalFirmas").modal('show');
-		      
 		    });
 
 			//MODAL FIRMA AL ABRIR
@@ -918,7 +616,7 @@
 		                processData: false,
 	                success: function(data) {
 	                    toastr.success(data);
-						tabla.ajax.reload();
+						tabla.ajax.reload(null,false);
 						$('#modalSesionAsignacion').modal('hide');
 	                	},
 	                complete: function(){
@@ -1016,7 +714,6 @@
 		    $('#registroAsignaciones tbody').on( 'click', '.btn-nuevo-dictamen-primera-minoria', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        var numeroDictaminantes='{{ PRIMERA_MINORIA }}';
-		        //abrirAltaDictamen(data,numeroDictaminantes);
 		        cargarMenuConParametros('/dictamen_a_m',
                         				{nombre:'idAsignacion', valor:data[ 'id' ]},
                         				{nombre:'numeroDictaminantes', valor:numeroDictaminantes},
@@ -1027,7 +724,6 @@
 		    $('#registroAsignaciones tbody').on( 'click', '.btn-nuevo-dictamen-segunda-minoria', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        var numeroDictaminantes='{{ SEGUNDA_MINORIA }}';
-		        //abrirAltaDictamen(data,numeroDictaminantes,id);
 		        cargarMenuConParametros('/dictamen_a_m',
                         				{nombre:'idAsignacion', valor:data[ 'id' ]},
                         				{nombre:'numeroDictaminantes', valor:numeroDictaminantes},
@@ -1039,10 +735,9 @@
 		    $('#registroAsignaciones tbody').on( 'click', '.btn-editar-dictamen-mayoria', function (e) {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        var numeroDictaminantes='{{ MAYORIA }}';
-		        //abrirEdicionDictamen(data,numeroDictaminantes,e.currentTarget.id);
 		        cargarMenuConParametros('/dictamen_a_m',
                         				{nombre:'idAsignacion', valor:data[ 'id' ]},
-                        				{nombre:'numeroDictaminantes', numeroDictaminantes},
+                        				{nombre:'numeroDictaminantes', valor:numeroDictaminantes},
                         				{nombre:'paginaActual', valor:tabla.page()},
 										{nombre:'registrosPagina', valor: tabla.page.len()});
 		    });
@@ -1050,10 +745,9 @@
 		    $('#registroAsignaciones tbody').on( 'click', '.btn-editar-dictamen-primera-minoria', function (e) {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        var numeroDictaminantes='{{ PRIMERA_MINORIA }}';
-		        //abrirEdicionDictamen(data,numeroDictaminantes,e.currentTarget.id);
 		        cargarMenuConParametros('/dictamen_a_m',
                         				{nombre:'idAsignacion', valor:data[ 'id' ]},
-                        				{nombre:'numeroDictaminantes', numeroDictaminantes},
+                        				{nombre:'numeroDictaminantes', valor:numeroDictaminantes},
                         				{nombre:'paginaActual', valor:tabla.page()},
 										{nombre:'registrosPagina', valor: tabla.page.len()});
 		    });
@@ -1061,209 +755,14 @@
 		    $('#registroAsignaciones tbody').on( 'click', '.btn-editar-dictamen-segunda-minoria', function (e) {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        var numeroDictaminantes='{{ SEGUNDA_MINORIA }}';
-		        //abrirEdicionDictamen(data,numeroDictaminantes,e.currentTarget.id);
 		        cargarMenuConParametros('/dictamen_a_m',
                         				{nombre:'idAsignacion', valor:data[ 'id' ]},
-                        				{nombre:'numeroDictaminantes', numeroDictaminantes},
+                        				{nombre:'numeroDictaminantes', valor:numeroDictaminantes},
                         				{nombre:'paginaActual', valor:tabla.page()},
 										{nombre:'registrosPagina', valor: tabla.page.len()});
 		    });
-
-			//EVENTO MOSTRAR DEL MODAL DE DICTAMEN
-			$("#modalDictamen").on('show.bs.modal', function () {
-
-				var idAsignacion=$("#modalDictamen").find('input[name="idAsignacion"]').val();
-				var idDictamen=$("#modalDictamen").find('input[name="id"]').val();
-				
-				$("#selTipoRedaccion").val("basico");
-		        $("#selTipoRedaccion").change();
-		        $("#selAgregados").empty().change();
-		        $("#selComisiones").prop("disabled", false);
-		        $("#texto").data("wysihtml5").editor.setValue('');
-		        $("#articulos > tbody").html('');
-		        $("#vistos").html('');
-		        $("#considerandos").html('');
-		        $("#idRevision").val(-1);
-		        $("#articulos-revision > tbody").html('');
-		        articulosDictamen.length=0;
-		    	articulosRevision.length=0;
-		    	$(".dependiente-proyecto").addClass("hidden");
-				
-				if (idDictamen!=0){
-            		    $.ajax({
-            				type:'Get',
-            				dataType: 'json	',
-            				url:'{{ app.request.getBaseURL() }}'+'/api/comisionAsignacion/getDictamen/'+idDictamen,
-            				success: function(data){
-								
-            					//controles comunes a todos los dictamenes
-            					$("#selTipoRedaccion").val(data.clase_dictamen);
-
-            					if (data.clase_dictamen=="articulado")
-            						$("#selTipoDictamen").val(data.id_tipo_dictamen);
-        						          			
-            					$("#texto").data("wysihtml5").editor.setValue(data.texto_libre);
-
-            					$.each(data.agregados,function(index,agregado){
-            						 var newOption = new Option(agregado.numeroCompleto, agregado.id, true, true);
-            						 $("#selAgregados").append(newOption).trigger('change');
-            					});		
-
-            				 	//caso particular dictamen articulado
-								if (data.clase_dictamen=="articulado"){
-            				 	
-                				    $.each(data.texto_articulado,function(index,articulo){
-                						agregarArticulo(articulo,'articulos');
-                					});
-            
-            				    	articulosDictamen=data.texto_articulado; 
-            					} 
-
-								//caso particular dictamen por revision
-            					if (data.clase_dictamen=="revision"){
-                					
-            					    $("#vistos").html(data.vistos);
-            				        $("#considerandos").html(data.considerandos);
-            				        
-            				        $.each(data.articulos,function(index,articulo){
-                						agregarArticulo(articulo,'articulos-revision');
-                					});
-            
-            				    	articulosRevision=data.articulos; 
-
-									if (data.incluye_vistos_y_considerandos)
-										$("#vistosYConsiderandos").bootstrapToggle('on');
-									else
-										$("#vistosYConsiderandos").bootstrapToggle('off');
-
-            				    	$("#modalDictamen").find('input[id="idRevision"]').val(data.revision_id);
-            				    	$("#selTipoRedaccion").change();
-            					   	
-                				}	
-            				},
-            				error: function(jqXHR,textStatus,errorThrown ){
-            					toastr.error(jqXHR.responseText);
-            				}
-            	      	});
-				}
-		        
-		    } );
-
-		    //GUARDAR DE DICTAMEN
-		    $("#btn-guardar-dictamen").click(function(){
-
-		    	$(this).prop("disabled",true);
-		    	
-		    	var idAsignacion=$("#modalDictamen").find('input[name="idAsignacion"]').val();
-				var idDictamen=$("#modalDictamen").find('input[name="id"]').val();
-				var idProyecto=$("#idProyecto").val();
-				var idExpediente=$("#modalDictamen").find('input[name="idExpediente"]').val();
-				var numeroDictaminantes=$("#modalDictamen").find('input[name="idDictaminantes"]').val();
-				
-				var tipoRedaccion= $("#selTipoRedaccion").val();
-				var tipoDictamen=$("#selTipoDictamen").val();
-		        var comisiones=$("#selComisiones").val();
-		        var agregados=$("#selAgregados").val();
-		        var texto=$("#texto").val();
-		        var articulos=null;
-		        if (tipoRedaccion!="basico")
-		        	articulos=((tipoRedaccion=="articulado")?articulosDictamen:articulosRevision);
-	        	var vistosYConsiderandos= $("#vistosYConsiderandos").is(":checked");
-	        	var editaRevision=$("#editaRevision").is(":checked");
-	        	
-	        	var idRevision=$("#idRevision").val();
-		        var vistos=$("#vistos").html();
-		        var considerandos=$("#considerandos").html();
-
-		        var validacion='';
-				var formData=new FormData();
-
-				validacion+=((texto.replace(/ /g, '').length==0)
-						 	 ?'<li>Debe poveer un texto para el dictamen</li>':'');
-			 	 
-				validacion+=((tipoDictamen==0 && tipoRedaccion=="articulado")
-							 ?'<li>Debe especificar el tipo de dictamen</li>':'');
-				 
-				if (tipoRedaccion=="articulado")					
-					validacion+=((articulos.length==0)
-							      ? '<li>Debe poveer los articulos para el dictamen articulado</li>':'') ;
-				
-				if (tipoRedaccion=="revision"){
-					if (idRevision==-1)
-						validacion+='<li>No se seleccionó ninguna revision del proyecto</li>';
-					else {
-        					if (editaRevision){
-        
-            					validacion+=((articulos.length==0)?'<li>Debe poveer los articulos la revision</li>':'');
-            			           
-            					validacion+=((vistos.replace(/ /g,'').length==0 && vistosYConsiderandos)
-            					           ?'<li>Debe poveer un texto para los vistos de la revision</li>':'');
-            					
-            					validacion+=((considerandos.replace(/ /g,'').length==0 && vistosYConsiderandos)
-            					              ?'<li>Debe poveer un texto para los considerandos de la revision</li>':'');
-            				}
-					}
-				
-		    	}	
-				
-				formData.append('idAsignacion',idAsignacion);
-				formData.append('idDictamen',idDictamen);
-				formData.append('idExpediente',idExpediente);
-				formData.append('idProyecto',idProyecto);
-				formData.append('numeroDictaminantes',numeroDictaminantes);
-				formData.append('tipoRedaccion',tipoRedaccion);
-				formData.append('tipoDictamen',tipoDictamen);
-				formData.append('comisiones',comisiones);
-				formData.append('agregados',JSON.stringify(agregados));
-				formData.append('texto',texto);
-				formData.append('idRevision',idRevision);
-				formData.append('editaRevision',editaRevision);
-				formData.append('vistosYConsiderandos',vistosYConsiderandos);
-				formData.append('vistos',vistos);
-				formData.append('considerandos',considerandos);
-				formData.append('articulos',JSON.stringify(articulos));
-				
-				if (validacion.length>0) 
-				{
-					validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
-								validacion+'</ul>':'');
-					$(this).prop("disabled",false);
-					toastr.error(validacion);
-					return false;
-				}
-				else{
-
-	            	$.ajax({
-		                async: true,
-		                url: '{{ app.request.getBaseURL() }}'+ '/api/comisionAsignacion/saveDictamen',
-		                data: formData,
-		                type: 'POST',
-		                cache: false,
-		                contentType: false,
-		                processData: false,
-	                success: function(data) {
-	                    toastr.success(data);
-						tabla.ajax.reload();
-						$('#modalDictamen').modal('hide');
-	                	},
-	                complete: function(){
-	                	$("#btn-guardar-dictamen").prop("disabled",false);
-	                	},
-	                error: function(jqXHR,textStatus,errorThrown ){
-						toastr.error(JSON.parse(jqXHR.responseText));
-						}
-	            	});
-	            }  
-			});
-
-		    $("#modalDictamen").on('show.bs.modal', function () {
-		    	$("#btn-guardar-dictamen").prop("disabled",false);
-		    });
 		    		    
-			//---------------------------------------------------------------------------------------------------------------
-			//---------------------------------------PUBLICACIÓN y ANULACIÓN-------------------------------------------------
-			//---------------------------------------------------------------------------------------------------------------
-						
+			//EVENTO CLICK BOTON ANULAR DICTAME
 			$('#registroAsignaciones tbody').on( 'click', '.btn-anular', function () {			
 				 var data = tabla.row( $(this).parents('tr') ).data();
 
@@ -1283,7 +782,7 @@
         	                   type:  'POST',
         	               success: function(data) {
         	                   toastr.success(data);
-        	    				tabla.ajax.reload();
+        	    				tabla.ajax.reload(null,false);
         	               	},
         	               error: function(jqXHR,textStatus,errorThrown ){
         	    				toastr.error(JSON.parse(jqXHR.responseText));
@@ -1292,11 +791,7 @@
 				 }
 			}); 
 			
-			//---------------------------------------------------------------------------------------------------------------
-			//---------------------------------------EDICIÓN DE LA COMISIÓN--------------------------------------------------
-			//---------------------------------------------------------------------------------------------------------------
-
-			//EVENTO BOTON EDITAR COMISION EN GRILLA
+			//EVENTO BOTON EDITAR COMISION
 		    $('#registroAsignaciones tbody').on( 'click', '.btn-editar', function () {
 		        var data = tabla.row( $(this).parents('tr') ).data();
 		        if (data["recibido"]==false)
@@ -1342,7 +837,7 @@
  		                type: 'POST',
  	                success: function(data) {
  	                    toastr.success(data);
- 						tabla.ajax.reload();
+ 						tabla.ajax.reload(null,false);
  						$('#cambioComision').modal('hide');
  	                	},
  	                complete:function(){
@@ -1356,301 +851,13 @@
 			    
 			 });
 
-		  //---------------------------------------------------------------------------------------------------------------
-		  //----------------------------------------------ARTICULADO-------------------------------------------------------
-		  //---------------------------------------------------------------------------------------------------------------
-
-			//EVENTO CLICK DEL BOTON DE NUEVO ARTICULO EN EL MODAL DE DICTAMEN
-			$("#btn-nuevo-articulo-revision").click(function(){
-				$("#modalArticulo").find('input[name="id"]').val(0);
-				$("#modalArticulo").find('input[name="tabla"]').val("articulos-revision");
-				$("#modalArticulo").modal('show');	
-			});
-			
-			//EVENTO CLICK DEL BOTON DE NUEVO ARTICULO EN EL MODAL DE DICTAMEN
-			$("#btn-nuevo-articulo").click(function(){
-				$("#modalArticulo").find('input[name="id"]').val(0);
-				$("#modalArticulo").find('input[name="tabla"]').val("articulos");
-				$("#modalArticulo").modal('show');	
-			});		  	
-		  
-			//EVENTO CLICK DEL BOTON EDITAR DE LAS FILAS EN LA TABLA DE ARTICULOS 
-			//DEL DICTAMEN ARTICULADO
-			$("#articulos > tbody").on('click','.btn-editar-articulo',function(){
-				var numero=$(this).parents("tr").find('td:first').text();
-				$("#modalArticulo").find('input[name="id"]').val(numero);
-				$("#modalArticulo").find('input[name="tabla"]').val("articulos");
-				$("#modalArticulo").modal('show');	
-			});
-
-			//EVENTO CLICK DEL BOTON EDITAR DE LAS FILAS EN LA TABLA DE ARTICULOS 
-			//DEL DICTAMEN DE REVISION
-			$("#articulos-revision > tbody").on('click','.btn-editar-articulo',function(){
-				var numero=$(this).parents("tr").find('td:first').text();
-				$("#modalArticulo").find('input[name="id"]').val(numero);
-				$("#modalArticulo").find('input[name="tabla"]').val("articulos-revision");
-				$("#modalArticulo").modal('show');	
-			});
-
-			//EVENTO MOSTRAR DEL MODAL DEL MODAL DE ARTICULO
-			$("#modalArticulo").on('show.bs.modal', function () {
-				var numeroArticulo= $("#modalArticulo").find('input[name="id"]').val();
-				var tabla = $("#modalArticulo").find('input[name="tabla"]').val();
-				$("#articulo").data("wysihtml5").editor.setValue('');
-				$("#incisos > tbody").html('');
-				if (numeroArticulo!=0){
-					
-					var articulo;
-					
-					if (tabla=="articulos")
-    					articulo=traerArticuloPorNumero(numeroArticulo,articulosDictamen);
-					else
-						articulo=traerArticuloPorNumero(numeroArticulo,articulosRevision);
-					
-    				$("#articulo").data("wysihtml5").editor.setValue(articulo.texto);
-    				
-    				$.each(articulo.incisos,function(index,inciso){
-    					cargarInciso(inciso);
-    				});
-				}
-			});
-
-			//EVENTO CLICK DEL BOTON ELIMINAR DE LAS FILAS EN LA TABLA DE ARTICULOS
-			$("#articulos > tbody").on('click','.btn-eliminar-articulo',function(){
-				var numero=$(this).parents("tr").find('td:first').text();
-				var tabla = $("#modalArticulo").find('input[name="tabla"]').val();
-				articulosDictamen.eliminar('numero',numero);
-				articulosDictamen.renumerar('numero','digito');
-				$("#articulos > tbody").html('');
-    				$.each(articulosDictamen,function(i,articulo){
-    					agregarArticulo(articulo,'articulos');
-    				});
-			});
-
-			$("#articulos-revision > tbody").on('click','.btn-eliminar-articulo',function(){
-				var numero=$(this).parents("tr").find('td:first').text();
-				var tabla = $("#modalArticulo").find('input[name="tabla"]').val();
-				articulosRevision.eliminar('numero',numero);
-				articulosRevision.renumerar('numero','digito');
-				$("#articulos-revision > tbody").html('');
-				$.each(articulosRevision,function(i,articulo){
-					agregarArticulo(articulo,'articulos-revision');
-				});
-
-				
-			});
-			
-			//EVENTO CLICK DEL BOTON ELIMINAR DE LAS FILAS EN LA TABLA DE INCISOS
-			$("#incisos > tbody").on('click','.btn-eliminar-inciso',function(){
-				var orden=$(this).parents("tr").remove();
-				orden=64;
-				$("#incisos > tbody > tr").each(function(){
-					orden++;
-					$(this).find("td:first").text(String.fromCharCode(orden).toLowerCase() + ') -');
-				})
-			});
-
-			//EVENTO ACEPTAR DEL MODAL DE ARTICULOS
-			$("#btn-agregar-articulo").click(function(){
-				
-				var validacion='';
-				var incisos=[];
-				var tabla = $("#modalArticulo").find('input[name="tabla"]').val();
-	
-				$("#incisos").find('tr').each(function(i,row){
-					var textarea=$(row).find("textarea");
-					var	orden=$(row).find("td:first").text().replace(/ |\)|-/g,'');
-					var texto=$(textarea).val();
-
-					if(texto.length==0)
-						validacion+='<li>El inciso '+ orden +' no posee texto</li>';
-
-					if (validacion.length==0){
-						inciso={
-							orden: orden,
-							texto: texto
-						}
-						incisos.push(inciso);
-					}
-					else{
-						if (incisos.length>0)
-							incisos=[];
-					}
-				});
-
-				if($("#articulo").val().length==0){
-					validacion='<li>El artículo no posee texto</li>'+validacion;
-
-				}
-
-				if (validacion.length>0) 
-				{
-					Validacion=((validacion.length>0)?'<strong>Validacion de Datos</strong><br><ul>'+
-								validacion+'</ul>':'');
-					toastr.error(validacion);
-					return false;
-				}
-				else{
-					
- 					var numero=$("#modalArticulo").find('input[name="id"]').val();	
-					var texto=$("#articulo").val();
-
-					if(numero==0){
-						var articuloActual={
-            								texto: texto,
-            								incisos:incisos
-                							}
-
-						articuloActual=agregarArticulo(articuloActual,tabla);
-						if (tabla=="articulos")
-							articulosDictamen.push(articuloActual);
-						else
-							articulosRevision.push(articuloActual);
-					}
-					else{
-							var articuloActual={
-                								numero: numero,
-                								texto: texto,
-                								incisos:incisos
-                    							}
-							
-							actualizarArticulo(articuloActual,tabla);
-							if (tabla=="articulos")
-								articulosDictamen.reemplazar(articuloActual,'numero'); 
-							else
-								articulosRevision.reemplazar(articuloActual,'numero'); 
-						}
-					
-					$('#modalArticulo').modal('hide');
-				}
-			});
-
-			//------------------------------------------------------------------------------------------------------------
-			//--------------------------------------MODAL DE REVISIONES---------------------------------------------------
-			//------------------------------------------------------------------------------------------------------------
-			
-
-			$('#modalRevisiones').on('show.bs.modal', function () {
-
-				var idProyecto=$("#modalDictamen").find('input[name="idProyecto"]').val();
-
-				tablaRevisiones=$('#revisiones').DataTable({
-					    			  "language": {
-							              "infoEmpty": "Sin registros para mostrar",
-							              "paginate": {
-									          	"last": "Ultima Página",
-									          	"first": "Primer página",
-									          	"next": "Siguiente",
-									          	"previous": "Anterior"
-									       },
-									       "search":"Búsqueda rápida",
-									       "emptyTable": "Sin Datos",
-									       "lengthMenu": 'Registros Listados <select class="form-control input-sm">'+
-											             '<option value="10">10</option>'+
-											             '<option value="20">20</option>'+
-											             '<option value="30">30</option>'+
-											             '<option value="40">40</option>'+
-											             '<option value="50">50</option>'+
-											             '<option value="-1">Todos</option>'+
-											             '</select>',
-											"loadingRecords": "Espere...cargando datos",
-											"processing": "Procesando...",
-											"sInfo": "Mostrando  _START_ a _END_ de _TOTAL_ registros",
-
-						          	  },
-								      "processing": false,
-								      "ajax": {
-										        "url": "api/proyecto/getRevisiones/"+idProyecto,
-						            			"dataSrc": '',
-										    },
-									  "columnDefs": [
-											            {
-											                "targets": [ 0 ],
-											                "visible": false,
-											                "searchable": false
-											            },
-											            {
-											            	"targets": [ 1 ],
-												            "data": null,
-												            "orderable":false,
-												            "render": function(data, type, row){
-												            	return "<button type='button' class='btn btn-primary btn-xs btn-usar'><span class='glyphicon glyphicon-check'></span></button>";
-												            }
-											            },
-											            {
-												            "targets": [ 2 ],
-												            "data": null,
-												            "orderable":false,
-												            "render": function(data, type, row){
-												            	return ((row.id==0)?"(original)":row.id);
-												            }
-												        },
-											            {
-												            "targets": [ 3 ],
-												            "data": null,
-												            "orderable":false,
-												            "render": function(data, type, row){
-												            	return ((data==true)?"SI":"NO");
-												            }
-												        },
-											            {
-												            "targets": [ 6 ],
-												            "data": "oficina",
-												            "orderable":false,
-												            "render": function(data, type, row){
-												            	return ((data!=null)?data["oficina"]:"---");
-												            }
-												        }
-												       
-									  ],
-								      "columns": [
-								      		{ "data": "id" },
-								      		{ "data": "null","width":"10%"},
-								      		{ "data": "null","width":"18%" },
-								      		{ "data": "incluye_vistos_y_considerandos","width":"16%" },
-								      		{ "data": "fecha_creacion_formateada","width":"18%"},
-								      		{ "data": "usuario_creacion","width":"20%"},
-								            { "data": "null","width":"18%" },
-								        ],
-								      "autoWidth":false,
-								      "paging": true,
-								      "lengthChange": true,
-								      "searching": true,
-								      "ordering": true,
-								      "info": true,
-							});
-
-			});
-
-			$('#modalRevisiones').on('hidden.bs.modal', function () {
-				tablaRevisiones.destroy();
-			});
-			
-			$('#revisiones tbody').on( 'click', '.btn-usar', function () {
-				debugger;
-		        var data = tablaRevisiones.row( $(this).parents('tr') ).data();
-		        $("#modalDictamen").find('div[id="vistos"]').html(data[ "visto" ]);
-		        $("#modalDictamen").find('input[id="idRevision"]').val(data[ "id" ]);
-		        $("#modalDictamen").find('div[id="considerandos"]').html(data[ "considerandos" ]);
-		        $("#articulos-revision > tbody	").html('');
-		        articulosRevision=data[ "articulos" ];
-		        $.each(articulosRevision,function(i,articulo){
-					agregarArticulo(articulo,'articulos-revision');
-				});
-				$(".dependiente-proyecto").removeClass("hidden");
-				$('#modalRevisiones').modal('hide');
-		       
-		    } );
-
-			//------------------------------------------------------------------------------------------------------------
-			//----------------------------------------NUEVA ASIGNACION DE COMISION----------------------------------------
-			//------------------------------------------------------------------------------------------------------------
-
+			// EVENTO CLICK DEL BOTON DE NUEVA ASIGNACION DE COMISION
 			$('#modalNuevaAsignacion').on('show.bs.modal', function () {
 				$('#selExpedienteAdd').empty().change();
 				$("#selComisionesAdd").empty().change();
 			});
 
+			//EVENTO CLICK DEL BOTON GUARDAR NUEVA ASIGNACION
 			$("#btn-guardar-asignacion").click(function(){
 
 				$(this).prop("disabled",true);
@@ -1702,41 +909,6 @@
 			});
 
 		    //------------------------------------------------------------------------------------------------------------
-			//--------------------------EDICION DE VISTOS Y CONSIDERANDOS DE LA REVISIÓN----------------------------------
-			//------------------------------------------------------------------------------------------------------------
-
-		    $("#btn-editar-vistos-revision").click(function(){
-
-		    	$("#modalTexto").find('input[name="idTexto"]').val("vistos");
-		    	var htmlEdicion=$("#modalDictamen").find('div[id="vistos"]').html();
-		    	$("#edicion-texto").data("wysihtml5").editor.setValue(htmlEdicion);
-		    	setTimeout(function() { $("#edicion-texto").data("wysihtml5").editor.focus(); }, 10);
-		   		$("#modalTexto").modal("show");
-			});
-
-		    $("#btn-editar-considerandos-revision").click(function(){
-
-		    	$("#modalTexto").find('input[name="idTexto"]').val("considerandos");
-		    	var htmlEdicion=$("#modalDictamen").find('div[id="considerandos"]').html();
-		    	$("#edicion-texto").data("wysihtml5").editor.setValue(htmlEdicion);
-		    	setTimeout(function() { $("#edicion-texto").data("wysihtml5").editor.focus(); }, 10);
-		   		$("#modalTexto").modal("show");
-		    	
-			});
-
-		    $("#btn-cambio-texto").click(function(){
-
-			   var divTexto=$("#modalTexto").find('input[name="idTexto"]').val(); 
-			   if (divTexto=="vistos")
-				   $("#modalDictamen").find('div[id="vistos"]').html($("#edicion-texto").val());
-			   else
-				   $("#modalDictamen").find('div[id="considerandos"]').html($("#edicion-texto").val());
-
-			   $("#modalTexto").modal("hide");
-				
-		    });
-
-		    //------------------------------------------------------------------------------------------------------------
 			//---------------------------------INICIALIZACIÓN DE CONTROLES------------------------------------------------
 			//------------------------------------------------------------------------------------------------------------
 				
@@ -1750,91 +922,7 @@
 				$("#modalAltaSesion").find('input[name="control"]').val("selSesion");
 				$("#modalAltaSesion").modal('show');
 			});
-			
-			$(".text-area").wysihtml5({
-				toolbar: {
-				    "image": false,
-					"size": "xs",
-				},
-			});
-
-			$("#selComisiones").select2({
-				ajax: {
-			    url: '{{ app.request.getBaseURL() }}'+"/api/comisionAsignacion/getByExpedienteAndNombreWhithFiltro",
-			    dataType: 'json',
-			    delay: 250,
-			    cache: false,
-			    data: function (params) {
-			      return {
-							q: params.term, // search term
-  			        		r: $("#modalDictamen").find('input[name="idExpediente"]').val(),
-  			        		s: $("#modalDictamen").find('input[name="idComision"]').val(),
-        			        page: params.page
-        			      };
-			    },
-			    processResults: function (data) {
-			       var dato=data;
-		           return {
-				        results: $.map(dato, function(item) {
-				            return { id: item.id, text: item.comision };
-				        })
-				    };
-		        },
-			  },
-			  language: "es",
-			  minimumInputLength: 3,
-			  theme: "bootstrap",
-			});
-		
-			$("#selAgregados").select2({
-				ajax: {
-			    url: '{{ app.request.getBaseURL() }}'+"/api/comisionAsignacion/getExpedientefromAsignados",
-			    dataType: 'json',
-			    delay: 250,
-			    cache: false,
-			    data: function (params) {
-			      return {
-							q: params.term, // search term
-        			        page: params.page
-        			      };
-			    },
-			    processResults: function (data) {
-			       var dato=data;
-		           return {
-				        results: $.map(dato, function(item) {
-				            return { id: item.id, text: item.numeroCompleto };
-				        })
-				    };
-		        },
-			  },
-			  language: "es",
-			  minimumInputLength: 4,
-			  theme: "bootstrap",
-			  matcher: select2MatchCustom,
-			}).on('select2:selecting', function (e) {
-				
-			    var data = e.params.args.data;
-			    var idExpediente=$("#modalDictamen").find('input[name="idExpediente"]').val();
-			    if(data.id==idExpediente){
-				    toastr.info("No se puede agregar el expediente actual");
-					return false;
-				}
-				return true;
-			});
-						
-			
-			$("#selComisiones").on('select2:unselecting',function(evt){
-				
-				var seleccion=evt.params.args.data.id;
-				var idProyecto= $("#modalDictamen").find('input[name="idComision"]').val();
-				
-				if (seleccion==idProyecto){
-					evt.preventDefault();
-					toastr.error("No se puede eliminar la comisión original");
-				}
-				
-			});
-
+					
 			$("#selComisionesAdd").select2({
 				ajax: {
 			    url: '{{ app.request.getBaseURL() }}'+"/api/comisionAsignacion/getByExpedienteAndNombre",
@@ -1897,7 +985,7 @@
 			  },
 			  minimumInputLength: 4,
 			  theme: "bootstrap",
-			  matcher: select2MatchCustom,
+			  //matcher: select2MatchCustom,
 			  placeholder: "ej.: 1-17, 100-18"
 			});
 
@@ -1928,9 +1016,7 @@
 				  theme: "bootstrap",
 				});
 			
-			addClasssToSelect2("group-selComisiones","selComisiones");
 			addClasssToSelect2("group-selConcejales","selConcejales");
-			addClasssToSelect2("group-selAgregados","selAgregados");
 			addClasssToSelect2("group-selComisionesAdd","selComisiones");
 			
 			$('#estadoFiltro').bootstrapToggle({
@@ -1941,42 +1027,6 @@
 		      width: "80px",
 		      height: "35px"
 		    });
-
-			$('#vistosYConsiderandos').bootstrapToggle({
-			      on:  'Incluye Vistos y Considerandos',
-			      off: 'No Incluye Vistos y Considerandos',
-			      offstyle: 'danger',
-			      onstyle: 'success',
-			      width: "250px",
-			      height: "25px"
-			 });
-
-			$('#editaRevision').bootstrapToggle({
-			      on:  'Editar Revision',
-			      off: 'Revisión Sin Cambios',
-			      offstyle: 'danger',
-			      onstyle: 'success',
-			      width: "200px",
-			      height: "25px"
-			 });
-
-			 $("#vistosYConsiderandos").change(function(){
-				 if (!$(this).is(":checked"))
-					 $(".texto-revision").addClass("hidden");
-				 else
-					 $(".texto-revision").removeClass("hidden");
-			 });
-
-			 $("#editaRevision").change(function(){
-				 if (!$(this).is(":checked")){
-					$("#div-revision").addClass("hidden");
-				 	$('#div-vistosYConsiderandos').addClass("hidden");
-				 }
-				 else{
-					 	$("#div-revision").removeClass("hidden");
-					 	$('#div-vistosYConsiderandos').removeClass("hidden");
-				 }
-			 });
 
 			$(".busqueda").addClass('hidden');
 			$("#selBusqueda").val("busqueda-0");
@@ -2050,32 +1100,6 @@
 					$(this).bootstrapToggle('disable');
 					
 				}
-			});
-
-			$("#selTipoRedaccion").change(function(){
-
-				$(".dependiente-proyecto").addClass("hidden");
-				
-				if ($(this).val()=="basico"){
-					$("#group-tipoDictamen").addClass("hidden");
-					$("#link-tab-2").addClass("hidden");
-					$("#link-tab-3").addClass("hidden");
-				}
-				if ($(this).val()=="articulado") {
-					$("#group-tipoDictamen").removeClass("hidden");
-					$("#link-tab-3").addClass("hidden");
-					$("#link-tab-2").removeClass("hidden");
-					$("#selTipoDictamen").val(0);
-				}
-				if ($(this).val()=="revision") {
-					$("#group-tipoDictamen").addClass("hidden");
-					$("#link-tab-2").addClass("hidden");
-					$("#link-tab-3").removeClass("hidden");
-					if ($("#idRevision").val()!=-1)
-						$(".dependiente-proyecto").removeClass("hidden");
-				}
-
-				habilitar("tab-1");	
 			});
 
 			$(".campo-fecha-futura").datetimepicker({
@@ -2198,6 +1222,7 @@
                	</table>     
 	        </div> {# col #}
 	    </div> {# row #}
+	    
 	    <div id="cambioComision" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
 			<div class="modal-dialog">
 			    <!-- Modal content-->
@@ -2236,314 +1261,7 @@
 				</div>
 			</div>
 		</div>
-		<div id="modalDictamen" class="modal fade custom-modal" role="dialog" data-backdrop="static" 
-   data-keyboard="false">
-		 	<div class="modal-dialog modal-xl">
-			    <!-- Modal content-->
-			    <div class="modal-content">
-				    <div class="modal-header" style="background-color:#666	;color:#FFF">
-		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title">Nuevo Dictamen</h4>
-				    </div>
-				    <div class="modal-body" style="background-color:#ecf0f5">
-				    	<input type="hidden" id="idAsignacion" name="idAsignacion"> 
-				    	<input type="hidden" id="id" name="id">
-				    	<input type="hidden" id="idProyecto" name="idProyecto">
-				    	<input type="hidden" id="idExpediente" name="idExpediente">
-				    	<input type="hidden" id="idComision" name="idComision"> 
-				    	<input type="hidden" id="idDictaminantes" name="idDictaminantes">
-				    	<input type="hidden" id="nombreComision" name="nombreComision">
-					    <div class="row">
-					    	<div class="col-md-3">
-					    		<div class="form-group">	
-					        		<label for="selTipoRedaccion">Tipo Redacción</label>
-					        		<select class="form-control" id="selTipoRedaccion" 
-					        				name="selTipoRedaccion" autofocus="autofocus">
-						        		<option value="basico" selected="selected">Básico</option>
-						        		<option value="articulado">Articulado</option>	
-						        		<option value="revision">Revisión</option>	
-					        		</select>
-					        	</div>
-					        	<div style="min-height: 68.78px">
-    					    		<div class="form-group hidden" style="margin-bottom: 0px!important" id="group-tipoDictamen">
-    					        		<label for="selTipoDictamen">Tipo Dictamen</label>
-    					        		<select class="form-control" id="selTipoDictamen" 
-    					        				name="selTipoDictamen">
-    					        			<option value="0">Seleccione Tipo Dictamen</option>
-    					        			{% for tipo in tipoProyectos %}
-    							                <option value="{{ tipo.id }}">{{ tipo.tipoProyecto }}</option>
-    							            {% endfor %}
-    					        		</select>
-    					        	</div>
-    					        </div>
-					        	<div class="form-group" id="group-selComisiones">
-						        	<label for="selComisiones">Comisiones:</label>
-						        	<select class="form-control" multiple="multiple" data-width="100%" 
-						        			id="selComisiones" name="selComisiones">
-						        	</select>
-						        </div>
-						        <div class="form-group" id="group-selAgregados">
-						        	<label for="selAgregados">Expedientes Agregados:</label>
-						        	<select class="form-control" multiple="multiple" data-width="100%" 
-						        			id="selAgregados" name="selAgregados">
-						        	</select>
-						        </div>
-					    	</div>
-					    	<div class="col-md-9">
-					    		<div class="row">
-					    			<div class="col-md-12">
-					    				<nav>
-        								    <ul class="nav nav-pills">
-        									    <li role="presentation"><a href="#" id="link-tab-1" class="selectable" onclick = "habilitar('tab-1')" ><h4>Texto</h4></a></li>
-        										<li role="presentation"><a href="#" id="link-tab-2" class="selectable hidden" onclick = "habilitar('tab-2')"><h4>Artículos</h4></a></li>
-        										<li role="presentation"><a href="#" id="link-tab-3" class="selectable hidden" onclick = "habilitar('tab-3')"><h4>Revision Proyecto</h4></a></li>
-        										<li role="presentation"><a href="#" id="link-tab-4" class="selectable hidden" onclick = "habilitar('tab-4')"><h4>Copiar Dictamen</h4></a></li>
-        									</ul>
-        								</nav>
-					    			</div>			
-					    		</div>
-					    		<br>
-							    <div class="row tab" id="tab-1">
-							    	<div class="col-md-12">
-									    <div class="row">
-									    	<div class="col-md-12">
-								        		<textarea class="form-control text-area text-area-larga" 
-								        		id="texto" name="texto" placeholder="Texto Libre"></textarea>
-									        </div>
-								        </div> 
-							        </div> 
-					        	</div>
-						        <div class="row tab hidden" id="tab-2">
-					        		<div class="col-md-12">
-							        	<div class="row" style="padding-top:5px">
-							        		<div class="col-md-12">
-									        	<div class="div-articulos" id="div-articulos">
-									        		<table class="table table-striped" id="articulos">
-									        			<tbody>
-										        		</tbody> 
-									        		</table> 	
-										        </div>
-										    </div>
-										</div>
-										<hr>	
-										<div class="row" style="padding-top: 15px;">
-											<div class="col-md-12">
-								        		<button type="button" class="btn btn-primary btn-sm" id="btn-nuevo-articulo"
-								        		        style="margin-left:15px" >Nuevo Artículo</button>
-								        	</div>
-										</div>
-								    </div>
-						        </div>
-						        <div class="row tab hidden" id="tab-3">
-    					        	<div class="col-md-12">
-    					        		<input type="hidden" id="idRevision">	
-					        			<div class="row" style="margin-bottom: 5px">
-					        				<div class="col-md-1" style="text-align: left;">
-        					        			<button type="button" class="btn btn-warning btn-sm" 
-        						        				id="btn-revisiones" data-toggle='modal' 
-        						        				data-target='#modalRevisiones'>Revisiones</button>
-        				        			</div>
-        				        			<div class="col-md-8 dependiente-proyecto" style="text-align: center;">
-    											<input type="checkbox" id="editaRevision" data-size="small"/>
-    										</div>
-					        				<div class="col-md-3 dependiente-proyecto" style="text-align: right;" id="div-vistosYConsiderandos">
-    											<input type="checkbox" id="vistosYConsiderandos" data-size="small"/>
-    										</div>
-					        			</div>
-            							<div class="div-revision dependiente-proyecto" id="div-revision">
-    					        			<div class="row texto-revision"  style="padding-top:10px">
-    					        				<div class="col-md-12" style="background: #f8f8ff">
-        					        				<div class="form-group">
-        					        					<label for="vistos">Vistos:</label>
-        					        					<div id="vistos" style="padding-left:15px"></div>
-        					        					<button type="button" class="btn btn-primary btn-xs" 
-    								        				id="btn-editar-vistos-revision" style="margin-top:5px">Editar</button>
-        					        				</div>
-        					        			</div>
-    					        			</div>
-    					        			<div class="row texto-revision" style="padding-top:10px">
-    					        				<div class="col-md-12" style="background: #f8f8ff">
-        					        				<div class="form-group">
-        					        					<label for="considerandos">Considerandos:</label>
-        					        					<div id="considerandos" style="padding-left:15px"></div>
-        					        					<button type="button" class="btn btn-primary btn-xs" 
-    								        				id="btn-editar-considerandos-revision" style="margin-top:5px">Editar</button>
-        					        				</div>
-        					        			</div>
-    					        			</div>
-    							        	<div class="row" style="padding-top:10px">
-    							        		<div class="col-md-12">
-    								        		<table class="table table-striped" id="articulos-revision">
-    								        			<tbody>
-    									        		</tbody> 
-    								        		</table> 
-    										    </div>
-    										</div>
-    										<hr>
-    										<div class="row" style="padding-top: 5px;">
-    											<div class="col-md-12" style="text-align: left;">
-    								        		<button type="button" class="btn btn-primary btn-xs" 
-    								        				id="btn-nuevo-articulo-revision">Nuevo Artículo</button>
-    								        	</div>
-    										</div>
-    									</div>
-    								</div>
-						        </div>
-					        </div>
-					    </div>
-				        <hr>
-				        <div class="row">
-				        	<div class="col-md-12">
-				        		<div class="text-center">
-					    			<div class="btn-group">
-							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
-						       			 <button type="button" class="btn btn-primary" id="btn-guardar-dictamen">Guardar</button>
-							        </div>
-						        </div>
-						    </div>
-			    		</div>
-				    </div>
-			    </div>
-		  	</div>
-		</div>
-
-		<div id="modalArticulo" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
-		 	<div class="modal-dialog modal-xl">
-			    <!-- Modal content-->
-			    <div class="modal-content">
-				    <div class="modal-header" style="background-color:#666	;color:#FFF">
-		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title">Nuevo Artículo</h4>
-				    </div>
-				    <div class="modal-body" style="background-color:#ecf0f5">
-			        	<input type="hidden" id="id" name="id">
-			        	<input type="hidden" id="tabla" name="tabla">
-			        	<div class="row">
-			        		<div class="col-md-12">
-			        			<div class="form-group">
-					        		<label for="articulo">Articulo:</label>
-					        		<textarea class="form-control text-area text-area-corta" 
-					        		id="articulo" name="articulo" placeholder="articulo"></textarea>
-					        	</div>
-					        </div>
-					    </div>
-					    <div class="row">
-			        		<div class="col-md-12">
-			        			<div class="row">
-			        				<div class="col-md-12">
-								        <label>Incisos:</label>
-								        <button type="button" onClick="agregarInciso();" class="btn btn-primary btn-sm pull-right">Agregar Inciso</button>
-								    </div>
-								</div>
-								<div class="row" style="padding-top:5px">
-									<div class="col-md-12">
-								        <div class="div-incisos" id="div-incisos">
-							        		<table class="table table-striped" id="incisos">
-							        			<tbody>
-								        		</tbody> 
-							        		</table> 	
-								        </div>
-								    </div>
-								</div>		
-					        </div> 
-					    </div>
-				        <hr>
-				        <div class="row">
-				        	<div class="col-md-12">
-				        		<div class="text-center">
-					    			<div class="btn-group">
-							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
-			       			 			<button type="submit" class="btn btn-primary" id="btn-agregar-articulo">Aceptar</button>
-							        </div>
-						        </div>
-						    </div>
-			    		</div>
-				     </div>
-			    </div>
-		  	</div>
-		</div>
-		 <div id="modalRevisiones" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false"> 
-		 	<div class="modal-dialog modal-lg">
-			    <!-- Modal content-->
-			    <div class="modal-content">
-				    <div class="modal-header" style="background-color:#666;color:#FFF">
-		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title">Revisiones</h4>
-				    </div>
-				    <div class="modal-body" style="background-color:#ecf0f5">
-				  
-			        	<div class="row">
-			        		<div class="col-md-12">
-					        	<div class="form-group">
-					        		<table class="table " id="revisiones">
-					        			<thead>
-						                	<tr>
-						                		<th>id</th>
-								        		<th>Usar</th>
-						                		<th>N° Revisión</th>
-						                		<th>Vis. y Cons.</th>
-						                		<th>Fecha Creación</th>
-						                		<th>Usuario Creación</th>
-								                <th>Oficina</th>
-						                	</tr>
-						                </thead>
-						                <tbody>
-						                </tbody>
-						            </table>
-					        	</div>
-					        </div>
-					    </div>
-						
-					</div>
-					<div class="modal-footer" style="background-color:#ecf0f5">  	
-				        <hr>
-				        <div class="row">
-				        	<div class="col-md-12">
-				        		<div class="text-center">
-					    			<div class="btn-group">
-							        	<button type="button" class="btn btn-info" data-dismiss="modal">Cerrar</button>
-							        </div>
-						        </div>
-						    </div>
-			    		</div>
-				     </div>
-			    </div>
-		  	</div>
-		</div>
-		<div id="modalTexto" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
-			<div class="modal-dialog">
-			    <!-- Modal content-->
-			    <div class="modal-content">
-				    <div class="modal-header" style="background-color:#666	;color:#FFF">
-		    			<button type="button" class="close" data-dismiss="modal">&times;</button>
-		    			<h4 class="modal-title">Edición Texto</h4>
-				    </div>
-				    <div class="modal-body" style="background-color:#ecf0f5">
-				    	<form role="form">
-				    		<input type="hidden" id="idTexto" name="idTexto">
-				    		<div class="row">
-				    			<div class="form-group col-md-12">
-    				    			<textarea class="form-control text-area text-area-larga" 
-								       		  id="edicion-texto" name="edicion-texto">
-								    </textarea>
-    							</div>
-                			</div>
-                			<hr>
-    				    	<div class="row">
-    				    		<div class="col-md-12">
-					        		<div class="text-center">
-						    			<div class="btn-group">
-								        	<button type="button" class="btn btn-info" data-dismiss="modal">Cancelar</button>
-				       			 			<button type="button" class="btn btn-primary" id="btn-cambio-texto">Aceptar</button>
-								        </div>
-							        </div>
-							    </div>
-    				    	</div>
-				    	</form>
-				    </div>
-				</div>
-			</div>
-		</div>
+		
 		<div id="modalNuevaAsignacion" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
 			<div class="modal-dialog modal-lg">
 			    <!-- Modal content-->
@@ -2589,6 +1307,7 @@
 				</div>
 			</div>
 		</div>
+		
 		<div id="modalSesionAsignacion" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
 			<div class="modal-dialog modal-sm">
 				    <div class="modal-header" style="background-color:#666	;color:#FFF">
@@ -2632,6 +1351,7 @@
 				</div>
 			</div>
 		</div>
+		
 		<div id="modalAltaSesion" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
 		 	<div class="modal-dialog">
 			    <!-- Modal content-->
@@ -2685,6 +1405,7 @@
 			    </div>
 		  	</div>
 		</div>
+		
 		<div id="modalFirmas" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
 		 	<div class="modal-dialog">
 			    <!-- Modal content-->

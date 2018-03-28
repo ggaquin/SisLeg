@@ -342,7 +342,7 @@
 						$("#nombresParticular").val(data.demandante_nombres);
 					}
 				    
-					if (tipoExpediente==4 && data.origen_id!=0){
+					if ((tipoExpediente==4 || tipoExpediente==9) &&  data.origen_id!=0){
 						$("#selOrigen").val(data.origen_externo_id);
 						var numeros=data.origen_numeracion;
 						var html='';

@@ -259,7 +259,7 @@ class RestExpedienteController extends FOSRestController{
 	}
 	
 	/**
-	 * @Rest\Patch("/editUltimoMomento/{id}")
+	 * @Rest\Post("/editUltimoMomento/{id}")
 	 */
 	public function editarUltimoMomento(Request $request)
 	{

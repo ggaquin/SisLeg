@@ -621,53 +621,55 @@
 	    		if (idDictamen!=0){
 
 	    			$("#selComisiones").prop("disabled", true);
-	        		
-	    					//controles comunes a todos los dictamenes
-	    					$("#selTipoRedaccion").val('{{ data.clase_dictamen }}');
-	    					
-	    					if ('{{ data.clase_dictamen }}'=="articulado")
-	    						$("#selTipoDictamen").val('{{ data.id_tipo_dictamen }}');
-			
-	    					$("#texto").data("wysihtml5").editor.setValue('{{ data.texto_libre | raw }}');
+	        		debugger;
+					//controles comunes a todos los dictamenes
+					$("#selTipoRedaccion").val('{{ data.clase_dictamen }}');
 
-	    					var agregados={{ data.agregados | raw }};  	
-	    					$.each(agregados,function(index,agregado){
-	    						 var newOption = new Option(agregado.numeroCompleto, agregado.id, true, true);
-	    						 $("#selAgregados").append(newOption).trigger('change');
-	    					});
+					$("#selTipoRedaccion").change();
+					
+					if ('{{ data.clase_dictamen }}'=="articulado")
+						$("#selTipoDictamen").val('{{ data.id_tipo_dictamen }}');
+	
+					$("#texto").data("wysihtml5").editor.setValue('{{ data.texto_libre | raw }}');
 
-	    				 	//caso particular dictamen articulado
-							if ('{{ data.clase_dictamen }}'=="articulado"){
-	    				 	
-	        				    $.each({{ data.texto_articulado | raw }},function(index,articulo){
-	        						agregarArticulo(articulo,'articulos',false);
-	        					});
-	    
-	        				    articulosDictamen={{ data.texto_articulado | raw }}; 
-	    					} 
+					var agregados={{ data.agregados | raw }};  	
+					$.each(agregados,function(index,agregado){
+						 var newOption = new Option(agregado.numeroCompleto, agregado.id, true, true);
+						 $("#selAgregados").append(newOption).trigger('change');
+					});
 
-							//caso particular dictamen por revision
-	    					if ('{{ data.clase_dictamen }}'=="revision"){
-	        					
-	    					    $("#vistos").html('{{ data.vistos | raw }}');
-	    				        $("#considerandos").html('{{ data.considerandos | raw}}');
-	    				        
-	    				        $.each({{ data.articulos | raw }},function(index,articulo){
-	        						agregarArticulo(articulo,'articulos-revision',false);
-	        					});
-	    
-	    				        articulosRevision={{ data.articulos | raw }}; 
+				 	//caso particular dictamen articulado
+					if ('{{ data.clase_dictamen }}'=="articulado"){
+				 	
+    				    $.each({{ data.texto_articulado | raw }},function(index,articulo){
+    						agregarArticulo(articulo,'articulos',false);
+    					});
 
-								if ({{ data.incluye_vistos_y_considerandos | raw }})
-									$("#vistosYConsiderandos").bootstrapToggle('on');
-								else
-									$("#vistosYConsiderandos").bootstrapToggle('off');
+    				    articulosDictamen={{ data.texto_articulado | raw }}; 
+					} 
 
-	    				    	$("#idRevision").val({{ data.revision_id }});  
+					//caso particular dictamen por revision
+					if ('{{ data.clase_dictamen }}'=="revision"){
+    					
+					    $("#vistos").html('{{ data.vistos | raw }}');
+				        $("#considerandos").html('{{ data.considerandos | raw}}');
+				        
+				        $.each({{ data.articulos | raw }},function(index,articulo){
+    						agregarArticulo(articulo,'articulos-revision',false);
+    					});
 
-	    				    	$("#selTipoRedaccion").change();
+				        articulosRevision={{ data.articulos | raw }}; 
 
-	        				}	
+						if ({{ data.incluye_vistos_y_considerandos | raw }})
+							$("#vistosYConsiderandos").bootstrapToggle('on');
+						else
+							$("#vistosYConsiderandos").bootstrapToggle('off');
+
+				    	$("#idRevision").val({{ data.revision_id }}); 
+
+				    	$(".dependiente-proyecto").removeClass("hidden"); 
+
+    				}	
 				}
 			}
 
@@ -681,11 +683,11 @@
 				var mensaje='';
 				if (idDictamen==0){
 					mensaje='Se canceló el alta del dictamen';
-					cargarMenuConPaginado('/comisiones',0,{{ registrosPagina }});
+					cargarMenuConPaginado('/expedientesComisiones',0,{{ registrosPagina }});
 				}
 				else{
     					mensaje='Se canceló la edición del dictamen';
-    					cargarMenuConPaginado('/comisiones',{{paginaOrigen}},{{ registrosPagina }});
+    					cargarMenuConPaginado('/expedientesComisiones',{{paginaOrigen}},{{ registrosPagina }});
 				}
 				
 				toastr.warning(mensaje,'ATENCIÓN');
@@ -791,9 +793,9 @@
 	                success: function(data) {
 	                    toastr.success(data);
 	                    if (idDictamen==0)
-	                    	cargarMenuConPaginado('/comisiones'',0,{{ registrosPagina }});
+	                    	cargarMenuConPaginado('/expedientesComisiones',0,{{ registrosPagina }});
 	                   	else
-	                   		cargarMenuConPaginado('/comisiones'',{{paginaOrigen}},{{ registrosPagina }});
+	                   		cargarMenuConPaginado('/expedientesComisiones',{{paginaOrigen}},{{ registrosPagina }});
 	                	},
 	                error: function(jqXHR,textStatus,errorThrown ){
 						toastr.error(JSON.parse(jqXHR.responseText));
@@ -1438,7 +1440,7 @@
         					<div class="row" style="padding-top: 5px">
         						<div class="col-md-12">
         							<div class="div-articulos" title="Alt+T: Para ir al inicio" id="div-articulos">
-        								<label id="label-articulos" for="articulos">Artículos:</label>
+        								<!-- <label id="label-articulos" for="articulos">Artículos:</label> -->
         								<table class="table table-striped" id="articulos">
         									<tbody>
         									</tbody>

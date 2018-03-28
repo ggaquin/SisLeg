@@ -13,7 +13,6 @@
     {% endjavascripts %}
 {% endblock %}
 
-
 	<style type="text/css">
 		@media (min-width: 768px) {
 		  .modal-xl {
@@ -518,7 +517,7 @@
 					url:'{{ app.request.getBaseURL() }}/api/expediente/editUltimoMomento/'+id,
 					success: function(data){
 						toastr.success(data);
-						tabla.ajax.reload();;
+						tabla.ajax.reload(null,false);
 					},
 					error: function(jqXHR,textStatus,errorThrown ){
 						toastr.error(JSON.parse(jqXHR.responseText));
@@ -539,7 +538,7 @@
 					url:'{{ app.request.getBaseURL() }}/api/expediente/archivar/'+id,
 					success: function(data){
 						toastr.success(data);
-						tabla.ajax.reload();;
+						tabla.ajax.reload(null,false);
 					},
 					error: function(jqXHR,textStatus,errorThrown ){
 						toastr.error(JSON.parse(jqXHR.responseText));
@@ -559,7 +558,7 @@
 					url:'{{ app.request.getBaseURL() }}/api/expediente/desarchivar/'+id,
 					success: function(data){
 						toastr.success(data);
-						tabla.ajax.reload();;
+						tabla.ajax.reload(null,false);
 					},
 					error: function(jqXHR,textStatus,errorThrown ){
 						toastr.error(JSON.parse(jqXHR.responseText));
@@ -633,7 +632,7 @@
         	                type:  'POST',
                         success: function(data) {
                             toastr.success(data);
-        					tabla.ajax.reload();
+        					tabla.ajax.reload(null,false);
         					$("#retornoExterno").modal('hide');
                         	},
                         complete:function(){
@@ -905,7 +904,7 @@
                         type: 'POST',
                     success: function(data) {
                         toastr.success(data);
-                        tablaInformes.ajax.reload();
+                        tablaInformes.ajax.reload(null,false);
         				$('#respuestaInforme').modal('hide');
                     	},
                     complete: function(){
@@ -1024,7 +1023,7 @@
 		                type:  'POST',
 	                success: function(data) {
 	                    toastr.success(data);
-	                    tabla.ajax.reload();
+	                    tabla.ajax.reload(null,false);
 						$('#modalSesion').modal('hide');
 	                	},
 	                complete:function(){
@@ -1081,7 +1080,7 @@
 		                type:  'POST',
 	                success: function(data) {
 	                    toastr.success(data);
-	                    tabla.ajax.reload();
+	                    tabla.ajax.reload(null,false);
 						$('#modalFechaIngreso').modal('hide');
 	                	},
 	                complete:function(){
@@ -1130,24 +1129,6 @@
 				$("#modalAltaSesion").modal('show');
 			});
 			
-			/* $("#selTipoExpediente").change(function(){
-				mostrarOrigenParaNuevo($(this).val());
-			}); */
-
-			/* $("#selTipoExpedienteMod").change(function(){
-				mostrarOrigenParaEdicion($(this).val());
-			}); */
-
-			/* $('#input-file-Mod').on('filebatchselected', function(event, files) {
-			    $.each(files,function(index,file){
-			    	archivosASubir.push(file.name);
-			    });
-			});
-
-			$('#input-file-Mod').on('filecleared', function(event) {
-			   archivosASubir.length=0
-			}); */
-
 			$('#estadoFiltro').bootstrapToggle({
 		      on:  'Activo',
 		      off: 'Inactivo',
