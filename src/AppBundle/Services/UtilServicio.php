@@ -22,8 +22,8 @@ class UtilServicio {
 	 * @param mixed $expresion
 	 * @return mixed
 	 */
-	function clean_str_with_br($expresion){
-		return preg_replace("/(&#)\d*(;)|<br>|\\\\n/","",preg_replace("/(<script).*(<\/script>)/", "", $expresion));
+	function clean_str($expresion){
+		return preg_replace("/(&#)\d*(;)|<br>|\\\\n/","",preg_replace("/(<script>).*(<\/script>)/", "", $expresion));
 	}
 	
 	/**
@@ -32,8 +32,9 @@ class UtilServicio {
 	 *
 	 * @param mixed $expresion
 	 * @return mixed
-	 */
+	 *
 	function clean_str_without_br($expresion){
 		return preg_replace("/(&#)\d*(;)|\\\\n/","",preg_replace("/(<script).*(<\/script>)/", "", $expresion));
 	}
+	*/
 }

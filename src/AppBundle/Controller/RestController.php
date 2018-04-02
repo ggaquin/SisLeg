@@ -605,8 +605,8 @@ class RestController extends FOSRestController{
     	$servicioUtilidades=$this->get('utilidades_servicio');
     	    	
     	$speech=new Speech();
-    	$speech->setTextoSuperior($servicioUtilidades->clean_str_without_br($textoSuperior));
-    	$speech->setTextoInferior($servicioUtilidades->clean_str_without_br($textoInferior));
+    	$speech->setTextoSuperior($servicioUtilidades->clean_str($textoSuperior));
+    	$speech->setTextoInferior($servicioUtilidades->clean_str($textoInferior));
     	$speech->setTituloSpeech($tituloSpeech);
     	$speech->setIncluirSancion($incluirSancion=='true');
     	$em=$this->getDoctrine()->getManager();
@@ -699,7 +699,7 @@ class RestController extends FOSRestController{
 		    	if ($idSesion!=0)
 		    		$sesion=$sesionRepository->find($idSesion);
 		    	
-		    	$versionTaquigrafica->setDescripcion($servicioUtilidades->clean_str_without_br($descripcion));
+		    	$versionTaquigrafica->setDescripcion($servicioUtilidades->clean_str($descripcion));
 		    	$versionTaquigrafica->setSesion($sesion);
 		    	
 		    	$em = $this->getDoctrine()->getManager();

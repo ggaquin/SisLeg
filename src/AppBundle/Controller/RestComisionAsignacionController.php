@@ -446,7 +446,7 @@ class RestComisionAsignacionController extends FOSRestController{
     	$considerandos=$request->request->get('considerandos');
     	$articulos=$request->request->get('articulos');
     	$servicioUtilidades=$this->get('utilidades_servicio');
-    	$articulos=$servicioUtilidades->clean_str_without_br($articulos);
+    	$articulos=$servicioUtilidades->clean_str($articulos);
     	$articulosAsJson=json_decode($articulos);
     	
     	
@@ -476,7 +476,7 @@ class RestComisionAsignacionController extends FOSRestController{
 	    $dictamen->setUsuarioCreacion($usuario->getUsuario());
 	        	
     	//campo común a todos los tipos
-    	$dictamen->setTextoLibre($texto);
+	    $dictamen->setTextoLibre($servicioUtilidades->clean_str($texto));
     	    		
     	//para el tipo articulado
     	if ($tipoRedaccion=="articulado"){
@@ -515,8 +515,8 @@ class RestComisionAsignacionController extends FOSRestController{
     			$proyecto=$proyectoRepository->find($idProyecto);
     			$revision=new ProyectoRevision();
     			$revision->setArticulos($articulosAsJson);
-    			$revision->setConsiderandos($servicioUtilidades->clean_str_without_br($considerandos));
-    			$revision->setVisto($servicioUtilidades->clean_str_without_br($vistos));
+    			$revision->setConsiderandos($servicioUtilidades->clean_str($considerandos));
+    			$revision->setVisto($servicioUtilidades->clean_str($vistos));
     			$revision->setFechaCreacion(new \DateTime('now'));
     			$revision->setIncluyeVistosYConsiderandos((($vistosYConsiderandos=="true")?true:false));
     			$revision->setOficina($usuario->getRol()->getOficina);

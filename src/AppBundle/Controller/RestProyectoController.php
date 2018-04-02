@@ -191,7 +191,7 @@ class RestProyectoController extends FOSRestController{
         $considerando=$request->request->get('considerando');
         $articulos=$request->request->get('articulos');
         $servicioUtilidades=$this->get('utilidades_servicio');
-        $articulos=$servicioUtilidades->clean_str_without_br($articulos);
+        $articulos=$servicioUtilidades->clean_str($articulos);
         $articulosAsJson=json_decode($articulos);
  
         $usuario=$this->getUser();
@@ -203,8 +203,8 @@ class RestProyectoController extends FOSRestController{
         $proyecto=new Proyecto();
         $proyecto->setTipoProyecto($tipoProyecto);
         $proyecto->setClavesBusqueda($claves);
-        $proyecto->setVisto($servicioUtilidades->clean_str_without_br($visto));
-        $proyecto->setConsiderandos($servicioUtilidades->clean_str_without_br($considerando));
+        $proyecto->setVisto($servicioUtilidades->clean_str($visto));
+        $proyecto->setConsiderandos($servicioUtilidades->clean_str($considerando));
         
         $concejal=$perfilRepository->find($idConcejal);
         $proyecto->setConcejal($concejal);
@@ -291,7 +291,7 @@ class RestProyectoController extends FOSRestController{
         $articulos=$request->request->get('articulos');
         $usuario=$this->getUser();
         $servicioUtilidades=$this->get('utilidades_servicio');
-        $articulos=$servicioUtilidades->clean_str_without_br($articulos);
+        $articulos=$servicioUtilidades->clean_str($articulos);
         $articulosAsJson=json_decode($articulos);
         
         $proyectoRepository=$this->getDoctrine()->getRepository('AppBundle:Proyecto');
@@ -302,8 +302,8 @@ class RestProyectoController extends FOSRestController{
         $proyecto=$proyectoRepository->find($idProyecto);
         $proyecto->setTipoProyecto($tipoProyecto);
         $proyecto->setClavesBusqueda($claves);
-        $proyecto->setVisto($servicioUtilidades->clean_str_without_br($visto));
-        $proyecto->setConsiderandos($servicioUtilidades->clean_str_without_br($considerando));
+        $proyecto->setVisto($servicioUtilidades->clean_str($visto));
+        $proyecto->setConsiderandos($servicioUtilidades->clean_str($considerando));
 
         $concejal=$perfilRepository->find($idConcejal);
         $proyecto->setConcejal($concejal);

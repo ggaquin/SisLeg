@@ -336,7 +336,7 @@ class RestSesionController extends FOSRestController{
     	$considerandos=$request->request->get('considerandos');
     	$articulos=$request->request->get('articulos');
     	$servicioUtilidades=$this->get('utilidades_servicio');
-    	$articulos=$servicioUtilidades->clean_str_without_br($articulos);
+    	$articulos=$servicioUtilidades->clean_str($articulos);
     	$articulosAsJson=json_decode($articulos);
     	
     	$sancion=null;
@@ -406,7 +406,7 @@ class RestSesionController extends FOSRestController{
 		   	    		
 		    //para texto rápido
 		    if ($tipoRedaccion=="basico")
-		    	$sancion->setTextoLibre($texto_libre);
+		    	$sancion->setTextoLibre($servicioUtilidades->clean_str($texto_libre));
 	    	
 	    	//para el tipo articulado
 	    	if ($tipoRedaccion=="articulado"){
@@ -446,8 +446,8 @@ class RestSesionController extends FOSRestController{
 	    				$proyecto=$proyectoRepository->find($idProyecto);
 	    				$revision=new ProyectoRevision();
 	    				$revision->setArticulos($articulosAsJson);
-	    				$revision->setConsiderandos($servicioUtilidades->clean_str_without_br($considerandos));
-	    				$revision->setVisto($servicioUtilidades->clean_str_without_br($vistos));
+	    				$revision->setConsiderandos($servicioUtilidades->clean_str($considerandos));
+	    				$revision->setVisto($servicioUtilidades->clean_str($vistos));
 	    				$revision->setFechaCreacion(new \DateTime('now'));
 	    				$revision->setIncluyeVistosYConsiderandos((($vistosYConsiderandos=="true")?true:false));
 	    				$revision->setOficina($usuario->getRol()->getOficina);

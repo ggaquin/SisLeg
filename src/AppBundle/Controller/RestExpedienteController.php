@@ -969,7 +969,7 @@ class RestExpedienteController extends FOSRestController{
             $expediente->setArchivos($archivos);
             $expediente->setNumeroExpediente($numeroExpediente);
             $expediente->setPeriodo($año);
-            $expediente->setCaratula($servicioUtilidades->clean_str_with_br($caratula));
+            $expediente->setCaratula($servicioUtilidades->clean_str($caratula));
                       
             //establece la oficina actual (todos ingresan por mesa de entradas)
             $oficina=$oficinaRepository->find($idMesaEntradas);
@@ -1078,7 +1078,7 @@ class RestExpedienteController extends FOSRestController{
             $expediente->setNumeroExpediente($numeroExpediente);
             $expediente->setPeriodo($año);
             $expediente->setFolios($folios);
-            $expediente->setCaratula($servicioUtilidades->clean_str_with_br($caratula));
+            $expediente->setCaratula($servicioUtilidades->clean_str($caratula));
             $expediente->setArchivos($archivos);
             $proyecto=$expediente->getProyecto();
             
@@ -1193,7 +1193,7 @@ class RestExpedienteController extends FOSRestController{
     		$expediente->setNumeroExpediente($numeroExpediente);
     		$expediente->setPeriodo($año);
     		$expediente->setFolios($folios);
-    		$expediente->setCaratula($servicioUtilidades->clean_str_with_br($caratula));
+    		$expediente->setCaratula($servicioUtilidades->clean_str($caratula));
     		$expediente->setArchivos($archivos);
     			
     		$proyecto=$expediente->getProyecto();
