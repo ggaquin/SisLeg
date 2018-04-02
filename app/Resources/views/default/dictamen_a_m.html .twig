@@ -571,7 +571,6 @@
 	        	 $("#inciso-"+letra).data("wysihtml5").editor.setValue(texto);
 		}
 
-		
 		$(document).ready(function () {
 
 		/* Variables --------------------------------------------------------------------------------*/
@@ -1230,7 +1229,7 @@
 
 
 			$("#selComisiones").on('select2:unselecting',function(evt){
-				
+				debugger;
 				var seleccion=evt.params.args.data.id;
 				var idComision= $("#idComision").val();
 				
@@ -1238,9 +1237,8 @@
 					evt.preventDefault();
 					toastr.error("No se puede eliminar la comisión original");
 				}
-				
 			});
-				
+
 			$("#selAgregados").select2({
 				language:{
 					locale: "es",
@@ -1328,9 +1326,9 @@
 		        <li>Expedientes Girados</li>
 		         <li class="active">
 		            {% if idDictamen==0 %}
-			        	Alta
+			        	Alta de Dictamen
 			        {% else %}
-			        	Edición
+			        	Edición de Dictamen
 			        {% endif %}
 		        </li>
 		    </ol>

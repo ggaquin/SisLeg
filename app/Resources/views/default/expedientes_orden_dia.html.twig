@@ -79,7 +79,19 @@
 							        												"/"+tipoCriterio()+
 							        												"/"+criterio(),
 			            			"dataSrc": '',
+			            			"error": function (xhr, error, thrown) {
+			            				$("#estadoFiltro").bootstrapToggle('off');
+			            			    toastr.error(JSON.parse(xhr.responseText));
+			            			}
 							    },
+						  "initComplete": function(settings, json) {
+							 		
+							 		var api = this.api();
+    								var paginaInicio={{ paginaInicio }};
+    								var registrosPagina={{ registrosPagina }};
+    								api.page.len(registrosPagina);
+    								this.fnPageChange(paginaInicio,true);
+							     },
 						  "columnDefs": [
 							  				
 								            {
@@ -186,7 +198,9 @@
 		        cargarMenuConParametros('/sancion_a_m',
 				        				{nombre:'idSancion', valor:idSancion},
 				        				{nombre:'idExpediente', valor:idExpediente},
-				        				{nombre:'idSesion',valor:idSesion});
+				        				{nombre:'idSesion',valor:idSesion},
+				        				{nombre:'paginaActual', valor:0},
+                        				{nombre:'registrosPagina', valor: tabla.page.len()});
 		       
 		    });
 
@@ -199,7 +213,9 @@
 		        cargarMenuConParametros('/sancion_a_m',
                         				{nombre:'idSancion', valor:idSancion},
                         				{nombre:'idExpediente', valor:idExpediente},
-                        				{nombre:'idSesion',valor:idSesion});
+                        				{nombre:'idSesion',valor:idSesion},
+                        				{nombre:'paginaActual', valor:tabla.page()},
+										{nombre:'registrosPagina', valor: tabla.page.len()});
 		    });
 		  						
 			$('#estadoFiltro').bootstrapToggle({

@@ -7,6 +7,7 @@ use Doctrine\ORM\Query\ResultSetMapping;
 use AppBundle\Entity\Movimiento;
 use AppBundle\Entity\Pase;
 use AppBundle\Entity\SolicitudInforme;
+use Zend\Validator\Date;
 
 class ExpedienteRepository extends EntityRepository{
 	
@@ -131,11 +132,19 @@ class ExpedienteRepository extends EntityRepository{
 			$sql.='inner join oficina o on e.idOficina=o.idOficina ';
 			$condition.=' and o.idOficina in (:oficinas) and e.fechaArchivo is null ';
 			
+// 			if($oficina->getId()==9 && $destino==3){
+// 				$sql.='left join sesion s on e.idSesion=s.idSesion ';
+// 				$condition.=' and (e.idTipoExpediente in (2,7,9) or '.
+// 							' e.idExpediente in (select DISTINCT idExpediente '.
+// 									  			'from expedienteSesion es '.
+// 												'inner join sesion ess on es.idSesion=ess.idSesion '.
+// 												'where ess.fecha<:fechaActual))';
+// 			}
+			
 			if($oficina->getId()==9 && $destino==3){
 				$sql.='left join sesion s on e.idSesion=s.idSesion ';
 				$condition.=' and (e.idTipoExpediente in (2,7,9) or '.
-							' e.idExpediente in (select DISTINCT idExpediente '.
-									  			'from expedienteSesion))';
+						' e.idExpediente in (select DISTINCT idExpediente from expedienteSesion))';
 			}
 		}
 		
@@ -149,6 +158,7 @@ class ExpedienteRepository extends EntityRepository{
 		if ($oficina->getId()==9){
 			$oficinas=array($oficina->getId(),3);
 			$query->setParameter('oficinas',$oficinas);
+			//$query->setParameter('fechaActual',new \DateTime());
 		}
 		else
 			$query->setParameter('oficinas',$oficina->getId());

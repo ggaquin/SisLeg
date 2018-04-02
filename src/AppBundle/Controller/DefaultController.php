@@ -457,7 +457,7 @@ class DefaultController extends Controller
     	
     	return $this->render('default/seleccion_sesion.html.twig',array(
     			'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR,
-    			'años'=> $años
+    			'años'=> $años, 'sinDatos'=>(count($años)==0?true:false)
     	));
     }
     
@@ -467,6 +467,8 @@ class DefaultController extends Controller
     public function traerExpedientesOrdenDiaAction(Request $request)
     {
 	    $idSesion=$request->query->get('idSesion');
+	    $pagina=$request->query->get('pagina');
+	    $registrosPagina=$request->query->get('registrosPagina');
     	$tipoExpedienteRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpediente');
     	$tipoProyectoRepository=$this->getDoctrine()->getRepository('AppBundle:TipoProyecto');
     	$tipoExpedienteSesionRepository=$this->getDoctrine()->getRepository('AppBundle:TipoExpedienteSesion');
@@ -491,7 +493,8 @@ class DefaultController extends Controller
     			'idSesion'=>$idSesion, 'nombreSesion'=>$nombreSesion, 'años'=>$años,
     			'permiteEdicion'=>(($sesion->getTieneEdicionBloqueada()==true)?0:1),
     			'tiposProyecto'=>$tiposProyecto, 'comisiones'=>$comisiones,
-    			'oficinas'=>$oficinas, 
+    			'oficinas'=>$oficinas, 'paginaInicio'=>$pagina,
+    			'registrosPagina'=>$registrosPagina,
     	));
     }
     
@@ -504,6 +507,8 @@ class DefaultController extends Controller
     	$idExpediente=$request->query->get('idExpediente');
     	$idSesion=$request->query->get('idSesion');
     	$idSancion=$request->query->get('idSancion');
+    	$paginaActual=$request->query->get('paginaActual');
+    	$registrosPagina=$request->query->get('registrosPagina');
     	$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
     	$sesionRepository=$this->getDoctrine()->getRepository('AppBundle:Sesion');
     	$sancionRepository=$this->getDoctrine()->getRepository('AppBundle:Sancion');
@@ -619,6 +624,8 @@ class DefaultController extends Controller
     	    	
     	$array=[];
     	$array['base_dir']=realpath($this->getParameter('kernel.root_dir').'/..').DIRECTORY_SEPARATOR;
+    	$array['paginaOrigen']=$paginaActual;
+    	$array['registrosPagina']=$registrosPagina;
     	$array['idDictamen']=(is_null($dictamen)?0:$dictamen->getId());
     	$array['idProyecto']=(!is_null($proyecto)?$proyecto->getId():0);
     	$array['idExpediente']=$expediente->getId();

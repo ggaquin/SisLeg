@@ -314,18 +314,6 @@
                 <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
               </div>
             </div>
-            <!-- search form -->
-           {#  <form action="#" method="get" class="sidebar-form">
-              <div class="input-group">
-                <input type="text" name="q" class="form-control" placeholder="Search...">
-                    <span class="input-group-btn">
-                      <button type="submit" name="search" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i>
-                      </button>
-                    </span>
-              </div>
-            </form> #}
-            <!-- /.search form -->
-            <!-- sidebar menu: : style can be found in sidebar.less -->
             <ul class="sidebar-menu">
               <li class="header text-center" tabindex="-1"><h5>Principal</h5></li>
               
@@ -394,18 +382,18 @@
                       <li class="divider"></li>
                       
                       	<li class="menu-fired" tabindex="9" >
-                      		<a href="#"  onclick="cargarMenu('/seleccionSesion')">
+                      		<a href="#"  onclick="cargarMenu('/seleccionSesion');">
                       		<i class="fa fa-minus"></i>Expedientes Orden del Día</a>
                       	</li>
                       	
                       	{% if app.user.rol.rol=="ROLE_DESPACHO" %}
                           	<li class="menu-fired" tabindex="10" >
-                          		<a href="#" onclick="cargarMenu('/expedientesComisiones');">
+                          		<a href="#" onclick="cargarMenuConPaginado('/expedientesComisiones',0,10);">
                           		<i class="fa fa-minus"></i>Expedientes Comisiones</a>
                           	</li>
                         
                           	<li class="menu-fired" tabindex="11" >
-                          		<a href="#" onclick="cargarMenu('/expedientes')">
+                          		<a href="#" onclick="cargarMenuConPaginado('/expedientes',0,10);">
                           		<i class="fa fa-minus"></i>Listado Expedientes</a>
                           	</li>
                                                	                      

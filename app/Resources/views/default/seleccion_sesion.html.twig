@@ -45,7 +45,9 @@
 
 		function irASesion(){
 			cargarMenuConParametros('/expedientesOrdenDia',
-    								{nombre:'idSesion', valor:$("#selSesion").val()});
+    								{nombre:'idSesion', valor:$("#selSesion").val()},
+    								{nombre:'pagina', valor:0},
+    								{nombre:'registrosPagina', valor:10});
     	}
 
 		$(document).ready(function () {
@@ -53,13 +55,21 @@
 		});
 
 	</script>
-	
+	<section class="content-header">
+    	<div class="row">
+			<div class="col-md-4">
+				<h2>
+			        Seleccion Sesión
+			    </h2>
+			</div>
+    	</div>
+	</section>
+	<hr>
 	<section class="content">
 	  	<form role="form">
 	  		<div class="row">
 	  			<div class="col-md-8 col-md-offset-2">
-            		<h2>Seleccion Sesión</h2>
-            		<br>
+            		{% if sinDatos!=true %}
                     <div class="panel panel-primary">
                         <div class="panel-heading text-center"><strong>Seleccione la Sesión a Tabajar</strong></div>
                         <div class="panel-body">
@@ -97,6 +107,15 @@
                 	    	</div>
                         </div>
                     </div>
+                    {% else %}
+                    <div>
+                    	<div class="alert alert-danger">
+                    		<h4 style="color: #843534;">No existe ninguna Orden del Día habilitada para ediciones. Por favor revise el  
+                    			<a href="#" class="alert-link" onclick="cargarMenu('/sesion')">apartado de sesiones</a>
+                    		</h4>
+                    	</div>
+                    </div>
+                    {% endif %}
                	</div>
            	</div>
     	</form>

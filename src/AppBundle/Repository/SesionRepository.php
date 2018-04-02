@@ -125,6 +125,20 @@ class SesionRepository extends EntityRepository{
 				
 	}
 	
+	public function traerMensajeDeErrorDictamenes($idSesion){
+		
+		$rsm = new ResultSetMapping();
+		$rsm->addScalarResult('mensaje', 'mensaje', 'text');
+		
+		$query = $this-> getEntityManager()
+					  -> createNativeQuery(
+											'select traer_expedientes_error(:idSesion) as mensaje',
+											$rsm)	
+					  -> setParameter('idSesion',$idSesion);
+		$resultado = $query->getSingleResult();
+		return $resultado['mensaje'];
+	}
+	
 	public function createUltimoMomento($idSesion){
 		
 		$params=[];

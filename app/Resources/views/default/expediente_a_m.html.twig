@@ -56,8 +56,12 @@
             visibility: hidden;
             clear: both;
         }
+        .table-fixed thead {
+        	padding-right: 25px;
+        }
         .table-fixed thead th {
             height: 30px;
+            
         }
         .table-fixed tbody {
             height: 70px;
@@ -350,7 +354,7 @@
 							html+="<tr><td style='width:15%'>"+numero.ente+"</td><td style='width:20%'>"+numero.numero+"</td>"+
 								  "<td style='width:10%'>"+numero.letra+"</td><td style='width:15%'>"+numero.año+"</td>"+
 								  "<td style='width:15%'>"+numero.folios+"</td><td style='width:15%'>"+numero.cuerpos+"</td>"+
-								  "<td style='width:10%'><button type='button' class='btn btn-danger btn-xs btn-eliminar-numero-mod'>"+
+								  "<td style='width:10%'><button type='button' class='btn btn-danger btn-xs btn-eliminar-numero'>"+
 						 	 	  "<span class='glyphicon glyphicon-remove'/></button></td></tr>";
 						});
 						$("#tabla-numeros > tbody").append(html);

@@ -173,7 +173,14 @@ class RestSesionController extends FOSRestController{
     		return $this->view('La orden del día se generó correctamente',200);
     	}
     	catch (\Exception $e){
-    		return $this->view($e->getMessage(),500);
+    		$codigo=$e->getPrevious()->getCode();
+    		
+    		if ($codigo==40000)
+    			$mensaje=$sesionRepository->traerMensajeDeErrorDictamenes($idSesion);
+    		else 
+    			$mensaje=$e->getMessage();
+    		
+    		return $this->view($mensaje,500);
     	}
     	
     }

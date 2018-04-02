@@ -1084,7 +1084,9 @@
 	                success: function(data) {
 	                    toastr.success(data);
 	                    cargarMenuConParametros('/expedientesOrdenDia',
-												{nombre:'idSesion', valor:idSesion});
+												{nombre:'idSesion', valor:idSesion},
+												{nombre:'pagina', valor:{{ paginaOrigen }}},
+			    								{nombre:'registrosPagina', valor:{{ registrosPagina }}});
 	                	},
 	                complete: function(){
 	                	$("#btn-guardar-sancion").prop("disabled",false);
@@ -1108,7 +1110,9 @@
 				var mensaje='Se canceló '+(idSancion==0?'el alta':'la edición')+' de la sanción';
 				toastr.warning(mensaje,'ATENCIÓN');
 				cargarMenuConParametros('/expedientesOrdenDia',
-										{nombre:'idSesion', valor:idSesion});
+										{nombre:'idSesion', valor:idSesion},
+										{nombre:'pagina', valor:{{ paginaOrigen }}},
+	    								{nombre:'registrosPagina', valor:{{ registrosPagina }}});
 			});
 		    
 			//EVENTO CLICK DEL BOTON DE NUEVO ARTICULO EN EL MODAL DE DICTAMEN
@@ -1862,9 +1866,9 @@
 		        <li class="active">Expedientes Orden del Día</li>
 		        <li class="active">
 				    {% if idSancion==0 %}
-			        	Alta
+			        	Alta de Sanción
 			        {% else %}
-			        	Edición
+			        	Edición de Sanción
 			        {% endif %}
 				</li>
 		    </ol>
