@@ -65,6 +65,14 @@ abstract class Sancion
     
     /**
      * @var \AppBundle\Entity\Autoridad
+     *
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Autoridad")
+     * @ORM\JoinColumns({@ORM\JoinColumn(name="firmaVicePresidente", referencedColumnName="idAutoridad")})
+     */
+    private $firmaVicePresidente;
+    
+    /**
+     * @var \AppBundle\Entity\Autoridad
      * 
      * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Autoridad")
      * @ORM\JoinColumns({@ORM\JoinColumn(name="firmaSecretario", referencedColumnName="idAutoridad")})
@@ -168,7 +176,14 @@ abstract class Sancion
 		$this->firmaPresidente = $firmaPresidente;
 		return $this;
 	}
-	
+	public function getFirmaVicePresidente() {
+		return $this->firmaVicePresidente;
+	}
+	public function setFirmaVicePresidente($firmaVicePresidente) {
+		$this->firmaVicePresidente = $firmaVicePresidente;
+		return $this;
+	}
+		
 	/**
 	 * Get firmaSecretario
 	 * 

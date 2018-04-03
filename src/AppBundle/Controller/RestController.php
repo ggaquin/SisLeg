@@ -92,8 +92,9 @@ class RestController extends FOSRestController{
     public function traerUsuarioDescripcionPorCriterioAction(Request $request)
     {
     	$term=$request->query->get('q');
+    	$forzarALegislador=$request->query->get('r');
     	$perfilRepository=$this->getDoctrine()->getRepository('AppBundle:Perfil');
-    	$perfiles=$perfilRepository->findUsuarioByPatronBusqueda($term);
+    	$perfiles=$perfilRepository->findUsuarioByPatronBusqueda($term,$forzarALegislador);
     	return $this->view($perfiles,200);
     }
 
@@ -174,8 +175,10 @@ class RestController extends FOSRestController{
     public function guardarAutoridades(Request $request)
     {
     	$editaPresidente=$request->request->get('editaPresidente');
+    	$editaVicePresidente=$request->request->get('editaVicePresidente');
     	$editaSecretario=$request->request->get('editaSecretario');
     	$idPresidente=$request->request->get('idPresidente');
+    	$idVicePresidente=$request->request->get('idVicePresidente');
     	$idSecretario=$request->request->get('idSecretario');
     	$usuarioSesion=$this->getUser();
     	
@@ -202,8 +205,23 @@ class RestController extends FOSRestController{
     		$nuevoPresidente->setTipoAutoridad($tipoAutoridad);
     		$em->persist($nuevoPresidente);
     	}
-
     	
+    	if ($editaVicePresidente=='true'){
+    		$tipoAutoridad=$tipoAutoridadRepository->find(3);
+    		$vicePresidenteActual=$autoridadRepository->findAutoridadByTipo(3);
+    		$perfilAutoridad=$perfilRepository->find($idVicePresidente);
+    		if(!is_null($vicePresidenteActual)){
+    			$vicePresidenteActual->setActivo(false);
+    			$em->persist($vicePresidenteActual);
+    		}
+    		$nuevoVicePresidente=new Autoridad();
+    		$nuevoVicePresidente->setFechaAlta(new \DateTime());
+    		$nuevoVicePresidente->setUsuarioAlta($usuarioSesion->getUsername());
+    		$nuevoVicePresidente->setPerfil($perfilAutoridad);
+    		$nuevoVicePresidente->setTipoAutoridad($tipoAutoridad);
+    		$em->persist($nuevoVicePresidente);
+    	}
+
     	if ($editaSecretario=='true'){
     		$tipoAutoridad=$tipoAutoridadRepository->find(2);
     		$secretarioActual=$autoridadRepository->findAutoridadByTipo(2);
@@ -231,6 +249,14 @@ class RestController extends FOSRestController{
     										?$nuevoPresidente->getPerfil()
     														 ->getNombreCompleto()
     										:null),
+    			'id_vice_presidente'=>(!is_null($nuevoVicePresidente)
+							    					?$nuevoVicePresidente->getPerfil()
+							    					->getId()
+							    					:null),
+    			'nombre_vice_presidente'=>(!is_null($nuevoVicePresidente)
+							    					?$nuevoVicePresidente->getPerfil()
+							    					->getNombreCompleto()
+							    					:null),
     			'id_secretario'=>(!is_null($nuevoSecretario)
     										?$nuevoSecretario->getPerfil()
     														 ->getId()

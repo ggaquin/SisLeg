@@ -122,6 +122,15 @@
 	    	if ($('#modalArticulo').hasClass('in'))
     	    	$("#btn-agregar-articulo").focus();
 	    	else{
+
+	    		if ($("#link-tab-0").hasClass('tab-active')){
+		    		
+	    			if ($("#firmaVicePresidente").is(':checked'))
+						$("#firmaVicePresidente").bootstrapToggle('off');
+		    		else
+		    			$("#firmaVicePresidente").bootstrapToggle('on');
+	    		}
+
 				if ($("#link-tab-2").hasClass('tab-active'))
     	    		$("#btn-nuevo-articulo").click();
 	    		
@@ -234,7 +243,7 @@
     	    	if ($("#firmaPresidente").is(':checked'))
 					$("#firmaPresidente").bootstrapToggle('off');
 	    		else
-	    			$("#firmaPresidente").bootstrapToggle('on');;
+	    			$("#firmaPresidente").bootstrapToggle('on');
 	    }
 	});
 
@@ -957,12 +966,17 @@
 						 var newOption = new Option(notificacion.nombre, notificacion.id, true, true);
 						 $("#selOficinasDestino").append(newOption).trigger('change');
 					});
-    
+
+					debugger;
+    				
     				if ({{ data.firma_secretario }}==true)
     					$("#firmaSecretario").bootstrapToggle('on');
     				
     				if ({{  data.firma_presidente }}==true)
     					$("#firmaPresidente").bootstrapToggle('on');
+
+    				if ({{  data.firma_vice_presidente }}==true)
+    					$("#firmaVicePresidente").bootstrapToggle('on');
      
     				//$("#selSpeech").change();
     			}
@@ -1004,6 +1018,7 @@
 		        var considerandos=$("#considerandos").html();
 		        var idSesion=$("#idSesion").val();
 		        var firmaPresidente=$("#firmaPresidente").is(":checked");
+		        var firmaVicePresidente=$("#firmaVicePresidente").is(":checked");
 		        var firmaSecretario=$("#firmaSecretario").is(":checked");
 
 		        var validacion='';
@@ -1060,6 +1075,7 @@
 					formData.append('tipoSancion',tipoSancion);
 					formData.append('idSpeech',idSpeech);
 					formData.append('firmaPresidente',firmaPresidente);
+					formData.append('firmaVicePresidente',firmaVicePresidente)
 					formData.append('firmaSecretario',firmaSecretario);
 					formData.append('numeroSancion',numeroSancion);
 					formData.append('aplicaNotificacion',aplicaNotificacion);
@@ -2076,15 +2092,22 @@
         						<hr>
         						<!-- Firmas -->
         						<div class="row">
-        							<div class="col-md-4">
+        							<div class="col-md-3">
         								<div class="form-group">
         									<label for="firmaPresidente">Firma <u>P</u>residente</label> <input
         										type="checkbox" class="check-si-no" id="firmaPresidente"
         										name="firmaPresidente" data-size="small" title="Ctrl+P"/>
         								</div>
         							</div>
-        							<div class="col-md-4 col-md-offset-4">
+        							<div class="col-md-4 col-md-offset-1">
         								<div class="form-group">
+        									<label for="firmaVicePresidente">Firm<u>a</u> Vice Presidente Primero</label> <input
+        										type="checkbox" class="check-si-no" id="firmaVicePresidente"
+        										name="firmaVicePresidente" data-size="small" title="Ctrl+V"/>
+        								</div>
+        							</div>
+        							<div class="col-md-4">
+        								<div class="form-group pull-right">
         									<label for="firmaSecretario">Firma <u>S</u>ecretario</label> <input
         										type="checkbox" class="check-si-no" id="firmaSecretario"
         										name="firmaSecretario" data-size="small" title="Ctrl+S"/>

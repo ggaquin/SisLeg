@@ -44,12 +44,18 @@
 
 			var idPresidentePersistido='{{ id_presidente }}';
 			var nombrePresidentePersistido='{{ nombre_presidente }}';
+			var idVicePresidentePersistido='{{ id_vice_presidente }}';
+			var nombreVicePresidentePersistido='{{ nombre_vice_presidente }}';
 			var idSecretarioPersistido='{{ id_secretario }}';
 			var nombreSecretarioPersistido='{{ nombre_secretario }}';
 
 			actualizarControl(idPresidentePersistido,
 							  nombrePresidentePersistido,
 							  'selPresidente');
+
+			actualizarControl(idVicePresidentePersistido,
+							  nombreVicePresidentePersistido,
+        					  'selVicePresidente');
 			
 			actualizarControl(idSecretarioPersistido,
 							  nombreSecretarioPersistido,
@@ -74,6 +80,7 @@
         				    data: function (params) {
         				      return {
         				        q: params.term, // search term
+        				        r: (($(this).attr('id')=="selSecretario")?0:1),
         				        page: params.page
         				      };
         				    },
@@ -86,10 +93,10 @@
         					    };
         			        },
         				  },
-        				  placeholder:"Seleccione Persona",	
-        				  language: "es",
-        				  minimumInputLength: 3,
-        				  theme: "bootstrap",
+				  	placeholder:"Seleccione Persona",	
+				  	language: "es",
+				  	minimumInputLength: 3,
+				  	theme: "bootstrap",
         	});
 
 			$("#btn-aceptar-modificacion-autoridad").click(function(){
@@ -97,8 +104,10 @@
 				$("#btn-aceptar-modificacion-autoridad").prop("disabled",true);
 				
 				var editaPresidente=$("#editaPresidente").is(":checked");
+				var editaVicePresidente=$("#editaVicePresidente").is(":checked");
 				var editaSecretario=$("#editaSecretario").is(":checked");
 				var idPresidente=$("#selPresidente").val();
+				var idVicePresidente=$("#selVicePresidente").val();
 				var idSecretario=$("#selSecretario").val();
 
 				var formData=new FormData();
@@ -107,18 +116,24 @@
 				
 	            validacion+=((editaPresidente==true && idPresidente==null)
 	    	            		?'<li>Si indica que edita el presidente debe seleccionar uno</li>':'');
+
+	            validacion+=((editaVicePresidente==true && idVicePresidente==null)
+	            		?'<li>Si indica que edita el vice presidente debe seleccionar uno</li>':'');
 	          
               	validacion+=((editaSecretario==true && idSecretario==null)
                       		  ?'<li>Si indica que edita el secretario debe seleccionar uno</li>':'');
 
-      		  	validacion+=((editaPresidente==false && idSecretario==false)
+      		  	validacion+=((editaPresidente==false && editaVicePresidente &&  idSecretario==false)
       	      		  		  ?'<li>No seleccionó ningún cambio de autoridad</li>':'');
 
-      		  	validacion+=((idPresidente==idSecretario)
-	      		  		  		?'<li>Ambas autoridades no pueden ser la misma persona</li>':'');
+      		  	validacion+=((idPresidente==idSecretario || idPresidente==idVicePresidente || idVicePresidente==idSecretario)
+	      		  		  		?'<li>Las personas que ofician de autoridad no pueden repetirse</li>':'');
 	  		  		
       			validacion+=((idPresidente==idPresidentePersistido && editaPresidente==true)
   		  		  				?'<li>El nuevo presidente seleccionado es el mismo que el anterior</li>':'');
+	  				
+      			validacion+=((idVicePresidente==idVicePresidentePersistido && editaVicePresidente==true)
+	  		  				?'<li>El nuevo vice presidente seleccionado es el mismo que el anterior</li>':'');
 
       			validacion+=((idSecretario==idSecretarioPersistido && editaSecretario==true)
   		  		  			?'<li>El nuevo secretario seleccionado es el mismo que el anterior</li>':'');
@@ -134,8 +149,10 @@
 				else{ 
 
 						formData.append('editaPresidente',editaPresidente);
+						formData.append('editaVicePresidente',editaVicePresidente);
 						formData.append('editaSecretario',editaSecretario);
 						formData.append('idPresidente',idPresidente);
+						formData.append('idVicePresidente',idVicePresidente);
 						formData.append('idSecretario',idSecretario);
 						
         				$.ajax({
@@ -153,6 +170,11 @@
 							if(datosActuales.id_presidente!=null){
 								idPresidentePersistido=datosActuales.id_presidente;
 								nombrePresidentePersistido=datosActuales.nombre_presidente;
+							}
+
+							if(datosActuales.id_vice_presidente!=null){
+								idVicePresidentePersistido=datosActuales.id_vice_presidente;
+								nombreVicePresidentePersistido=datosActuales.nombre_vice_presidente;
 							}
 
 							if(datosActuales.id_secretario!=null){
@@ -193,7 +215,11 @@
     						 idSeleccion=idPresidentePersistido;
     						 nombreSeleccion=nombrePresidentePersistido;
     					 }
-    					 else{
+    					 if(nombreDestino=='selVicePresidente'){
+    						 idSeleccion=idVicePresidentePersistido;
+    						 nombreSeleccion=nombreVicePresidentePersistido;
+    					 }
+    					 if(nombreDestino=='selSecretario'){
     						 	idSeleccion=idSecretarioPersistido;
     						 	nombreSeleccion=nombreSecretarioPersistido;
     					 }
@@ -229,6 +255,19 @@
                 			</div>
                 			<div class="row">
                     			<div class="col-md-3 col-md-offset-1">
+                	    			<input type="checkbox" class="habilitaAutoridad" data-id="selVicePresidente" id="editaVicePresidente" data-size="small"/>
+                				</div>
+                    			<div class="col-md-7">
+                	    			<div class="form-group">
+                	    				<label for="selPresidente">Vice Presidente Primero <sup>(*)</sup></label>
+                						<select class="form-control selAutoridad" data-width="100%" id="selVicePresidente" 
+                								name="selVicePresidente" disabled="disabled">
+                						</select>
+                					</div>
+                				</div>
+                			</div>
+                			<div class="row">
+                    			<div class="col-md-3 col-md-offset-1">
                 	    			<input type="checkbox" class="habilitaAutoridad" data-id="selSecretario" id="editaSecretario" data-size="small"/>
                 				</div>
                     			<div class="col-md-7">
@@ -242,7 +281,7 @@
                 			</div>
                 			<div class="row">
                     			<div class="col-md-7 col-md-offset-4">
-                					<label><sup>(*)</sup> Ambas autoridades deden poseer usuario en el sistema</label>
+                					<label><sup>(*)</sup> Todas las autoridades deden poseer usuario en el sistema</label>
                 				</div>
                 			</div>
         				</div>

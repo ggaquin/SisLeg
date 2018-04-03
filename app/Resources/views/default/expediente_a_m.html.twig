@@ -427,12 +427,12 @@
 	    		var cuerpos=$("#numeroExterno").find('input[name="cuerpos"]').val();
 
 				var validacion=''
-	    		validacion+=ente==''?'<li>Debe indicar el ente</li>':'';
-	    		validacion+=numero==''?'<li>Debe indicar el número</li>':'';
-	    		validacion+=letra==''?'<li>Debe indicar la letra</li>':'';
-	    		validacion+=año==''?'<li>Debe indicar el año</li>':'';
-	    		validacion+=folios==''?'<li>Debe indicar los folios</li>':'';
-	    		validacion+=cuerpos==''?'<li>Debe indicar los cuerpos</li>':'';
+	    		validacion+=ente.replace(/ /g,'').length==0?'<li>Debe indicar el ente caratulador</li>':'';
+	    		validacion+=numero.replace(/ /g,'').length==0?'<li>Debe indicar el número del expediente</li>':'';
+	    		validacion+=letra.replace(/ /g,'').length==0?'<li>Debe indicar la letra</li>':'';
+	    		validacion+=año.replace(/ /g,'').length<4?'<li>El año debe poseer 4 digitos</li>':'';
+	    		validacion+=folios.replace(/ /g,'').length==0?'<li>Debe indicar los folios</li>':'';
+	    		validacion+=cuerpos.replace(/ /g,'').length==0?'<li>Debe indicar los cuerpos</li>':'';
 
 	    		if (validacion.length>0) 
 				{
@@ -1028,42 +1028,47 @@
                         				    		<div class="form-group text-center">
                         				    			<label for="enteOrigen">Ente</label>
                         				    			<input type="text" maxlength="4" class="form-control text-center es-numero" 
-                        				    				   id="enteOrigen" name="enteOrigen" autofocus="autofocus">
+                        				    				   id="enteOrigen" name="enteOrigen" autofocus="autofocus" placeholder="1234">
                         				    		</div>
                         				    	</div>
                         				    	<div class="col-md-4 col-nopadding">
                         				    		<div class="form-group text-center">
                         				    			<label for="numeroOrigen">Numero</label>
                         				    			<input type="text" maxlength="8" 
-                        				    			 class="form-control text-center es-numero" id="numeroOrigen" name="numeroOrigen">
+                        				    			 class="form-control text-center es-numero" id="numeroOrigen" name="numeroOrigen"
+                        				    			 placeholder="12345678">
                         				    		</div>
                         				    	</div>
                         				    	<div class="col-md-1 col-nopadding">
                         				    		<div class="form-group text-center">
                         				    			<label for="letraOrigen">Letra</label>
                         				    			<input type="text" maxlength="1" 
-                        				    			 class="form-control text-center es-letra" id="letraOrigen" name="letraOrigen">
+                        				    			 class="form-control text-center es-letra" id="letraOrigen" name="letraOrigen"
+                        				    			 placeholder="A">
                         				    		</div>
                         				    	</div>
                         				    	<div class="col-md-2 col-nopadding">
                         				    		<div class="form-group text-center">
                         				    			<label for="añoOrigen">Año</label>
                         				    			<input type="text" maxlength="4" 
-                        				    			 class="form-control text-center es-numero" id="añoOrigen" name="añoOrigen">
+                        				    			 class="form-control text-center es-numero" id="añoOrigen" name="añoOrigen"
+                        				    			 placeholder="2010">
                         				    		</div>
                         				    	</div>
                         				    	<div class="col-md-2 col-nopadding">
                         				    		<div class="form-group text-center">
                         				    			<label for="foliosOrigen">Folios</label>
                         				    			<input type="text" maxlength="3" 
-                        				    			 class="form-control text-center es-numero" id="foliosOrigen" name="foliosOrigen">
+                        				    			 class="form-control text-center es-numero" id="foliosOrigen" name="foliosOrigen"
+                        				    			 placeholder="123">
                         				    		</div>
                         				    	</div>
                         				    	<div class="col-md-1 col-nopadding">
                         				    		<div class="form-group text-center">
                         				    			<label for="cuerpos">Cuerpos</label>
                         				    			<input type="text" maxlength="2" 
-                        				    			 class="form-control text-center es-numero" id="cuerpos" name="cuerpos">
+                        				    			 class="form-control text-center es-numero" id="cuerpos" name="cuerpos"
+                        				    			 placeholder="12">
                         				    		</div>
                         				    	</div>
                         				    </div>

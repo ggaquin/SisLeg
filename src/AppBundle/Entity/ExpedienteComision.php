@@ -590,7 +590,8 @@ class ExpedienteComision
     {
     	
     	return ((is_null($this->getSesion())|| 
-    			 (!is_null($this->getSesion()) && $this->getSesion()->getTieneOrdenDelDia()==false)) &&
+    			 (!is_null($this->getSesion()) && !$this->getSesion()->getTieneOrdenDelDia() &&
+    			  !$this->sesion->getTieneEdicionBloqueada())) &&
     			  !is_null($this->getPaseOriginario()->getRemito()->getFechaRecepcion()));
     }
     

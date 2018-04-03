@@ -323,6 +323,7 @@ class RestSesionController extends FOSRestController{
     	$idTipoSancion=$request->request->get('tipoSancion');
     	$idSpeech=$request->request->get('idSpeech');
     	$firmaPresidente=$request->request->get('firmaPresidente');
+    	$firmaVicePresidente=$request->request->get('firmaVicePresidente');
     	$firmaSecretario=$request->request->get('firmaSecretario');
     	$numeroSancion=$request->request->get('numeroSancion');
     	$aplicaNotificacion=$request->request->get('aplicaNotificacion');
@@ -396,11 +397,15 @@ class RestSesionController extends FOSRestController{
 		    }
 		    	
 		    if($firmaPresidente=='true'){	
-		    	$persidente=$autoridadRepository->findAutoridadByTipo('presidente');
+		    	$persidente=$autoridadRepository->findAutoridadByTipo(1);
 		    	$sancion->setFirmaPresidente($persidente);
 		    }
+		    if($firmaVicePresidente=='true'){
+		    	$vicepresidente=$autoridadRepository->findAutoridadByTipo(3);
+		    	$sancion->setFirmaVicePresidente($vicepresidente);
+		    }
 		    if($firmaSecretario=='true'){
-		    	$secretario=$autoridadRepository->findAutoridadByTipo('secretario');
+		    	$secretario=$autoridadRepository->findAutoridadByTipo(2);
 		    	$sancion->setFirmaSecretario($secretario);
 		    }
 		   	    		

@@ -45,11 +45,13 @@ class PerfilRepository extends EntityRepository{
 	        return $qb->getQuery()->getResult();
 	}
 	
-	public function findUsuarioByPatronBusqueda($patronBusqueda){
-		
+	public function findUsuarioByPatronBusqueda($patronBusqueda,$forzarALegislador=0){
+				
 		$rep=$this->getEntityManager()->getRepository('AppBundle:Usuario');
 		$qb = $rep->createQueryBuilder('u');
 		$qb->innerJoin('u.perfil','p');
+		if ($forzarALegislador==1)
+			$qb->innerJoin('AppBundle\Entity\PerfilLegislador', 'pl', 'with','p.id=pl.id');
 		$qb ->where($qb->expr()->andX(
 										$qb->expr()->orX(
 															$qb->expr()->like('p.nombres', '?1'),

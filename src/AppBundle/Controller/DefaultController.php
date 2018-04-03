@@ -177,6 +177,7 @@ class DefaultController extends Controller
     	$autoridadRepository=$this->getDoctrine()->getRepository('AppBundle:Autoridad');
     	
     	$autoridadPresidente=$autoridadRepository->findAutoridadByTipo(1);
+    	$autoridadVicePresidente=$autoridadRepository->findAutoridadByTipo(3);
     	$autoridadSecretario=$autoridadRepository->findAutoridadByTipo(2);
     	
     	return $this->render('default/autoridades.html.twig', 
@@ -188,6 +189,12 @@ class DefaultController extends Controller
     						 		'nombre_presidente'=>(!is_null($autoridadPresidente)
     						 								?$autoridadPresidente->getPerfil()
     						 												 	 ->getNombreCompleto():''),
+    						 		'id_vice_presidente'=>(!is_null($autoridadVicePresidente)
+				    						 				?$autoridadVicePresidente->getPerfil()
+				    						 										 ->getId():0),
+    						 		'nombre_vice_presidente'=>(!is_null($autoridadVicePresidente)
+				    						 				?$autoridadVicePresidente->getPerfil()
+				    						 										 ->getNombreCompleto():''),
     						 		'id_secretario'=>(!is_null($autoridadSecretario)
     						 							?$autoridadSecretario->getPerfil()
     						 											 	 ->getId():0),
@@ -538,6 +545,7 @@ class DefaultController extends Controller
     	$claseRedaccion='basico';
     	$numeroSancion='';
     	$firmaPresidente=$this->container->get('serializer')->serialize(false,'json');
+    	$firmaVicePresidente=$this->container->get('serializer')->serialize(false,'json');
     	$firmaSecretario=$this->container->get('serializer')->serialize(false,'json');
     	$comisionReserva=0;
     	$listaNotificaciones=$this->container->get('serializer')->serialize([],'json');
@@ -582,15 +590,20 @@ class DefaultController extends Controller
     		
     		$claseRedaccion=$sancion->getClaseSancion();
     		
-    		$firmaPresidente=(!is_null($sancion->getFirmaPresidente)
+    		$firmaPresidente=(!is_null($sancion->getFirmaPresidente())
     							?$this->container
     								  ->get('serializer')
-    								  ->serialize($sancion->getFirmaPresidente,'json')
+    								  ->serialize(true,'json')
     							:$firmaPresidente);
-    		$firmaSecretario=(!is_null($sancion->getFirmaSecretario)
+    		$firmaVicePresidente=(!is_null($sancion->getFirmaVicePresidente())
+		    						?$this->container
+				    					  ->get('serializer')
+				    					  ->serialize(true,'json')
+    								:$firmaVicePresidente);
+    		$firmaSecretario=(!is_null($sancion->getFirmaSecretario())
     							?$this->container
     								  ->get('serializer')
-    								  ->serialize($sancion->getFirmaSecretario(),'json')
+    								  ->serialize(true,'json')
     							:$firmaSecretario);
     		
     		if (!is_null($sancion->getSpeech()))
@@ -610,6 +623,7 @@ class DefaultController extends Controller
 		    			'revision_id'=>$idRevision,
 		    			'numero_sancion'=>$numeroSancion,
 		    			'firma_presidente'=>$firmaPresidente,
+    					'firma_vice_presidente'=>$firmaVicePresidente,
 		    			'firma_secretario'=>$firmaSecretario,
     					'comision_reserva'=>$comisionReserva,
 		    			'speech'=>$speech,

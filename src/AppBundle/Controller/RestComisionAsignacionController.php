@@ -318,15 +318,16 @@ class RestComisionAsignacionController extends FOSRestController{
     	
     	
     	
-    	if (!is_null($sesionAsignacion) && $sesionAsignacion->getTieneOrdenDelDia())
+    	if (!$expedienteComision->getPermiteEdicion()){
+    		if ($expedienteComision->getSesion()->getTieneOrdenDelDia())
     			
-    		return $this->view("No se puede anular el expediente forma parte de la sesión ".
-    						   "del día ".$sesionAsignacion->getFechaFormateada().
-    						   ", y ya se generó la orden del día",500);
+	    		return $this->view("No se puede anular el expediente forma parte de la sesión ".
+	    						   "del día ".$sesionAsignacion->getFechaFormateada().
+	    						   ", y ya se generó la orden del día",500);
     		else
     			return $this->view("No se puede anular el expediente no está en un estado posible ".
     							   "de anular",500);
-    			
+    	}	
     	
   				
     	$expedienteComision->setAnulado(true);

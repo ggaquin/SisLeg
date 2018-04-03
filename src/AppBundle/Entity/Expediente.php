@@ -1171,7 +1171,7 @@ class Expediente
 		
 		return (($esDespacho || $this->numeroSancion=='') && 
 				($esDespacho || (is_null($this->sesion) || $this->sesion->getTieneOrdenDelDia()==false)) &&
-				 is_null($this->fechaArchivo)
+				is_null($this->fechaArchivo && !$this->sesion->getTieneEdicionBloqueada())
 			   );	
 	}
 	
