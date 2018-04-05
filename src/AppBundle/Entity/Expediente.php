@@ -1171,7 +1171,7 @@ class Expediente
 		
 		return (($esDespacho || $this->numeroSancion=='') && 
 				($esDespacho || (is_null($this->sesion) || $this->sesion->getTieneOrdenDelDia()==false)) &&
-				is_null($this->fechaArchivo && !$this->sesion->getTieneEdicionBloqueada())
+				is_null($this->fechaArchivo) 
 			   );	
 	}
 	
@@ -1236,6 +1236,33 @@ class Expediente
 		};
 		
 		return strtoupper($autor);
+	}
+	
+	
+	/**
+	 * Get listadoNumerosExternos
+	 *
+	 * @return string
+	 * @VirtualProperty()
+	 */
+	public function getListadoNumerosExternos(){
+		
+		$numeros="";
+		if ($this->getTipoExpediente()->getId()==4  || $this->getTipoExpediente()->getId()==9){
+			
+			$numerosExternos=$this->getOrigenExterno()->getNumeracionOrigen();
+			
+			foreach ($numerosExternos as $numeroExterno){
+				$numeros.="<li>".$numeroExterno['ente'].'-'.$numeroExterno['numero'].'-'.
+				strtoupper($numeroExterno['letra']).'-'.$numeroExterno['año'].'-'.$numeroExterno['folios'].'-'.
+				$numeroExterno['cuerpos'].'</li>';
+			}
+			
+			$numeros="<br>Numeración Origen: <br><ul>".$numeros."</ul>";
+		}
+		
+		return $numeros;
+		
 	}
 	
 	

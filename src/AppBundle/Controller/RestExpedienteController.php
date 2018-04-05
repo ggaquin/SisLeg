@@ -119,7 +119,9 @@ class RestExpedienteController extends FOSRestController{
 		
             $resutado=[];	
             foreach ($expedientes as $expediente){
-            	$registro=array('id'=>$expediente->getId(), 'numero_completo'=>$expediente->getNumeroCompleto(),
+            	$registro=array('id'=>$expediente->getId(), 
+            					'numero_completo'=>$expediente->getNumeroCompleto(),
+            					'numeracion_origen'=>$expediente->getListadoNumerosExternos(),
             					'tipo_expediente'=>$expediente->getTipoExpediente()->getTipoExpediente(),
             					'fecha_creacion_formateada'=>$expediente->getFechaCreacionFormateada(),
             					'fecha_modificacion_formateada'=>$expediente->getFechaModificacionFormateada(),

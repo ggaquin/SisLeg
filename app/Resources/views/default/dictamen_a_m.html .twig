@@ -89,8 +89,11 @@
 		    max-height: 121px!important;
 		    overflow-y: auto!important;
 		} 
+				
+		.select2-selection__choice {
+         	background-color: #3c8dbc!important;
+        }
 		
-	
 	</style>
 	<script type="text/javascript">
 	
@@ -620,7 +623,7 @@
 	    		if (idDictamen!=0){
 
 	    			$("#selComisiones").prop("disabled", true);
-	        		debugger;
+		 			
 					//controles comunes a todos los dictamenes
 					$("#selTipoRedaccion").val('{{ data.clase_dictamen }}');
 

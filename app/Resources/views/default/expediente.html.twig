@@ -427,7 +427,7 @@
 									            "render": function(data, type, row){
 										            var html="";	
 													
-										            html+="<div data-toggle='popover' data-placement='left' title='Expediente "+row.numero_completo+":' data-content='"+row.caratula+"'>"+data+"</div>";									 
+										            html+="<div data-toggle='popover' data-placement='left' title='Expediente HCD: "+row.numero_completo+row.numeracion_origen+"' data-content='"+row.caratula+"'>"+data+"</div>";									 
 									            	//html+="<span title='"+row.caratula_sin_html+"'>"+data+"</span>";
 									            	if ('{{'EXP_DOWNLOAD' in  app.user.listaPermisos }}')
 												        	html+="<button type='button' title='Descargar Documento' class='btn btn-info btn-xs btn-descargar'><span class='glyphicon glyphicon-save-file'></span></button>";
