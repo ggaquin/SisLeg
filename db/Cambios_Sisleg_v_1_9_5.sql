@@ -11,12 +11,13 @@ DROP function IF EXISTS `conformarNumerosSancion`;
 DELIMITER $$
 CREATE DEFINER=`root`@`localhost` FUNCTION `conformarNumerosSancion`(_idSancion int) RETURNS text CHARSET utf8mb4
 BEGIN
-	
-	set @representacionHTML='';
+
+	declare representacionHTMLFinal text default '';
+    declare representacionHTMLPorAgregados text default '';
                
 	select conformarNumerosExternosParaSancion(o.numeracionOrigen,e.numeroExpediente,
 											   te.letra,e.periodo)
-	into 	@representacionHTML
+	into 	representacionHTMLFinal
     from 	sancion s
     inner
     join	expedienteSesion es
@@ -34,15 +35,13 @@ BEGIN
     group
     by		e.numeroExpediente,te.tipoExpediente,e.periodo;
     
-	select concat(@representacionHTML,
-				  group_concat(
-								conformarNumerosExternosParaSancion(o.numeracionOrigen,eeca.numeroExpediente,
-																	teca.letra,eeca.periodo)
-																	
-								separator ','
-							  )
-			   )
-	into 	@representacionHTML
+	select  group_concat(
+							conformarNumerosExternosParaSancion(o.numeracionOrigen,eeca.numeroExpediente,
+																teca.letra,eeca.periodo)
+																
+							separator ','
+						)
+	into 	representacionHTMLPorAgregados
     from 	sancion s
     inner
     join	dictamen d
@@ -66,15 +65,18 @@ BEGIN
     group
     by		eeca.numeroExpediente,teca.tipoExpediente,eeca.periodo;
 
-    select concat(@representacionHTML,
-				  group_concat(
-								conformarNumerosExternosParaSancion(o.numeracionOrigen,eeca.numeroExpediente,
-																	teca.letra,eeca.periodo)
-																	
-								separator ','
-							  )
-				   )
-	into 	@representacionHTML
+	if representacionHTMLPorAgregados is not null then
+		set representacionHTMLFinal=concat(representacionHTMLFinal,representacionHTMLPorAgregados);
+	end if;
+    
+    select 	group_concat(
+							conformarNumerosExternosParaSancion(o.numeracionOrigen,eeca.numeroExpediente,
+																teca.letra,eeca.periodo)
+																
+							separator ','
+						)
+	
+	into 	representacionHTMLPorAgregados
     from 	sancion s
     inner
     join	dictamen d
@@ -98,15 +100,17 @@ BEGIN
     group
     by		eeca.numeroExpediente,teca.tipoExpediente,eeca.periodo;
     
-    select concat(@representacionHTML,
-			  group_concat(
+    if representacionHTMLPorAgregados is not null then
+		set representacionHTMLFinal=concat(representacionHTMLFinal,representacionHTMLPorAgregados);
+	end if;
+    
+    select group_concat(
 							conformarNumerosExternosParaSancion(o.numeracionOrigen,eeca.numeroExpediente,
 																teca.letra,eeca.periodo)
 																
 							separator ','
-						  )
-			   )
-	into 	@representacionHTML
+						)
+	into 	representacionHTMLPorAgregados
     from 	sancion s
     inner
     join	dictamen d
@@ -130,7 +134,11 @@ BEGIN
     group
     by		eeca.numeroExpediente,teca.tipoExpediente,eeca.periodo;
     
-RETURN @representacionHTML;
+    if representacionHTMLPorAgregados is not null then
+		set representacionHTMLFinal=concat(representacionHTMLFinal,representacionHTMLPorAgregados);
+	end if;
+    
+RETURN representacionHTMLFinal;
 END$$
 DELIMITER ;
 

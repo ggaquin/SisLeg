@@ -557,10 +557,16 @@ class ImpresionServicio
     	foreach ($expedientes as $expediente){
     		$row=$tablaNumeros->addRow(10,array('exactHeight'=>10));
     		
-    		$row->addCell(2500)->addText('',$cellTextStyle,$cellSettings);
+    		$row->addCell(2200)->addText('',$cellTextStyle,$cellSettings);
     		
     		if ($esPrimerFila==true){
-    			$row->addCell(3200)->addText("CORRESPONDE AL EXPTE. N°",$cellTextStyle,$cellSettings);
+    			
+    			if($filaActual==$totalFilas)
+    				$row->addCell(3200,array('borderBottomSize'=>10,'borderBottomColor'=>000000))
+    					->addText("CORRESPONDE AL EXPTE. N°",$cellTextStyle,$cellSettings);	
+    			else
+    				$row->addCell(3200)->addText("CORRESPONDE AL EXPTE. N°",$cellTextStyle,$cellSettings);
+    			
     			$esPrimerFila=false;
     		}
     		else{
@@ -574,10 +580,10 @@ class ImpresionServicio
     						  $cellTextStyle,$cellSettings);
     		}
     		if($filaActual==$totalFilas)
-    			$row->addCell(3100,array('borderBottomSize'=>10,'borderBottomColor'=>000000))
+    			$row->addCell(3400,array('borderBottomSize'=>10,'borderBottomColor'=>000000))
     				->addText($expediente,$cellTextStyle,$cellSettings);
     		else
-    			$row->addCell(3100)
+    			$row->addCell(3400)
     				->addText($expediente,$cellTextStyle,$cellSettings);
     		
     				$filaActual++;

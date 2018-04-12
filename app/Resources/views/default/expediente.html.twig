@@ -811,10 +811,10 @@
             							                "orderable":true,
             							                "render": function(data, type, row){
 
-                    							            	
+                    							            	debugger;
                 							                	if (("{{ app.user.rol.oficina is null }}" || "{{ app.user.rol.oficina.id }}"== "9" ) 
                     									            	 && data=="" && '{{ "EXP_REPORT_RETURN" in app.user.listaPermisos}}'
-                    									            	 && row.tipo=="notificacion"){
+                    									            	 && row.tipo=="NOTIFICACION"){
             	    												return "<button type='button' title='Ingresar Fecha Respuesta' "+
             	    													   "class='btn btn-primary btn-xs btn-respuesta-informe'"+
             	    													   " data-toggle='modal' data-target='#respuestaInforme'>" +
@@ -1614,7 +1614,7 @@
 						        		<select class="form-control" id="selTipoSesion" name="selTipoSesion">
 						        			<option value="0">Seleccione Tipo</option>
 						        			{% for tipoSesion in tiposSesion %}
-						        				{% if tipoSesion.abreviacion!="O" and tipoSesion.abreviacion!="ES"%}
+						        				{% if tipoSesion.abreviacion!="ES"%}
 						        					<option value="{{ tipoSesion.id }}">{{ tipoSesion.tipoSesion }} - ({{ tipoSesion.abreviacion }})</option>
 						        				{% endif %}
 						        			{% endfor %}
