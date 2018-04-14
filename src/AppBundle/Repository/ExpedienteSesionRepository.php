@@ -42,7 +42,7 @@ class ExpedienteSesionRepository extends EntityRepository{
 		$rsm->addScalarResult('tipoSancion', 'tipo_sancion');
 		
 		$query = $this->getEntityManager()
-		->createNativeQuery('call incluirDesdeOrigen(:tipoOrigen,:id, :idProyecto)', $rsm);
+		->createNativeQuery('call incluirDesdeOrigen(:tipoOrigen, :id, :idProyecto)', $rsm);
 		$query -> setParameter('tipoOrigen', $tipoOrigen);
 		$query -> setParameter('id', $id);
 		$query -> setParameter('idProyecto', $idProyecto);

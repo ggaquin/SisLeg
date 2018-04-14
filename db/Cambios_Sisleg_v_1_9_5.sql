@@ -4,12 +4,29 @@ CHANGE COLUMN `tipoAutoridad` `tipoAutoridad` VARCHAR(15) NOT NULL ;
 INSERT INTO `tipoAutoridad` (`tipoAutoridad`) VALUES ('vice presidente');
 
 ALTER TABLE `sancion` 
-ADD COLUMN `firmaVicePresidente` INT NULL DEFAULT NULL AFTER `firmaPresidente`;
+	ADD COLUMN `firmaVicePresidente` INT NULL DEFAULT NULL AFTER `firmaPresidente`;
+
+ALTER TABLE `expedienteComision_movimiento` 
+	ADD INDEX `expedienteComision_movimiento_movimiento_idx` (`idMovimiento` ASC),
+	ADD INDEX `expedienteComision_movimiento_expedienteComision_idx` (`idExpedienteComision` ASC);
+
+ALTER TABLE `expedienteComision_movimiento` 
+	ADD CONSTRAINT `fk_expedienteComision_movimiento_ExpedienteComision`
+	  FOREIGN KEY (`idExpedienteComision`)
+	  REFERENCES `expedienteComision` (`idExpedienteComision`)
+	  ON DELETE NO ACTION
+	  ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_expedienteComision_movimiento_movimiento`
+	  FOREIGN KEY (`idMovimiento`)
+	  REFERENCES `movimiento` (`idMovimiento`)
+	  ON DELETE NO ACTION
+	  ON UPDATE NO ACTION;
+
 
 
 DROP function IF EXISTS `conformarNumerosSancion`;
 DELIMITER $$
-CREATE DEFINER=`root`@`localhost` FUNCTION `conformarNumerosSancion`(_idSancion int) RETURNS text CHARSET utf8mb4
+CREATE FUNCTION `conformarNumerosSancion`(_idSancion int) RETURNS text CHARSET utf8mb4
 BEGIN
 
 	declare representacionHTMLFinal text default '';
@@ -144,7 +161,7 @@ DELIMITER ;
 
 DROP procedure IF EXISTS `crearOrdenDelDia`;
 DELIMITER $$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `crearOrdenDelDia`(IN _idSesion int, IN _tipo tinyint(1))
+CREATE PROCEDURE `crearOrdenDelDia`(IN _idSesion int, IN _tipo tinyint(1))
 BEGIN
 	
     declare _cantidadExpedientes int default 0;
@@ -187,7 +204,7 @@ BEGIN
 	left
 	join	expedienteSesion es
 	on		e.idExpediente=es.idExpediente
-    inner
+    left
     join	sesion ses
     on		es.idSesion=ses.idSesion
 	where 	es.idExpediente is null and 
@@ -198,6 +215,7 @@ BEGIN
 			(ec.idDictamenMayoria is not null or
 			ec.idDictamenPrimeraMinoria is not null or
 			ec.idDictamenSegundaMinoria is not null);
+    
     
 	if @cuenta_dictamenes_con_error>0 then
 		SIGNAL SQLSTATE '40000'
@@ -869,7 +887,7 @@ DELIMITER ;
 
 DROP function IF EXISTS `traer_expedientes_error`;
 DELIMITER $$
-CREATE DEFINER=`root`@`localhost` FUNCTION `traer_expedientes_error`(_idSesion int) RETURNS text CHARSET utf8mb4
+CREATE FUNCTION `traer_expedientes_error`(_idSesion int) RETURNS text CHARSET utf8mb4
 BEGIN
 	
 	set @detalle_dictamenes_con_error:='';
@@ -934,7 +952,7 @@ BEGIN
 	left
 	join	expedienteSesion es
 	on		e.idExpediente=es.idExpediente
-    inner
+    left
     join	sesion ses
     on		es.idSesion=ses.idSesion
 	where 	es.idExpediente is null and 
@@ -966,5 +984,76 @@ BEGIN
 									'dictamen/es en cuestión desde el apartado de Expedientes Girados a Comisiones');
 		return @detalle_error;
 	end if;
+END$$
+DELIMITER ;
+
+DROP procedure IF EXISTS `incluirDesdeOrigen`;
+DELIMITER $$
+CREATE PROCEDURE `incluirDesdeOrigen`(in _tipo varchar(8), in _id int, in _idProyecto int)
+BEGIN
+		
+        if (_tipo='revision') then
+        
+			if (_id=0) then
+            
+				select 	0 as idDictamen, _id as idRevision,
+						'revision' as redaccion, p.visto, p.considerandos as considerando,
+						p.articulos as articulado, '' as textoLibre,
+						1 as incluyeVistosYConsiderandos,
+						p.idTipoProyecto as tipoSancion
+				from 	proyecto p
+				where 	idProyecto = _idProyecto;
+
+            else
+        
+				select 	0 as idDictamen, _id as idRevision,
+						'revision' as redaccion, pr.visto, pr.considerandos as considerando,
+						pr.articulos as articulado, '' as textoLibre,
+						pr.incluyeVistosYConsiderandos,
+						p.idTipoProyecto as tipoSancion
+				from 	proyectoRevision pr
+				inner
+				join	proyecto p
+				on		pr.idProyecto=p.idProyecto
+				where 	idProyectoRevision = _id;
+                
+			end if;
+            
+		end if;
+        
+		if (_tipo='dictamen') then
+        
+			select 	_id as idDictamen, 
+					if (discriminador='revision',pr.idProyectoRevision,0) as idRevision,
+					discriminador as redaccion, 
+					if (discriminador='revision' and 
+						pr.incluyeVistosYConsiderandos,pr.visto, '') as visto,
+                    if (discriminador='revision' and 
+						pr.incluyeVistosYConsiderandos,pr.considerandos, '') as considerando,
+					case 
+						when discriminador='revision' then pr.articulos
+                        when discriminador='articulado' then d.textoArticulado
+                        else ''
+					end as articulado, 
+                    if (discriminador='basico',d.textoLibre,'') as textoLibre,
+                    if (discriminador='revision', 
+						pr.incluyeVistosYConsiderandos, 0) as incluyeVistosYConsiderandos,
+					case 
+						when discriminador='revision' then p.idTipoProyecto 
+                        when discriminador='articulado' then d.idTipoDictamen 
+						else 0 
+                    end as tipoSancion
+			from 	dictamen d
+            left
+            join	proyectoRevision pr
+            on		d.idProyectoRevision=pr.idProyectoRevision
+            left
+            join	proyecto p
+            on		pr.idProyecto=p.idProyecto
+            left
+            join	tipoProyecto tp
+            on		p.idTipoProyecto=tp.idTipoProyecto;
+            
+        end if;
 END$$
 DELIMITER ;
