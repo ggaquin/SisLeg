@@ -67,8 +67,9 @@ class ProyectoRepository extends EntityRepository{
 	}
 	
 	public  function findAllByFiltro($filtroPerfil){
+		
 		$qb = $this->createQueryBuilder('p')
-				   ->innerJoin('p.expediente','e')
+				   ->leftJoin('p.expediente','e')
 				   ->innerJoin('p.concejal', 'c');
 		$qb ->where($qb->expr()->orX(
 									 $qb->expr()->isNull(':filtroPerfil'),
