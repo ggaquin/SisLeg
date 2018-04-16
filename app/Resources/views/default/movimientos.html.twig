@@ -156,7 +156,7 @@
 									            "data": null,
 									            "orderable":false,
 									            "render": function(data, type, row){
-										            
+										            debugger;
 									            	var html="<div class='text-center'>";
 									            	if (row.anulado==false && row.fecha_recepcion_formateada==""){
 										            	if (("{{ app.user.rol.rol}}"=="ROLE_ADMINISTRADOR" || "{{ app.user.rol.oficina.oficina }}"== row.oficina_origen)
@@ -165,7 +165,8 @@
         									            		 "<span class='glyphicon glyphicon-ban-circle'></span></button>";
 		    											}
     									            	if (("{{ app.user.rol.rol}}"=="ROLE_ADMINISTRADOR"  || "{{ app.user.rol.oficina.oficina }}"== row.oficina_destino ||
-    									            		("{{ app.user.rol.oficina.id }}"== "9" && row.destino_externo)) && '{{ 'MOV_RECEIVE' in app.user.listaPermisos }}') {
+    									            		(({{ app.user.rol.oficina.id }}== 9 || {{ app.user.rol.oficina.id }} == 5) && row.destino_externo)) && 
+    									            		  {{ 'MOV_RECEIVE' in app.user.listaPermisos }}) {
     									            		html+="<button type='button' title='Marcar Recepción' class='btn btn-success btn-xs btn-recepcion'>"+
     									             		  	  "<span class='glyphicon glyphicon-ok'></span></button>";
 														}
