@@ -1162,6 +1162,13 @@ class Expediente
     
     /**
      * Get permiteEdición
+     * <p>Solo si</p>
+     * <ul><li>No tiene numero de sanción o <b>el usuario tiene rol despacho</b></li>
+     * 	   <li>No tiene sesión asignada o tiene sesion asignada pero no se generó orden del día en la misma
+     * 		   o <b>el usuario tiene rol despacho</b></li>
+     * 	   <li>No está esperando a ser recibido por desde el último giro</li>
+     * 	   <li>No esta archivado</li>
+     * </ul>
      * 
      * @return boolean
      * 
@@ -1171,6 +1178,7 @@ class Expediente
 		
 		return (($esDespacho || $this->numeroSancion=='') && 
 				($esDespacho || (is_null($this->sesion) || $this->sesion->getTieneOrdenDelDia()==false)) &&
+				$this->getEstadoExpediente()->getId()!=9 &&
 				is_null($this->fechaArchivo) 
 			   );	
 	}
@@ -1196,7 +1204,7 @@ class Expediente
 	public function getNombreEstado(){
 		
 		if(!is_null($this->sesion) && $this->sesion->getTieneOrdenDelDia() &&
-		   $this->getComisionReserva()=="")
+		   $this->getEstadoExpediente()->getId()!=4)
 			return 'Orden del Día';
 		else 
 			return $this->getEstadoExpediente()->getEstadoExpediente();

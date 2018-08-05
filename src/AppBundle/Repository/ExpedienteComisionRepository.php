@@ -344,28 +344,8 @@ class ExpedienteComisionRepository extends EntityRepository{
 		
 		return $query->getResult();
 	}
-	
-	
-	 public  function findByExpediente_Id($idExpediente,$sesioTieneOrdenDelDia=null){
-	 
-	 $qb = $this->createQueryBuilder('ec');
-	 $qb ->innerJoin('ec.expediente', 'e')
-	 	 ->leftJoin('ec.sesion', 's')
-	 	 ->where($qb->expr()->andX(
-	 	 							$qb->expr()->eq('e.id', '?1'),
-	 	 							$qb->expr()->orX(
-	 	 												$qb->expr()->isNull('?2'),
-	 	 												$qb->expr()->eq('s.tieneOrdenDelDia', '?2')
-	 	 											)
-	 	 						  )
-	 	 		)
-	   	 ->setParameter(1, $idExpediente)
-	   	 ->setParameter(2, $sesioTieneOrdenDelDia);
-	 
-	 return $qb->getQuery()->getResult();
-	 }
-	 
-	 public function findIntegrantesComisionesByDictamen($patron, $idDictamen){
+		 
+	public function findIntegrantesComisionesByDictamen($patron, $idDictamen){
 	 	
 	 	$rsm = new ResultSetMapping();
 	 	$rsm->addScalarResult('idPerfil', 'id', 'integer');

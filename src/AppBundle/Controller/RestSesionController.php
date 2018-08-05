@@ -434,9 +434,9 @@ class RestSesionController extends FOSRestController{
 	    				$revision=new ProyectoRevision();
 	    				$revision->setArticulos($proyecto->getArticulos());
 	    				$revision->setConsiderandos($proyecto->getConsiderandos());
-	    				$revision->setVisto($proyecto->getVistos());
+	    				$revision->setVisto($proyecto->getVisto());
 	    				$revision->setFechaCreacion(new \DateTime('now'));
-	    				$revision->setIncluyeVistosYConsiderandos($vistosYConsiderandos);
+	    				$revision->setIncluyeVistosYConsiderandos((($vistosYConsiderandos=="true")?true:false));
 	    				$revision->setOficina($usuario->getRol()->getOficina);
 	    				$revision->setProyecto($proyecto);
 	    				$revision->setUsuarioCreacion($usuario->getUsuario());

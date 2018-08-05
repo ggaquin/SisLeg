@@ -58,27 +58,13 @@ class RestExpedienteController extends FOSRestController{
     		$destino=$request->query->get('r');
     		$usuario=$this->getUser();
     		   	    		
-    		$valorRetorno=[];
-    		$expedienteRepository=$this->getDoctrine()->getRepository('AppBundle:Expediente');
-    		$resultados=$expedienteRepository->findNumeroCompletoByNumero($numero,
-																		  $usuario->getRol()->getOficina(),
-    																	  $destino
-    																	 );
+    		$expedienteServicio=$this->get('expediente_Servicio');
+    		$resultado=$expedienteServicio->findByNumeroYAño($numero,
+    														  $usuario->getRol()->getOficina(),
+    		    											  $destino
+    		    											  );
     		
-    		if (count($resultados)>0){
-    			
-    			foreach ($resultados as $resultado){
-    				
-    				$ejercicio=substr($resultado['periodo'],2);
-    				$numeroCompleto=$resultado["numero"].'-'.$resultado["letra"].'-'.$ejercicio.'('.$resultado["folios"].')';
-    				$valorRetorno[]=array(
-    									  'id' => $resultado["id"],
-    									  'numeroCompleto' => $numeroCompleto
-    									  );    				
-    			}
-    		}
-    		
-    		return $this->view($valorRetorno,200);
+    		return $this->view($resultado,200);
     		
     	}catch(\Exception $e){
     		

@@ -9,7 +9,6 @@ use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
-use PhpOffice\PhpWord\SimpleType\JcTable;
 
 class ImpresionServicio
 {

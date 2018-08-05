@@ -169,10 +169,24 @@ class ExpedienteSesionRepository extends EntityRepository{
 				
 	}
 	
+	public  function findSancionesPendientesByExpediente_Id($idExpediente){
+		
+		$qb = $this->createQueryBuilder('es');
+		$qb ->innerJoin('es.expediente', 'e')
+			->where($qb->expr()->andX(
+										$qb->expr()->eq('e.id', '?1'),
+										$qb->expr()->isNull('es.sancion')											
+									  )
+				   )
+			->setParameter(1, $idExpediente);
+				
+		return $qb->getQuery()->getResult();
+	}
+	
 	public function findBySesion_Id($idSesion)
 	{
-		$qb	= $this -> createQueryBuilder('ec');
-		$qb -> innerJoin('e.csesion', 's')
+		$qb	= $this -> createQueryBuilder('es');
+		$qb -> innerJoin('es.sesion', 's')
 			-> where($qb->expr()->eq('s.id', '?1'))
 			->  setParameter(1, $idSesion);
 		

@@ -104,24 +104,20 @@ class ExpedienteRepository extends EntityRepository{
 				
 	}
 	
-	public function findNumeroCompletoByNumero($numero,$oficina,$destino){
-		
-		if(preg_match('/^\d*\-\d{2}/',$numero)!==1)
-			throw new \Exception('El criterio de busqueda debe tener el formato  #[#..#]-AA (por ejemplo 1-17)');
-		
-		$numeroSeparado=explode('-', $numero);
-			
-		$periodo='20'.$numeroSeparado[1];
-		$numerador=$numeroSeparado[0];
-		
+	/**
+	 * Retorna un array dado que el un resultado null provocaría un exepcion
+	 */
+	public function findNumeroCompletoByNumero($numerador,$periodo,$oficina,$destino){
+						
 		$rsm = new ResultSetMapping();
 		$rsm->addScalarResult('idExpediente', 'id');
 		$rsm->addScalarResult('numeroExpediente', 'numero');
 		$rsm->addScalarResult('letra', 'letra');
 		$rsm->addScalarResult('periodo', 'periodo');
 		$rsm->addScalarResult('folios', 'folios');
+		$rsm->addScalarResult('idEstadoExpediente', 'idEstado');
 		
-		$sql='SELECT DISTINCT e.idExpediente, e.numeroExpediente, t.letra, e.periodo, e.folios '.
+		$sql='SELECT DISTINCT e.idExpediente, e.numeroExpediente, t.letra, e.periodo, e.folios, e.idEstadoExpediente '.
 			 'FROM expediente e '.
 			 'inner join tipoExpediente t '.
 			 'on e.idTipoExpediente=t.idTipoExpediente ';
@@ -130,17 +126,7 @@ class ExpedienteRepository extends EntityRepository{
 		
 		if(!is_null($oficina)){
 			$sql.='inner join oficina o on e.idOficina=o.idOficina ';
-			$condition.=' and o.idOficina in (:oficinas) and e.fechaArchivo is null ';
-			
-// 			if($oficina->getId()==9 && $destino==3){
-// 				$sql.='left join sesion s on e.idSesion=s.idSesion ';
-// 				$condition.=' and (e.idTipoExpediente in (2,7,9) or '.
-// 							' e.idExpediente in (select DISTINCT idExpediente '.
-// 									  			'from expedienteSesion es '.
-// 												'inner join sesion ess on es.idSesion=ess.idSesion '.
-// 												'where ess.fecha<:fechaActual))';
-// 			}
-			
+			$condition.=' and o.idOficina in (:oficinas) and e.fechaArchivo is null ';		
 			if($oficina->getId()==9 && $destino==3){
 				$sql.='left join sesion s on e.idSesion=s.idSesion ';
 				$condition.=' and (e.idTipoExpediente in (2,7,9) or '.
@@ -158,7 +144,6 @@ class ExpedienteRepository extends EntityRepository{
 		if ($oficina->getId()==9){
 			$oficinas=array($oficina->getId(),3);
 			$query->setParameter('oficinas',$oficinas);
-			//$query->setParameter('fechaActual',new \DateTime());
 		}
 		else
 			$query->setParameter('oficinas',$oficina->getId());

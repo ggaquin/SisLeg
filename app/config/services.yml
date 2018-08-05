@@ -19,3 +19,7 @@ services:
     utilidades_servicio:
         class: AppBundle\Services\UtilServicio
         #arguments: ["@doctrine.orm.entity_manager"]
+    expediente_Servicio:
+        class: AppBundle\Services\ExpedienteServicio
+        arguments: [ "@doctrine.orm.entity_manager" , "@service_container" ] 
+        
