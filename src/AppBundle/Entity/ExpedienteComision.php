@@ -45,7 +45,7 @@ class ExpedienteComision
      */
     private $sesion;
  
-   /**
+    /**
      * @var \AppBundle\Entity\Expediente
      *
      * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Expediente", inversedBy="asignacionComisiones", cascade={"persist"})
@@ -55,7 +55,7 @@ class ExpedienteComision
      */
     private $expediente;
 
-   /**
+    /**
      * @var \AppBundle\Entity\Comision
      *
      * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Comision", inversedBy="expedientesAsignados")
@@ -65,7 +65,7 @@ class ExpedienteComision
      */
     private $comision;
     
-     /**
+    /**
      *  @var \AppBundle\Entity\Dictamen
      * 
      * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Dictamen", inversedBy="asignacionesPorMayoria")

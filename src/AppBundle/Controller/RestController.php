@@ -24,9 +24,7 @@ use AppBundle\Entity\Sesion;
 use AppBundle\Entity\TipoComision;
 use AssistBundle\Entity\AdministracionSesion;
 use FOS\RestBundle\Controller\Annotations\Get;
-use AppBundle\Entity\PlantillaTexto;
 use AppBundle\Entity\VersionTaquigrafica;
-use AppBundle\Entity\TipoSpeech;
 use AppBundle\Entity\Speech;
 use AppBundle\Entity\Autoridad;
 

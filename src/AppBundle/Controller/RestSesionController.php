@@ -27,7 +27,6 @@ use AppBundle\Entity\Notificacion;
 use AppBundle\Entity\Remito;
 use AppBundle\Entity\Comision;
 use AppBundle\Entity\Pase;
-use AppBundle\Entity\PlantillaTexto;
 use AppBundle\Entity\SancionBasica;
 
 /**

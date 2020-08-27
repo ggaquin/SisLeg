@@ -57,14 +57,14 @@ class Proyecto
      private $clavesBusqueda;
 
     /**
-     * @var text
+     * @var string
      *
      * @ORM\Column(name="visto", type="text", nullable=false)
      */
     private $visto;
 
     /**
-     * @var text
+     * @var string
      *
      * @ORM\Column(name="considerandos", type="text", nullable=false)
      */
@@ -219,7 +219,7 @@ class Proyecto
     /**
      * Set visto
      *
-     * @param text $visto
+     * @param string $visto
      *
      * @return Proyecto
      */
@@ -233,7 +233,7 @@ class Proyecto
     /**
      * Get visto
      *
-     * @return text
+     * @return string
      */
     public function getVisto()
     {
@@ -243,7 +243,7 @@ class Proyecto
     /**
      * Set considerandos
      *
-     * @param text $considerandos
+     * @param string $considerandos
      *
      * @return Proyecto
      */
@@ -257,7 +257,7 @@ class Proyecto
     /**
      * Get considerandos
      *
-     * @return text
+     * @return string
      */
     public function getConsiderandos()
     {

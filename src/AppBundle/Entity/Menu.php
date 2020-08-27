@@ -32,7 +32,7 @@ class Menu
 	
 	
 	/**
-	 * @var \Doctrine\Common\Collections
+	 * @var \Doctrine\Common\Collections\ArrayCollection
 	 * 
 	 * @ORM\OneToMany(targetEntity="\AppBundle\Entity\MenuItem", mappedBy="menu")
 	 */

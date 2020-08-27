@@ -14,7 +14,7 @@ use JMS\Serializer\Annotation\VirtualProperty;
 class Pase extends Movimiento{
 	
 	/**
-	 * @var smallint
+	 * @var int
 	 *
 	 * @ORM\Column(name="fojas", type="smallint", nullable=false)
 	 */

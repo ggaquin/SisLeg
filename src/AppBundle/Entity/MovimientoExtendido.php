@@ -93,7 +93,7 @@ abstract class MovimientoExtendido extends Movimiento{
 	 *
 	 * @param \DateTime $fechaRespuesta
 	 *
-	 * @return SolicitidInforme
+	 * @return SolicitudInforme
 	 */
 	public function setFechaRespuesta($fechaRespuesta)
 	{

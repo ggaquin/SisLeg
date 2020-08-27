@@ -79,6 +79,7 @@ class Comision
      *
      * @ORM\Column(name="comision", type="string", length=100, nullable=false)
      */
+    
     private $comision;
 
      /**
@@ -375,7 +376,7 @@ class Comision
 	
 	/**
 	 * Set letraOrdebDelDia
-	 * @param unknown $letraOrdenDelDia
+	 * @param string $letraOrdenDelDia
 	 * @return \AppBundle\Entity\Comision
 	 */
 	public function setLetraOrdenDelDia($letraOrdenDelDia) {

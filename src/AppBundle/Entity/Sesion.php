@@ -71,28 +71,28 @@ class Sesion
     private $tipoSesion;
     
     /**
-     * @var tieneOrdenDelDia
+     * @var boolean
      * 
      * @ORM\Column(name="tieneOrdenDelDia", type="boolean", nullable=false)
      */
     private $tieneOrdenDelDia;
 
     /**
-     * @var tieneUltimoMomento
+     * @var boolean
      *
      * @ORM\Column(name="tieneUltimoMomento", type="boolean", nullable=false)
      */
     private $tieneUltimoMomento;
     
     /**
-     * @var tieneEdicionBloqueada
+     * @var boolean
      *
      * @ORM\Column(name="tieneEdicionBloqueada", type="boolean", nullable=false)
      */
     private $tieneEdicionBloqueada;
     
     /**
-     * @var cantidadExpedientes
+     * @var integer
      *
      * @ORM\Column(name="cantidadExpedientes", type="integer")
      */

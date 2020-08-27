@@ -159,9 +159,6 @@
 
     .form-signin {
       z-index:100;
-    }
-
-      
       /* Enabling 3d space for the transforms */
       -moz-transform-style: preserve-3d;
       -webkit-transform-style: preserve-3d;
@@ -437,6 +434,7 @@
                     ×</button>{{ error.messageKey|trans(error.messageData, 'security') }}</div>
           </div>
         {% endif %}
+        {#
         {% if otherSuccess %}
           <div class="alert-panel">
             <div class="alert alert-success-alt alert-dismissable">
@@ -453,6 +451,7 @@
                     ×</button>{{ otherError }}</div>
           </div>
         {% endif %}
+       #}
       </div>
     </div> 
   </body>

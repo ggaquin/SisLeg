@@ -23,7 +23,7 @@ use JMS\Serializer\Annotation\VirtualProperty;
 
 abstract class Movimiento {
 	
-	/**
+   /**
 	* @var integer
 	*
 	* @ORM\Column(name="idMovimiento", type="integer")

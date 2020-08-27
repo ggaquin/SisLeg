@@ -72,7 +72,7 @@ class PerfilExpedienteVoto
      *
      * @param \AppBundle\Entity\Perfil $perfil
      *
-     * @return PerfilProyectoVoto
+     * @return PerfilExpedienteVoto
      */
     public function setPerfil(\AppBundle\Entity\Perfil $perfil = null)
     {
@@ -96,7 +96,7 @@ class PerfilExpedienteVoto
      *
      * @param \AppBundle\Entity\Expediente $expediente
      *
-     * @return PerfilProyectoVoto
+     * @return PerfilExpedienteVoto
      */
     public function setExpediente(\AppBundle\Entity\Expediente $expediente = null)
     {
@@ -120,7 +120,7 @@ class PerfilExpedienteVoto
      *
      * @param \AppBundle\Entity\TipoVoto $tipoVoto
      *
-     * @return PerfilProyectoVoto
+     * @return PerfilExpedienteVoto
      */
     public function setTipoVoto(\AppBundle\Entity\TipoVoto $tipoVoto = null)
     {

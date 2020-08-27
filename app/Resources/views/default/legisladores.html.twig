@@ -73,12 +73,12 @@
 									            "render": function(data, type, row){
 									           		var html= "<div class='btn-group'>";
 									           		
-									           		if ('{{ 'CON_EDIT' in app.user.listaPermisos }}')
+									           		if ("{{ 'CON_EDIT' in app.user.listaPermisos }}")
 									            		html+="<button type='button'  title='Editar Legislador' class='btn btn-primary btn-xs btn-editar' "+
     									            	 	  "data-toggle='modal' data-target='#modalLegislador'><span class='glyphicon glyphicon-pencil'></span>"+
     									            		  "</button>";
 
-    									            if ('{{ 'CON_DEL' in app.user.listaPermisos }}')
+    									            if ("{{ 'CON_DEL' in app.user.listaPermisos }}")
     									            	html+="<button type='button'  class='btn btn-danger btn-xs btn-eliminar' title='eliminar' "+
     									            		  "onclick='noImplementado();'><span class='glyphicon glyphicon-erase'></span>"+
     									            		  "</button>";
@@ -255,7 +255,7 @@
 					var modo= $("#modalLegislador").find('input[name="modo"]').val()
 
 			    	if (modo=="ALTA")
-			    		urlAction='{{ app.request.getBaseURL() }}'+'/api/Usuario/createPerfilLegislador';
+			    		urlAction='{{ app.request.getBaseURL() }}'+'/api/usuario/createPerfilLegislador';
 			    	else {
 			    		var id= $("#modalLegislador").find('input[name="id"]').val();
 						urlAction='{{ app.request.getBaseURL() }}'+'/api/usuario/updatePerfilLegislador';

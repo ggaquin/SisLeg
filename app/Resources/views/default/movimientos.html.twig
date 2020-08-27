@@ -158,15 +158,19 @@
 									            "render": function(data, type, row){
 										            debugger;
 									            	var html="<div class='text-center'>";
-									            	if (row.anulado==false && row.fecha_recepcion_formateada==""){
-										            	if (("{{ app.user.rol.rol}}"=="ROLE_ADMINISTRADOR" || "{{ app.user.rol.oficina.oficina }}"== row.oficina_origen)
-												            && '{{ 'MOV_ABORT' in  app.user.listaPermisos }}') {
+													var oficina = {% if app.user.rol.oficina is null %} null {% else %} '{{ app.user.rol.oficina.oficina }}' {% endif %};
+													var idOficina = {% if app.user.rol.oficina is null %} 0 {% else %} '{{ app.user.rol.oficina.id }}' {% endif %};
+												
+													if (row.anulado==false && row.fecha_recepcion_formateada==""){
+										            	if (("{{ app.user.rol.rol == 'ROLE_ADMINISTRADOR' }}" || (oficina != null && oficina == row.oficina_origen))
+												            && "{{ 'MOV_ABORT' in  app.user.listaPermisos }}") {
         									            	html+="<button type='button' title='Anular Remito' class='btn btn-danger btn-xs btn-anular' data-toggle='modal' data-target='#anulacion'>"+
         									            		 "<span class='glyphicon glyphicon-ban-circle'></span></button>";
 		    											}
-    									            	if (("{{ app.user.rol.rol}}"=="ROLE_ADMINISTRADOR"  || "{{ app.user.rol.oficina.oficina }}"== row.oficina_destino ||
-    									            		(({{ app.user.rol.oficina.id }}== 9 || {{ app.user.rol.oficina.id }} == 5) && row.destino_externo)) && 
-    									            		  {{ 'MOV_RECEIVE' in app.user.listaPermisos }}) {
+    									            	if ("{{ app.user.rol.rol == 'ROLE_ADMINISTRADOR' }}"  || 
+															(oficina != null && (oficina == row.oficina_destino ||
+    									            		((idOficina == 9 || idOficina == 5) && row.destino_externo))) && 
+    									            		 "{{ 'MOV_RECEIVE' in app.user.listaPermisos }}") {
     									            		html+="<button type='button' title='Marcar Recepción' class='btn btn-success btn-xs btn-recepcion'>"+
     									             		  	  "<span class='glyphicon glyphicon-ok'></span></button>";
 														}
@@ -181,7 +185,7 @@
 								                "visible": ("{{ muestra_remitos|raw }}"==1?true:false),
 								                "render": function(data, type, row){
 									                var html="";
-									                if (row.numero_remito>0 && '{{ 'MOV_DOWNLOAD' in app.user.listaPermisos }}'){
+									                if (row.numero_remito>0 && "{{ 'MOV_DOWNLOAD' in app.user.listaPermisos }}"){
     									             	html+="<div class='text-center'><button type='button' title='Descargar Remito' class='btn btn-info btn-xs btn-descargar'>"+
 									             		   +row.numero_remito+"</span></button></div>";
 								            		}							            	
@@ -724,7 +728,7 @@
         						        	<select class="form-control" id="selDestino" name="selDestino">
         						        		<option value="0">Seleccione Destino</option>
         						        		{% for oficina in oficinas %}
-        						        			{% if app.user.rol.oficina.id != oficina.id  %}
+        						        			{% if app.user.rol.oficina is not null and app.user.rol.oficina.id != oficina.id  %}
         							                	<option value="{{ oficina.id }}">{{ oficina.descripcion }}</option>
         							                {% endif %}
         							            {% endfor %}

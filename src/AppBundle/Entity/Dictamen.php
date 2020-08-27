@@ -76,7 +76,7 @@ class Dictamen
      */	
     private $asignacionesPorPrimeraMinoria;
     
-     /**
+    /**
      * @var \Doctrine\Common\Collections\Collection
      *
      * @ORM\oneToMany(targetEntity="AppBundle\Entity\ExpedienteComision", 
@@ -93,7 +93,7 @@ class Dictamen
      */
     private $asignacionesPorSegundaMinoria;
     
-     /**
+    /**
      * @var \Doctrine\Common\Collections\Collection
      *
      * @ORM\oneToMany(targetEntity="AppBundle\Entity\ExpedienteComision",

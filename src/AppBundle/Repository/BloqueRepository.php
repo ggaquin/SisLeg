@@ -7,7 +7,7 @@ class BloqueRepository extends EntityRepository{
 
 	/**
 	 * <p>Retorna un array con los bloques cuyos nombres coincidan con el patrón de búsqueda</p>
-	 * @param unknown $patronBusqueda
+	 * @param string $patronBusqueda
 	 * @return array
 	 */
 	public function findBloqueByNombre_Patron($patronBusqueda){

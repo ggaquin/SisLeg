@@ -55,14 +55,14 @@ class ProyectoRevision
      private $incluyeVistosYConsiderandos;
      
     /**
-     * @var text
+     * @var string
      *
      * @ORM\Column(name="visto", type="text", nullable=false)
      */
     private $visto;
 
     /**
-     * @var text
+     * @var string
      *
      * @ORM\Column(name="considerandos", type="text", nullable=false)
      */
@@ -210,7 +210,7 @@ class ProyectoRevision
     /**
      * Set visto
      *
-     * @param text $visto
+     * @param string $visto
      *
      * @return Proyecto
      */
@@ -224,7 +224,7 @@ class ProyectoRevision
     /**
      * Get visto
      *
-     * @return text
+     * @return string
      */
     public function getVisto()
     {
@@ -234,7 +234,7 @@ class ProyectoRevision
     /**
      * Set considerandos
      *
-     * @param text $considerandos
+     * @param string $considerandos
      *
      * @return Proyecto
      */
@@ -248,7 +248,7 @@ class ProyectoRevision
     /**
      * Get considerandos
      *
-     * @return text
+     * @return string
      */
     public function getConsiderandos()
     {
